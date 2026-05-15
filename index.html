@@ -3,123 +3,80 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>武汉地铁保护区管理平台 — 原型入口</title>
+    <title>登录 — 武汉地铁保护区管理平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="assets/css/theme.css" />
     <style>
-      .portal-wrap {
-        max-width: 1440px;
-        margin: 0 auto;
-        min-height: calc(100vh - 48px);
+      .login-shell {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+      .login-card {
+        width: 100%;
+        max-width: 400px;
       }
     </style>
   </head>
-  <body class="wh-main-canvas text-slate-100 py-8 px-4">
-    <div class="portal-wrap">
-      <header class="neon-panel neon-panel--tight mb-8 flex flex-wrap items-end justify-between gap-4 p-5 md:p-6">
-        <div class="flex gap-4 min-w-0">
-          <img src="assets/img/ref-dashboard-neon.png" alt="界面参考缩略" class="hidden sm:block w-40 h-24 object-cover object-top rounded-md border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]" />
-          <div>
-            <h1 class="text-2xl font-semibold text-white tracking-tight" style="text-shadow: 0 0 24px rgba(34, 211, 238, 0.25)">武汉地铁保护区管理平台</h1>
-            <p class="text-sm text-slate-400 mt-2">深色霓虹运维后台 · 菜单由 <code class="text-cyan-300">menu-config.js</code> + <code class="text-cyan-300">shell.js</code> 注入</p>
+  <body class="wh-main-canvas text-slate-100">
+    <div class="login-shell">
+      <div class="login-card neon-panel neon-panel--tight p-8 md:p-10">
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl border border-cyan-400/35 bg-black/25 text-2xl text-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.25)] mb-4">
+            <i class="fa-solid fa-train-subway" aria-hidden="true"></i>
           </div>
+          <h1 class="text-xl font-semibold text-white tracking-tight" style="text-shadow: 0 0 24px rgba(34, 211, 238, 0.25)">武汉地铁保护区管理平台</h1>
+          <p class="text-xs text-slate-500 mt-2">深色运维后台 · 请登录后继续</p>
         </div>
-        <a href="map-gis.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-ui wh-btn-gold shadow-[0_0_24px_rgba(251,191,36,0.35)]">
-          <i class="fa-solid fa-map-location-dot"></i> 进入全景地图
-        </a>
-      </header>
 
-      <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5 text-sm">
-        <section class="neon-panel neon-panel--tight p-5">
-          <h2 class="text-cyan-200 text-sm font-semibold mb-3 flex items-center gap-2"><i class="fa-solid fa-map text-amber-300"></i> 全景地图（全屏）</h2>
-          <ul class="space-y-2 text-slate-400">
-            <li><a class="wh-link hover:underline" href="map-gis.html">GIS 地图首页</a></li>
-            <li><a class="wh-link hover:underline" href="map-cockpit-prep.html">虚拟座舱 · 起飞准备</a></li>
-            <li><a class="wh-link hover:underline" href="map-cockpit-fly.html">虚拟座舱 · 飞行中</a></li>
-            <li><a class="wh-link hover:underline" href="map-flight-plan.html">飞行计划</a></li>
-            <li><a class="wh-link hover:underline" href="map-routes.html">航线管理</a></li>
-            <li><a class="wh-link hover:underline" href="map-situation.html">态势感知</a></li>
-            <li><a class="wh-link hover:underline" href="map-expert.html">专家工具</a></li>
-            <li><a class="wh-link hover:underline" href="map-alerts.html">历史告警列表</a></li>
-          </ul>
-        </section>
+        <form id="login-form" class="space-y-5" novalidate>
+          <div>
+            <label for="login-account" class="block wh-filter-label mb-1.5">账号</label>
+            <input
+              id="login-account"
+              type="text"
+              autocomplete="username"
+              class="wh-input w-full px-3 py-2.5"
+              placeholder="请输入账号"
+              required
+            />
+          </div>
+          <div>
+            <label for="login-password" class="block wh-filter-label mb-1.5">密码</label>
+            <input
+              id="login-password"
+              type="password"
+              autocomplete="current-password"
+              class="wh-input w-full px-3 py-2.5"
+              placeholder="请输入密码"
+              required
+            />
+          </div>
+          <button type="submit" class="w-full py-2.5 text-sm font-semibold transition-ui wh-btn-primary cursor-pointer hover:opacity-95 active:scale-[0.99]">
+            <i class="fa-solid fa-right-to-bracket mr-2" aria-hidden="true"></i>登录
+          </button>
+        </form>
 
-        <section class="neon-panel neon-panel--tight p-5">
-          <h2 class="text-cyan-200 text-sm font-semibold mb-3"><i class="fa-solid fa-chart-column mr-2 text-amber-300"></i>数据中心</h2>
-          <ul class="space-y-2 text-slate-400">
-            <li><a class="wh-link hover:underline" href="dc-library.html">资料库</a></li>
-            <li><a class="wh-link hover:underline" href="dc-line-stats.html">线路项目统计</a></li>
-            <li><a class="wh-link hover:underline" href="dc-drone-stats.html">无人机运行数据统计</a></li>
-            <li><a class="wh-link hover:underline" href="dc-system-stats.html">全时全域系统数据统计</a></li>
-          </ul>
-        </section>
-
-        <section class="neon-panel neon-panel--tight p-5">
-          <h2 class="text-cyan-200 text-sm font-semibold mb-3"><i class="fa-solid fa-train-subway mr-2 text-amber-300"></i>资产管理</h2>
-          <ul class="grid grid-cols-1 gap-y-1.5 text-slate-400 max-h-64 overflow-y-auto">
-            <li><a class="wh-link hover:underline" href="am-line.html">线路管理</a></li>
-            <li><a class="wh-link hover:underline" href="am-station.html">站点管理</a></li>
-            <li><a class="wh-link hover:underline" href="am-section.html">区间管理</a></li>
-            <li><a class="wh-link hover:underline" href="am-emergency-staff.html">应急人员</a></li>
-            <li><a class="wh-link hover:underline" href="am-emergency-warehouse.html">应急仓库</a></li>
-            <li><a class="wh-link hover:underline" href="am-emergency-material.html">应急物资</a></li>
-            <li><a class="wh-link hover:underline" href="am-emergency-plan.html">应急预案</a></li>
-            <li><a class="wh-link hover:underline" href="am-airport.html">机场设备</a></li>
-            <li><a class="wh-link hover:underline" href="am-drone.html">无人机设备</a></li>
-            <li><a class="wh-link font-semibold hover:underline" href="am-maintenance.html">维护与检修记录</a></li>
-            <li><a class="wh-link hover:underline" href="am-flight-log.html">飞行日志</a></li>
-            <li><a class="wh-link hover:underline" href="am-ops-metro.html">地铁信息系统运行</a></li>
-            <li><a class="wh-link hover:underline" href="am-ops-fulltime.html">全时全域运行</a></li>
-            <li><a class="wh-link hover:underline" href="am-ops-uav.html">无人机系统运行</a></li>
-          </ul>
-        </section>
-
-        <section class="neon-panel neon-panel--tight p-5">
-          <h2 class="text-cyan-200 text-sm font-semibold mb-3"><i class="fa-solid fa-route mr-2 text-amber-300"></i>智慧巡检</h2>
-          <ul class="space-y-1.5 max-h-64 overflow-y-auto text-slate-400">
-            <li><a class="wh-link hover:underline" href="in-disease.html">病害巡查</a></li>
-            <li><a class="wh-link hover:underline" href="in-night.html">夜班作业</a></li>
-            <li><a class="wh-link hover:underline" href="in-uav-report.html">无人机巡查报告</a></li>
-            <li><a class="wh-link hover:underline" href="in-manual.html">人工巡查记录</a></li>
-            <li><a class="wh-link hover:underline" href="in-project.html">项目管理</a></li>
-            <li><a class="wh-link hover:underline" href="in-project-done.html">完工项目</a></li>
-            <li><a class="wh-link hover:underline" href="in-project-patrol.html">项目巡查</a></li>
-            <li><a class="wh-link hover:underline" href="in-track-person.html">人员轨迹</a></li>
-            <li><a class="wh-link hover:underline" href="in-track-drone.html">无人机轨迹</a></li>
-            <li><a class="wh-link hover:underline" href="in-quality-stats.html">统计分析</a></li>
-            <li><a class="wh-link hover:underline" href="in-score.html">巡查打分</a></li>
-          </ul>
-        </section>
-
-        <section class="neon-panel neon-panel--tight p-5">
-          <h2 class="text-cyan-200 text-sm font-semibold mb-3"><i class="fa-solid fa-briefcase mr-2 text-amber-300"></i>我的工作台</h2>
-          <ul class="space-y-1.5 max-h-64 overflow-y-auto text-slate-400">
-            <li><a class="wh-link hover:underline" href="wb-role.html">角色管理</a></li>
-            <li><a class="wh-link hover:underline" href="wb-user.html">用户管理</a></li>
-            <li><a class="wh-link hover:underline" href="wb-dept.html">部门管理</a></li>
-            <li><a class="wh-link hover:underline" href="wb-menu.html">菜单管理</a></li>
-            <li><a class="wh-link hover:underline" href="wb-dict.html">字典管理</a></li>
-            <li><a class="wh-link hover:underline" href="wb-log.html">日志管理</a></li>
-            <li><a class="wh-link hover:underline" href="wb-param.html">参数设置</a></li>
-            <li><a class="wh-link hover:underline" href="wb-notice.html">通知公告</a></li>
-            <li><a class="wh-link hover:underline" href="wb-todo.html">待办</a></li>
-            <li><a class="wh-link hover:underline" href="wb-sys-notify.html">系统通知</a></li>
-            <li><a class="wh-link hover:underline" href="wb-done.html">已处理事项</a></li>
-            <li><a class="wh-link hover:underline" href="wb-wf-category.html">流程分类</a></li>
-            <li><a class="wh-link hover:underline" href="wb-wf-design.html">流程设计</a></li>
-            <li><a class="wh-link hover:underline" href="wb-profile.html">个人资料</a></li>
-          </ul>
-        </section>
-
-        <section class="neon-panel neon-panel--tight p-5">
-          <h2 class="text-cyan-200 text-sm font-semibold mb-3"><i class="fa-solid fa-wand-magic-sparkles mr-2 text-amber-300"></i>AI 识别</h2>
-          <p class="text-slate-500 text-xs mb-3">全屏布局，无左侧菜单。</p>
-          <a href="ai.html" class="inline-flex items-center gap-2 wh-link font-medium">打开 AI 识别 <i class="fa-solid fa-arrow-right"></i></a>
-        </section>
+        <p class="mt-6 text-center text-[11px] text-slate-600">原型演示 · 任意账号密码均可进入系统</p>
       </div>
-
-      <p class="mt-10 text-center text-xs text-slate-500">菜单数据源：<span class="text-cyan-200">assets/js/menu-config.js</span> · 新增页面请同步 href 与 <span class="text-cyan-200">data-sidebar-key</span></p>
     </div>
+
+    <script>
+      (function () {
+        var form = document.getElementById("login-form");
+        if (!form) return;
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+          }
+          window.location.href = "map-gis.html";
+        });
+      })();
+    </script>
   </body>
 </html>
