@@ -1,0 +1,364 @@
+.wb-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wb-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.1);
+}
+
+.wb-head h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.wb-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.wb-layout--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.wb-tree-panel,
+.wb-main-panel {
+  min-width: 0;
+}
+
+.wb-tree-search {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.wb-tree-search input {
+  width: 100%;
+  padding: 8px 10px 8px 30px;
+}
+
+.wb-tree-search i {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #67e8f9;
+  font-size: 12px;
+}
+
+.wb-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: calc(100vh - 280px);
+  overflow: auto;
+}
+
+.wb-tree-node {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+
+.wb-tree-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 10px;
+  color: #dce8f8;
+  background: rgba(8, 24, 46, 0.45);
+  cursor: pointer;
+}
+
+.wb-tree-row:hover {
+  background: rgba(34, 211, 238, 0.1);
+}
+
+.wb-tree-row.active {
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.18), rgba(34, 211, 238, 0.05));
+  border-left: 3px solid #22d3ee;
+  color: #fff;
+}
+
+.wb-tree-toggle {
+  width: 16px;
+  text-align: center;
+  color: #7dd3fc;
+  font-size: 11px;
+  flex: 0 0 16px;
+}
+
+.wb-tree-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wb-tree-count {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.wb-tree-children {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0 4px 16px;
+}
+
+.wb-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.wb-toolbar-right {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.wb-search-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.wb-search-item label {
+  display: block;
+  margin-bottom: 6px;
+  color: #9cc6df;
+  font-size: 12px;
+}
+
+.wb-search-item input,
+.wb-search-item select {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+}
+
+.wb-status-switch {
+  width: 42px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  background: rgba(30, 41, 59, 0.9);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wb-status-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: all 0.2s ease;
+}
+
+.wb-status-switch.on {
+  background: rgba(34, 197, 94, 0.35);
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.wb-status-switch.on::after {
+  left: 22px;
+  background: #86efac;
+}
+
+.wb-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #67e8f9;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.wb-action-btn.warn {
+  color: #fda4af;
+}
+
+.wb-action-btn.gold {
+  color: #fcd34d;
+}
+
+.wb-tabbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wb-tab {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  background: rgba(15, 23, 42, 0.62);
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wb-tab.active {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.3), rgba(56, 189, 248, 0.16));
+  color: #fff;
+  border-color: rgba(34, 211, 238, 0.65);
+}
+
+.wb-modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(2, 8, 23, 0.72);
+}
+
+.wb-modal-mask.show {
+  display: flex;
+}
+
+.wb-modal-card {
+  width: min(860px, 96vw);
+  max-height: 88vh;
+  overflow: auto;
+  background: #071b33;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+.wb-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wb-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.wb-modal-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 211, 238, 0.24);
+  background: rgba(15, 23, 42, 0.6);
+  color: #dce8f8;
+}
+
+.wb-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.wb-form-item label {
+  display: block;
+  margin-bottom: 6px;
+  color: #9cc6df;
+  font-size: 12px;
+}
+
+.wb-form-item input,
+.wb-form-item select,
+.wb-form-item textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+}
+
+.wb-form-item textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.wb-form-item--full {
+  grid-column: 1 / -1;
+}
+
+.wb-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wb-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(34, 211, 238, 0.14);
+  background: rgba(2, 6, 23, 0.45);
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.wb-pagination-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wb-tree-table-indent {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wb-empty {
+  padding: 28px 12px;
+  color: #94a3b8;
+  text-align: center;
+  font-size: 13px;
+}
+
+@media (max-width: 1280px) {
+  .wb-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .wb-search-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wb-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

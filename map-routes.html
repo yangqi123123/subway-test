@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>航线管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+  <style>
+    body{overflow:hidden;background:#eef2f7}
+    .map-breadcrumb{margin:16px 16px 0;padding:10px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:11px;color:#94a3b8}
+    .map-breadcrumb__icon{color:#22d3ee}
+    .map-breadcrumb__sep{color:#475569}
+    .map-breadcrumb__current{color:#f8fafc;font-weight:600;letter-spacing:.02em}
+    #map-container,.leaflet-container{width:100%;height:100%;background:#e8ecf1}
+    .route-shell{position:relative;height:100%}
+    .map-panel{position:fixed;inset:0;z-index:0}
+    .back-gis-btn{position:fixed;right:18px;top:18px;z-index:1000;min-width:124px;height:34px;padding:0 12px;border-radius:4px;border:1px solid rgba(59,130,246,.35);background:rgba(7,20,38,.88);color:#e0f2fe;font-size:12px;display:flex;align-items:center;gap:6px}
+    .back-gis-btn:hover{background:#1683f7}
+    .route-side,.route-list{position:relative;z-index:5;height:calc(100vh - 48px);margin-top:24px;border:1px solid rgba(59,130,246,.28);border-radius:4px;background:rgba(7,20,38,.92);box-shadow:0 20px 60px rgba(0,0,0,.4);backdrop-filter:blur(8px)}
+    .route-side{width:280px;margin-left:30px}.route-list{width:340px;margin-left:16px}
+    .folder-row{height:36px;border-radius:4px;color:#38bdf8}
+    .folder-row:hover{background:rgba(59,130,246,.16)}.folder-actions{display:none}.folder-row:hover .folder-actions{display:flex}
+    .route-card{position:relative;border:1px solid rgba(59,130,246,.22);border-radius:6px;background:rgba(15,31,55,.68);cursor:pointer}.route-card:hover{border-color:rgba(59,130,246,.55);background:rgba(24,48,84,.72)}
+    .route-card:hover .route-menu{display:block}.route-menu{display:none}
+    .menu-pop{position:absolute;right:12px;top:36px;z-index:5;display:none;width:84px;border:1px solid rgba(59,130,246,.35);border-radius:4px;background:#0b1d35}
+    .route-card.menu-open .menu-pop{display:block}
+    .route-input{height:32px;border:1px solid rgba(148,163,184,.65);border-radius:4px;background:rgba(12,30,54,.72);color:#e2f5ff;font-size:13px}
+    .line-btn{border:1px solid rgba(148,163,184,.7);color:#e2e8f0}
+    .blue-btn{background:#1683f7;color:#fff}
+    .map-point{background:#1677ff;border:2px solid #fff;box-shadow:0 0 0 8px rgba(22,119,255,.16);border-radius:999px}
+    .map-point--airport{background:#f59e0b;box-shadow:0 0 0 8px rgba(245,158,11,.16)}
+    .track-line{fill:none;stroke:#e11d48;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(225,29,72,.55))}
+    .track-point{fill:#ef4444;stroke:#fff;stroke-width:2}
+    .modal-mask{position:fixed;inset:0;z-index:1200;display:none;align-items:flex-start;justify-content:flex-start;background:rgba(2,8,23,.28);padding:8px 0 0 30px}
+    .modal-mask.show{display:flex}
+    .route-modal{width:500px;border-radius:4px;border:1px solid rgba(59,130,246,.28);background:rgba(10,31,56,.92);box-shadow:0 24px 80px rgba(0,0,0,.48);backdrop-filter:blur(8px)}
+    .small-modal{width:360px}
+    .route-form{display:grid;grid-template-columns:120px 1fr;gap:16px}
+    .route-label{text-align:right;font-size:13px;font-weight:600;color:#dbeafe}
+    .route-required{color:#ff6b6b;margin-right:4px}
+    .tab-on{background:#1683f7;color:white}.tab-off{border:1px solid rgba(148,163,184,.6);color:#e2e8f0}
+    .upload-box{height:196px;border:1px dashed rgba(148,163,184,.85);border-radius:4px;display:flex;align-items:center;justify-content:center;color:#cbd5e1}
+    .gis-hud{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);z-index:1100;padding:8px 12px;border-radius:6px;border:1px solid rgba(59,130,246,.35);background:rgba(7,20,38,.92);color:#e0f2fe;font-size:12px;display:flex;align-items:center;gap:10px}
+    .gis-hud-btn{height:26px;padding:0 10px;border-radius:4px;border:1px solid rgba(148,163,184,.55);background:rgba(15,23,42,.75);color:#e2e8f0}
+    .route-detail-point{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;border:1px solid rgba(148,163,184,.35);background:rgba(15,23,42,.76);font-size:12px;color:#e2f5ff}
+  </style>
+</head>
+<body data-shell="fullscreen" data-top="map">
+  <div id="page-root" class="h-[calc(100vh-64px)] flex flex-col">
+  <nav class="neon-panel neon-panel--tight map-breadcrumb">
+    <span class="map-breadcrumb__icon"><i class="fa-solid fa-location-crosshairs"></i></span>
+    <span>资产管理</span>
+    <span class="map-breadcrumb__sep">&gt;&gt;</span>
+    <span class="map-breadcrumb__current">航线管理</span>
+  </nav>
+  <main class="route-shell flex-1 min-h-0">
+    <div class="map-panel">
+      <div id="map-container"></div>
+      <svg id="track-svg" viewBox="0 0 1600 900" class="absolute inset-0 z-[450] pointer-events-none"></svg>
+    </div>
+
+    <aside class="route-side absolute left-0 top-0">
+      <div class="h-14 px-4 flex items-center border-b border-blue-400/20">
+        <h2 class="text-white font-semibold">文件夹</h2>
+        <button class="ml-auto text-slate-300 px-2" data-action="folder-add"><i class="fa-solid fa-plus"></i></button>
+      </div>
+      <div id="folder-list" class="p-3 space-y-1"></div>
+    </aside>
+
+    <section class="route-list absolute left-[326px] top-0">
+      <div class="h-14 px-4 flex items-center border-b border-blue-400/20">
+        <h2 class="text-white font-semibold">航线列表</h2>
+        <button class="ml-auto px-4 h-8 rounded text-sm blue-btn" data-action="open-create"><i class="fa-solid fa-plus mr-1"></i>新建/导入</button>
+      </div>
+      <div id="route-cards" class="p-3 space-y-3 overflow-y-auto h-[calc(100%-56px)]"></div>
+    </section>
+
+
+    <div id="gis-hud" class="gis-hud hidden"></div>
+  </main>
+  </div>
+
+  <div id="folder-modal-mask" class="modal-mask">
+    <div class="route-modal small-modal">
+      <div class="h-14 px-4 flex items-center"><h3 id="folder-title" class="text-white text-lg">新增文件夹</h3><button class="ml-auto text-slate-300 text-xl" data-action="close-folder">×</button></div>
+      <div class="px-6 pb-6">
+        <input id="folder-name" class="route-input w-full px-3" placeholder="请输入文件夹名称" />
+        <div class="mt-5 flex justify-end gap-3"><button class="px-5 h-9 rounded line-btn" data-action="close-folder">取消</button><button class="px-5 h-9 rounded blue-btn" data-action="save-folder">保存</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="route-modal-mask" class="modal-mask">
+    <div class="route-modal">
+      <div class="h-16 px-4 flex items-center"><h3 id="modal-title" class="text-white text-lg">新建航线</h3><button class="ml-auto text-slate-300 text-xl" data-action="close-modal">×</button></div>
+      <div class="px-6 pb-6">
+        <div class="route-form">
+          <div class="route-label pt-2">操作类型</div>
+          <div class="flex">
+            <button id="tab-create" class="px-5 h-8 rounded-l tab-on" data-action="tab-create">新建航线</button>
+            <button id="tab-import" class="px-5 h-8 rounded-r tab-off" data-action="tab-import">导入 KMZ</button>
+          </div>
+          <label class="route-label pt-2"><span class="route-required">*</span>航线名称</label><input id="f-name" class="route-input px-3" placeholder="请输入航线名称" />
+          <label class="route-label pt-2"><span class="route-required">*</span>所属文件夹</label><select id="f-folder" class="route-input px-3"></select>
+          <label class="route-label pt-2"><span class="route-required">*</span>航线类型</label><select id="f-type" class="route-input px-3"><option>航点航线</option></select>
+          <div id="import-file-label" class="route-label pt-2 hidden"><span class="route-required">*</span>航线文件</div>
+          <div id="import-file" class="upload-box hidden"><div class="text-center"><i class="fa-solid fa-cloud-arrow-up text-5xl text-slate-300"></i><div class="mt-4 text-sm">拖拽文件到此处或 <span class="text-sky-400">点击上传</span></div></div></div>
+          <div id="use-old-label" class="route-label pt-1 hidden">使用原航线文件</div>
+          <div id="use-old" class="hidden"><button class="w-11 h-6 rounded-full bg-blue-500 relative" data-action="toggle-old"><span class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></span></button></div>
+          <label class="route-label pt-2"><span class="route-required">*</span>适用机场</label><select id="f-airport" class="route-input px-3"><option>请选择适用机场</option><option>梨园机场</option><option>车辆段机场</option></select>
+          <label class="route-label pt-2">返航高度</label><div class="route-input flex items-center"><input id="f-height" class="bg-transparent flex-1 text-center outline-none" value="100" /><span class="px-3 text-slate-300 border-l border-slate-500/60">米</span><span class="w-8 text-center border-l border-slate-500/60">⌃<br>⌄</span></div>
+          <label class="route-label pt-2">电量限制</label><div class="route-input flex items-center"><input id="f-power" class="bg-transparent flex-1 text-center outline-none" value="40" /><span class="px-3 text-slate-300 border-l border-slate-500/60">%</span><span class="w-8 text-center border-l border-slate-500/60">⌃<br>⌄</span></div>
+        </div>
+        <div class="mt-7 flex justify-end gap-3"><button class="px-5 h-9 rounded line-btn" data-action="close-modal">取消</button><button class="px-5 h-9 rounded blue-btn" data-action="save-route">确定</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="detail-mask" class="modal-mask">
+    <div class="route-modal">
+      <div class="h-14 px-4 flex items-center"><h3 class="text-white text-lg">航线详情</h3><button id="detail-close-btn" type="button" class="ml-auto text-slate-300 text-xl" data-action="close-detail">×</button></div>
+      <div id="detail-body" class="px-6 pb-6 text-sm text-slate-200"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="assets/js/menu-config.js"></script>
+  <script src="assets/js/shell.js"></script>
+  <script>
+    (function(){
+      var WUHAN=[30.5928,114.3055];
+      var road=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:20});
+      var satellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19});
+      var map=L.map("map-container",{center:WUHAN,zoom:12,layers:[road],zoomControl:true});
+      var drawLayer=L.layerGroup().addTo(map);
+      var pickLayer=L.layerGroup().addTo(map);
+      var hud=document.getElementById("gis-hud");
+      var folderEdit=-1,routeEdit=-1,activeFolder=0,folders=["梨园机场航线"];
+      var routes=[
+        {name:"上行航线（返航高度120m）",folder:"梨园机场航线",type:"航点航线",time:"2026-04-29 17:47",track:[[30.5917,114.2868],[30.5944,114.2991],[30.5981,114.3145],[30.6025,114.3282],[30.6071,114.3449]],airport:"梨园机场"},
+        {name:"梨园-中南医院演示航线(45度)(90度)(...",folder:"梨园机场航线",type:"航点航线",time:"2026-04-29 17:16",track:[[30.5888,114.2822],[30.5921,114.2947],[30.5963,114.3085],[30.6009,114.3208]],airport:"梨园机场"},
+        {name:"梨园地铁站演示航线90度",folder:"梨园机场航线",type:"航点航线",time:"2026-04-21 11:09",track:[[30.5861,114.2896],[30.5901,114.3027],[30.5948,114.3178],[30.6004,114.3302]],airport:"车辆段机场"}
+      ];
+      var airports=[
+        {name:"梨园机场",lat:30.588, lng:114.302, desc:"机场设备点位"},
+        {name:"车辆段机场",lat:30.602, lng:114.338, desc:"机场设备点位"}
+      ];
+      var markers=[],trackLine=null;
+      function clearDraw(){drawLayer.clearLayers();pickLayer.clearLayers();markers=[];trackLine=null}
+      function fitRoute(route){if(!route||!route.track||!route.track.length)return;var bounds=L.latLngBounds(route.track.map(function(p){return [p[0],p[1]]}));map.fitBounds(bounds.pad(0.25),{animate:true});drawRoute(route)}
+      function drawRoute(route){clearDraw();if(!route||!route.track||!route.track.length)return;trackLine=L.polyline(route.track,{color:"#e11d48",weight:4,opacity:0.9}).addTo(drawLayer);route.track.forEach(function(p,i){var m=L.circleMarker(p,{radius:8,color:"#fff",weight:2,fillColor:"#ef4444",fillOpacity:0.95}).addTo(drawLayer);m.bindPopup('航点 '+String.fromCharCode(65+i));markers.push(m)});airports.forEach(function(ap){var m=L.circleMarker([ap.lat,ap.lng],{radius:9,color:"#fff",weight:2,fillColor:"#f59e0b",fillOpacity:0.95}).addTo(drawLayer);m.bindPopup('<b>'+ap.name+'</b><br>'+ap.desc);m.on("click",function(){showDetail({kind:"airport",name:ap.name,desc:ap.desc,lat:ap.lat,lng:ap.lng})});markers.push(m)})}
+      function showDetail(item){document.getElementById("detail-body").innerHTML=item.kind==="airport"?
+        '<div class="space-y-3"><div class="route-detail-point"><i class="fa-solid fa-plane"></i>'+item.name+'</div><div>类型：机场设备点位</div><div>说明：'+item.desc+'</div><div>坐标：'+item.lat+' / '+item.lng+'</div></div>':
+        '<div class="space-y-3"><div class="route-detail-point"><i class="fa-solid fa-route"></i>'+item.name+'</div><div>类型：'+item.type+'</div><div>更新时间：'+item.time+'</div><div>所属文件夹：'+item.folder+'</div><div>适用机场：'+(item.airport||'-')+'</div></div>';
+        document.getElementById("detail-mask").classList.add("show")}
+      function closeDetail(){document.getElementById("detail-mask").classList.remove("show")}
+      function renderFolders(){document.getElementById("folder-list").innerHTML=folders.map(function(f,i){return '<div class="folder-row flex items-center px-3 '+(i===activeFolder?'bg-blue-500/20':'')+'" data-action="folder-select" data-index="'+i+'"><span class="truncate">'+f+'</span><span class="folder-actions ml-auto gap-2"><button class="text-amber-300" data-action="folder-edit" data-index="'+i+'">编辑</button><button class="text-rose-300" data-action="folder-delete" data-index="'+i+'">删除</button></span></div>'}).join("");document.getElementById("f-folder").innerHTML=folders.map(function(f){return '<option>'+f+'</option>'}).join("")}
+      function renderRoutes(){var list=routes.filter(function(r){return r.folder===folders[activeFolder]});document.getElementById("route-cards").innerHTML=list.map(function(r){var real=routes.indexOf(r);return '<div class="route-card p-4 text-sm" data-action="route-select" data-index="'+real+'"><div class="flex items-center"><h3 class="text-white font-semibold truncate">'+r.name+'</h3><button class="route-menu ml-auto text-sky-400" data-action="route-menu" data-index="'+real+'">•••</button></div><div class="menu-pop"><button class="block w-full text-left px-3 py-2 text-amber-300" data-action="route-edit" data-index="'+real+'">编辑</button><button class="block w-full text-left px-3 py-2 text-rose-300" data-action="route-delete" data-index="'+real+'">删除</button></div><div class="mt-4 grid grid-cols-2 gap-y-2 text-xs"><span class="text-slate-400">类型:</span><span class="text-right text-slate-200">'+r.type+'</span><span class="text-slate-400">更新:</span><span class="text-right text-slate-200">'+r.time+'</span></div></div>'}).join("")}
+      function setMode(next){var imp=next==="import";document.getElementById("modal-title").textContent=imp?"导入航线":"新建航线";document.getElementById("tab-create").className="px-5 h-8 rounded-l "+(imp?"tab-off":"tab-on");document.getElementById("tab-import").className="px-5 h-8 rounded-r "+(imp?"tab-on":"tab-off");["import-file-label","import-file","use-old-label","use-old"].forEach(function(id){document.getElementById(id).classList.toggle("hidden",!imp)})}
+      function openRoute(idx,nextMode){routeEdit=typeof idx==="number"?idx:-1;setMode(nextMode||"create");var r=routes[routeEdit]||{};document.getElementById("f-name").value=r.name||"";document.getElementById("f-folder").value=r.folder||folders[activeFolder];document.getElementById("route-modal-mask").classList.add("show")}
+      function saveRoute(){var data={name:document.getElementById("f-name").value||"新建航线",folder:document.getElementById("f-folder").value,type:document.getElementById("f-type").value,time:"2026-05-13 10:30",track:[[30.5891,114.2963],[30.5926,114.3086],[30.5969,114.3223],[30.6012,114.3367]],airport:document.getElementById("f-airport").value};if(routeEdit>-1)routes[routeEdit]=Object.assign(routes[routeEdit],data);else routes.unshift(data);renderRoutes();fitRoute(data);document.getElementById("route-modal-mask").classList.remove("show")}
+
+      document.addEventListener("click",function(e){
+        var a=e.target.closest("[data-action]");if(!a)return;var act=a.dataset.action,idx=Number(a.dataset.index);
+        if(act==="folder-add"){folderEdit=-1;document.getElementById("folder-title").textContent="新增文件夹";document.getElementById("folder-name").value="";document.getElementById("folder-modal-mask").classList.add("show")}
+        if(act==="folder-edit"){folderEdit=idx;document.getElementById("folder-title").textContent="编辑文件夹";document.getElementById("folder-name").value=folders[idx];document.getElementById("folder-modal-mask").classList.add("show")}
+        if(act==="folder-delete"&&confirm("确认删除该文件夹？")){folders.splice(idx,1);activeFolder=0;renderFolders();renderRoutes()}
+        if(act==="save-folder"){var name=document.getElementById("folder-name").value||"新建文件夹";if(folderEdit>-1)folders[folderEdit]=name;else folders.push(name);renderFolders();renderRoutes();document.getElementById("folder-modal-mask").classList.remove("show")}
+        if(act==="close-folder")document.getElementById("folder-modal-mask").classList.remove("show")
+        if(act==="folder-select"){activeFolder=idx;renderFolders();renderRoutes()}
+        if(act==="open-create")openRoute(-1,"create")
+        if(act==="tab-create")setMode("create")
+        if(act==="tab-import")setMode("import")
+        if(act==="close-modal")document.getElementById("route-modal-mask").classList.remove("show")
+        if(act==="save-route")saveRoute()
+        if(act==="route-menu"){e.stopPropagation();a.closest(".route-card").classList.toggle("menu-open")}
+        if(act==="route-edit")openRoute(idx,"create")
+        if(act==="route-delete"&&confirm("确认删除该航线？")){routes.splice(idx,1);renderRoutes();drawRoute({track:[]})}
+        if(act==="route-select"){fitRoute(routes[idx]);showDetail(routes[idx])}
+        if(act==="close-detail"){closeDetail()}
+        if(act==="toggle-old")alert("原型演示：操作已触发")
+      });
+
+      var detailCloseBtn=document.getElementById("detail-close-btn");
+      if(detailCloseBtn){detailCloseBtn.addEventListener("click",function(ev){ev.preventDefault();ev.stopPropagation();closeDetail();});}
+
+      map.on("click",function(ev){
+        return
+      });
+
+      renderFolders();renderRoutes();fitRoute(routes[0]);
+      window.addEventListener("resize",function(){map.invalidateSize()});
+      setTimeout(function(){map.invalidateSize()},150);
+    })();
+  </script>
+  <script src="assets/js/shell.js"></script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>无人机运行数据统计</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+  <style>
+    .dc-panel { border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.14); background: rgba(7, 20, 38, 0.9); }
+    .dc-chart-title { font-size: 14px; font-weight: 600; color: #f8fafc; }
+    .dc-chart-note { font-size: 12px; color: #94a3b8; }
+    .dc-chart-shell { padding: 18px 20px; min-height: 320px; }
+    .dc-filter-btn { min-width: 74px; height: 32px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .dc-table-op { color: #38bdf8; font-size: 12px; }
+    .dc-table-op:hover { color: #67e8f9; text-decoration: underline; }
+    .dc-canvas { width: 100%; height: 214px; display: block; }
+    .dc-legend { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-top: 12px; }
+    .dc-legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #cbd5e1; }
+    .dc-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
+    .dc-pie-wrap { position: relative; height: 214px; display: flex; align-items: center; justify-content: center; }
+    .dc-pie { width: 148px; height: 148px; border-radius: 999px; background: conic-gradient(#1e90ff 0 10%, #31c5e4 10% 25%, #38e0c1 25% 45%, #12d67e 45% 70%, #91f56e 70% 100%); }
+    .dc-pie-label { position: absolute; font-size: 12px; color: #e2f5ff; }
+    .dc-pie-label::before { content: ""; position: absolute; width: 22px; height: 1px; background: currentColor; top: 50%; }
+    .dc-pie-l1 { top: 16px; right: 102px; }
+    .dc-pie-l1::before { left: -28px; }
+    .dc-pie-l2 { top: 62px; right: 36px; }
+    .dc-pie-l2::before { left: -24px; }
+    .dc-pie-l3 { bottom: 44px; right: 46px; }
+    .dc-pie-l3::before { left: -24px; }
+    .dc-pie-l4 { bottom: 18px; left: 96px; }
+    .dc-pie-l4::before { right: -28px; }
+    .dc-pie-l5 { top: 48px; left: 62px; }
+    .dc-pie-l5::before { right: -28px; }
+  </style>
+</head>
+<body data-shell="default" data-top="dc" data-sidebar-key="dc-drone-stats">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+      <span class="text-slate-600">/</span>
+      <span>数据中心</span>
+      <span class="text-slate-600">/</span>
+      <span class="text-cyan-50 font-semibold tracking-wide">无人机运行数据统计</span>
+    </nav>
+
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">资源调度与使用记录</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">无人机运行数据统计</span>
+    </div>
+
+    <section class="mb-6">
+      <div class="text-sm font-semibold text-white mb-4">资源使用概览</div>
+      <div class="grid xl:grid-cols-3 gap-4">
+        <div class="dc-panel dc-chart-shell">
+          <div class="flex items-center justify-between mb-3">
+            <div class="dc-chart-title">设备使用率趋势图</div>
+            <div class="dc-chart-note">单位：百分比</div>
+          </div>
+          <canvas id="trend-chart" class="dc-canvas" width="420" height="214"></canvas>
+          <div class="dc-legend">
+            <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>无人机</span>
+            <span class="dc-legend-item"><span class="dc-dot bg-[#22d3ee]"></span>机场设备</span>
+          </div>
+        </div>
+
+        <div class="dc-panel dc-chart-shell">
+          <div class="flex items-center justify-between mb-3">
+            <div class="dc-chart-title">设备使用时长</div>
+            <div class="dc-chart-note">单位：月份 / 小时</div>
+          </div>
+          <canvas id="duration-chart" class="dc-canvas" width="420" height="214"></canvas>
+          <div class="dc-legend">
+            <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>无人机</span>
+            <span class="dc-legend-item"><span class="dc-dot bg-[#31c5e4]"></span>机场设备</span>
+          </div>
+        </div>
+
+        <div class="dc-panel dc-chart-shell">
+          <div class="flex items-center justify-between mb-3">
+            <div class="dc-chart-title">任务分布图</div>
+            <div class="dc-chart-note">单位：百分比</div>
+          </div>
+          <div class="dc-pie-wrap">
+            <div class="dc-pie"></div>
+            <span class="dc-pie-label dc-pie-l1">10</span>
+            <span class="dc-pie-label dc-pie-l2">15</span>
+            <span class="dc-pie-label dc-pie-l3">20</span>
+            <span class="dc-pie-label dc-pie-l4">25</span>
+            <span class="dc-pie-label dc-pie-l5">30</span>
+          </div>
+          <div class="dc-legend">
+            <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>位置1</span>
+            <span class="dc-legend-item"><span class="dc-dot bg-[#31c5e4]"></span>位置2</span>
+            <span class="dc-legend-item"><span class="dc-dot bg-[#38e0c1]"></span>位置3</span>
+            <span class="dc-legend-item"><span class="dc-dot bg-[#12d67e]"></span>位置4</span>
+            <span class="dc-legend-item"><span class="dc-dot bg-[#91f56e]"></span>位置5</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="neon-panel neon-panel--tight p-3 mb-3">
+      <div class="text-sm font-semibold text-white mb-3">筛选</div>
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div class="flex flex-wrap items-end gap-3">
+          <div class="min-w-[120px]">
+            <label class="wh-filter-label block mb-1">设备类型</label>
+            <select class="wh-input h-8 w-full px-2">
+              <option>无人机</option>
+              <option>机场设备</option>
+            </select>
+          </div>
+          <div class="min-w-[170px]">
+            <label class="wh-filter-label block mb-1">设备名称</label>
+            <select class="wh-input h-8 w-full px-2">
+              <option>XXXXXX</option>
+              <option>A区巡检机01</option>
+              <option>Airport-SH01</option>
+            </select>
+          </div>
+          <div class="min-w-[120px]">
+            <label class="wh-filter-label block mb-1">操作员</label>
+            <select class="wh-input h-8 w-full px-2">
+              <option>XXX</option>
+              <option>张三</option>
+              <option>李四</option>
+            </select>
+          </div>
+          <div class="min-w-[154px]">
+            <label class="wh-filter-label block mb-1">时间范围</label>
+            <input class="wh-input h-8 w-full px-3" value="2023/05/16 14:10:20" />
+          </div>
+          <div class="text-slate-400 pb-1">-</div>
+          <div class="min-w-[154px]">
+            <label class="wh-filter-label block mb-1 opacity-0">结束时间</label>
+            <input class="wh-input h-8 w-full px-3" value="2023/05/16 14:10:22" />
+          </div>
+          <div class="min-w-[120px]">
+            <label class="wh-filter-label block mb-1">任务状态</label>
+            <select class="wh-input h-8 w-full px-2">
+              <option>全部</option>
+              <option>已完成</option>
+              <option>进行中</option>
+              <option>失败</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" class="dc-filter-btn wh-btn-primary">查询</button>
+          <button type="button" class="dc-filter-btn wh-btn-ghost">重置</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-sm font-semibold text-white">使用记录明细</div>
+        <button type="button" class="dc-filter-btn wh-btn-gold"><i class="fa-solid fa-download mr-1"></i>导出</button>
+      </div>
+      <div class="wh-table-shell bg-slate-950/35">
+        <div class="overflow-x-auto max-h-[min(520px,calc(100vh-300px))]">
+          <table class="w-full min-w-[1480px] text-left">
+            <thead>
+              <tr>
+                <th class="px-3">任务ID</th>
+                <th class="px-3">设备名称</th>
+                <th class="px-3">任务类型</th>
+                <th class="px-3">起飞时间</th>
+                <th class="px-3">降落时间</th>
+                <th class="px-3">使用时长</th>
+                <th class="px-3">最大飞行高度（单位：米）</th>
+                <th class="px-3">电池消耗</th>
+                <th class="px-3">操作员姓名</th>
+                <th class="px-3">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background:rgba(12,24,48,0.45)">
+                <td class="px-3 text-slate-100/95 leading-6"><div>唯一标识（如 FL20251225001）</div><a href="#" class="dc-table-op">进入飞行日志详情页</a></td>
+                <td class="px-3 text-sky-300 leading-6"><a href="#" class="dc-table-op">显示设备名称（可点击跳转设备详情页面）</a></td>
+                <td class="px-3 text-slate-100/95">自动执行计划/临时任务</td>
+                <td class="px-3 text-slate-100/95 whitespace-nowrap">2025-12-25 10:00</td>
+                <td class="px-3 text-slate-100/95 whitespace-nowrap">2025-12-25 18:15</td>
+                <td class="px-3 text-slate-100/95">6分15秒</td>
+                <td class="px-3 text-slate-100/95">XXX</td>
+                <td class="px-3 text-slate-100/95 leading-6">35%（此处是电池消耗量占当前电状态的百分比）</td>
+                <td class="px-3 text-slate-100/95">XX</td>
+                <td class="px-3 whitespace-nowrap"><a href="#" class="dc-table-op mr-3">详情</a><a href="#" class="dc-table-op mr-3">编辑</a><a href="#" class="dc-table-op">删除</a></td>
+              </tr>
+              <tr style="background:rgba(15,32,58,0.55)">
+                <td class="px-3 text-slate-100/95 leading-6"><div>唯一标识（如 FL20251225001）</div><a href="#" class="dc-table-op">进入飞行日志详情页</a></td>
+                <td class="px-3 text-sky-300 leading-6"><a href="#" class="dc-table-op">显示设备名称（可点击跳转设备详情页面）</a></td>
+                <td class="px-3 text-slate-100/95">自动执行计划/临时任务</td>
+                <td class="px-3 text-slate-100/95 whitespace-nowrap">2025-12-25 10:00</td>
+                <td class="px-3 text-slate-100/95 whitespace-nowrap">2025-12-25 18:15</td>
+                <td class="px-3 text-slate-100/95">6分15秒</td>
+                <td class="px-3 text-slate-100/95">XXX</td>
+                <td class="px-3 text-slate-100/95 leading-6">35%（此处是电池消耗量占当前电状态的百分比）</td>
+                <td class="px-3 text-slate-100/95">XX</td>
+                <td class="px-3 whitespace-nowrap"><a href="#" class="dc-table-op mr-3">详情</a><a href="#" class="dc-table-op mr-3">编辑</a><a href="#" class="dc-table-op">删除</a></td>
+              </tr>
+              <tr style="background:rgba(12,24,48,0.45)">
+                <td class="px-3 text-slate-100/95 leading-6"><div>唯一标识（如 FL20251225001）</div><a href="#" class="dc-table-op">进入飞行日志详情页</a></td>
+                <td class="px-3 text-sky-300 leading-6"><a href="#" class="dc-table-op">显示设备名称（可点击跳转设备详情页面）</a></td>
+                <td class="px-3 text-slate-100/95">自动执行计划/临时任务</td>
+                <td class="px-3 text-slate-100/95 whitespace-nowrap">2025-12-25 10:00</td>
+                <td class="px-3 text-slate-100/95 whitespace-nowrap">2025-12-25 18:15</td>
+                <td class="px-3 text-slate-100/95">6分15秒</td>
+                <td class="px-3 text-slate-100/95">XXX</td>
+                <td class="px-3 text-slate-100/95 leading-6">35%（此处是电池消耗量占当前电状态的百分比）</td>
+                <td class="px-3 text-slate-100/95">XX</td>
+                <td class="px-3 whitespace-nowrap"><a href="#" class="dc-table-op mr-3">详情</a><a href="#" class="dc-table-op mr-3">编辑</a><a href="#" class="dc-table-op">删除</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+          <span>共 <b class="text-cyan-200">5</b> 条</span>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-left"></i></button>
+            <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary" type="button">1</button>
+            <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-right"></i></button>
+            <select class="wh-input px-2 py-1 text-[11px]">
+              <option>10 条/页</option>
+            </select>
+            <span>跳至</span>
+            <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+            <span>页</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="assets/js/menu-config.js"></script>
+  <script src="assets/js/shell.js"></script>
+  <script>
+    function drawTrendChart() {
+      const canvas = document.getElementById("trend-chart");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      const left = 42, right = 18, top = 18, bottom = 34;
+      const months = ["一月","二月","三月","四月","五月","六月"];
+      const drone = [10,20,10,15,30,20];
+      const airport = [20,25,50,45,30,30];
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = "rgba(148,163,184,.18)";
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "12px sans-serif";
+      for (let i = 0; i <= 5; i++) {
+        const y = top + ((h - top - bottom) / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(w - right, y);
+        ctx.stroke();
+        ctx.fillText(String(50 - i * 10), 12, y + 4);
+      }
+      months.forEach((m, i) => {
+        const x = left + ((w - left - right) / (months.length - 1)) * i;
+        ctx.fillText(m, x - 12, h - 10);
+      });
+      function drawSeries(list, color) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        list.forEach((v, i) => {
+          const x = left + ((w - left - right) / (months.length - 1)) * i;
+          const y = top + ((50 - v) / 50) * (h - top - bottom);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        list.forEach((v, i) => {
+          const x = left + ((w - left - right) / (months.length - 1)) * i;
+          const y = top + ((50 - v) / 50) * (h - top - bottom);
+          ctx.fillStyle = "#071426";
+          ctx.beginPath();
+          ctx.arc(x, y, 3.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        });
+      }
+      drawSeries(drone, "#1e90ff");
+      drawSeries(airport, "#22d3ee");
+    }
+
+    function drawDurationChart() {
+      const canvas = document.getElementById("duration-chart");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      const left = 54, right = 24, top = 16, bottom = 24;
+      const labels = ["一月","二月","三月","四月","五月","六月"];
+      const drone = [10,20,30,40,50,60];
+      const airport = [20,25,50,45,30,100];
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = "rgba(148,163,184,.18)";
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "12px sans-serif";
+      [0,20,40,60,80,100].forEach((v, i) => {
+        const x = left + ((w - left - right) / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, top);
+        ctx.lineTo(x, h - bottom);
+        ctx.stroke();
+        ctx.fillText(String(v), x - 8, h - 4);
+      });
+      labels.forEach((m, i) => {
+        const y = top + ((h - top - bottom) / labels.length) * i + 16;
+        ctx.fillText(m, 8, y + 4);
+        const y1 = y - 8;
+        const barH = 10;
+        ctx.fillStyle = "#1e90ff";
+        ctx.fillRect(left, y1, drone[i] * 2.9, barH);
+        ctx.fillStyle = "#31c5e4";
+        ctx.fillRect(left, y1 + 14, airport[i] * 2.9, barH);
+      });
+    }
+
+    drawTrendChart();
+    drawDurationChart();
+  </script>
+</body>
+</html>

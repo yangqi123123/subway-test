@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>应急物资管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+  <style>
+    .material-table th,
+    .material-table td {
+      height: 52px;
+      border-right: 1px solid rgba(34,211,238,.08);
+      border-bottom: 1px solid rgba(34,211,238,.08);
+      vertical-align: middle;
+    }
+    .material-table th:last-child,
+    .material-table td:last-child { border-right: 0; }
+    .material-table thead th {
+      color: rgba(240,249,255,.96);
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(2,8,23,.66);
+      white-space: nowrap;
+    }
+    .material-table tbody td {
+      color: rgba(226,245,255,.88);
+      font-size: 12px;
+    }
+    .material-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+    .material-modal-mask,
+    .confirm-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15,23,42,.56);
+      padding: 24px;
+    }
+    .material-modal-mask.show,
+    .confirm-mask.show { display: flex; }
+    .material-modal {
+      width: min(760px, 90vw);
+      border-radius: 8px;
+      border: 1px solid rgba(34,211,238,.16);
+      background: #071426;
+      box-shadow: 0 24px 80px rgba(0,0,0,.48);
+      overflow: hidden;
+    }
+    .material-form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .material-form-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .material-form-label {
+      width: 88px;
+      flex: 0 0 88px;
+      text-align: right;
+      color: rgba(226,245,255,.78);
+      font-size: 12px;
+    }
+    .material-form-label.is-required::before {
+      content: "*";
+      color: #fb7185;
+      margin-right: 4px;
+    }
+    .confirm-card {
+      width: 320px;
+      border-radius: 8px;
+      border: 1px solid rgba(34,211,238,.14);
+      background: #071426;
+      box-shadow: 0 24px 80px rgba(0,0,0,.48);
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body data-shell="default" data-top="am" data-sidebar-key="am-emergency-material">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+      <span>资产管理</span>
+      <span class="text-slate-600">&gt;&gt;</span>
+      <span class="text-cyan-50 font-semibold tracking-wide">应急物资管理</span>
+    </nav>
+
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">应急物资管理</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">应急物资基础信息维护</span>
+    </div>
+
+    <section class="neon-panel neon-panel--tight p-4 mb-4">
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="min-w-[220px]">
+          <label class="wh-filter-label block mb-1.5">名称</label>
+          <input class="wh-input h-8 w-full px-3" placeholder="请输入物资名称" />
+        </div>
+        <div class="min-w-[220px]">
+          <label class="wh-filter-label block mb-1.5">型号</label>
+          <input class="wh-input h-8 w-full px-3" placeholder="请输入型号" />
+        </div>
+        <div class="flex gap-2">
+          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary">搜索</button>
+          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">重置</button>
+          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary" data-action="new-material">新建</button>
+          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">模板导出</button>
+          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">导入物资</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="wh-table-shell bg-slate-950/35">
+      <div class="overflow-x-auto">
+        <table class="material-table min-w-[1200px] w-full text-left">
+          <thead>
+            <tr>
+              <th class="px-4">名称</th>
+              <th class="px-4">型号</th>
+              <th class="px-4">数量</th>
+              <th class="px-4">所属仓库</th>
+              <th class="px-4">操作</th>
+            </tr>
+          </thead>
+          <tbody id="material-table-body"></tbody>
+        </table>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+        <span>共 <b class="text-cyan-200">4</b> 条</span>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button>
+          <select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select>
+          <span>跳至</span>
+          <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+          <span>页</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="material-modal-mask" class="material-modal-mask">
+    <div class="material-modal">
+      <div class="h-14 px-6 flex items-center border-b border-cyan-400/15">
+        <h3 id="material-modal-title" class="text-white text-[16px] font-semibold">新增应急物资</h3>
+        <button type="button" class="ml-auto text-slate-400 hover:text-slate-200 text-xl leading-none" data-action="close-material-modal">×</button>
+      </div>
+      <div class="p-6">
+        <div class="material-form-grid">
+          <label class="material-form-item"><span class="material-form-label is-required">名称：</span><input id="material-name" class="wh-input h-8 flex-1 px-3" placeholder="请输入名称" /></label>
+          <label class="material-form-item"><span class="material-form-label is-required">型号：</span><input id="material-model" class="wh-input h-8 flex-1 px-3" placeholder="请输入型号" /></label>
+          <label class="material-form-item"><span class="material-form-label is-required">数量：</span><input id="material-qty" class="wh-input h-8 flex-1 px-3" placeholder="请输入数量" /></label>
+          <label class="material-form-item"><span class="material-form-label">所属仓库：</span><select id="material-warehouse" class="wh-input h-8 flex-1 px-2"><option>南湖应急仓</option><option>白沙洲应急仓</option><option>金银潭应急仓</option></select></label>
+        </div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-material-modal">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="save-material">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="material-confirm-mask" class="confirm-mask">
+    <div class="confirm-card">
+      <div class="px-6 py-5 border-b border-cyan-400/15 text-white text-[16px] font-semibold">删除确认</div>
+      <div class="px-6 py-6 text-sm text-cyan-100/80">确认删除当前物资记录吗？</div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="cancel-material-delete">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="confirm-material-delete">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var rows = [
+        { name:"防爆沙袋", model:"FZ-20", qty:"200", warehouse:"南湖应急仓" },
+        { name:"救生绳", model:"JS-50", qty:"80", warehouse:"白沙洲应急仓" },
+        { name:"应急照明灯", model:"ZM-12", qty:"35", warehouse:"金银潭应急仓" },
+        { name:"防护头盔", model:"FH-08", qty:"120", warehouse:"南湖应急仓" }
+      ];
+
+      var editIndex = -1;
+      var deleteIndex = -1;
+      var tableBody = document.getElementById("material-table-body");
+      var modalMask = document.getElementById("material-modal-mask");
+      var confirmMask = document.getElementById("material-confirm-mask");
+      var modalTitle = document.getElementById("material-modal-title");
+
+      function renderRows() {
+        tableBody.innerHTML = rows.map(function (row, index) {
+          return '<tr class="' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '">' +
+            '<td class="px-4">' + row.name + '</td>' +
+            '<td class="px-4">' + row.model + '</td>' +
+            '<td class="px-4">' + row.qty + '</td>' +
+            '<td class="px-4">' + row.warehouse + '</td>' +
+            '<td class="px-4">' +
+              '<span class="material-action text-amber-300" data-action="edit-material" data-index="' + index + '"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
+              '<span class="material-action text-rose-300" data-action="delete-material" data-index="' + index + '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
+            '</td>' +
+          '</tr>';
+        }).join("");
+      }
+
+      function openModal(mode, index) {
+        editIndex = mode === "edit" ? index : -1;
+        modalTitle.textContent = mode === "edit" ? "编辑应急物资" : "新增应急物资";
+        var row = index > -1 ? rows[index] : null;
+        document.getElementById("material-name").value = row ? row.name : "";
+        document.getElementById("material-model").value = row ? row.model : "";
+        document.getElementById("material-qty").value = row ? row.qty : "";
+        document.getElementById("material-warehouse").value = row ? row.warehouse : "南湖应急仓";
+        modalMask.classList.add("show");
+      }
+
+      function saveMaterial() {
+        var name = document.getElementById("material-name").value.trim();
+        var model = document.getElementById("material-model").value.trim();
+        var qty = document.getElementById("material-qty").value.trim();
+        if (!name || !model || !qty) {
+          alert("请完善必填项：名称、型号、数量");
+          return;
+        }
+        var row = {
+          name: name,
+          model: model,
+          qty: qty,
+          warehouse: document.getElementById("material-warehouse").value
+        };
+        if (editIndex > -1) rows[editIndex] = row;
+        else rows.unshift(row);
+        modalMask.classList.remove("show");
+        renderRows();
+      }
+
+      renderRows();
+
+      document.addEventListener("click", function (event) {
+        var trigger = event.target.closest("[data-action]");
+        if (!trigger) return;
+        var action = trigger.getAttribute("data-action");
+        var index = Number(trigger.getAttribute("data-index"));
+        if (action === "new-material") openModal("new");
+        if (action === "edit-material") openModal("edit", index);
+        if (action === "delete-material") {
+          deleteIndex = index;
+          confirmMask.classList.add("show");
+        }
+        if (action === "close-material-modal") modalMask.classList.remove("show");
+        if (action === "save-material") saveMaterial();
+        if (action === "cancel-material-delete") {
+          deleteIndex = -1;
+          confirmMask.classList.remove("show");
+        }
+        if (action === "confirm-material-delete") {
+          if (deleteIndex > -1) rows.splice(deleteIndex, 1);
+          deleteIndex = -1;
+          confirmMask.classList.remove("show");
+          renderRows();
+        }
+      });
+    })();
+  </script>
+  <script src="assets/js/menu-config.js"></script>
+  <script src="assets/js/shell.js"></script>
+</body>
+</html>

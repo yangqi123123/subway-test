@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>病害巡查</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+  <style>
+    .page-table th, .page-table td { height: 45px; border-right: 1px solid rgba(34,211,238,.08); border-bottom: 1px solid rgba(34,211,238,.1); }
+    .page-table th:last-child, .page-table td:last-child { border-right: 0; }
+    .row-action { display:inline-flex; align-items:center; gap:3px; margin-right:8px; white-space:nowrap; font-size:11px; cursor:pointer; }
+    .thumb { width: 28px; height: 28px; object-fit: cover; border-radius: 3px; border: 1px solid rgba(34,211,238,.24); margin-right: 4px; background: rgba(15,23,42,.8); }
+    .form-label { width:116px; flex:0 0 116px; text-align:right; color:rgba(226,245,255,.88); font-size:12px; line-height:32px; }
+    .required::before { content:"*"; color:#fb7185; margin-right:3px; }
+    .filter-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px 32px; }
+    .filter-item { display:flex; align-items:center; gap:8px; }
+    .filter-label { width:70px; flex:0 0 70px; text-align:right; color:rgba(226,245,255,.75); font-size:12px; }
+    .filter-actions { display:flex; justify-content:flex-end; gap:8px; }
+    .confirm-pop { position:fixed; z-index:120; width:156px; padding:12px 12px 10px; border-radius:4px; background:#fff; box-shadow:0 8px 24px rgba(15,23,42,.28); color:#333; }
+    .confirm-pop.hidden { display:none; }
+    .confirm-pop::after { content:""; position:absolute; left:50%; bottom:-8px; width:14px; height:14px; background:#fff; transform:translateX(-50%) rotate(45deg); }
+    .confirm-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:nowrap; white-space:nowrap; }
+    .record-mask { position:fixed; inset:0; z-index:110; display:none; align-items:center; justify-content:center; background:rgba(15,23,42,.45); padding:24px; }
+    .record-mask.show { display:flex; }
+    .record-dialog { width:min(760px,92vw); min-height:230px; border-radius:4px; background:#fff; color:#333; box-shadow:0 20px 60px rgba(15,23,42,.28); }
+    .record-item { position:relative; padding-left:24px; margin-bottom:18px; font-size:14px; color:#333; }
+    .record-item::before { content:""; position:absolute; left:0; top:6px; width:8px; height:8px; border-radius:999px; border:1px solid #2563eb; background:#fff; }
+    @media (max-width: 1280px) { .filter-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width: 768px) { .filter-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body data-shell="default" data-top="in" data-sidebar-key="in-disease">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <section id="list-view">
+      <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+        <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+        <span>巡查记录</span><span class="text-slate-600">&gt;&gt;</span><span class="text-cyan-50 font-semibold tracking-wide">病害巡查</span>
+      </nav>
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+        <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,.25)">病害巡查</h1>
+        <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new-item"><i class="fa-solid fa-plus mr-1"></i>新增</button>
+      </div>
+      <div class="neon-panel neon-panel--tight p-4 mb-4">
+        <div class="filter-grid text-xs">
+          <label class="filter-item"><span class="filter-label">所属线路：</span><select class="wh-input h-8 flex-1 px-2"><option>全部</option><option>2号线</option><option>5号线</option></select></label>
+          <label class="filter-item"><span class="filter-label">上下行：</span><select class="wh-input h-8 flex-1 px-2"><option>全部</option><option>上行</option><option>下行</option></select></label>
+          <label class="filter-item"><span class="filter-label">所在区间：</span><select class="wh-input h-8 flex-1 px-2"><option>全部</option><option>常青花园-长港路</option><option>长港路-汉口火车站</option></select></label>
+          <label class="filter-item"><span class="filter-label">所在站点：</span><select class="wh-input h-8 flex-1 px-2"><option>全部</option><option>常青花园</option><option>长港路</option></select></label>
+          <label class="filter-item"><span class="filter-label">病害类型：</span><select class="wh-input h-8 flex-1 px-2"><option>全部</option><option>鼓包</option><option>破损</option><option>其他</option></select></label>
+          <label class="filter-item"><span class="filter-label">病害程度：</span><select class="wh-input h-8 flex-1 px-2"><option>全部</option><option>轻微</option><option>一般</option><option>严重</option></select></label>
+          <label class="filter-item col-span-1 md:col-span-2"><span class="filter-label">时间范围：</span><div class="flex items-center gap-2 flex-1"><input class="wh-input h-8 flex-1 px-2" value="2026-02-03 18:51:14" /><span class="text-slate-500">至</span><input class="wh-input h-8 flex-1 px-2" value="2026-03-05 18:51:14" /></div></label>
+          <div class="filter-actions"><button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary">搜索</button><button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">重置</button><button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">导出</button></div>
+        </div>
+      </div>
+      <div class="wh-table-shell bg-slate-950/35">
+        <div class="overflow-x-auto">
+          <table class="page-table min-w-[1580px] w-full text-left text-[11px]">
+            <thead>
+              <tr class="bg-slate-950/75">
+                <th class="px-3 text-cyan-50/95">编号</th>
+                <th class="px-3 text-cyan-50/95">所属线路</th>
+                <th class="px-3 text-cyan-50/95">所在区间/站点</th>
+                <th class="px-3 text-cyan-50/95">上下行</th>
+                <th class="px-3 text-cyan-50/95">病害里程</th>
+                <th class="px-3 text-cyan-50/95">病害类型</th>
+                <th class="px-3 text-cyan-50/95">病害程度</th>
+                <th class="px-3 text-cyan-50/95">病害描述</th>
+                <th class="px-3 text-cyan-50/95">病害图片</th>
+                <th class="px-3 text-cyan-50/95">病害视频</th>
+                <th class="px-3 text-cyan-50/95">巡查人</th>
+                <th class="px-3 text-cyan-50/95">巡查日期</th>
+                <th class="px-3 text-cyan-50/95">处理进度</th>
+                <th class="px-3 text-cyan-50/95">操作</th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="form-view" class="hidden">
+      <div class="mb-5 flex items-center gap-3">
+        <button type="button" class="w-8 h-8 rounded-md wh-btn-ghost" data-action="back-list"><i class="fa-solid fa-arrow-left"></i></button>
+        <div><h1 class="text-base font-semibold text-white tracking-tight">编辑病害</h1><div class="text-[11px] text-slate-400 mt-0.5">新增/编辑病害</div></div>
+      </div>
+      <div class="neon-panel neon-panel--tight p-6">
+        <div class="max-w-[980px] space-y-4">
+          <div class="flex items-center gap-4"><label class="form-label required">编号：</label><input class="wh-input h-8 w-[360px] px-2" value="15069" /></div>
+          <div class="flex items-center gap-4"><label class="form-label required">所属线路：</label><select class="wh-input h-8 w-[360px] px-2"><option>2号线</option></select></div>
+          <div class="flex items-start gap-4"><label class="form-label">病害描述：</label><textarea class="wh-input min-h-[86px] flex-1 px-2 py-2">常青区间Z1+644中心沟盖板鼓包</textarea></div>
+          <div class="flex justify-center gap-3 pt-5 border-t border-cyan-400/10"><button type="button" class="px-6 py-2 rounded text-xs wh-btn-primary" data-action="back-list">保存</button><button type="button" class="px-6 py-2 rounded text-xs wh-btn-ghost" data-action="back-list">取消</button></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="confirm-pop" class="confirm-pop hidden">
+    <div class="text-[15px] text-slate-700 flex items-center gap-2 mb-3"><i id="confirm-icon" class="fa-solid fa-star text-amber-400"></i><span id="confirm-text">确定通过？</span></div>
+    <div class="confirm-actions relative z-[1]"><button type="button" class="px-3 py-1.5 text-[13px] border border-slate-300 text-slate-700 bg-white whitespace-nowrap" data-action="cancel-confirm">取消</button><button type="button" class="px-3 py-1.5 text-[13px] text-white bg-[#ff5a5f] whitespace-nowrap" data-action="submit-confirm">确定</button></div>
+  </div>
+
+  <div id="record-mask" class="record-mask">
+    <div class="record-dialog"><div class="flex items-center justify-between px-8 py-5"><h3 class="text-[18px] font-semibold text-slate-800">操作记录</h3><button type="button" class="text-slate-400 hover:text-slate-600 text-xl leading-none" data-action="close-record">×</button></div><div id="record-body" class="px-8 pb-8 pt-2"></div></div>
+  </div>
+
+  <script>
+    (function () {
+      var rows = [
+        { id:"15069", line:"2号线", place:"常青花园-长港路 / 常青花园", direction:"上行", mileage:"Z1+644", diseaseType:"鼓包", level:"一般", desc:"常青区间Z1+644中心沟盖板鼓包", progress:"病害未处理", date:"2026-03-05 10:49", logs:[{ action:"新增病害巡查", user:"鲍雄澎", time:"2026-05-12 09:20:16" }, { action:"工班确认", user:"汪兵", time:"2026-05-12 10:42:31" }] },
+        { id:"15068", line:"2号线", place:"常青花园-长港路 / 长港路", direction:"上行", mileage:"Z1+820", diseaseType:"鼓包", level:"一般", desc:"常青区间Z1+820中心沟盖板鼓包", progress:"病害未处理", date:"2026-03-05 10:48", logs:[{ action:"新增病害巡查", user:"鲍雄澎", time:"2026-05-12 09:18:45" }, { action:"拒绝", user:"汪兵", time:"2026-05-12 11:16:08" }] },
+        { id:"15067", line:"2号线", place:"常青花园-长港路 / 常青花园", direction:"上行", mileage:"Z1+603", diseaseType:"其他", level:"一般", desc:"常青区间Z1+603沉沙井排水盖板破损", progress:"病害未处理", date:"2026-03-05 10:46", logs:[{ action:"新增病害巡查", user:"鲍雄澎", time:"2026-05-12 09:15:22" }, { action:"工班确认", user:"汪兵", time:"2026-05-12 09:56:42" }, { action:"拒绝", user:"王军", time:"2026-05-12 12:08:19" }] }
+      ];
+      var photos = [
+        "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=80&q=80",
+        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=80&q=80",
+        "https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=80&q=80"
+      ];
+      var tbody = document.getElementById("table-body");
+      var confirmPop = document.getElementById("confirm-pop");
+      var confirmText = document.getElementById("confirm-text");
+      var confirmIcon = document.getElementById("confirm-icon");
+      var recordMask = document.getElementById("record-mask");
+      var recordBody = document.getElementById("record-body");
+      var pendingConfirm = null;
+
+      function renderRows() {
+        tbody.innerHTML = rows.map(function (row, index) {
+          var imgs = '<img class="thumb" src="' + photos[index % photos.length] + '" alt="病害图片" />';
+          return '<tr class="' + (index % 2 ? "bg-slate-900/35" : "bg-slate-950/25") + '">' +
+            '<td class="px-3 text-slate-100/95">' + row.id + '</td><td class="px-3 text-slate-100/95">' + row.line + '</td><td class="px-3 text-slate-100/95">' + row.place + '</td><td class="px-3 text-slate-100/95">' + row.direction + '</td><td class="px-3 text-slate-100/95">' + row.mileage + '</td><td class="px-3 text-slate-100/95">' + row.diseaseType + '</td><td class="px-3 text-slate-100/95">' + row.level + '</td><td class="px-3 text-slate-100/95 max-w-[170px] truncate" title="' + row.desc + '">' + row.desc + '</td><td class="px-3"><div class="flex items-center">' + imgs + '</div></td><td class="px-3 text-slate-500"></td><td class="px-3 text-slate-100/95">汪兵</td><td class="px-3 text-slate-100/95">' + row.date + '</td><td class="px-3 text-slate-100/95">' + row.progress + '</td><td class="px-3"><span class="row-action text-sky-300" data-action="edit-item"><i class="fa-regular fa-pen-to-square"></i>编辑</span><span class="row-action text-cyan-300" data-action="confirm-item" data-index="' + index + '"><i class="fa-regular fa-circle-check"></i>工班确认</span><span class="row-action text-rose-300" data-action="reject-item" data-index="' + index + '"><i class="fa-regular fa-circle-xmark"></i>拒绝</span><span class="row-action text-rose-300"><i class="fa-regular fa-trash-can"></i>删除</span><span class="row-action text-sky-300" data-action="view-records" data-index="' + index + '"><i class="fa-regular fa-clock"></i>操作记录</span></td></tr>';
+        }).join("");
+      }
+
+      function showForm(){ document.getElementById("list-view").classList.add("hidden"); document.getElementById("form-view").classList.remove("hidden"); }
+      function showList(){ document.getElementById("form-view").classList.add("hidden"); document.getElementById("list-view").classList.remove("hidden"); }
+      function openConfirm(kind, index, trigger){
+        pendingConfirm = { kind: kind, index: index };
+        confirmText.textContent = kind === "confirm" ? "确定通过？" : "确定拒绝？";
+        confirmIcon.className = "fa-solid fa-star " + (kind === "confirm" ? "text-amber-400" : "text-red-400");
+        var rect = trigger.getBoundingClientRect();
+        confirmPop.style.left = Math.max(16, rect.left + rect.width / 2 - 78) + "px";
+        confirmPop.style.top = Math.max(16, rect.top - 92) + "px";
+        confirmPop.classList.remove("hidden");
+      }
+      function closeConfirm(){ confirmPop.classList.add("hidden"); pendingConfirm = null; }
+      function openRecords(index){
+        recordBody.innerHTML = rows[index].logs.map(function(log){ return '<div class="record-item"><div class="mb-3">' + log.action + '</div><div class="text-[13px] text-slate-400 mb-3">日期：' + log.time + '</div><div class="text-[13px] text-slate-400">操作者：' + log.user + '</div></div>'; }).join("");
+        recordMask.classList.add("show");
+      }
+
+      renderRows();
+      document.addEventListener("click", function (event) {
+        var target = event.target.closest("[data-action]"); if (!target) return;
+        var action = target.getAttribute("data-action");
+        if (action === "new-item" || action === "edit-item") showForm();
+        if (action === "back-list") showList();
+        if (action === "confirm-item") openConfirm("confirm", Number(target.getAttribute("data-index")), target);
+        if (action === "reject-item") openConfirm("reject", Number(target.getAttribute("data-index")), target);
+        if (action === "cancel-confirm") closeConfirm();
+        if (action === "submit-confirm" && pendingConfirm) {
+          rows[pendingConfirm.index].logs.push({ action: pendingConfirm.kind === "confirm" ? "工班确认" : "拒绝", user: "鲍雄澎", time: "2026-05-12 14:40:31" });
+          closeConfirm();
+        }
+        if (action === "view-records") openRecords(Number(target.getAttribute("data-index")));
+        if (action === "close-record") recordMask.classList.remove("show");
+      });
+    })();
+  </script>
+  <script src="assets/js/menu-config.js"></script>
+  <script src="assets/js/shell.js"></script>
+</body>
+</html>

@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>资料库</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+  <style>
+    .library-table th,
+    .library-table td,
+    .file-table th,
+    .file-table td {
+      height: 50px;
+      border-right: 1px solid rgba(34,211,238,.08);
+      border-bottom: 1px solid rgba(34,211,238,.08);
+      vertical-align: middle;
+    }
+    .library-table th:last-child,
+    .library-table td:last-child,
+    .file-table th:last-child,
+    .file-table td:last-child { border-right: 0; }
+    .library-table thead th,
+    .file-table thead th {
+      color: rgba(240,249,255,.96);
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(2,8,23,.66);
+    }
+    .library-table tbody td,
+    .file-table tbody td {
+      color: rgba(226,245,255,.88);
+      font-size: 12px;
+    }
+    .library-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+    .library-modal-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15,23,42,.56);
+      padding: 24px;
+    }
+    .library-modal-mask.show { display: flex; }
+    .library-modal {
+      width: min(1500px, 96vw);
+      border-radius: 8px;
+      border: 1px solid rgba(34,211,238,.16);
+      background: #071426;
+      box-shadow: 0 24px 80px rgba(0,0,0,.48);
+      overflow: hidden;
+    }
+    .library-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 28px;
+    }
+    .library-form-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .library-form-label {
+      width: 88px;
+      flex: 0 0 88px;
+      text-align: right;
+      color: rgba(226,245,255,.78);
+      font-size: 12px;
+    }
+    .library-upload {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px dashed rgba(34,211,238,.24);
+      border-radius: 8px;
+      background: rgba(2,8,23,.38);
+    }
+    .library-upload__btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      color: #cffafe;
+      background: rgba(14,116,144,.3);
+      border: 1px solid rgba(34,211,238,.2);
+      cursor: pointer;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .library-preview-box {
+      min-height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(34,211,238,.14);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(15,23,42,.82), rgba(2,8,23,.94));
+      color: rgba(226,245,255,.88);
+      text-align: center;
+      padding: 24px;
+    }
+    .library-preview-box img {
+      max-width: 100%;
+      max-height: 52vh;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body data-shell="default" data-top="dc" data-sidebar-key="dc-library">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+      <span>数据中心</span>
+      <span class="text-slate-600">&gt;&gt;</span>
+      <span class="text-cyan-50 font-semibold tracking-wide">资料库</span>
+    </nav>
+
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">资料库</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">目录与文件资料统一管理</span>
+    </div>
+
+    <section class="neon-panel neon-panel--tight p-4 mb-4">
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="min-w-[220px]">
+          <label class="wh-filter-label block mb-1.5">目录名称</label>
+          <input class="wh-input h-8 w-full px-3" placeholder="请输入目录名称" />
+        </div>
+        <div class="min-w-[360px]">
+          <label class="wh-filter-label block mb-1.5">更新时间</label>
+          <div class="flex items-center gap-2">
+            <input class="wh-input h-8 w-[160px] px-3" value="2026-05-01 00:00:00" />
+            <span class="text-slate-500">至</span>
+            <input class="wh-input h-8 w-[160px] px-3" value="2026-05-12 23:59:59" />
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary">搜索</button>
+          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">重置</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="neon-panel neon-panel--tight p-3 flex flex-wrap gap-2 items-center mb-4">
+      <button type="button" class="px-4 py-2 rounded-md text-xs font-semibold transition-ui wh-btn-primary" data-action="new-folder">
+        <i class="fa-solid fa-folder-plus mr-1"></i>新建目录
+      </button>
+    </section>
+
+    <section class="wh-table-shell bg-slate-950/35">
+      <div class="overflow-x-auto">
+        <table class="library-table min-w-[1280px] w-full text-left">
+          <thead>
+            <tr>
+              <th class="px-4">目录名称</th>
+              <th class="px-4">排序</th>
+              <th class="px-4">文件数</th>
+              <th class="px-4">更新人</th>
+              <th class="px-4">更新时间</th>
+              <th class="px-4">操作</th>
+            </tr>
+          </thead>
+          <tbody id="folder-table-body"></tbody>
+        </table>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+        <span>共 <b class="text-cyan-200">4</b> 条</span>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button>
+          <select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select>
+          <span>跳至</span>
+          <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+          <span>页</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="folder-modal-mask" class="library-modal-mask">
+    <div class="library-modal">
+      <div class="h-14 px-6 flex items-center border-b border-cyan-400/15">
+        <h3 id="folder-modal-title" class="text-white text-[16px] font-semibold">新建目录</h3>
+        <button type="button" class="ml-auto text-slate-400 hover:text-slate-200 text-xl leading-none" data-action="close-folder-modal">×</button>
+      </div>
+      <div class="p-6">
+        <div class="library-form-grid">
+          <label class="library-form-item">
+            <span class="library-form-label">目录名称：</span>
+            <input id="folder-name" class="wh-input h-8 flex-1 px-3" placeholder="请输入目录名称" />
+          </label>
+          <label class="library-form-item">
+            <span class="library-form-label">排序：</span>
+            <input id="folder-sort" class="wh-input h-8 flex-1 px-3" placeholder="请输入排序值" />
+          </label>
+          <label class="library-form-item col-span-2">
+            <span class="library-form-label">目录说明：</span>
+            <textarea id="folder-desc" class="wh-input min-h-[90px] flex-1 px-3 py-2" placeholder="请输入目录说明"></textarea>
+          </label>
+        </div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-folder-modal">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="save-folder">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="detail-modal-mask" class="library-modal-mask">
+    <div class="library-modal">
+      <div class="h-14 px-6 flex items-center border-b border-cyan-400/15">
+        <h3 id="detail-modal-title" class="text-white text-[16px] font-semibold">目录详情</h3>
+        <button type="button" class="ml-auto text-slate-400 hover:text-slate-200 text-xl leading-none" data-action="close-detail-modal">×</button>
+      </div>
+      <div class="p-6">
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+          <span id="detail-folder-name" class="text-sm text-cyan-100/82 ml-1"></span>
+        </div>
+        <div class="wh-table-shell bg-slate-950/28">
+          <div class="overflow-x-auto">
+            <table class="file-table min-w-[1200px] w-full text-left">
+              <thead>
+                <tr>
+                  <th class="px-4">文件名称</th>
+                  <th class="px-4">文件类型</th>
+                  <th class="px-4">格式</th>
+                  <th class="px-4">上传人</th>
+                  <th class="px-4">上传时间</th>
+                  <th class="px-4">操作</th>
+                </tr>
+              </thead>
+              <tbody id="file-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="close-detail-modal">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="file-modal-mask" class="library-modal-mask">
+    <div class="library-modal" style="width:min(900px,92vw)">
+      <div class="h-14 px-6 flex items-center border-b border-cyan-400/15">
+        <h3 id="file-modal-title" class="text-white text-[16px] font-semibold">上传文件</h3>
+        <button type="button" class="ml-auto text-slate-400 hover:text-slate-200 text-xl leading-none" data-action="close-file-modal">×</button>
+      </div>
+      <div class="p-6">
+        <div class="library-form-grid">
+          <label class="library-form-item">
+            <span class="library-form-label">文件名称：</span>
+            <input id="file-name" class="wh-input h-8 flex-1 px-3" placeholder="请输入文件名称" />
+          </label>
+          <label class="library-form-item">
+            <span class="library-form-label">文件类型：</span>
+            <select id="file-type" class="wh-input h-8 flex-1 px-2">
+              <option>图片</option>
+              <option>视频</option>
+              <option>文档</option>
+            </select>
+          </label>
+          <label class="library-form-item col-span-2">
+            <span class="library-form-label">上传文件：</span>
+            <div class="library-upload flex-1">
+              <label class="library-upload__btn"><i class="fa-solid fa-upload"></i>选择文件<input id="file-input" type="file" class="hidden"></label>
+              <span id="file-input-name" class="text-[12px] text-cyan-100/78">未选择文件</span>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-file-modal">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="save-file">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="preview-modal-mask" class="library-modal-mask">
+    <div class="library-modal" style="width:min(980px,94vw)">
+      <div class="h-14 px-6 flex items-center border-b border-cyan-400/15">
+        <h3 id="preview-title" class="text-white text-[16px] font-semibold">文件预览</h3>
+        <button type="button" class="ml-auto text-slate-400 hover:text-slate-200 text-xl leading-none" data-action="close-preview-modal">×</button>
+      </div>
+      <div class="p-6">
+        <div id="preview-body" class="library-preview-box"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var folders = [
+        {
+          id: 1,
+          name: "保护区技术资料 / 7号线",
+          sort: 1,
+          updater: "张三",
+          updatedAt: "2026-05-07 16:20",
+          desc: "存放保护区技术方案、专家意见及汇报材料。",
+          files: [
+            { id: 11, name: "保护区技术方案.pdf", type: "文档", format: "PDF", uploader: "张三", uploadedAt: "2026-05-07 16:20" },
+            { id: 12, name: "现场踏勘照片.jpg", type: "图片", format: "JPG", uploader: "张三", uploadedAt: "2026-05-07 16:08" }
+          ]
+        },
+        {
+          id: 2,
+          name: "无人机航测 / 原始影像",
+          sort: 2,
+          updater: "李四",
+          updatedAt: "2026-05-06 11:02",
+          desc: "存放无人机原始航拍视频与关键截图。",
+          files: [
+            { id: 21, name: "白沙六路航拍.mp4", type: "视频", format: "MP4", uploader: "李四", uploadedAt: "2026-05-06 11:02" },
+            { id: 22, name: "航拍封面图.png", type: "图片", format: "PNG", uploader: "李四", uploadedAt: "2026-05-06 10:58" }
+          ]
+        },
+        {
+          id: 3,
+          name: "项目交底资料",
+          sort: 3,
+          updater: "王军",
+          updatedAt: "2026-05-05 15:36",
+          desc: "项目交底、会议纪要及签收材料。",
+          files: [
+            { id: 31, name: "交底纪要.docx", type: "文档", format: "DOCX", uploader: "王军", uploadedAt: "2026-05-05 15:36" }
+          ]
+        },
+        {
+          id: 4,
+          name: "巡查现场照片",
+          sort: 4,
+          updater: "赵敏",
+          updatedAt: "2026-05-04 09:22",
+          desc: "存放人工巡查、无人机巡查现场图片。",
+          files: [
+            { id: 41, name: "常青花园巡查1.jpg", type: "图片", format: "JPG", uploader: "赵敏", uploadedAt: "2026-05-04 09:22" },
+            { id: 42, name: "常青花园巡查2.jpg", type: "图片", format: "JPG", uploader: "赵敏", uploadedAt: "2026-05-04 09:20" }
+          ]
+        }
+      ];
+
+      var currentFolderId = null;
+      var editingFolderId = null;
+      var editingFileId = null;
+
+      var folderTableBody = document.getElementById("folder-table-body");
+      var fileTableBody = document.getElementById("file-table-body");
+      var folderModalMask = document.getElementById("folder-modal-mask");
+      var detailModalMask = document.getElementById("detail-modal-mask");
+      var fileModalMask = document.getElementById("file-modal-mask");
+      var previewModalMask = document.getElementById("preview-modal-mask");
+      var folderModalTitle = document.getElementById("folder-modal-title");
+      var fileModalTitle = document.getElementById("file-modal-title");
+      var detailFolderName = document.getElementById("detail-folder-name");
+      var previewTitle = document.getElementById("preview-title");
+      var previewBody = document.getElementById("preview-body");
+
+      function getFolderById(id) {
+        return folders.find(function (item) { return item.id === id; });
+      }
+
+      function renderFolders() {
+        folderTableBody.innerHTML = folders.map(function (folder, index) {
+          return '<tr class="' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '">' +
+            '<td class="px-4">' + folder.name + '</td>' +
+            '<td class="px-4">' + folder.sort + '</td>' +
+            '<td class="px-4">' + folder.files.length + '</td>' +
+            '<td class="px-4">' + folder.updater + '</td>' +
+            '<td class="px-4">' + folder.updatedAt + '</td>' +
+            '<td class="px-4">' +
+              '<span class="library-action text-cyan-300" data-action="upload-file-row" data-id="' + folder.id + '"><i class="fa-solid fa-upload"></i>上传文件</span>' +
+              '<span class="library-action text-sky-300" data-action="view-folder" data-id="' + folder.id + '"><i class="fa-regular fa-eye"></i>查看详情</span>' +
+              '<span class="library-action text-amber-300" data-action="edit-folder" data-id="' + folder.id + '"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
+              '<span class="library-action text-rose-300" data-action="delete-folder" data-id="' + folder.id + '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
+            '</td>' +
+          '</tr>';
+        }).join("");
+      }
+
+      function renderFiles(folderId) {
+        var folder = getFolderById(folderId);
+        if (!folder) return;
+        detailFolderName.textContent = folder.name;
+        fileTableBody.innerHTML = folder.files.map(function (file, index) {
+          return '<tr class="' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '">' +
+            '<td class="px-4">' + file.name + '</td>' +
+            '<td class="px-4">' + file.type + '</td>' +
+            '<td class="px-4">' + file.format + '</td>' +
+            '<td class="px-4">' + file.uploader + '</td>' +
+            '<td class="px-4">' + file.uploadedAt + '</td>' +
+            '<td class="px-4">' +
+              '<span class="library-action text-sky-300" data-action="preview-file" data-id="' + file.id + '"><i class="fa-regular fa-eye"></i>预览</span>' +
+              '<span class="library-action text-amber-300" data-action="edit-file" data-id="' + file.id + '"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
+              '<span class="library-action text-rose-300" data-action="delete-file" data-id="' + file.id + '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
+            '</td>' +
+          '</tr>';
+        }).join("");
+      }
+
+      function openFolderModal(mode, folderId) {
+        editingFolderId = mode === "edit" ? folderId : null;
+        folderModalTitle.textContent = mode === "edit" ? "编辑目录" : "新建目录";
+        var folder = folderId ? getFolderById(folderId) : null;
+        document.getElementById("folder-name").value = folder ? folder.name : "";
+        document.getElementById("folder-sort").value = folder ? folder.sort : "";
+        document.getElementById("folder-desc").value = folder ? folder.desc : "";
+        folderModalMask.classList.add("show");
+      }
+
+      function openDetailModal(folderId) {
+        currentFolderId = folderId;
+        renderFiles(folderId);
+        detailModalMask.classList.add("show");
+      }
+
+      function openFileModal(mode, fileId) {
+        editingFileId = mode === "edit" ? fileId : null;
+        fileModalTitle.textContent = mode === "edit" ? "编辑文件" : "上传文件";
+        document.getElementById("file-name").value = "";
+        document.getElementById("file-type").value = "图片";
+        document.getElementById("file-input-name").textContent = "未选择文件";
+        if (mode === "edit") {
+          var folder = getFolderById(currentFolderId);
+          var file = folder && folder.files.find(function (item) { return item.id === fileId; });
+          if (file) {
+            document.getElementById("file-name").value = file.name;
+            document.getElementById("file-type").value = file.type;
+            document.getElementById("file-input-name").textContent = file.name;
+          }
+        }
+        fileModalMask.classList.add("show");
+      }
+
+      function previewFile(fileId) {
+        var folder = getFolderById(currentFolderId);
+        var file = folder && folder.files.find(function (item) { return item.id === fileId; });
+        if (!file) return;
+        previewTitle.textContent = file.name;
+        if (file.type === "图片") {
+          previewBody.innerHTML = '<img src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1200&q=80" alt="' + file.name + '">';
+        } else if (file.type === "视频") {
+          previewBody.innerHTML = '<div><i class="fa-regular fa-circle-play text-5xl text-cyan-300 mb-4"></i><div class="text-base text-white mb-2">' + file.name + '</div><div class="text-sm text-cyan-100/72">视频文件原型预览</div></div>';
+        } else {
+          previewBody.innerHTML = '<div><i class="fa-regular fa-file-lines text-5xl text-cyan-300 mb-4"></i><div class="text-base text-white mb-2">' + file.name + '</div><div class="text-sm text-cyan-100/72">文档文件原型预览</div></div>';
+        }
+        previewModalMask.classList.add("show");
+      }
+
+      function saveFolder() {
+        var name = document.getElementById("folder-name").value.trim() || "新建目录";
+        var sort = document.getElementById("folder-sort").value.trim() || "0";
+        var desc = document.getElementById("folder-desc").value.trim();
+        if (editingFolderId) {
+          var folder = getFolderById(editingFolderId);
+          if (folder) {
+            folder.name = name;
+            folder.sort = sort;
+            folder.desc = desc;
+            folder.updatedAt = "2026-05-12 18:20";
+          }
+        } else {
+          folders.unshift({
+            id: Date.now(),
+            name: name,
+            sort: sort,
+            updater: "鲍雄澎",
+            updatedAt: "2026-05-12 18:20",
+            desc: desc,
+            files: []
+          });
+        }
+        folderModalMask.classList.remove("show");
+        renderFolders();
+      }
+
+      function saveFile() {
+        var folder = getFolderById(currentFolderId);
+        if (!folder) return;
+        var name = document.getElementById("file-name").value.trim() || "未命名文件";
+        var type = document.getElementById("file-type").value;
+        var format = type === "图片" ? "JPG" : type === "视频" ? "MP4" : "PDF";
+        if (editingFileId) {
+          var file = folder.files.find(function (item) { return item.id === editingFileId; });
+          if (file) {
+            file.name = name;
+            file.type = type;
+            file.format = format;
+            file.uploadedAt = "2026-05-12 18:20";
+          }
+        } else {
+          folder.files.unshift({
+            id: Date.now(),
+            name: name,
+            type: type,
+            format: format,
+            uploader: "鲍雄澎",
+            uploadedAt: "2026-05-12 18:20"
+          });
+        }
+        folder.updater = "鲍雄澎";
+        folder.updatedAt = "2026-05-12 18:20";
+        fileModalMask.classList.remove("show");
+        renderFolders();
+        renderFiles(currentFolderId);
+      }
+
+      renderFolders();
+
+      document.getElementById("file-input").addEventListener("change", function (event) {
+        var file = event.target.files && event.target.files[0];
+        document.getElementById("file-input-name").textContent = file ? file.name : "未选择文件";
+      });
+
+      document.addEventListener("click", function (event) {
+        var trigger = event.target.closest("[data-action]");
+        if (!trigger) return;
+        var action = trigger.getAttribute("data-action");
+        var id = Number(trigger.getAttribute("data-id"));
+
+        if (action === "new-folder" || action === "new-folder-child") openFolderModal("new");
+        if (action === "edit-folder") openFolderModal("edit", id);
+        if (action === "delete-folder") {
+          folders = folders.filter(function (item) { return item.id !== id; });
+          renderFolders();
+        }
+        if (action === "view-folder") openDetailModal(id);
+        if (action === "upload-file-row") {
+          currentFolderId = id;
+          openFileModal("new");
+        }
+        if (action === "close-folder-modal") folderModalMask.classList.remove("show");
+        if (action === "save-folder") saveFolder();
+
+        if (action === "edit-file") openFileModal("edit", id);
+        if (action === "delete-file") {
+          var folder = getFolderById(currentFolderId);
+          if (folder) {
+            folder.files = folder.files.filter(function (item) { return item.id !== id; });
+            folder.updatedAt = "2026-05-12 18:20";
+            renderFolders();
+            renderFiles(currentFolderId);
+          }
+        }
+        if (action === "preview-file") previewFile(id);
+        if (action === "close-file-modal") fileModalMask.classList.remove("show");
+        if (action === "save-file") saveFile();
+        if (action === "close-detail-modal") detailModalMask.classList.remove("show");
+        if (action === "close-preview-modal") previewModalMask.classList.remove("show");
+      });
+    })();
+  </script>
+  <script src="assets/js/menu-config.js"></script>
+  <script src="assets/js/shell.js"></script>
+</body>
+</html>

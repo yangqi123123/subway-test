@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>维护与检修记录</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+  <style>
+    .mm-toolbar-btn { min-width: 88px; height: 32px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .mm-op-btn { color: #38bdf8; font-size: 12px; }
+    .mm-op-btn:hover { color: #67e8f9; text-decoration: underline; }
+    .mm-search { height: 32px; }
+    .mm-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
+    .mm-modal-mask { position: fixed; inset: 0; background: rgba(2, 8, 23, 0.72); display: none; align-items: center; justify-content: center; z-index: 80; padding: 20px; }
+    .mm-modal-mask.show { display: flex; }
+    .mm-modal { width: min(960px, 96vw); max-height: 88vh; overflow: auto; background: #071b33; border: 1px solid rgba(34, 211, 238, 0.22); border-radius: 10px; box-shadow: 0 18px 56px rgba(0, 0, 0, 0.45); }
+    .mm-label { display: block; margin-bottom: 6px; font-size: 12px; color: #9cc6df; }
+    .mm-required::before { content: "*"; color: #fb7185; margin-right: 3px; }
+    .mm-readonly { min-height: 34px; display: flex; align-items: center; padding: 0 12px; }
+    .mm-close-x { margin-left: auto; color: #94a3b8; font-size: 22px; line-height: 1; }
+    .mm-close-x:hover { color: #e2e8f0; }
+  </style>
+</head>
+<body data-shell="default" data-top="am" data-sidebar-key="am-maintenance">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+      <span class="text-slate-600">/</span>
+      <span>资产管理</span>
+      <span class="text-slate-600">/</span>
+      <span class="text-cyan-50 font-semibold tracking-wide">维护与检修记录</span>
+    </nav>
+
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">维护与检修列表</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">设备维修记录原型</span>
+    </div>
+
+    <section class="neon-panel neon-panel--tight p-3 mb-3">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div class="min-w-[320px] flex-1 max-w-[720px]">
+          <label class="wh-filter-label block mb-1">设备编号 / 设备名称 / 设备SN</label>
+          <input id="search-keyword" class="wh-input mm-search w-full px-3" placeholder="请输入设备编号/设备名称/维修内容关键词" />
+        </div>
+        <div class="min-w-[148px]">
+          <label class="wh-filter-label block mb-1">维护类型</label>
+          <select id="search-type" class="wh-input mm-search w-full px-2">
+            <option value="">全部</option>
+            <option>故障处理</option>
+            <option>定期检修</option>
+          </select>
+        </div>
+        <div class="min-w-[148px]">
+          <label class="wh-filter-label block mb-1">维护状态</label>
+          <select id="search-status" class="wh-input mm-search w-full px-2">
+            <option value="">全部</option>
+            <option>已完成</option>
+            <option>进行中</option>
+          </select>
+        </div>
+        <div class="flex gap-2">
+          <button id="search-btn" type="button" class="mm-toolbar-btn wh-btn-primary">搜索</button>
+          <button id="reset-btn" type="button" class="mm-toolbar-btn wh-btn-ghost">重置</button>
+          <button id="export-btn" type="button" class="mm-toolbar-btn wh-btn-ghost">导出</button>
+          <button id="add-btn" type="button" class="mm-toolbar-btn wh-btn-primary">新增</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="wh-table-shell bg-slate-950/35">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr>
+              <th class="px-3">记录编号</th>
+              <th class="px-3">关联设备</th>
+              <th class="px-3">维修类型</th>
+              <th class="px-3">维护内容摘要</th>
+              <th class="px-3">更换部件</th>
+              <th class="px-3">责任人</th>
+              <th class="px-3">开始维修时间</th>
+              <th class="px-3">完成维修时间</th>
+              <th class="px-3">状态</th>
+              <th class="px-3">操作</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+        <span>共 <b id="total-count" class="text-cyan-200">0</b> 条</span>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-left"></i></button>
+          <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary" type="button">1</button>
+          <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-right"></i></button>
+          <select class="wh-input px-2 py-1 text-[11px]">
+            <option>10 条/页</option>
+          </select>
+          <span>跳至</span>
+          <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+          <span>页</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="form-modal" class="mm-modal-mask">
+    <div class="mm-modal">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-white/10">
+        <h3 id="form-title" class="text-base font-semibold text-white">新增维修记录</h3>
+        <button type="button" class="mm-close-x" data-close="form-modal">×</button>
+      </div>
+      <div class="p-5 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <label>
+            <span class="mm-label mm-required">关联设备</span>
+            <input id="f-device" list="device-options" class="wh-input w-full px-3 py-2" placeholder="输入设备编号/名称搜索" />
+          </label>
+          <label>
+            <span class="mm-label mm-required">维修类型</span>
+            <select id="f-type" class="wh-input w-full px-3 py-2">
+              <option>故障处理</option>
+              <option>定期检修</option>
+            </select>
+          </label>
+          <label>
+            <span class="mm-label mm-required">责任人</span>
+            <select id="f-owner" class="wh-input w-full px-3 py-2">
+              <option>张工</option>
+              <option>李工</option>
+              <option>王晨</option>
+              <option>赵敏</option>
+            </select>
+          </label>
+          <label>
+            <span class="mm-label">更换部件</span>
+            <input id="f-parts" class="wh-input w-full px-3 py-2" />
+          </label>
+          <label>
+            <span class="mm-label mm-required">开始维修时间</span>
+            <input id="f-start" type="datetime-local" class="wh-input w-full px-3 py-2" />
+          </label>
+          <label>
+            <span class="mm-label">完成维修时间</span>
+            <input id="f-end" type="datetime-local" class="wh-input w-full px-3 py-2" />
+          </label>
+          <label>
+            <span class="mm-label">状态</span>
+            <select id="f-status" class="wh-input w-full px-3 py-2">
+              <option>进行中</option>
+              <option>已完成</option>
+            </select>
+          </label>
+          <div class="md:col-span-2 xl:col-span-3">
+            <span class="mm-label mm-required">维护内容摘要</span>
+            <textarea id="f-summary" class="wh-input w-full px-3 py-2 min-h-[120px]" placeholder="请输入维护内容摘要"></textarea>
+          </div>
+        </div>
+        <div class="rounded border border-cyan-400/20 bg-cyan-950/20 p-3 text-xs text-cyan-100 leading-6">
+          业务规则：维修记录需关联具体设备；设备详情页可查看历史维修记录；完成维修后自动更新设备维护状态；删除记录需二次确认。
+        </div>
+      </div>
+      <div class="px-5 py-4 border-t border-white/10 flex justify-end gap-2">
+        <button type="button" class="wh-btn-ghost px-4 py-2" data-close="form-modal">取消</button>
+        <button id="save-btn" type="button" class="wh-btn-primary px-4 py-2">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="detail-modal" class="mm-modal-mask">
+    <div class="mm-modal">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-white/10">
+        <h3 class="text-base font-semibold text-white">维修记录详情</h3>
+        <button type="button" class="mm-close-x" data-close="detail-modal">×</button>
+      </div>
+      <div id="detail-body" class="p-5"></div>
+    </div>
+  </div>
+
+  <div id="delete-modal" class="mm-modal-mask">
+    <div class="mm-modal !w-[420px]">
+      <div class="px-5 py-4 border-b border-white/10 text-base font-semibold text-white">删除确认</div>
+      <div class="p-5 text-sm text-slate-200 leading-7">删除后该维修记录将从当前列表移除，此操作不可撤销，是否继续？</div>
+      <div class="px-5 py-4 border-t border-white/10 flex justify-end gap-2">
+        <button type="button" class="wh-btn-ghost px-4 py-2" data-close="delete-modal">取消</button>
+        <button id="confirm-delete-btn" type="button" class="wh-btn-primary px-4 py-2">确定删除</button>
+      </div>
+    </div>
+  </div>
+
+  <datalist id="device-options">
+    <option value="UAV-MR-001 / 8号线车辆段无人机"></option>
+    <option value="UAV-MR-002 / 梨园巡检无人机"></option>
+    <option value="UAV-MR-003 / 青山机场设备"></option>
+    <option value="UAV-MR-004 / 长江新区无人机"></option>
+  </datalist>
+
+  <script src="assets/js/menu-config.js"></script>
+  <script src="assets/js/shell.js"></script>
+  <script>
+    const records = [
+      { id: "WX20251119001", device: "UAV-MR-001 / 8号线车辆段无人机", type: "故障处理", summary: "云台自检异常，完成返厂检测并重新校准。", parts: "云台减震球", owner: "张工", start: "2025-11-19 11:12:45", end: "2025-11-27 17:30:00", status: "已完成" },
+      { id: "WX20251119002", device: "UAV-MR-002 / 梨园巡检无人机", type: "定期检修", summary: "完成电池循环检测、固件升级与机身外观检查。", parts: "桨叶组件", owner: "王晨", start: "2025-11-19 11:12:45", end: "", status: "进行中" }
+    ];
+    let filtered = [...records];
+    let editingId = null;
+    let deletingId = null;
+
+    const $ = id => document.getElementById(id);
+
+    function statusHtml(status) {
+      if (status === "已完成") {
+        return '<span class="inline-flex items-center gap-2 text-emerald-200"><span class="mm-dot bg-emerald-400"></span>已完成</span>';
+      }
+      return '<span class="inline-flex items-center gap-2 text-amber-200"><span class="mm-dot bg-amber-400"></span>进行中</span>';
+    }
+
+    function openModal(id) {
+      $(id).classList.add("show");
+    }
+
+    function closeModal(id) {
+      $(id).classList.remove("show");
+    }
+
+    function renderTable() {
+      $("total-count").textContent = String(filtered.length);
+      $("table-body").innerHTML = filtered.map((item, index) => `
+        <tr style="background:${index % 2 === 0 ? "rgba(12,24,48,0.45)" : "rgba(15,32,58,0.55)"}">
+          <td class="px-3 text-slate-100/95 font-mono">${item.id}</td>
+          <td class="px-3 text-cyan-300 leading-5"><button type="button" class="mm-op-btn text-left" onclick="showDetail('${item.id}')">${item.device}</button></td>
+          <td class="px-3 text-slate-100/95">${item.type}</td>
+          <td class="px-3 text-slate-100/95">${item.summary}</td>
+          <td class="px-3 text-slate-100/95">${item.parts || "--"}</td>
+          <td class="px-3 text-slate-100/95">${item.owner}</td>
+          <td class="px-3 text-slate-100/95 whitespace-nowrap">${item.start}</td>
+          <td class="px-3 text-slate-100/95 whitespace-nowrap">${item.end || "--"}</td>
+          <td class="px-3">${statusHtml(item.status)}</td>
+          <td class="px-3 whitespace-nowrap">
+            <button type="button" class="mm-op-btn mr-3" onclick="showDetail('${item.id}')">详情</button>
+            <button type="button" class="mm-op-btn mr-3" onclick="openEdit('${item.id}')">编辑</button>
+            <button type="button" class="mm-op-btn" onclick="askDelete('${item.id}')">删除</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function applySearch() {
+      const keyword = $("search-keyword").value.trim();
+      const type = $("search-type").value;
+      const status = $("search-status").value;
+      filtered = records.filter(item => {
+        const matchKeyword = !keyword || [item.id, item.device, item.summary].some(text => text.includes(keyword));
+        const matchType = !type || item.type === type;
+        const matchStatus = !status || item.status === status;
+        return matchKeyword && matchType && matchStatus;
+      });
+      renderTable();
+    }
+
+    function resetSearch() {
+      $("search-keyword").value = "";
+      $("search-type").value = "";
+      $("search-status").value = "";
+      filtered = [...records];
+      renderTable();
+    }
+
+    function fillForm(item) {
+      $("f-device").value = item?.device || "";
+      $("f-type").value = item?.type || "故障处理";
+      $("f-owner").value = item?.owner || "张工";
+      $("f-parts").value = item?.parts || "";
+      $("f-start").value = item?.start ? item.start.replace(" ", "T") : "";
+      $("f-end").value = item?.end ? item.end.replace(" ", "T") : "";
+      $("f-status").value = item?.status || "进行中";
+      $("f-summary").value = item?.summary || "";
+    }
+
+    function openAdd() {
+      editingId = null;
+      $("form-title").textContent = "新增维修记录";
+      fillForm();
+      openModal("form-modal");
+    }
+
+    function openEdit(id) {
+      const item = records.find(row => row.id === id);
+      if (!item) return;
+      editingId = id;
+      $("form-title").textContent = "编辑维修记录";
+      fillForm(item);
+      openModal("form-modal");
+    }
+
+    function saveForm() {
+      const device = $("f-device").value.trim();
+      const type = $("f-type").value;
+      const owner = $("f-owner").value;
+      const start = $("f-start").value;
+      const summary = $("f-summary").value.trim();
+      const end = $("f-end").value;
+      const status = $("f-status").value;
+      const parts = $("f-parts").value.trim();
+
+      if (!device) return showToast("请填写关联设备");
+      if (!type) return showToast("请选择维修类型");
+      if (!owner) return showToast("请选择责任人");
+      if (!start) return showToast("请选择开始维修时间");
+      if (!summary) return showToast("请填写维护内容摘要");
+
+      const payload = {
+        device,
+        type,
+        owner,
+        parts,
+        summary,
+        status,
+        start: start.replace("T", " "),
+        end: end ? end.replace("T", " ") : ""
+      };
+
+      if (editingId) {
+        const target = records.find(row => row.id === editingId);
+        Object.assign(target, payload);
+      } else {
+        records.unshift({
+          id: "WX" + Date.now().toString().slice(-11),
+          ...payload
+        });
+      }
+      filtered = [...records];
+      renderTable();
+      closeModal("form-modal");
+      showToast("维修记录已保存");
+    }
+
+    function showDetail(id) {
+      const item = records.find(row => row.id === id);
+      if (!item) return;
+      $("detail-body").innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 text-sm">
+          ${[
+            ["记录编号", item.id],
+            ["关联设备", item.device],
+            ["维修类型", item.type],
+            ["责任人", item.owner],
+            ["开始维修时间", item.start],
+            ["完成维修时间", item.end || "--"],
+            ["状态", item.status],
+            ["更换部件", item.parts || "--"]
+          ].map(([label, value]) => `
+            <div class="rounded border border-cyan-400/15 bg-slate-900/30 p-3">
+              <div class="text-cyan-300 text-xs mb-1">${label}</div>
+              <div class="text-slate-100 leading-6">${value}</div>
+            </div>
+          `).join("")}
+          <div class="md:col-span-2 xl:col-span-3 rounded border border-cyan-400/15 bg-slate-900/30 p-3">
+            <div class="text-cyan-300 text-xs mb-1">维护内容摘要</div>
+            <div class="text-slate-100 leading-7">${item.summary}</div>
+          </div>
+        </div>
+      `;
+      openModal("detail-modal");
+    }
+
+    function askDelete(id) {
+      deletingId = id;
+      openModal("delete-modal");
+    }
+
+    function confirmDelete() {
+      const index = records.findIndex(row => row.id === deletingId);
+      if (index < 0) return;
+      records.splice(index, 1);
+      filtered = [...records];
+      renderTable();
+      closeModal("delete-modal");
+      showToast("维修记录已删除");
+    }
+
+    function showToast(text) {
+      const existing = document.getElementById("toast-box");
+      if (existing) existing.remove();
+      const toast = document.createElement("div");
+      toast.id = "toast-box";
+      toast.className = "fixed right-5 bottom-5 z-[100] rounded bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg";
+      toast.textContent = text;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 1800);
+    }
+
+    document.querySelectorAll("[data-close]").forEach(btn => {
+      btn.addEventListener("click", () => closeModal(btn.dataset.close));
+    });
+
+    $("add-btn").addEventListener("click", openAdd);
+    $("export-btn").addEventListener("click", () => showToast("已按示例数据导出"));
+    $("search-btn").addEventListener("click", applySearch);
+    $("reset-btn").addEventListener("click", resetSearch);
+    $("save-btn").addEventListener("click", saveForm);
+    $("confirm-delete-btn").addEventListener("click", confirmDelete);
+
+    window.showDetail = showDetail;
+    window.openEdit = openEdit;
+    window.askDelete = askDelete;
+
+    renderTable();
+  </script>
+</body>
+</html>

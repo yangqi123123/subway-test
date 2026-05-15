@@ -1,0 +1,424 @@
+<mxfile host="app.diagrams.net" agent="GPT-5.4">
+  <diagram id="metro-protection-layout-optimized" name="地铁保护区-结合飞行计划图-排版优化版">
+    <mxGraphModel dx="10240" dy="5630" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="5200" pageHeight="4300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=24;fontStyle=1" value="地铁保护区业务流程图" vertex="1">
+          <mxGeometry height="40" width="1800" x="1500" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontSize=13" value="图例：蓝=飞手操作；紫=系统/状态/通知；橙=审批/判断；绿=通过/执行；红=禁止/异常" vertex="1">
+          <mxGeometry height="50" width="520" x="80" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="pool1" parent="1" style="swimlane;html=1;startSize=36;horizontal=0;rounded=0;swimlaneFillColor=#f5f5f5;fillColor=#ffffff;strokeColor=#666666;fontStyle=1;fontSize=18" value="&amp;nbsp;&amp;nbsp; " vertex="1">
+          <mxGeometry height="2200" width="4960" x="30" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="lane1" parent="pool1" style="swimlane;html=1;startSize=30;horizontal=0;rounded=0;fillColor=#eaf3ff;strokeColor=#6c8ebf;fontSize=16;fontStyle=1" value="飞手" vertex="1">
+          <mxGeometry height="620" width="4960" as="geometry" />
+        </mxCell>
+        <mxCell id="u0" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=13" value="飞手在相关网站\n提交空域申请" vertex="1">
+          <mxGeometry height="90" width="220" x="140" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="u1" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=13" value="飞手相关岗位\n提交飞行申请" vertex="1">
+          <mxGeometry height="80" width="210" x="150" y="205" as="geometry" />
+        </mxCell>
+        <mxCell id="u2" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=13" value="填写飞行计划\n计划名称、线路、机场、无人机、航线、策略、时间" vertex="1">
+          <mxGeometry height="110" width="300" x="450" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="u4" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d79b00;fontSize=13" value="1、系统发送提醒给相关人员&lt;br&gt;2、修改后重新提交&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="210" x="1250" y="205" as="geometry" />
+        </mxCell>
+        <mxCell id="u5" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=13" value="飞手在【飞行计划】页面\n点击【虚拟座舱】图标" vertex="1">
+          <mxGeometry height="90" width="240" x="1790" y="165" as="geometry" />
+        </mxCell>
+        <mxCell id="u6" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=13" value="飞手在【全景地图】页面，点击【告警点】图标" vertex="1">
+          <mxGeometry height="90" width="230" x="2140" y="165" as="geometry" />
+        </mxCell>
+        <mxCell id="u7" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=13" value="飞手进入【起飞点地图】界面" vertex="1">
+          <mxGeometry height="90" width="230" x="2480" y="165" as="geometry" />
+        </mxCell>
+        <mxCell id="u8" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=13" value="页面显示可用机场\n及无人机详情" vertex="1">
+          <mxGeometry height="70" width="220" x="2010" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="u9" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=13" value="页面显示可用机场\n及无人机详情" vertex="1">
+          <mxGeometry height="70" width="230" x="2370" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="ICf1NEIYBjvE7rmjE8IU-23" edge="1" parent="lane1" source="u0a" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ICf1NEIYBjvE7rmjE8IU-18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ICf1NEIYBjvE7rmjE8IU-28" connectable="0" parent="ICf1NEIYBjvE7rmjE8IU-23" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="通过" vertex="1">
+          <mxGeometry relative="1" x="-0.1473" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="u0a" parent="lane1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d79b00;fontSize=13" value="航管气象\n处审批" vertex="1">
+          <mxGeometry height="100" width="160" x="560" y="15" as="geometry" />
+        </mxCell>
+        <mxCell id="ue0" edge="1" parent="lane1" source="u0" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="u0a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ue2" edge="1" parent="lane1" source="u0a" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#b85450;" value="不通过">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="640" y="140" />
+              <mxPoint x="260" y="140" />
+              <mxPoint x="260" y="110" />
+            </Array>
+            <mxPoint x="260" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e17" edge="1" parent="lane1" source="u4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="u2" value="重新提交">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1040" y="245" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ICf1NEIYBjvE7rmjE8IU-24" edge="1" parent="lane1" source="ICf1NEIYBjvE7rmjE8IU-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1170" y="65" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ICf1NEIYBjvE7rmjE8IU-18" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=13" value="飞手在地保平台\n上传审批文件" vertex="1">
+          <mxGeometry height="90" width="220" x="830" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ICf1NEIYBjvE7rmjE8IU-25" edge="1" parent="lane1" source="ICf1NEIYBjvE7rmjE8IU-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="ICf1NEIYBjvE7rmjE8IU-20" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ICf1NEIYBjvE7rmjE8IU-19" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3ecfb;strokeColor=#9673a6;fontSize=13" value="由系统识别审批文件信息，并在系统内同步更新空域许可信息" vertex="1">
+          <mxGeometry height="100" width="340" x="1170" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ICf1NEIYBjvE7rmjE8IU-20" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3ecfb;strokeColor=#9673a6;fontSize=13" value="当任意航线的空域许可结束前X天时，系统发送提醒给相关人员" vertex="1">
+          <mxGeometry height="100" width="360" x="1600" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ICf1NEIYBjvE7rmjE8IU-22" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=13" value="提交审批" vertex="1">
+          <mxGeometry height="80" width="140" x="190" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="ICf1NEIYBjvE7rmjE8IU-29" parent="lane1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdeeee;strokeColor=#b85450;fontSize=13" value="任一环节不通过" vertex="1">
+          <mxGeometry height="40" width="180" x="810" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="lane1" source="ICf1NEIYBjvE7rmjE8IU-29" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#d79b00" target="u4" value="退回修改">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1355" y="345" />
+            </Array>
+            <mxPoint x="880" y="640" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lane2" parent="pool1" style="swimlane;html=1;startSize=30;horizontal=0;rounded=0;fillColor=#fff8e6;strokeColor=#d6b656;fontSize=16;fontStyle=1" value="审批人员" vertex="1">
+          <mxGeometry height="470" width="4960" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" parent="lane2" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d79b00;fontSize=13" value="工班长审批" vertex="1">
+          <mxGeometry height="90" width="140" x="400" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" parent="lane2" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d79b00;fontSize=13" value="工程师审批" vertex="1">
+          <mxGeometry height="90" width="140" x="610" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" parent="lane2" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d79b00;fontSize=13" value="物资管理员审批" vertex="1">
+          <mxGeometry height="90" width="160" x="820" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" parent="lane2" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d79b00;fontSize=13" value="车间主任审批" vertex="1">
+          <mxGeometry height="90" width="150" x="1050" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="a6" parent="lane2" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d79b00;fontSize=13" value="部门经理审批" vertex="1">
+          <mxGeometry height="90" width="150" x="1270" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="ICf1NEIYBjvE7rmjE8IU-30" parent="lane2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#edf7ed;strokeColor=#82b366;fontSize=13" value="所有节点审批通过" vertex="1">
+          <mxGeometry height="70" width="190" x="1250" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="lane3" parent="pool1" style="swimlane;html=1;startSize=30;horizontal=0;rounded=0;fillColor=#edf7ed;strokeColor=#82b366;fontSize=16;fontStyle=1" value="本平台" vertex="1">
+          <mxGeometry height="1310" width="4960" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="grpL" parent="lane3" style="swimlane;html=1;startSize=24;rounded=0;fillColor=#fafafa;strokeColor=#cccccc;fontStyle=1;fontSize=14" value=" " vertex="1">
+          <mxGeometry height="660" width="1500" x="40" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="grpC" parent="lane3" style="swimlane;html=1;startSize=24;rounded=0;fillColor=#fafafa;strokeColor=#cccccc;fontStyle=1;fontSize=14" value="中部：入口与起飞前校验" vertex="1">
+          <mxGeometry height="660" width="2000" x="1620" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="grpR" parent="lane3" style="swimlane;html=1;startSize=24;rounded=0;fillColor=#fafafa;strokeColor=#cccccc;fontStyle=1;fontSize=14" value="右侧：危险识别与通知" vertex="1">
+          <mxGeometry height="490" width="1140" x="3740" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="p3" parent="lane3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3ecfb;strokeColor=#9673a6;fontSize=13" value="系统发送通过消息\n给相关人员" vertex="1">
+          <mxGeometry height="80" width="210" x="1240" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p4" parent="lane3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3ecfb;strokeColor=#9673a6;fontSize=13" value="飞行计划状态：\n已全部审批通过" vertex="1">
+          <mxGeometry height="80" width="220" x="1240" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="p5" parent="lane3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3ecfb;strokeColor=#9673a6;fontSize=13" value="飞手选择起飞点" vertex="1">
+          <mxGeometry height="80" width="220" x="2100" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p6" parent="lane3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3ecfb;strokeColor=#9673a6;fontSize=13" value="飞手选择起飞点" vertex="1">
+          <mxGeometry height="80" width="220" x="2450" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p7" parent="lane3" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=13" value="系统判断\n航线所属空域是否有效" vertex="1">
+          <mxGeometry height="120" width="220" x="2290" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="p8" parent="lane3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3ecfb;strokeColor=#9673a6;fontSize=13" value="提示空域在有效期内\n待人工确认是否立即起飞" vertex="1">
+          <mxGeometry height="80" width="230" x="2050" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="p9" parent="lane3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdeeee;strokeColor=#b85450;fontSize=13" value="提示空域不在有效期内\n禁止飞行" vertex="1">
+          <mxGeometry height="80" width="210" x="2360" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="p10" parent="lane3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=13" value="飞手确认立即起飞" vertex="1">
+          <mxGeometry height="70" width="180" x="2080" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="p11" parent="lane3" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=13" value="系统综合检验\n当前无人机是否可用" vertex="1">
+          <mxGeometry height="120" width="220" x="2370" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="p12" parent="lane3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#edf7ed;strokeColor=#82b366;fontSize=13" value="无人机按预设航线\n执行飞行航线" vertex="1">
+          <mxGeometry height="80" width="210" x="2280" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="p13" parent="lane3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdeeee;strokeColor=#b85450;fontSize=13" value="提示无人机不可用\n禁止飞行" vertex="1">
+          <mxGeometry height="80" width="200" x="2580" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="lane4" parent="pool1" style="swimlane;html=1;startSize=30;horizontal=0;rounded=0;fillColor=#fdeeee;strokeColor=#b85450;fontSize=16;fontStyle=1" value="飞行过程" vertex="1">
+          <mxGeometry height="300" width="4960" y="1550" as="geometry" />
+        </mxCell>
+        <mxCell id="t1" parent="lane4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=13" value="第三方同步航线数据" vertex="1">
+          <mxGeometry height="70" width="180" x="1960" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" parent="lane4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=13" value="第三方同步无人机\n实时状态/飞行数据" vertex="1">
+          <mxGeometry height="70" width="220" x="2880" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="t3" parent="lane4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=13" value="无人机识别到\n有危险情况" vertex="1">
+          <mxGeometry height="70" width="200" x="4030" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="t4" parent="lane4" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=13" value="危险机械是否位于\n已有项目？" vertex="1">
+          <mxGeometry height="130" width="240" x="4010" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="t5" parent="lane4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3ecfb;strokeColor=#9673a6;fontSize=13" value="在web和微信推送给：工班、工班长" vertex="1">
+          <mxGeometry height="80" width="210" x="3860" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="t6" parent="lane4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3ecfb;strokeColor=#9673a6;fontSize=13" value="在web和微信推送给：工班、工班长、工程师" vertex="1">
+          <mxGeometry height="80" width="280" x="4180" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="p14" parent="lane4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#edf7ed;strokeColor=#82b366;fontSize=13" value="飞行完成\n自动返航并降落" vertex="1">
+          <mxGeometry height="80" width="190" x="2290" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="p16" parent="lane4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3ecfb;strokeColor=#9673a6;fontSize=13" value="自动生成飞行日志\n（平台内使用）" vertex="1">
+          <mxGeometry height="80" width="200" x="2630" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="e40" edge="1" parent="lane4" source="p14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="p16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lane5" parent="pool1" style="swimlane;html=1;startSize=30;horizontal=0;rounded=0;fillColor=#f3ecfb;strokeColor=#9673a6;fontSize=16;fontStyle=1" value="值班/处警人员" vertex="1">
+          <mxGeometry height="320" width="4960" y="1850" as="geometry" />
+        </mxCell>
+        <mxCell id="d1" parent="lane5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=13" value="查看告警" vertex="1">
+          <mxGeometry height="70" width="140" x="1120" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="d2" parent="lane5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=13" value="现场核查" vertex="1">
+          <mxGeometry height="70" width="140" x="1320" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="d3" parent="lane5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=13" value="填写误报/复核情况\n上传现场照片" vertex="1">
+          <mxGeometry height="85" width="220" x="1520" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="d4" parent="lane5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=13" value="更新状态\n已处理 / 误报 / 待处理" vertex="1">
+          <mxGeometry height="85" width="220" x="1810" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="d5" parent="lane5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=13" value="历史告警列表\n支持筛选、导出" vertex="1">
+          <mxGeometry height="85" width="210" x="2100" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="pool1" source="u1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="u2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="pool1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;shape=filledEdge;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="260" y="430" />
+            </Array>
+            <mxPoint x="260" y="290" as="sourcePoint" />
+            <mxPoint x="265" y="429.9999999999998" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ICf1NEIYBjvE7rmjE8IU-3" connectable="0" parent="e3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="提交" vertex="1">
+          <mxGeometry relative="1" x="0.5294" y="-3" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="pool1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366" target="a2" value="通过">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="340" y="479.9999999999998" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="pool1" source="a2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366" target="a3" value="通过">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="pool1" source="a3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366" target="a4" value="通过">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="pool1" source="a4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366" target="a5" value="通过">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="pool1" source="a5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366" target="a6" value="通过">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="pool1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#b85450;startArrow=classic;startFill=1;" value="不通过">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1350" y="410" />
+              <mxPoint x="470" y="410" />
+            </Array>
+            <mxPoint x="1350" y="430" as="sourcePoint" />
+            <mxPoint x="470" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e19" edge="1" parent="pool1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;endArrow=open;strokeColor=#9673a6" target="p3" value="通过后通知">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1345" y="540" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ICf1NEIYBjvE7rmjE8IU-31" connectable="0" parent="e19" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="通过" vertex="1">
+          <mxGeometry relative="1" x="-0.8528" y="2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e20" edge="1" parent="pool1" source="p3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="p4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e21" edge="1" parent="pool1" source="p4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="u5" value="入口1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e22" edge="1" parent="pool1" source="p4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="u6" value="入口2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e23" edge="1" parent="pool1" source="p4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="u7" value="入口3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e24" edge="1" parent="pool1" source="u6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="u8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e25" edge="1" parent="pool1" source="u7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="u9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e26" edge="1" parent="pool1" source="u8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;endArrow=open;strokeColor=#9673a6" target="p5" value="显示">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e27" edge="1" parent="pool1" source="u9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;endArrow=open;strokeColor=#9673a6" target="p6" value="显示">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e28" edge="1" parent="pool1" source="t1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;endArrow=open;strokeColor=#b85450" target="p7" value="航线数据">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e29" edge="1" parent="pool1" source="p5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="p7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e30" edge="1" parent="pool1" source="p6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="p7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e31" edge="1" parent="pool1" source="p7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366" target="p8" value="有效">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e32" edge="1" parent="pool1" source="p7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#b85450" target="p9" value="无效">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e33" edge="1" parent="pool1" source="p8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="p10" value="确认起飞">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e34" edge="1" parent="pool1" source="t2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;endArrow=open;strokeColor=#b85450" target="p11" value="实时状态">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e35" edge="1" parent="pool1" source="p10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="p11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e36" edge="1" parent="pool1" source="p11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366" target="p12" value="可用">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e37" edge="1" parent="pool1" source="p11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#b85450" target="p13" value="不可用">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e38" edge="1" parent="pool1" source="p12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366" target="p14" value="正常完成">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e42" edge="1" parent="pool1" source="t3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="t4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e43" edge="1" parent="pool1" source="t4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#82b366" target="t5" value="是（已有上报项目）">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e44" edge="1" parent="pool1" source="t4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#b85450" target="t6" value="否（未上报项目）">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e45" edge="1" parent="pool1" source="t3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;endArrow=open;strokeColor=#9673a6" target="d1" value="告警/预警">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e46" edge="1" parent="pool1" source="d1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="d2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e47" edge="1" parent="pool1" source="d2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="d3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e48" edge="1" parent="pool1" source="d3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="d4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e49" edge="1" parent="pool1" source="d4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="d5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ICf1NEIYBjvE7rmjE8IU-32" edge="1" parent="pool1" source="ICf1NEIYBjvE7rmjE8IU-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="a4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pool2" parent="1" style="swimlane;html=1;startSize=36;horizontal=0;rounded=0;swimlaneFillColor=#f5f5f5;fillColor=#ffffff;strokeColor=#666666;fontStyle=1;fontSize=18" value="支撑模块泳道" vertex="1">
+          <mxGeometry height="1680" width="4960" x="30" y="2290" as="geometry" />
+        </mxCell>
+        <mxCell id="s21" parent="pool2" style="swimlane;html=1;startSize=30;horizontal=0;rounded=0;fillColor=#fff8e6;strokeColor=#d6b656;fontSize=16;fontStyle=1" value="后台配置" vertex="1">
+          <mxGeometry height="220" width="4960" as="geometry" />
+        </mxCell>
+        <mxCell id="m1" parent="s21" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=13" value="维护基础数据：线路 / 站点 / 区间 / 项目 / 巡检类型 / 应急人员 / 仓库 / 预案 / 部门 / 权限" vertex="1">
+          <mxGeometry height="100" width="720" x="100" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s22" parent="pool2" style="swimlane;html=1;startSize=30;horizontal=0;rounded=0;fillColor=#eaf3ff;strokeColor=#6c8ebf;fontSize=16;fontStyle=1" value="GIS全景地图" vertex="1">
+          <mxGeometry height="260" width="4960" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="m2" parent="s22" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=13" value="GIS汇总渲染：站点、项目、人员、告警点、巡查区域、线路、应急资源、人员轨迹、无人机轨迹" vertex="1">
+          <mxGeometry height="100" width="680" x="120" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="m3" parent="s22" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=13" value="图层栏 + 工具：坐标拾取 / 测量距离 / 测量面积 / 点位详情弹窗" vertex="1">
+          <mxGeometry height="100" width="390" x="880" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s23" parent="pool2" style="swimlane;html=1;startSize=30;horizontal=0;rounded=0;fillColor=#edf7ed;strokeColor=#82b366;fontSize=16;fontStyle=1" value="巡检与告警分析" vertex="1">
+          <mxGeometry height="350" width="4960" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="m4" parent="s23" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=13" value="病害巡检 / 夜班作业巡检 / 人工巡检 / 无人机巡检" vertex="1">
+          <mxGeometry height="100" width="430" x="120" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="m5" parent="s23" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=13" value="态势感知：GIS地图 + 告警列表 + 左右线瀑布图；异常区间自动变色" vertex="1">
+          <mxGeometry height="100" width="460" x="630" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="m6" parent="s23" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=13" value="专家工具：GIS + 瀑布图 + 频谱图 + 最新告警 / 复核 / 历史告警 / 备注" vertex="1">
+          <mxGeometry height="100" width="500" x="1170" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s24" parent="pool2" style="swimlane;html=1;startSize=30;horizontal=0;rounded=0;fillColor=#fdeeee;strokeColor=#b85450;fontSize=16;fontStyle=1" value="路网 / 航线 / 设备" vertex="1">
+          <mxGeometry height="300" width="4960" y="830" as="geometry" />
+        </mxCell>
+        <mxCell id="m7" parent="s24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=13" value="线路管理 / 站点管理 / 区间管理，保存后同步 GIS" vertex="1">
+          <mxGeometry height="100" width="440" x="120" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="m8" parent="s24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=13" value="航线管理：新增后同步第三方&amp;nbsp;→ 空域申请 → 通过后标记有效 → 过期自动无效" vertex="1">
+          <mxGeometry height="100" width="470" x="640" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="m9" parent="s24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=13" value="机场设备 / 无人机设备新增后同步第三方；维修记录 / 飞行日志仅平台内使用" vertex="1">
+          <mxGeometry height="100" width="520" x="1190" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s25" parent="pool2" style="swimlane;html=1;startSize=30;horizontal=0;rounded=0;fillColor=#f3ecfb;strokeColor=#9673a6;fontSize=16;fontStyle=1" value="应急 / AI预警 / 同步规则" vertex="1">
+          <mxGeometry height="500" width="4960" y="1130" as="geometry" />
+        </mxCell>
+        <mxCell id="m10" parent="s25" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=13" value="应急资源：人员 / 仓库 / 物资 / 预案绑定部门；" vertex="1">
+          <mxGeometry height="100" width="540" x="120" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="m11" parent="s25" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=13" value="AI识别：第三方识别风险 → 推送预警 → 地图显示点位及图像/视频 → 审批闭环" vertex="1">
+          <mxGeometry height="100" width="560" x="740" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="m12" parent="s25" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=13" value="同步规则：本平台→第三方（机场/无人机/航线/审批通过后的飞行计划）；第三方→本平台（告警/AI预警/状态/飞行/航线/轨迹/巡检图片视频）；内部数据不外同步" vertex="1">
+          <mxGeometry height="100" width="1200" x="1380" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="me1" edge="1" parent="pool2" source="m1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="m2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="me2" edge="1" parent="pool2" source="m2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="m3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="me3" edge="1" parent="pool2" source="m5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1" target="m6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

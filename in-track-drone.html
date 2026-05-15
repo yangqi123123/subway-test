@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>无人机轨迹</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+</head>
+<body data-shell="default" data-top="in" data-sidebar-key="in-track-drone">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+      <span class="text-slate-600">/</span>
+      <span>智慧巡检</span>
+      <span class="text-slate-600">/</span>
+      <span class="text-cyan-50 font-semibold tracking-wide">无人机轨迹</span>
+    </nav>
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">无人机轨迹</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">运维指挥视图 · 示例数据</span>
+    </div>
+    <div class="rounded-lg overflow-hidden border border-white/10 relative min-h-[400px]">
+    <img src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=1800&q=80" class="w-full h-[420px] object-cover" alt="" />
+    <a href="am-flight-log.html" class="absolute bottom-4 right-4 text-sm px-3 py-2 rounded bg-[#0C203F] text-[#FFD600] border border-white/10">关联飞行日志</a>
+  </div>
+  </div>
+  <script src="assets/js/menu-config.js"></script>
+  <script src="assets/js/shell.js"></script>
+</body>
+</html>

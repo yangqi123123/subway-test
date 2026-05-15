@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>个人资料</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+</head>
+<body data-shell="default" data-top="wb" data-sidebar-key="wb-profile">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+      <span class="text-slate-600">/</span>
+      <span>我的工作台</span>
+      <span class="text-slate-600">/</span>
+      <span class="text-cyan-50 font-semibold tracking-wide">个人资料</span>
+    </nav>
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">个人资料</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">运维指挥视图 · 示例数据</span>
+    </div>
+    <div class="max-w-xl rounded-lg border border-white/10 p-6 space-y-4" style="background:#0c203f">
+    <div class="flex items-center gap-4">
+      <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80" class="w-20 h-20 rounded-full object-cover border-2 border-[#FFD600]" alt="" />
+      <div>
+        <div class="text-white font-medium">张三</div>
+        <div class="text-xs text-[#88A0C2]">运管中心 · 飞手</div>
+      </div>
+    </div>
+    <label class="block text-sm text-[#B0C1D6]">手机号<input class="mt-1 w-full rounded px-3 py-2 border border-white/10 text-white" style="background:#142B4A" value="138****0000"/></label>
+    <label class="block text-sm text-[#B0C1D6]">修改密码<input type="password" class="mt-1 w-full rounded px-3 py-2 border border-white/10 text-white" style="background:#142B4A" placeholder="新密码"/></label>
+    <div>
+      <span class="text-sm text-[#B0C1D6]">飞手证</span>
+      <div class="mt-2 flex items-center gap-3">
+        <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80" class="h-24 rounded object-cover border border-white/10" alt="证件示意" />
+        <button type="button" class="px-4 py-2 rounded text-sm bg-[#1E90FF] text-white">上传飞手证</button>
+      </div>
+    </div>
+    <button type="button" class="px-6 py-2 rounded text-sm font-medium" style="background:#ffd600;color:#000">保存</button>
+  </div>
+  </div>
+  <script src="assets/js/menu-config.js"></script>
+  <script src="assets/js/shell.js"></script>
+</body>
+</html>

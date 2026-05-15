@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>机场设备管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+  <style>
+    .am-table th,.am-table td{height:52px;border-right:1px solid rgba(34,211,238,.08);border-bottom:1px solid rgba(34,211,238,.08);vertical-align:middle}
+    .am-table th:last-child,.am-table td:last-child{border-right:0}.am-table thead th{background:rgba(2,8,23,.66);color:rgba(240,249,255,.96);font-size:12px;font-weight:600;white-space:nowrap}.am-table tbody td{color:rgba(226,245,255,.88);font-size:12px}
+    .am-action,.dr-action{display:inline-flex;align-items:center;gap:4px;margin-right:10px;white-space:nowrap;cursor:pointer;font-size:12px}
+    .am-dot,.dr-dot{display:inline-block;width:8px;height:8px;border-radius:999px;margin-right:6px;box-shadow:0 0 10px currentColor}
+    .am-status-online,.online{color:#86efac}.am-status-offline,.offline{color:#94a3b8}.am-status-error,.error{color:#fb7185}.am-status-maintain,.maintain{color:#fde047}
+    .am-tree-cell{display:flex;align-items:center;gap:8px;white-space:nowrap}.am-child{padding-left:30px}.am-parent{cursor:pointer}.am-caret{width:14px;text-align:center;color:#67e8f9}.am-required,.req{color:#fb7185;margin-right:3px}
+    .am-modal-mask,.dr-modal-mask{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:rgba(15,23,42,.58);padding:24px}
+    .am-modal-mask.show,.dr-modal-mask.show{display:flex}.am-modal,.dr-modal{width:min(920px,92vw);max-height:88vh;overflow:auto;border-radius:8px;border:1px solid rgba(34,211,238,.16);background:#071426;box-shadow:0 24px 80px rgba(0,0,0,.48)}.dr-modal--wide{width:min(1500px,96vw)}
+    .am-form-grid,.dr-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 28px}.am-form-item,.dr-form-item{display:flex;align-items:center;gap:10px}.am-form-label,.dr-form-label{width:120px;flex:0 0 120px;text-align:right;color:rgba(226,245,255,.78);font-size:12px}
+    .am-map{height:190px;border:1px solid rgba(34,211,238,.18);border-radius:8px;background:linear-gradient(135deg,rgba(8,47,73,.48),rgba(15,23,42,.9)),linear-gradient(90deg,rgba(34,211,238,.08) 1px,transparent 1px),linear-gradient(rgba(34,211,238,.08) 1px,transparent 1px);background-size:auto,34px 34px,34px 34px;position:relative;overflow:hidden}.am-marker{position:absolute;left:58%;top:46%;width:16px;height:16px;border-radius:999px;background:#fbbf24;box-shadow:0 0 0 8px rgba(251,191,36,.16),0 0 24px rgba(251,191,36,.8)}
+    .dr-card{border:1px solid rgba(34,211,238,.18);border-radius:8px;background:rgba(8,15,35,.68);box-shadow:0 12px 32px rgba(0,0,0,.25)}.dr-map{height:220px;border:1px solid rgba(34,211,238,.18);border-radius:8px;position:relative;overflow:hidden;background:#081525}.dr-map img{width:100%;height:100%;object-fit:cover;filter:saturate(1.08) contrast(1.08) brightness(.76)}.dr-marker{position:absolute;left:56%;top:45%;z-index:2;width:16px;height:16px;border-radius:999px;background:#fbbf24;box-shadow:0 0 0 8px rgba(251,191,36,.16),0 0 24px rgba(251,191,36,.8)}.dr-photo{height:112px;border-radius:8px;border:1px solid rgba(34,211,238,.16);overflow:hidden;background:#0f172a}.dr-photo img{width:100%;height:100%;object-fit:cover;display:block}.dr-preview{height:360px;border:1px solid rgba(34,211,238,.18);border-radius:8px;background:linear-gradient(135deg,rgba(8,47,73,.55),rgba(15,23,42,.95));display:flex;align-items:center;justify-content:center;color:#bae6fd}
+    @media(max-width:760px){.am-form-grid,.dr-form-grid{grid-template-columns:1fr}.am-form-label,.dr-form-label{width:104px;flex-basis:104px}}
+  </style>
+</head>
+<body data-shell="default" data-top="am" data-sidebar-key="am-airport">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span><span>资产管理</span><span class="text-slate-600">&gt;&gt;</span><span class="text-cyan-50 font-semibold tracking-wide">机场设备管理</span>
+    </nav>
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,.25)">机场设备列表</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">线路 → 机场 → 无人机联动管理</span>
+    </div>
+    <section class="neon-panel neon-panel--tight p-3 flex flex-wrap gap-2 items-center mb-4">
+      <div class="flex flex-wrap gap-2 items-center">
+        <input id="search-key" type="search" class="wh-input px-3 py-1.5 w-64 text-xs" placeholder="请输入设备型号或设备名称" />
+        <button type="button" class="px-4 py-1.5 rounded-md text-xs wh-btn-primary" data-action="search">搜索</button>
+        <button type="button" class="px-4 py-1.5 rounded-md text-xs wh-btn-ghost" data-action="reset">重置</button>
+      </div>
+      <div class="ml-auto flex flex-wrap gap-2 items-center justify-end">
+        <button type="button" class="px-4 py-2 rounded-md text-xs font-semibold wh-btn-primary" data-action="new"><i class="fa-solid fa-plus mr-1"></i>新增</button>
+        <button type="button" class="px-4 py-2 rounded-md text-xs wh-btn-ghost" data-action="toast">导出</button>
+      </div>
+    </section>
+    <section class="wh-table-shell bg-slate-950/35">
+      <div class="overflow-x-auto"><table class="am-table min-w-[1800px] w-full text-left">
+        <thead><tr><th class="px-4">设备型号</th><th class="px-4">设备SN</th><th class="px-4">设备名称</th><th class="px-4">所属线路</th><th class="px-4">当前状态</th><th class="px-4">位置坐标</th><th class="px-4">最后在线时间</th><th class="px-4">购买日期</th><th class="px-4">质保结束日期</th><th class="px-4">厂家</th><th class="px-4">重量</th><th class="px-4">配件信息</th><th class="px-4">操作</th></tr></thead>
+        <tbody id="table-body"></tbody>
+      </table></div>
+      <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400"><span>共 <b id="total-count" class="text-cyan-200">0</b> 条</span><div class="flex items-center gap-2"><button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button><select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select></div></div>
+    </section>
+  </div>
+
+  <div id="form-mask" class="am-modal-mask"><div class="am-modal">
+    <div class="h-14 px-6 flex items-center border-b border-cyan-400/15"><h3 id="form-title" class="text-white text-[16px] font-semibold">新增机场设备</h3><button type="button" class="ml-auto text-slate-400 hover:text-slate-200 text-xl" data-action="close">×</button></div>
+    <div class="p-6"><div class="am-form-grid">
+      <label class="am-form-item"><span class="am-form-label"><b class="am-required">*</b>设备型号：</span><input id="f-model" class="wh-input h-8 flex-1 px-3" /></label>
+      <label class="am-form-item"><span class="am-form-label"><b class="am-required">*</b>设备SN：</span><input id="f-sn" class="wh-input h-8 flex-1 px-3" /></label>
+      <label class="am-form-item"><span class="am-form-label"><b class="am-required">*</b>设备名称：</span><input id="f-name" class="wh-input h-8 flex-1 px-3" /></label>
+      <label class="am-form-item"><span class="am-form-label"><b class="am-required">*</b>所属线路：</span><select id="f-line" class="wh-input h-8 flex-1 px-2"><option>8号线</option><option>7号线</option><option>11号线</option></select></label>
+      <label class="am-form-item"><span class="am-form-label"><b class="am-required">*</b>当前状态：</span><select id="f-status" class="wh-input h-8 flex-1 px-2"><option>在线</option><option>离线</option><option>故障</option><option>维护中</option></select></label>
+      <label class="am-form-item"><span class="am-form-label">经度：</span><input id="f-lng" class="wh-input h-8 flex-1 px-3" /></label>
+      <label class="am-form-item"><span class="am-form-label">纬度：</span><input id="f-lat" class="wh-input h-8 flex-1 px-3" /></label>
+      <label class="am-form-item"><span class="am-form-label">购买日期：</span><input id="f-buy" type="date" class="wh-input h-8 flex-1 px-3" /></label>
+      <label class="am-form-item"><span class="am-form-label">质保结束日期：</span><input id="f-warranty" type="date" class="wh-input h-8 flex-1 px-3" /></label>
+      <label class="am-form-item"><span class="am-form-label">厂家：</span><input id="f-maker" class="wh-input h-8 flex-1 px-3" /></label>
+      <label class="am-form-item"><span class="am-form-label">重量：</span><input id="f-weight" class="wh-input h-8 flex-1 px-3" /></label>
+      <label class="am-form-item"><span class="am-form-label">上传照片：</span><input id="f-photo" type="file" accept="image/*" class="wh-input h-8 flex-1 px-2 py-1" /></label>
+      <label class="am-form-item" style="grid-column:1/-1"><span class="am-form-label">配件信息：</span><input id="f-parts" class="wh-input h-8 flex-1 px-3" /></label>
+    </div></div>
+    <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15"><button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close">取消</button><button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="save">确定</button></div>
+  </div></div>
+  <div id="detail-mask" class="am-modal-mask"><div class="am-modal"><div class="h-14 px-6 flex items-center border-b border-cyan-400/15"><h3 class="text-white text-[16px] font-semibold">机场设备详情</h3><button type="button" class="ml-auto text-slate-400 hover:text-slate-200 text-xl" data-action="close-detail">×</button></div><div id="detail-body" class="p-6"></div></div></div>
+
+  <script src="assets/js/menu-config.js"></script>
+  <script src="assets/js/shell.js"></script>
+  <script src="assets/js/drone-detail-shared.js"></script>
+  <script src="assets/js/drone-form-shared.js"></script>
+  <script>
+    (function(){
+      var rows=[
+        {id:"dock-a",parentId:null,type:"airport",expanded:true,model:"DJI Dock2",sn:"7CTDM7D0010012",name:"车辆段机场",line:"8号线",status:"在线",lng:"114.31942",lat:"30.57311",last:"2026-05-13 09:30",buy:"2024-11-27",warranty:"2027-11-27",maker:"大疆",weight:"34kg",parts:"充电舱、气象站、备用电源"},
+        {id:"drone-a1",parentId:"dock-a",type:"drone",model:"M3TD",sn:"1581F6Q8D246500G10GP",name:"车辆段无人机",airport:"车辆段机场",line:"8号线",status:"在线",lng:"114.31962",lat:"30.57324",last:"2026-05-13 09:28",buy:"2024-11-27",warranty:"2027-11-27",maker:"大疆",pilot:"张三",weight:"345g",parts:"电池3块、桨叶2套"},
+        {id:"dock-b",parentId:null,type:"airport",expanded:true,model:"DJI Dock2",sn:"7CTDM7D0010036",name:"青山机场",line:"8号线",status:"维护中",lng:"114.40218",lat:"30.63185",last:"2026-05-12 18:10",buy:"2024-10-16",warranty:"2027-10-16",maker:"大疆",weight:"34kg",parts:"充电舱、监控组件"},
+        {id:"drone-b1",parentId:"dock-b",type:"drone",model:"M3TD",sn:"1581F6Q8D246500G10GQ",name:"青山巡检无人机",airport:"青山机场",line:"8号线",status:"离线",lng:"114.40231",lat:"30.63166",last:"2026-05-12 17:58",buy:"2024-10-16",warranty:"2027-10-16",maker:"大疆",pilot:"李四",weight:"345g",parts:"电池2块、喊话器"}
+      ];
+      var editIndex=-1,body=document.getElementById("table-body"),form=document.getElementById("form-mask"),detail=document.getElementById("detail-mask");
+      function statusHtml(s){var cls=s==="在线"?"am-status-online":s==="故障"?"am-status-error":s==="维护中"?"am-status-maintain":"am-status-offline";return '<span class="'+cls+'"><i class="am-dot"></i>'+s+'</span>'}
+      function visibleRows(list){var closed={};list.forEach(function(r){if(r.type==="airport"&&!r.expanded)closed[r.id]=true});return list.filter(function(r){return !r.parentId||!closed[r.parentId]})}
+      function render(list){var shown=visibleRows(list);body.innerHTML=shown.map(function(r){var index=rows.indexOf(r),isAirport=r.type==="airport",icon=isAirport?"fa-solid fa-warehouse":"fa-solid fa-plane-up",indent=isAirport?"":" am-child",caret=isAirport?'<i class="fa-solid '+(r.expanded?'fa-caret-down':'fa-caret-right')+' am-caret" data-action="toggle" data-index="'+index+'"></i>':'<span class="am-caret"></span>';return '<tr class="'+(isAirport?'bg-slate-950/25':'bg-slate-950/10')+'"><td class="px-4"><span class="am-tree-cell'+indent+(isAirport?' am-parent':'')+'" data-action="'+(isAirport?'toggle':'')+'" data-index="'+index+'">'+caret+'<i class="'+icon+' text-cyan-300"></i>'+r.model+'</span></td><td class="px-4">'+r.sn+'</td><td class="px-4">'+r.name+'</td><td class="px-4">'+r.line+'</td><td class="px-4">'+statusHtml(r.status)+'</td><td class="px-4"><span class="text-cyan-300 cursor-pointer" data-action="map">GPS坐标或地图标记链接（点击此处跳转地图并居中放大该位置）</span></td><td class="px-4">'+r.last+'</td><td class="px-4">'+r.buy+'</td><td class="px-4">'+r.warranty+'</td><td class="px-4">'+r.maker+'</td><td class="px-4">'+r.weight+'</td><td class="px-4">'+r.parts+'</td><td class="px-4"><span class="am-action text-cyan-300" data-action="detail" data-index="'+index+'">详情</span><span class="am-action text-amber-300" data-action="edit" data-index="'+index+'">编辑</span><span class="am-action text-rose-300" data-action="delete" data-index="'+index+'">删除</span></td></tr>'}).join("");document.getElementById("total-count").textContent=shown.length}
+      function fill(r){["model","sn","name","line","status","lng","lat","buy","warranty","maker","weight","parts"].forEach(function(k){var el=document.getElementById("f-"+k);if(el)el.value=r?r[k]||"":""})}
+      function openForm(i){editIndex=typeof i==="number"?i:-1;document.getElementById("form-title").textContent=editIndex>-1?"编辑机场设备":"新增机场设备";fill(rows[editIndex]);form.classList.add("show")}
+      function save(){var need=["model","sn","name","line","status"];for(var i=0;i<need.length;i++){if(!document.getElementById("f-"+need[i]).value.trim()){alert("请完善必填项");return}}var r={id:"dock-"+Date.now(),parentId:null,type:"airport",expanded:true,last:"2026-05-13 10:00"};["model","sn","name","line","status","lng","lat","buy","warranty","maker","weight","parts"].forEach(function(k){r[k]=document.getElementById("f-"+k).value});if(editIndex>-1)rows[editIndex]=Object.assign(rows[editIndex],r);else rows.unshift(r);form.classList.remove("show");render(rows)}
+      function showAirportDetail(r){document.getElementById("detail-body").innerHTML='<div class="grid grid-cols-1 lg:grid-cols-2 gap-4"><div class="neon-panel neon-panel--tight p-4"><h4 class="text-cyan-50 font-semibold mb-3">基本信息</h4><div class="grid grid-cols-2 gap-3 text-xs text-slate-300"><span>设备型号：'+r.model+'</span><span>设备SN：'+r.sn+'</span><span>设备名称：'+r.name+'</span><span>所属线路：'+r.line+'</span><span>当前状态：'+r.status+'</span><span>厂家：'+r.maker+'</span><span>重量：'+r.weight+'</span><span>配件信息：'+r.parts+'</span></div><h4 class="text-cyan-50 font-semibold mt-5 mb-3">照片</h4><div class="h-32 rounded border border-cyan-400/15 bg-slate-900/70 flex items-center justify-center text-cyan-200"><i class="fa-solid fa-image mr-2"></i>设备照片预览</div></div><div class="neon-panel neon-panel--tight p-4"><h4 class="text-cyan-50 font-semibold mb-3">存放位置（GIS地图）</h4><div class="am-map"><span class="am-marker"></span><span class="absolute left-4 bottom-4 text-xs text-cyan-100">经度 '+r.lng+' / 纬度 '+r.lat+'</span></div></div></div>';detail.classList.add("show")}
+      function showDetail(i){var r=rows[i];if(r.type==="drone"){window.WHDroneDetail.open(r)}else{showAirportDetail(r)}}
+      document.addEventListener("click",function(e){var a=e.target.closest("[data-action]");if(!a)return;var act=a.dataset.action,idx=Number(a.dataset.index);if(act==="toggle"){rows[idx].expanded=!rows[idx].expanded;render(rows);return}if(act==="new")openForm();if(act==="edit"){if(rows[idx].type==="drone"){window.WHDroneForm.open(rows[idx],function(data){rows[idx]=Object.assign(rows[idx],data,{id:rows[idx].id,parentId:rows[idx].parentId,type:"drone"});render(rows)})}else{openForm(idx)}}if(act==="save")save();if(act==="close")form.classList.remove("show");if(act==="close-detail")detail.classList.remove("show");if(act==="detail")showDetail(idx);if(act==="delete"&&confirm("确认删除该设备？")){var row=rows[idx];rows=rows.filter(function(r,i){return i!==idx&&r.parentId!==row.id});render(rows)}if(act==="search"){var key=document.getElementById("search-key").value.trim();render(rows.filter(function(r){return !key||r.model.indexOf(key)>-1||r.name.indexOf(key)>-1}))}if(act==="reset"){document.getElementById("search-key").value="";render(rows)}if(act==="toast"||act==="map")alert("原型演示：操作已触发")});
+      render(rows);
+    })();
+  </script>
+</body>
+</html>

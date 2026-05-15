@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>人员轨迹</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+  <link rel="stylesheet" href="assets/css/map-gis.css" />
+  <style>
+    .track-shell { min-height: 100%; }
+    .track-filter-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .track-filter-actions {
+      display: flex;
+      align-items: end;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .track-split {
+      display: grid;
+      grid-template-columns: 460px minmax(0, 1fr);
+      gap: 16px;
+      min-height: 620px;
+    }
+    .track-base-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px 16px;
+    }
+    .track-info-card {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.16);
+      background: rgba(15, 23, 42, 0.5);
+    }
+    .track-info-label {
+      font-size: 11px;
+      color: rgba(148, 226, 255, 0.72);
+      margin-bottom: 6px;
+    }
+    .track-info-value {
+      font-size: 13px;
+      color: #ecfeff;
+      font-weight: 600;
+    }
+    .track-record-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 360px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+    .track-record-item {
+      border: 1px solid rgba(34, 211, 238, 0.14);
+      background: rgba(10, 19, 38, 0.84);
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    }
+    .track-record-item:hover {
+      border-color: rgba(34, 211, 238, 0.38);
+      box-shadow: 0 0 16px rgba(34, 211, 238, 0.14);
+      transform: translateY(-1px);
+    }
+    .track-record-item.is-active {
+      border-color: rgba(34, 211, 238, 0.7);
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.14), rgba(8, 47, 73, 0.92));
+      box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.24), 0 0 18px rgba(34, 211, 238, 0.18);
+    }
+    .track-record-code {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ecfeff;
+    }
+    .track-record-time {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #9cc6df;
+    }
+    .track-map-shell {
+      position: relative;
+      min-height: 620px;
+      overflow: hidden;
+    }
+    .track-map-toolbar {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      z-index: 420;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .track-map-panel {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      z-index: 420;
+      min-width: 210px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      background: rgba(6, 12, 28, 0.88);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.38);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .track-map-panel__row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12px;
+      color: #cdeeff;
+      margin-bottom: 8px;
+    }
+    .track-map-panel__row:last-child { margin-bottom: 0; }
+    .track-map-panel__label { color: rgba(148, 226, 255, 0.72); }
+    .track-play-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: #38bdf8;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.28), 0 0 16px rgba(56, 189, 248, 0.48);
+      position: relative;
+    }
+    .track-play-dot::after {
+      content: "";
+      position: absolute;
+      inset: -7px;
+      border-radius: 999px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      animation: trackPulse 1.8s infinite ease-out;
+    }
+    @keyframes trackPulse {
+      0% { transform: scale(0.4); opacity: 0.9; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+    #person-track-map,
+    #person-track-map .leaflet-container {
+      width: 100%;
+      height: 100%;
+      background: #edf3f8;
+    }
+    #person-track-map .leaflet-control-attribution { display: none; }
+    #person-track-map .leaflet-control-zoom a {
+      width: 28px;
+      height: 28px;
+      line-height: 27px;
+      color: #fff;
+      background: rgba(9, 18, 36, 0.78);
+    }
+    @media (max-width: 1400px) {
+      .track-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .track-split { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 900px) {
+      .track-filter-grid { grid-template-columns: 1fr; }
+      .track-base-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body data-shell="default" data-top="in" data-sidebar-key="in-track-person">
+  <div id="page-root" class="track-shell max-w-[1920px] mx-auto min-h-full">
+    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+      <span class="text-slate-600">/</span>
+      <span>巡检质量</span>
+      <span class="text-slate-600">/</span>
+      <span class="text-cyan-50 font-semibold tracking-wide">人员轨迹</span>
+    </nav>
+
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">人员轨迹</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">后台轨迹回放模式</span>
+    </div>
+
+    <section id="track-list-view" class="space-y-4">
+      <div class="neon-panel p-4">
+        <div class="track-filter-grid">
+          <div>
+            <label class="wh-filter-label block mb-1">人员姓名</label>
+            <input id="filter-name" class="wh-input w-full px-3 py-2" placeholder="请输入人员姓名" />
+          </div>
+          <div>
+            <label class="wh-filter-label block mb-1">设备编号</label>
+            <input id="filter-device" class="wh-input w-full px-3 py-2" placeholder="请输入设备编号" />
+          </div>
+          <div>
+            <label class="wh-filter-label block mb-1">所属线路</label>
+            <select id="filter-line" class="wh-input w-full px-3 py-2">
+              <option value="">全部</option>
+              <option value="2号线">2号线</option>
+              <option value="5号线">5号线</option>
+              <option value="8号线">8号线</option>
+            </select>
+          </div>
+          <div>
+            <label class="wh-filter-label block mb-1">所属部门</label>
+            <select id="filter-dept" class="wh-input w-full px-3 py-2">
+              <option value="">全部</option>
+              <option value="巡检一部">巡检一部</option>
+              <option value="巡检二部">巡检二部</option>
+              <option value="应急中心">应急中心</option>
+            </select>
+          </div>
+          <div>
+            <label class="wh-filter-label block mb-1">轨迹日期</label>
+            <input id="filter-date" type="date" class="wh-input w-full px-3 py-2" />
+          </div>
+        </div>
+        <div class="track-filter-actions mt-4">
+          <button id="btn-search" type="button" class="wh-btn-primary px-4 py-2 text-sm">搜索</button>
+          <button id="btn-reset" type="button" class="wh-btn-ghost px-4 py-2 text-sm">重置</button>
+          <button id="btn-export" type="button" class="wh-btn-gold px-4 py-2 text-sm">导出</button>
+        </div>
+      </div>
+
+      <div class="wh-table-shell overflow-hidden">
+        <div class="overflow-auto">
+          <table class="min-w-full">
+            <thead>
+              <tr class="text-left text-cyan-50">
+                <th>序号</th>
+                <th>人员姓名</th>
+                <th>设备编号</th>
+                <th>所属部门</th>
+                <th>所属线路</th>
+                <th>最新定位时间</th>
+                <th>当前状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="track-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="track-detail-view" class="hidden space-y-4">
+      <div class="flex items-center justify-between gap-3">
+        <button id="btn-back-list" type="button" class="wh-btn-ghost px-4 py-2 text-sm"><i class="fa-solid fa-arrow-left mr-2"></i>返回列表</button>
+        <div class="text-sm text-cyan-100/80">人员轨迹详情 / GIS 联动回放</div>
+      </div>
+
+      <div class="track-split">
+        <div class="neon-panel p-4 flex flex-col gap-4 min-h-0">
+          <section>
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-sm font-semibold text-white">基础信息</h2>
+              <span id="detail-status-badge" class="wh-status wh-status--done">在线</span>
+            </div>
+            <div id="detail-base-grid" class="track-base-grid"></div>
+          </section>
+
+          <section class="flex min-h-0 flex-1 flex-col">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <h2 class="text-sm font-semibold text-white">轨迹记录</h2>
+              <button id="btn-play-track" type="button" class="wh-btn-primary px-4 py-2 text-sm"><i class="fa-solid fa-play mr-2"></i>播放轨迹</button>
+            </div>
+            <div id="track-record-list" class="track-record-list"></div>
+          </section>
+        </div>
+
+        <div class="neon-panel track-map-shell">
+          <div class="track-map-toolbar">
+            <button id="btn-map-reset" type="button" class="wh-btn-ghost px-4 py-2 text-sm"><i class="fa-solid fa-location-crosshairs mr-2"></i>重置视角</button>
+          </div>
+          <div id="person-track-map"></div>
+          <div class="track-map-panel">
+            <div class="track-map-panel__row"><span class="track-map-panel__label">轨迹状态</span><span id="map-status-text">待播放</span></div>
+            <div class="track-map-panel__row"><span class="track-map-panel__label">当前位置</span><span id="map-current-name">武汉</span></div>
+            <div class="track-map-panel__row"><span class="track-map-panel__label">定位时间</span><span id="map-current-time">--</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="assets/js/menu-config.js"></script>
+  <script src="assets/js/shell.js"></script>
+  <script src="assets/js/map-gis.js"></script>
+  <script>
+    const trackRows = [
+      {
+        id: 1,
+        personName: "张鹏",
+        deviceCode: "Y18807",
+        dept: "巡检一部",
+        line: "2号线",
+        latestTime: "2026-05-14 09:26:18",
+        status: "在线",
+        points: [
+          { id: "LOC-248447", time: "2026-05-14 08:38:15", lat: 30.5828, lng: 114.2982, name: "积玉桥站北侧" },
+          { id: "LOC-248451", time: "2026-05-14 08:56:42", lat: 30.5863, lng: 114.3069, name: "临江大道巡查点" },
+          { id: "LOC-248459", time: "2026-05-14 09:08:11", lat: 30.5901, lng: 114.3142, name: "中山路转角" },
+          { id: "LOC-248468", time: "2026-05-14 09:26:18", lat: 30.5948, lng: 114.3214, name: "武昌江滩入口" }
+        ]
+      },
+      {
+        id: 2,
+        personName: "李威",
+        deviceCode: "Y18812",
+        dept: "巡检二部",
+        line: "5号线",
+        latestTime: "2026-05-14 10:42:09",
+        status: "在线",
+        points: [
+          { id: "LOC-248602", time: "2026-05-14 09:52:07", lat: 30.5685, lng: 114.3293, name: "复兴路站巡查口" },
+          { id: "LOC-248615", time: "2026-05-14 10:03:48", lat: 30.5718, lng: 114.3361, name: "首义路交叉口" },
+          { id: "LOC-248624", time: "2026-05-14 10:18:30", lat: 30.5756, lng: 114.3428, name: "武珞路地下通道" },
+          { id: "LOC-248633", time: "2026-05-14 10:42:09", lat: 30.5803, lng: 114.3492, name: "宝通寺站东广场" }
+        ]
+      },
+      {
+        id: 3,
+        personName: "周敏",
+        deviceCode: "Y18819",
+        dept: "应急中心",
+        line: "8号线",
+        latestTime: "2026-05-14 14:08:52",
+        status: "离线",
+        points: [
+          { id: "LOC-248741", time: "2026-05-14 13:12:22", lat: 30.6062, lng: 114.3348, name: "徐东大街西口" },
+          { id: "LOC-248752", time: "2026-05-14 13:31:45", lat: 30.6108, lng: 114.3405, name: "岳家嘴站A口" },
+          { id: "LOC-248763", time: "2026-05-14 13:52:17", lat: 30.6154, lng: 114.3468, name: "中北路高架下" },
+          { id: "LOC-248788", time: "2026-05-14 14:08:52", lat: 30.6201, lng: 114.3521, name: "团结大道巡查点" }
+        ]
+      }
+    ];
+
+    const listView = document.getElementById("track-list-view");
+    const detailView = document.getElementById("track-detail-view");
+    const tableBody = document.getElementById("track-table-body");
+    const recordList = document.getElementById("track-record-list");
+    const detailBaseGrid = document.getElementById("detail-base-grid");
+    const detailStatusBadge = document.getElementById("detail-status-badge");
+    const mapStatusText = document.getElementById("map-status-text");
+    const mapCurrentName = document.getElementById("map-current-name");
+    const mapCurrentTime = document.getElementById("map-current-time");
+
+    let currentRow = null;
+    let currentPointIndex = 0;
+    let playbackTimer = null;
+    let trackMap = null;
+    let trackLine = null;
+    let startMarker = null;
+    let endMarker = null;
+    let playMarker = null;
+
+    function renderTable(rows) {
+      tableBody.innerHTML = rows.map((row, index) => `
+        <tr style="background:${index % 2 === 0 ? 'var(--row-a)' : 'var(--row-b)'}">
+          <td>${index + 1}</td>
+          <td>${row.personName}</td>
+          <td>${row.deviceCode}</td>
+          <td>${row.dept}</td>
+          <td>${row.line}</td>
+          <td>${row.latestTime}</td>
+          <td><span class="wh-status ${row.status === "在线" ? "wh-status--done" : "wh-status--pending"}">${row.status}</span></td>
+          <td><button type="button" class="wh-link" data-detail-id="${row.id}">详情</button></td>
+        </tr>
+      `).join("");
+
+      tableBody.querySelectorAll("[data-detail-id]").forEach((btn) => {
+        btn.addEventListener("click", () => openDetail(Number(btn.dataset.detailId)));
+      });
+    }
+
+    function buildBaseInfo(row) {
+      const fields = [
+        { label: "人员姓名", value: row.personName },
+        { label: "设备编号", value: row.deviceCode },
+        { label: "所属部门", value: row.dept },
+        { label: "所属线路", value: row.line },
+        { label: "最新定位时间", value: row.latestTime },
+        { label: "当前状态", value: row.status }
+      ];
+      detailBaseGrid.innerHTML = fields.map((field) => `
+        <div class="track-info-card">
+          <div class="track-info-label">${field.label}</div>
+          <div class="track-info-value">${field.value}</div>
+        </div>
+      `).join("");
+      detailStatusBadge.className = `wh-status ${row.status === "在线" ? "wh-status--done" : "wh-status--pending"}`;
+      detailStatusBadge.textContent = row.status;
+    }
+
+    function renderRecords(row) {
+      recordList.innerHTML = row.points.map((point, index) => `
+        <div class="track-record-item ${index === currentPointIndex ? "is-active" : ""}" data-point-index="${index}">
+          <div class="track-record-code">${point.id}</div>
+          <div class="track-record-time">${point.time}</div>
+        </div>
+      `).join("");
+
+      recordList.querySelectorAll("[data-point-index]").forEach((item) => {
+        item.addEventListener("click", () => {
+          stopPlayback();
+          focusPoint(Number(item.dataset.pointIndex), true);
+        });
+      });
+    }
+
+    function makeTrackIcon(color, iconClass) {
+      return L.divIcon({
+        className: "",
+        html: `<div style="width:28px;height:28px;border-radius:999px;background:${color};border:2px solid rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 0 0 2px rgba(34,211,238,.18),0 0 18px ${color};"><i class="${iconClass}"></i></div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      });
+    }
+
+    function makePlayIcon() {
+      return L.divIcon({
+        className: "",
+        html: '<div class="track-play-dot"><i class="fa-solid fa-person-walking" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:9px;color:#fff;"></i></div>',
+        iconSize: [18, 18],
+        iconAnchor: [9, 9]
+      });
+    }
+
+    function initMap() {
+      if (trackMap) return;
+      trackMap = window.WuhanGIS && window.WuhanGIS.createSharedMap
+        ? window.WuhanGIS.createSharedMap("person-track-map", { center: [30.5928, 114.3055], zoom: 12, zoomControl: true })
+        : L.map("person-track-map").setView([30.5928, 114.3055], 12);
+    }
+
+    function drawTrack(row) {
+      if (!trackMap) return;
+      stopPlayback(false);
+      if (trackLine) trackMap.removeLayer(trackLine);
+      if (startMarker) trackMap.removeLayer(startMarker);
+      if (endMarker) trackMap.removeLayer(endMarker);
+      if (playMarker) trackMap.removeLayer(playMarker);
+
+      const latlngs = row.points.map((point) => [point.lat, point.lng]);
+      trackLine = L.polyline(latlngs, {
+        color: "#38bdf8",
+        weight: 5,
+        opacity: 0.95,
+        lineCap: "round",
+        lineJoin: "round",
+        className: "person-track-polyline"
+      }).addTo(trackMap);
+
+      startMarker = L.marker(latlngs[0], { icon: makeTrackIcon("#22c55e", "fa-solid fa-play") })
+        .bindTooltip(`起点<br>${row.points[0].time}<br>${row.points[0].name}`, { direction: "top" })
+        .addTo(trackMap);
+      endMarker = L.marker(latlngs[latlngs.length - 1], { icon: makeTrackIcon("#ef4444", "fa-solid fa-flag-checkered") })
+        .bindTooltip(`终点<br>${row.points[row.points.length - 1].time}<br>${row.points[row.points.length - 1].name}`, { direction: "top" })
+        .addTo(trackMap);
+      playMarker = L.marker(latlngs[0], { icon: makePlayIcon() }).addTo(trackMap);
+
+      row.points.forEach((point) => {
+        L.circleMarker([point.lat, point.lng], {
+          radius: 5,
+          color: "#7dd3fc",
+          weight: 2,
+          fillColor: "#0ea5e9",
+          fillOpacity: 0.9
+        }).bindTooltip(`${point.time}<br>${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}<br>${point.name}`, {
+          direction: "top",
+          opacity: 1
+        }).addTo(trackMap);
+      });
+
+      trackMap.fitBounds(trackLine.getBounds(), { padding: [40, 40] });
+      focusPoint(0, false);
+    }
+
+    function focusPoint(index, panMap) {
+      currentPointIndex = index;
+      const point = currentRow.points[index];
+      if (playMarker) playMarker.setLatLng([point.lat, point.lng]);
+      mapStatusText.textContent = playbackTimer ? "播放中" : "已定位";
+      mapCurrentName.textContent = point.name;
+      mapCurrentTime.textContent = point.time;
+      renderRecords(currentRow);
+      if (panMap && trackMap) {
+        trackMap.flyTo([point.lat, point.lng], Math.max(trackMap.getZoom(), 15), { duration: 0.8 });
+      }
+    }
+
+    function playTrack() {
+      if (!currentRow) return;
+      stopPlayback(false);
+      mapStatusText.textContent = "播放中";
+      currentPointIndex = 0;
+      focusPoint(0, true);
+      playbackTimer = setInterval(() => {
+        currentPointIndex += 1;
+        if (currentPointIndex >= currentRow.points.length) {
+          stopPlayback(false);
+          mapStatusText.textContent = "播放完成";
+          currentPointIndex = currentRow.points.length - 1;
+          focusPoint(currentPointIndex, true);
+          return;
+        }
+        focusPoint(currentPointIndex, true);
+      }, 1200);
+    }
+
+    function stopPlayback(resetStatus = true) {
+      if (playbackTimer) {
+        clearInterval(playbackTimer);
+        playbackTimer = null;
+      }
+      if (resetStatus) mapStatusText.textContent = "待播放";
+    }
+
+    function openDetail(id) {
+      const row = trackRows.find((item) => item.id === id);
+      if (!row) return;
+      currentRow = row;
+      currentPointIndex = 0;
+      listView.classList.add("hidden");
+      detailView.classList.remove("hidden");
+      buildBaseInfo(row);
+      initMap();
+      drawTrack(row);
+      renderRecords(row);
+    }
+
+    function resetFilters() {
+      document.getElementById("filter-name").value = "";
+      document.getElementById("filter-device").value = "";
+      document.getElementById("filter-line").value = "";
+      document.getElementById("filter-dept").value = "";
+      document.getElementById("filter-date").value = "";
+      renderTable(trackRows);
+    }
+
+    function searchRows() {
+      const name = document.getElementById("filter-name").value.trim();
+      const device = document.getElementById("filter-device").value.trim();
+      const line = document.getElementById("filter-line").value;
+      const dept = document.getElementById("filter-dept").value;
+      const date = document.getElementById("filter-date").value;
+      const rows = trackRows.filter((row) => {
+        if (name && !row.personName.includes(name)) return false;
+        if (device && !row.deviceCode.includes(device)) return false;
+        if (line && row.line !== line) return false;
+        if (dept && row.dept !== dept) return false;
+        if (date && !row.latestTime.startsWith(date)) return false;
+        return true;
+      });
+      renderTable(rows);
+    }
+
+    document.getElementById("btn-search").addEventListener("click", searchRows);
+    document.getElementById("btn-reset").addEventListener("click", resetFilters);
+    document.getElementById("btn-export").addEventListener("click", () => {
+      alert("已按当前筛选条件导出示例数据");
+    });
+    document.getElementById("btn-back-list").addEventListener("click", () => {
+      stopPlayback();
+      detailView.classList.add("hidden");
+      listView.classList.remove("hidden");
+    });
+    document.getElementById("btn-play-track").addEventListener("click", playTrack);
+    document.getElementById("btn-map-reset").addEventListener("click", () => {
+      if (trackLine && trackMap) trackMap.fitBounds(trackLine.getBounds(), { padding: [40, 40] });
+    });
+
+    renderTable(trackRows);
+  </script>
+</body>
+</html>

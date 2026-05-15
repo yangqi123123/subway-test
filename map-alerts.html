@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>全景地图 · 告警信息</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/map-gis.css" />
+    <style>
+      .map-breadcrumb {
+        margin: 16px 16px 0;
+        padding: 10px 16px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        color: #94a3b8;
+      }
+      .map-breadcrumb__icon { color: #22d3ee; }
+      .map-breadcrumb__sep { color: #475569; }
+      .map-breadcrumb__current {
+        color: #f8fafc;
+        font-weight: 600;
+        letter-spacing: .02em;
+      }
+      .alert-shell {
+        background:
+          radial-gradient(circle at 18% 0%, rgba(34, 211, 238, 0.08), transparent 28%),
+          radial-gradient(circle at 100% 8%, rgba(59, 130, 246, 0.08), transparent 26%),
+          linear-gradient(180deg, #040914 0%, #091426 100%);
+        color: #dce8f8;
+      }
+      .alert-tab {
+        height: 34px;
+        padding: 0 14px;
+        border: 1px solid rgba(34, 211, 238, 0.2);
+        border-bottom: none;
+        background: rgba(8, 47, 73, 0.65);
+        color: #9edfff;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .alert-tab.active {
+        background: linear-gradient(180deg, #0f87d9 0%, #0967b8 100%);
+        color: #fffefc;
+        box-shadow: 0 0 20px rgba(34, 211, 238, 0.16);
+      }
+      .alert-panel {
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: linear-gradient(180deg, rgba(9, 18, 36, 0.96) 0%, rgba(7, 14, 29, 0.96) 100%);
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.08), 0 10px 28px rgba(0, 0, 0, 0.4);
+      }
+      .alert-section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #ecfeff;
+      }
+      .alert-field {
+        min-width: 0;
+      }
+      .alert-label {
+        margin-bottom: 8px;
+        font-size: 12px;
+        color: #9cc6df;
+      }
+      .alert-input,
+      .alert-select {
+        width: 100%;
+        height: 34px;
+        padding: 0 10px;
+        border: 1px solid rgba(34, 211, 238, 0.22);
+        border-radius: 6px;
+        background: rgba(15, 23, 42, 0.75);
+        font-size: 12px;
+        color: #e2f5ff;
+      }
+      .alert-btn {
+        height: 34px;
+        padding: 0 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .alert-btn.primary {
+        background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+        color: #042f2e;
+        box-shadow: 0 0 18px rgba(14, 165, 233, 0.45);
+      }
+      .alert-btn.ghost {
+        border: 1px solid rgba(34, 211, 238, 0.25);
+        background: rgba(15, 23, 42, 0.65);
+        color: #e2f5ff;
+      }
+      .alert-map {
+        height: 330px;
+      }
+      .alert-table thead th {
+        height: 46px;
+        padding: 0 12px;
+        background: rgba(8, 47, 73, 0.95);
+        font-size: 12px;
+        font-weight: 700;
+        color: #e2f5ff;
+        text-align: left;
+        border-bottom: 1px solid rgba(34, 211, 238, 0.14);
+        white-space: nowrap;
+      }
+      .alert-table tbody td {
+        padding: 12px;
+        font-size: 12px;
+        color: #dce8f8;
+        border-bottom: 1px solid rgba(34, 211, 238, 0.08);
+        vertical-align: middle;
+      }
+      .alert-table tbody tr {
+        background: rgba(12, 24, 48, 0.65);
+      }
+      .alert-table tbody tr:nth-child(even) {
+        background: rgba(15, 32, 58, 0.72);
+      }
+      .alert-table tbody tr:hover {
+        background: rgba(14, 165, 233, 0.08);
+      }
+      .alert-status-done {
+        color: #34d399;
+      }
+      .alert-status-pending {
+        color: #fb7185;
+      }
+      .alert-link {
+        color: #67e8f9;
+        cursor: pointer;
+      }
+      .alert-pager {
+        font-size: 12px;
+        color: #94a3b8;
+      }
+      #view-detail {
+        min-height: calc(100vh - 118px);
+        background:
+          radial-gradient(circle at 18% 0%, rgba(34, 211, 238, 0.08), transparent 28%),
+          radial-gradient(circle at 100% 8%, rgba(59, 130, 246, 0.08), transparent 26%),
+          linear-gradient(180deg, #040914 0%, #091426 100%);
+        color: #dce8f8;
+      }
+      .alert-detail-shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 16px;
+      }
+      .alert-detail-map-wrap {
+        position: relative;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: linear-gradient(180deg, rgba(9, 18, 36, 0.96) 0%, rgba(7, 14, 29, 0.96) 100%);
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.08), 0 10px 28px rgba(0, 0, 0, 0.4);
+      }
+      .alert-detail-map {
+        height: 380px;
+      }
+      .alert-flag {
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        z-index: 500;
+        width: 64px;
+        padding: 10px 8px 14px;
+        background: #e14c3b;
+        color: #fff;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.3;
+        clip-path: polygon(0 0, 100% 0, 100% 82%, 58% 82%, 50% 100%, 42% 82%, 0 82%);
+        box-shadow: 0 8px 18px rgba(225, 76, 59, 0.28);
+      }
+      .alert-side-card {
+        min-height: 120px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: linear-gradient(180deg, rgba(9, 18, 36, 0.96) 0%, rgba(7, 14, 29, 0.96) 100%);
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.08), 0 10px 28px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+      }
+      .alert-side-title {
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(34, 211, 238, 0.08);
+        font-size: 14px;
+        font-weight: 700;
+        color: #ecfeff;
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .alert-side-title::before {
+        content: "";
+        display: inline-block;
+        width: 4px;
+        height: 16px;
+        margin-right: 8px;
+        border-radius: 999px;
+        background: #2d8cf0;
+        vertical-align: -3px;
+      }
+      .alert-side-body {
+        padding: 14px 16px;
+        font-size: 12px;
+        color: #dce8f8;
+        line-height: 1.6;
+      }
+      .alert-detail-block {
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: linear-gradient(180deg, rgba(9, 18, 36, 0.96) 0%, rgba(7, 14, 29, 0.96) 100%);
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.08), 0 10px 28px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+      }
+      .alert-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px 24px;
+        padding: 18px 18px 22px;
+      }
+      .alert-detail-item {
+        min-width: 0;
+      }
+      .alert-detail-key {
+        font-size: 12px;
+        color: #9cc6df;
+      }
+      .alert-detail-val {
+        margin-top: 8px;
+        font-size: 13px;
+        color: #ecfeff;
+        word-break: break-all;
+      }
+      .alert-code-tag {
+        display: inline-flex;
+        height: 28px;
+        align-items: center;
+        padding: 0 10px;
+        border-radius: 4px;
+        background: #cfe9ff;
+        color: #2d8cf0;
+        font-weight: 700;
+      }
+      .alert-detail-link {
+        margin-right: 12px;
+        color: #2d8cf0;
+        font-weight: 600;
+      }
+      .alert-record-pill {
+        display: inline-flex;
+        height: 26px;
+        align-items: center;
+        padding: 0 10px;
+        border-radius: 4px;
+        background: #e6f3ff;
+        color: #409eff;
+        font-weight: 700;
+      }
+      .alert-duration-pill {
+        display: inline-flex;
+        height: 26px;
+        align-items: center;
+        margin-left: 10px;
+        padding: 0 10px;
+        border: 1px solid #ffd99b;
+        border-radius: 4px;
+        background: #fff7e8;
+        color: #f59e0b;
+      }
+      .alert-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        margin-right: 6px;
+        border-radius: 999px;
+        background: #fbbe00;
+        vertical-align: -1px;
+      }
+      .alert-timeline {
+        max-height: 222px;
+        overflow-y: auto;
+        padding-left: 22px;
+        border-left: 2px solid rgba(226, 232, 240, 0.18);
+      }
+      .alert-timeline-item {
+        position: relative;
+        margin-bottom: 22px;
+      }
+      .alert-timeline-item::before {
+        content: "";
+        position: absolute;
+        left: -29px;
+        top: 4px;
+        width: 14px;
+        height: 14px;
+        border-radius: 999px;
+        background: #cbd5e1;
+      }
+      .alert-time {
+        margin-bottom: 8px;
+        color: #94a3b8;
+        font-weight: 600;
+      }
+      .alert-disposal-text {
+        color: #dce8f8;
+        font-weight: 600;
+      }
+      .alert-uav-shot {
+        max-height: 218px;
+        overflow-y: auto;
+      }
+      .alert-uav-shot__time {
+        color: #94a3b8;
+        font-weight: 600;
+      }
+      .alert-uav-shot__text {
+        margin: 10px 0 6px;
+        font-size: 14px;
+        color: #dce8f8;
+        line-height: 1.7;
+      }
+      .alert-uav-shot__highlight {
+        color: #ff5c7a;
+        font-size: inherit;
+        font-weight: 700;
+      }
+      .alert-uav-shot img {
+        width: 220px;
+        max-width: 100%;
+        height: 160px;
+        object-fit: cover;
+        display: block;
+      }
+      .hidden-view {
+        display: none !important;
+      }
+      @media (max-width: 1180px) {
+        .alert-detail-shell {
+          grid-template-columns: 1fr;
+        }
+        .alert-detail-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      #map-container,
+      #alert-detail-map,
+      #map-container .leaflet-container,
+      #alert-detail-map .leaflet-container {
+        background: #0b1526;
+        font-family: inherit;
+      }
+      #map-container .leaflet-control-zoom a,
+      #alert-detail-map .leaflet-control-zoom a {
+        background: rgba(9, 18, 36, 0.82);
+        color: #ffffff;
+        border-bottom-color: rgba(255, 255, 255, 0.12);
+      }
+      #map-container .leaflet-control-zoom,
+      #alert-detail-map .leaflet-control-zoom {
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
+      }
+      #map-container .leaflet-control-attribution,
+      #alert-detail-map .leaflet-control-attribution {
+        display: none;
+      }
+    </style>
+  </head>
+  <body data-shell="fullscreen" data-top="map">
+    <div id="page-root" class="h-[calc(100vh-64px)] overflow-auto alert-shell">
+      <nav class="neon-panel neon-panel--tight map-breadcrumb">
+        <span class="map-breadcrumb__icon"><i class="fa-solid fa-location-crosshairs"></i></span>
+        <span>全景地图</span>
+        <span class="map-breadcrumb__sep">&gt;&gt;</span>
+        <span class="map-breadcrumb__current">告警信息</span>
+      </nav>
+      <div class="px-4 pt-3">
+        <div class="flex items-end gap-1">
+          <button id="tab-list" type="button" class="alert-tab active">告警信息</button>
+          <button id="tab-detail" type="button" class="alert-tab">告警详情</button>
+        </div>
+      </div>
+
+      <section id="view-list" class="px-4 pb-4">
+        <div class="alert-panel overflow-hidden">
+          <div id="map-container" class="alert-map"></div>
+        </div>
+
+          <div class="alert-panel mt-4 p-4">
+          <div class="alert-section-title mb-4">查询</div>
+          <div class="grid grid-cols-6 gap-4 items-end">
+            <div class="alert-field">
+              <div class="alert-label">告警处理状态</div>
+              <select id="filter-status" class="alert-select">
+                <option value="">全部</option>
+                <option value="已复核">已复核</option>
+                <option value="未处理">未处理</option>
+              </select>
+            </div>
+            <div class="alert-field col-span-2">
+              <div class="alert-label">时间范围</div>
+              <div class="grid grid-cols-2 gap-2">
+                <input id="filter-start" type="datetime-local" class="alert-input" value="2025-07-09T00:00" />
+                <input id="filter-end" type="datetime-local" class="alert-input" value="2026-01-19T10:46" />
+              </div>
+            </div>
+            <div class="alert-field">
+              <div class="alert-label">告警来源</div>
+              <select id="filter-source" class="alert-select">
+                <option value="">传统+AI</option>
+                <option value="传统">传统</option>
+                <option value="AI">AI</option>
+              </select>
+            </div>
+            <div class="alert-field">
+              <div class="alert-label">区间</div>
+              <div class="grid grid-cols-2 gap-2">
+                <select id="filter-section-a" class="alert-select">
+                  <option value="">起始区间</option>
+                  <option value="新港线-竹叶山北">新港线-竹叶山北</option>
+                  <option value="竹叶山北-赵家条">竹叶山北-赵家条</option>
+                </select>
+                <select id="filter-section-b" class="alert-select">
+                  <option value="">终止区间</option>
+                  <option value="竹叶山北-赵家条">竹叶山北-赵家条</option>
+                  <option value="赵家条-三阳路">赵家条-三阳路</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex items-center justify-end gap-2">
+              <button id="btn-search" type="button" class="alert-btn primary">搜索</button>
+              <button id="btn-reset" type="button" class="alert-btn ghost">重置</button>
+              <button id="btn-export" type="button" class="alert-btn ghost">导出</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert-panel mt-4">
+          <div class="px-4 pt-4 pb-2 alert-section-title">列表</div>
+          <div class="overflow-auto">
+            <table class="w-full alert-table">
+              <thead>
+                <tr>
+                  <th>项目名称</th>
+                  <th>报警位置</th>
+                  <th>报警区域</th>
+                  <th>开始时间</th>
+                  <th>最新时间</th>
+                  <th>告警来源</th>
+                  <th>处理状态</th>
+                  <th>是否误报</th>
+                  <th>复核情况</th>
+                  <th>照片</th>
+                  <th>告警条数</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="alert-table-body"></tbody>
+            </table>
+          </div>
+          <div class="px-4 py-3 flex items-center justify-end gap-3 border-t border-cyan-400/10 alert-pager">
+            <span>共 1 条</span>
+            <span>10 条/页</span>
+            <button class="w-7 h-7 rounded wh-btn-ghost text-xs" type="button">‹</button>
+            <button class="w-7 h-7 rounded wh-btn-primary text-xs" type="button">1</button>
+            <button class="w-7 h-7 rounded wh-btn-ghost text-xs" type="button">›</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-detail" class="px-4 pb-4 hidden-view">
+        <div class="alert-detail-shell">
+          <div class="min-w-0">
+            <div class="alert-detail-map-wrap">
+              <div class="alert-flag"><i class="fa-solid fa-trophy block mb-2 text-[18px]"></i>疑似钻探<br />施工</div>
+              <div id="alert-detail-map" class="alert-detail-map"></div>
+            </div>
+
+            <div class="alert-detail-block mt-4">
+              <div class="alert-side-title">告警详情</div>
+              <div class="alert-detail-grid" id="alert-detail-grid"></div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-4">
+            <div class="alert-side-card">
+              <div class="alert-side-title">告警记录</div>
+              <div class="alert-side-body" id="record-alarm"></div>
+            </div>
+            <div class="alert-side-card">
+              <div class="alert-side-title">无人机实拍记录</div>
+              <div class="alert-side-body" id="record-uav"></div>
+            </div>
+            <div class="alert-side-card">
+              <div class="alert-side-title">处警记录</div>
+              <div class="alert-side-body" id="record-disposal"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="assets/js/menu-config.js"></script>
+    <script src="assets/js/shell.js"></script>
+    <script src="assets/js/map-gis.js"></script>
+    <script>
+      const alerts = [
+        {
+          id: 1,
+          projectName: "地铁8号线-小洪山->洪山路",
+          alarmPosition: "里程Z23+200 左线外侧37米",
+          alarmArea: "地铁8号线-小洪山->洪山路",
+          startTime: "2026-04-07 02:05:50",
+          latestTime: "2026-04-07 02:05:50",
+          source: "传统+AI",
+          status: "已复核",
+          mistaken: "否",
+          detail: "竹叶山北地铁盾构施工地有打桩作业",
+          image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=220&q=80",
+          params: "1",
+          latlng: [30.5274, 114.3427],
+          mapCenter: [30.5274, 114.3427],
+          zoom: 16,
+          type: "疑似钻探施工",
+          code: "7.0.345.S",
+          section: "地铁8号线-小洪山->洪山路",
+          location: "里程Z23+200 左线外侧37米",
+          lastTime: "2026-04-07 02:05:50",
+          moment: "已生成",
+          patrolAction: "生成  查看  典型事件标注",
+          alarmRecord: {
+            code: "7.0.345.S",
+            duration: "nu秒",
+            time: "04-07 02:05:50 ~"
+          },
+          uavRecord: {
+            time: "2026-04-07 10:20",
+            user: "wangweiwei",
+            mistaken: "否",
+            level: "一级告警",
+            situation: "金融街T2大楼破拆机拆除",
+            image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=520&q=80"
+          },
+          disposalRecord: [
+            { time: "2026-04-07 02:05:50", text: "告警产生，系统发送告警信息" },
+            { time: "2026-04-07 10:08:50", text: "hudanfeng确认接受工单，即将前往现场" },
+            { time: "2026-04-07 10:10:50", text: "hudanfeng提交现场复核情况", review: true }
+          ]
+        }
+      ];
+
+      let currentAlert = alerts[0];
+      let detailMapInited = false;
+
+      function renderTable(rows) {
+        const body = document.getElementById("alert-table-body");
+        body.innerHTML = rows.map((item) => `
+          <tr>
+            <td>${item.projectName}</td>
+            <td>${item.alarmPosition}</td>
+            <td>${item.alarmArea}</td>
+            <td>${item.startTime}</td>
+            <td>${item.latestTime}</td>
+            <td>${item.source}</td>
+            <td class="${item.status === "已复核" ? "alert-status-done" : "alert-status-pending"}">${item.status}</td>
+            <td>${item.mistaken}</td>
+            <td>${item.detail}</td>
+            <td><img src="${item.image}" alt="" class="h-14 w-20 rounded object-cover border border-[#e5edf7]" /></td>
+            <td>${item.params}</td>
+            <td><button type="button" class="alert-link" data-action="open-detail" data-id="${item.id}">详情</button></td>
+          </tr>
+        `).join("");
+      }
+
+      function fillDetail(item) {
+        document.getElementById("alert-detail-grid").innerHTML = [
+          ["报警类型", item.type],
+          ["报警区间", item.section],
+          ["位置", item.location],
+          ["测点编码", '<span class="alert-code-tag">' + item.code + '</span>'],
+          ["报警开始时间", item.startTime],
+          ["最新报警时间", item.lastTime],
+          ["时域图", "已生成"],
+          ["时域图操作", '<span class="alert-detail-link">生成</span><span class="alert-detail-link">查看</span><span class="alert-detail-link">典型事件标注</span>'],
+          ["", ""]
+        ].map(([k, v]) => `
+          <div class="alert-detail-item">
+            <div class="alert-detail-key">${k || "&nbsp;"}</div>
+            <div class="alert-detail-val">${v || "&nbsp;"}</div>
+          </div>
+        `).join("");
+
+        document.getElementById("record-alarm").innerHTML = `
+          <div class="flex items-center justify-center gap-3 mb-3">
+            <span class="alert-dot"></span>
+            <span class="alert-code-tag">${item.alarmRecord.code}</span>
+            <span class="alert-duration-pill">持续时间：${item.alarmRecord.duration}</span>
+          </div>
+          <div class="text-center text-[18px] text-slate-500">${item.alarmRecord.time}</div>
+        `;
+        document.getElementById("record-uav").innerHTML = `
+          <div class="alert-uav-shot">
+            <img src="${item.uavRecord.image}" alt="无人机实拍记录" />
+          </div>
+        `;
+        document.getElementById("record-disposal").innerHTML = `
+          <div class="alert-timeline">
+            ${item.disposalRecord.map((record) => `
+              <div class="alert-timeline-item">
+                <div class="alert-time">${record.time}</div>
+                <div class="alert-disposal-text">${record.text}</div>
+                ${record.review ? `
+                  <div class="mt-3 space-y-1 text-xs text-slate-300">
+                    <div>是否误报：<span class="alert-uav-shot__highlight">${item.uavRecord.mistaken}</span></div>
+                    <div>报警级别调整：<span class="alert-uav-shot__highlight">${item.uavRecord.level}</span></div>
+                    <div>现场情况：<span class="alert-uav-shot__highlight">${item.uavRecord.situation}</span></div>
+                  </div>
+                ` : ""}
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      function showListView() {
+        document.getElementById("view-list").classList.remove("hidden-view");
+        document.getElementById("view-detail").classList.add("hidden-view");
+        document.getElementById("tab-list").classList.add("active");
+        document.getElementById("tab-detail").classList.remove("active");
+      }
+
+      function showDetailView(item) {
+        currentAlert = item;
+        fillDetail(item);
+        document.getElementById("view-list").classList.add("hidden-view");
+        document.getElementById("view-detail").classList.remove("hidden-view");
+        document.getElementById("tab-list").classList.remove("active");
+        document.getElementById("tab-detail").classList.add("active");
+
+        if (!detailMapInited && window.WuhanGIS && window.WuhanGIS.createSharedMap) {
+          window.WuhanGIS.createSharedMap("alert-detail-map", {
+            center: item.mapCenter,
+            zoom: item.zoom,
+            zoomControl: true,
+            markers: [
+              {
+                latlng: item.latlng,
+                iconHtml:
+                  '<div style="width:22px;height:22px;border-radius:999px;background:#ef4444;border:3px solid #fff;box-shadow:0 0 0 10px rgba(45,140,240,0.15),0 0 0 18px rgba(45,140,240,0.08);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;"><i class="fa-solid fa-location-crosshairs"></i></div>',
+                iconSize: [22, 22],
+                iconAnchor: [11, 11],
+                popup: item.location
+              }
+            ],
+            polylines: [
+              {
+                points: [
+                  [30.6164, 114.3095],
+                  [30.6158, 114.3144],
+                  [30.6154, 114.3234],
+                  [30.6151, 114.3286]
+                ],
+                color: "#4f81ff",
+                weight: 4
+              }
+            ]
+          });
+          detailMapInited = true;
+        }
+        setTimeout(function () {
+          var mapEl = document.getElementById("alert-detail-map");
+          if (mapEl && mapEl._leaflet_map && mapEl._leaflet_map.invalidateSize) {
+            mapEl._leaflet_map.invalidateSize();
+          }
+        }, 50);
+      }
+
+      function applyFilters() {
+        const status = document.getElementById("filter-status").value;
+        const source = document.getElementById("filter-source").value;
+        const sectionA = document.getElementById("filter-section-a").value;
+        const sectionB = document.getElementById("filter-section-b").value;
+        const rows = alerts.filter((item) => {
+          if (status && item.status !== status) return false;
+          if (source && item.source !== source && !(source === "传统+AI" && item.source === "传统+AI")) return false;
+          if (sectionA && !item.projectName.includes(sectionA) && !item.alarmArea.includes(sectionA)) return false;
+          if (sectionB && !item.alarmArea.includes(sectionB) && !item.projectName.includes(sectionB)) return false;
+          return true;
+        });
+        renderTable(rows);
+        bindTableActions(rows);
+      }
+
+      function bindTableActions(rows) {
+        document.querySelectorAll('[data-action="open-detail"]').forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const item = rows.find((row) => String(row.id) === btn.dataset.id) || alerts[0];
+            showDetailView(item);
+          });
+        });
+      }
+
+      document.getElementById("btn-search").addEventListener("click", applyFilters);
+      document.getElementById("btn-reset").addEventListener("click", () => {
+        document.getElementById("filter-status").value = "";
+        document.getElementById("filter-start").value = "2025-07-09T00:00";
+        document.getElementById("filter-end").value = "2026-01-19T10:46";
+        document.getElementById("filter-source").value = "";
+        document.getElementById("filter-section-a").value = "";
+        document.getElementById("filter-section-b").value = "";
+        applyFilters();
+      });
+      document.getElementById("btn-export").addEventListener("click", () => {
+        alert("已按当前筛选条件导出告警信息");
+      });
+      document.getElementById("tab-list").addEventListener("click", showListView);
+      document.getElementById("tab-detail").addEventListener("click", () => showDetailView(currentAlert));
+
+      renderTable(alerts);
+      bindTableActions(alerts);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>地铁信息系统运行管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+  <style>
+    .ops-wrap { color: #e2f5ff; }
+    .ops-time { font-size: 28px; font-weight: 700; color: #f8fafc; letter-spacing: 0; }
+    .ops-date { font-size: 14px; color: #e2e8f0; }
+    .ops-metric-card { border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.14); background: rgba(7, 20, 38, 0.9); padding: 18px 18px 16px; min-height: 108px; box-shadow: inset 0 1px 0 rgba(255,255,255,.03); }
+    .ops-metric-label { font-size: 13px; color: #9fb3c8; margin-bottom: 12px; }
+    .ops-metric-value { font-size: 20px; color: #f8fafc; }
+    .ops-metric-rate { font-size: 16px; color: #84cc16; display: inline-flex; align-items: center; gap: 6px; }
+    .ops-storage-card { border-radius: 10px; padding: 18px 20px 16px; color: #e2f5ff; min-height: 94px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; border: 1px solid rgba(34, 211, 238, 0.14); background: rgba(7, 20, 38, 0.9); }
+    .ops-storage-blue, .ops-storage-cyan, .ops-storage-green { background: rgba(7, 20, 38, 0.9); }
+    .ops-storage-num { font-size: 18px; font-weight: 700; line-height: 1; margin-bottom: 8px; color: #f8fafc; }
+    .ops-storage-sub { font-size: 12px; color: #9fb3c8; }
+    .ops-chart-shell { border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.14); background: rgba(7, 20, 38, 0.9); min-height: 340px; padding: 20px; }
+    .ops-chart-grid { display: grid; grid-template-columns: 1fr; gap: 22px; min-height: 0; }
+    .ops-summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .ops-summary-card { border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.14); background: rgba(2, 8, 23, 0.22); padding: 16px 18px; }
+    .ops-legend { display: flex; flex-direction: column; gap: 18px; }
+    .ops-legend-row { display: grid; grid-template-columns: 14px 120px 1fr 92px; align-items: center; gap: 12px; }
+    .ops-legend-dot { width: 12px; height: 12px; border-radius: 999px; }
+    .ops-bar { position: relative; height: 12px; border-radius: 999px; background: rgba(148, 163, 184, .12); overflow: hidden; }
+    .ops-bar span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; }
+    .ops-footer { text-align: center; font-size: 12px; color: #cbd5e1; padding: 10px 0 0; }
+    @media (max-width: 1180px) {
+      .ops-summary-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body data-shell="default" data-top="am" data-sidebar-key="am-ops-metro">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full ops-wrap">
+    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+      <span class="text-slate-600">/</span>
+      <span>资产管理</span>
+      <span class="text-slate-600">/</span>
+      <span class="text-cyan-50 font-semibold tracking-wide">地铁信息系统运行管理</span>
+    </nav>
+
+    <div class="mb-6">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">空间管理</h1>
+    </div>
+
+    <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+      <div>
+        <div class="ops-date">Wed Apr 08 2026 10:02:44 GMT+0800 (中国标准时间)</div>
+      </div>
+      <div class="text-lg font-semibold text-slate-100">丙午年三月庚月壬子日</div>
+    </div>
+
+    <div class="grid xl:grid-cols-[1.1fr_.85fr] gap-6 mb-6">
+      <section>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="ops-metric-card">
+            <div class="ops-metric-label">CPU使用率</div>
+            <div class="ops-metric-rate"><i class="fa-solid fa-arrow-down"></i>3%</div>
+          </div>
+          <div class="ops-metric-card">
+            <div class="ops-metric-label">CPU核心数</div>
+            <div class="ops-metric-value">8</div>
+          </div>
+          <div class="ops-metric-card">
+            <div class="ops-metric-label">内存使用率</div>
+            <div class="ops-metric-rate"><i class="fa-solid fa-arrow-down"></i>16.88%</div>
+          </div>
+          <div class="ops-metric-card">
+            <div class="ops-metric-label">磁盘使用率</div>
+            <div class="ops-metric-rate"><i class="fa-solid fa-arrow-down"></i>9%</div>
+          </div>
+          <div class="ops-metric-card">
+            <div class="ops-metric-label">剩余内存情况</div>
+            <div class="ops-metric-value">26.1 GiB / 31.4 GiB</div>
+          </div>
+          <div class="ops-metric-card">
+            <div class="ops-metric-label">剩余磁盘情况</div>
+            <div class="ops-metric-value">1.0T / 45.0T</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <div>
+          <div class="text-sm font-semibold text-white mb-3">照片视频存储信息</div>
+          <div class="ops-storage-card ops-storage-blue">
+            <div><div class="ops-storage-num">182</div><div class="ops-storage-sub">照片视频数量</div></div>
+            <div><div class="ops-storage-num">3.82 TB</div><div class="ops-storage-sub">照片视频大小</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-sm font-semibold text-white mb-3">项目文件存储信息</div>
+          <div class="ops-storage-card ops-storage-cyan">
+            <div><div class="ops-storage-num">96</div><div class="ops-storage-sub">项目文件数量</div></div>
+            <div><div class="ops-storage-num">1.26 TB</div><div class="ops-storage-sub">项目文件大小</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="text-sm font-semibold text-white mb-3">资料库存储信息</div>
+          <div class="ops-storage-card ops-storage-green">
+            <div><div class="ops-storage-num">268</div><div class="ops-storage-sub">资料库数量</div></div>
+            <div><div class="ops-storage-num">860 GB</div><div class="ops-storage-sub">资料库大小</div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="mb-6">
+      <h2 class="text-sm font-semibold text-white mb-4">空间存储一览图</h2>
+      <div class="ops-chart-shell">
+        <div class="ops-chart-grid">
+          <div class="ops-summary-grid">
+            <div class="ops-summary-card">
+              <div class="text-xs text-slate-400 mb-2">总空间容量</div>
+              <div class="text-white text-2xl font-semibold">45.0 TB</div>
+            </div>
+            <div class="ops-summary-card">
+              <div class="text-xs text-slate-400 mb-2">当前已用</div>
+              <div class="text-white text-2xl font-semibold">5.94 TB</div>
+            </div>
+            <div class="ops-summary-card">
+              <div class="text-xs text-slate-400 mb-2">剩余可用</div>
+              <div class="text-white text-2xl font-semibold">39.06 TB</div>
+            </div>
+          </div>
+          <div class="ops-legend">
+            <div class="ops-legend-row">
+              <span class="ops-legend-dot bg-[#1e90ff]"></span>
+              <span class="text-slate-200">照片视频</span>
+              <div class="ops-bar"><span style="width:64%;background:#1e90ff"></span></div>
+              <span class="text-slate-300 text-right">3.82 TB</span>
+            </div>
+            <div class="ops-legend-row">
+              <span class="ops-legend-dot bg-[#17bebb]"></span>
+              <span class="text-slate-200">项目文件</span>
+              <div class="ops-bar"><span style="width:21%;background:#17bebb"></span></div>
+              <span class="text-slate-300 text-right">1.26 TB</span>
+            </div>
+            <div class="ops-legend-row">
+              <span class="ops-legend-dot bg-[#52c41a]"></span>
+              <span class="text-slate-200">资料库</span>
+              <div class="ops-bar"><span style="width:15%;background:#52c41a"></span></div>
+              <span class="text-slate-300 text-right">860 GB</span>
+            </div>
+            <div class="rounded-lg border border-cyan-400/15 bg-slate-900/25 p-4">
+              <div class="text-xs text-slate-400 mb-3">总存储占用</div>
+              <div class="h-3 rounded-full bg-slate-800/80 overflow-hidden">
+                <div class="h-3 rounded-full bg-cyan-400" style="width:13.2%"></div>
+              </div>
+              <div class="flex items-center justify-between mt-3 text-xs text-slate-300">
+                <span>已用 13.2%</span>
+                <span>5.94 TB / 45.0 TB</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="ops-footer">© 2020-2026 All Rights Reserved Wuhan</div>
+  </div>
+  <script src="assets/js/menu-config.js"></script>
+  <script src="assets/js/shell.js"></script>
+</body>
+</html>

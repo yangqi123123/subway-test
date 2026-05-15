@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>线路项目统计</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/theme.css" />
+  <style>
+    .line-panel { border-radius: 14px; border: 1px solid rgba(34, 211, 238, .14); background: rgba(7, 20, 38, .9); padding: 18px 20px 22px; }
+    .line-chart-title { text-align: center; color: #f8fafc; font-size: 16px; font-weight: 700; }
+    .line-chart-sub { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 6px; }
+    .line-canvas { width: 100%; height: 430px; display: block; }
+    .line-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .line-legend { display: flex; gap: 16px; align-items: center; }
+    .line-legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #cbd5e1; }
+    .line-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  </style>
+</head>
+<body data-shell="default" data-top="dc" data-sidebar-key="dc-line-stats">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+      <span class="text-slate-600">/</span>
+      <span>数据中心</span>
+      <span class="text-slate-600">/</span>
+      <span class="text-cyan-50 font-semibold tracking-wide">线路项目统计</span>
+    </nav>
+
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">线路项目统计</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">线路项目统计面板</span>
+    </div>
+
+    <section class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-6">
+      <div class="wh-kpi-card text-white flex gap-3 items-start">
+        <div class="wh-kpi-icon text-cyan-300 shrink-0"><i class="fa-solid fa-share-nodes"></i></div>
+        <div class="flex-1 min-w-0 relative z-[1]">
+          <div class="text-[11px] font-medium tracking-wide text-sky-200/75">线路数量</div>
+          <div class="text-2xl font-bold mt-1 leading-tight">12</div>
+        </div>
+      </div>
+      <div class="wh-kpi-card text-white flex gap-3 items-start">
+        <div class="wh-kpi-icon text-cyan-300 shrink-0"><i class="fa-solid fa-location-crosshairs"></i></div>
+        <div class="flex-1 min-w-0 relative z-[1]">
+          <div class="text-[11px] font-medium tracking-wide text-sky-200/75">站点数量</div>
+          <div class="text-2xl font-bold mt-1 leading-tight">317</div>
+        </div>
+      </div>
+      <div class="wh-kpi-card text-white flex gap-3 items-start">
+        <div class="wh-kpi-icon text-cyan-300 shrink-0"><i class="fa-solid fa-bezier-curve"></i></div>
+        <div class="flex-1 min-w-0 relative z-[1]">
+          <div class="text-[11px] font-medium tracking-wide text-sky-200/75">区间数量</div>
+          <div class="text-2xl font-bold mt-1 leading-tight">618</div>
+        </div>
+      </div>
+      <div class="wh-kpi-card text-white flex gap-3 items-start">
+        <div class="wh-kpi-icon text-cyan-300 shrink-0"><i class="fa-regular fa-rectangle-list"></i></div>
+        <div class="flex-1 min-w-0 relative z-[1]">
+          <div class="text-[11px] font-medium tracking-wide text-sky-200/75">项目数量</div>
+          <div class="text-2xl font-bold mt-1 leading-tight">680</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="text-lg font-semibold text-white mb-6">Wed Apr 08 2026 15:09:32 GMT+0800 (中国标准时间)</div>
+
+    <section class="line-panel">
+      <div class="line-toolbar">
+        <div class="line-legend">
+          <span class="line-legend-item"><span class="line-dot bg-[#ffbf33]"></span>一般项目</span>
+          <span class="line-legend-item"><span class="line-dot bg-[#ff6843]"></span>重点项目</span>
+        </div>
+        <div class="text-slate-400 text-sm flex gap-3">
+          <i class="fa-solid fa-layer-group"></i>
+          <i class="fa-regular fa-file-lines"></i>
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          <i class="fa-solid fa-crosshairs"></i>
+          <i class="fa-regular fa-copy"></i>
+          <i class="fa-solid fa-camera-retro"></i>
+          <i class="fa-solid fa-expand"></i>
+        </div>
+      </div>
+      <div class="line-chart-title">线路项目统计图</div>
+      <div class="line-chart-sub">一般项目456个，重点项目224个</div>
+      <canvas id="line-project-chart" class="line-canvas" width="1680" height="430"></canvas>
+    </section>
+  </div>
+
+  <script src="assets/js/menu-config.js"></script>
+  <script src="assets/js/shell.js"></script>
+  <script>
+    function drawStackedChart() {
+      const canvas = document.getElementById("line-project-chart");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      const left = 70, right = 34, top = 36, bottom = 56;
+      const labels = ["1号线","2号线","3号线","4号线","5号线","6号线","7号线","8号线","11号线","16号线","19号线","阳逻线"];
+      const normal = [11,58,13,49,20,75,132,24,20,23,12,19];
+      const focus = [8,48,16,31,19,21,22,12,21,11,4,11];
+      const max = 180;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.font = "12px sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.strokeStyle = "rgba(148,163,184,.18)";
+
+      for (let i = 0; i <= 6; i++) {
+        const value = i * 30;
+        const y = h - bottom - ((h - top - bottom) / 6) * i;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(w - right, y);
+        ctx.stroke();
+        ctx.fillText(String(value), 24, y + 4);
+      }
+
+      ctx.fillText("项目数量", 18, top - 6);
+      ctx.fillText("线路", w - right + 2, h - bottom + 24);
+
+      const slot = (w - left - right) / labels.length;
+      const barW = 52;
+
+      labels.forEach((label, i) => {
+        const x = left + slot * i + (slot - barW) / 2;
+        const normalH = (normal[i] / max) * (h - top - bottom);
+        const focusH = (focus[i] / max) * (h - top - bottom);
+        const yNormal = h - bottom - normalH;
+        const yFocus = yNormal - focusH;
+
+        const grad = ctx.createLinearGradient(0, yNormal, 0, h - bottom);
+        grad.addColorStop(0, "#2dd4bf");
+        grad.addColorStop(1, "#0ea5e9");
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, yNormal, barW, normalH);
+
+        ctx.fillStyle = "#f97316";
+        ctx.fillRect(x, yFocus, barW, focusH);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 12px sans-serif";
+        ctx.fillText(String(normal[i]), x + 16, yNormal + normalH / 2 + 4);
+        ctx.fillText(String(focus[i]), x + 16, yFocus + focusH / 2 + 4);
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "12px sans-serif";
+        ctx.fillText(label, x + 6, h - 20);
+      });
+    }
+
+    drawStackedChart();
+  </script>
+</body>
+</html>
