@@ -3,6 +3,9 @@
   --header-h: 64px;
   --sidebar-w: 260px;
   --sidebar-collapsed-w: 80px;
+  --viewport-h: 100vh;
+  --viewport-h: 100dvh;
+  --main-h: calc(var(--viewport-h) - var(--header-h));
   --bg-deep: #030712;
   --bg-panel: rgba(8, 15, 35, 0.72);
   --neon-cyan: #22d3ee;
@@ -26,13 +29,14 @@
   --shadow-card: 0 0 0 1px rgba(34, 211, 238, 0.12), 0 12px 40px rgba(0, 0, 0, 0.45);
 }
 
-html,
-body {
+html {
   height: 100%;
+  min-height: var(--viewport-h);
 }
 
 body {
   margin: 0;
+  min-height: var(--viewport-h);
   color: var(--cell-text);
   font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
   background: var(--bg-deep);
@@ -358,4 +362,86 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* 后台壳：侧栏贴左满高，主区铺满剩余视口；仅主区内部滚动 */
+body:has(#app-layout) {
+  height: var(--viewport-h);
+  min-height: var(--viewport-h);
+  overflow: hidden;
+}
+
+#app-layout {
+  position: relative;
+  height: var(--viewport-h);
+  min-height: var(--viewport-h);
+  overflow: hidden;
+}
+
+.wh-shell-row {
+  position: absolute;
+  top: var(--header-h);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  box-sizing: border-box;
+  min-height: 0;
+  padding-top: 0;
+}
+
+.wh-sidebar {
+  top: var(--header-h) !important;
+  bottom: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+#shell-main.wh-main-canvas {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 100%;
+  max-height: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+#shell-main.wh-main-canvas.wh-main-canvas--fullscreen {
+  overflow: hidden;
+}
+
+#shell-main #page-root {
+  flex: 1 1 auto;
+  min-height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#shell-main.wh-main-canvas--fullscreen #page-root {
+  min-height: 100%;
+  height: 100%;
+}
+
+/* 无壳页面（登录等） */
+body.wh-main-canvas:not(:has(#app-layout)) {
+  min-height: var(--viewport-h);
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body.wh-main-canvas > .login-shell {
+  flex: 1 1 auto;
+  min-height: var(--viewport-h);
+  box-sizing: border-box;
 }

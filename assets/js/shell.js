@@ -65,7 +65,7 @@
       style:
         "top:64px;width:" +
         (collapsed ? "80px" : "260px") +
-        ";height:calc(100vh - 64px);",
+        ";",
     });
 
     var scroll = el("div", {
@@ -241,19 +241,18 @@
 
     var collapsed = localStorage.getItem(STORAGE_SIDEBAR) === "1";
 
-    var layout = el("div", { id: "app-layout", className: "min-h-screen" });
+    var layout = el("div", { id: "app-layout" });
     var header = buildHeader(topId, shell);
     layout.appendChild(header);
 
     var row = el("div", {
-      className: "flex",
-      style: "padding-top:64px;min-height:100vh;",
+      className: "wh-shell-row",
     });
 
     if (shell === "fullscreen") {
       var mainFs = el("main", {
         id: "shell-main",
-        className: "wh-main-canvas wh-main-canvas--fullscreen flex-1 min-h-[calc(100vh-64px)]",
+        className: "wh-main-canvas wh-main-canvas--fullscreen",
         style: "margin-left:0;",
       });
       mainFs.appendChild(pageRoot);
@@ -262,7 +261,7 @@
       var aside = buildSidebar(topId, activeKey, collapsed);
       var main = el("main", {
         id: "shell-main",
-        className: "wh-main-canvas flex-1 min-h-[calc(100vh-64px)] p-4 md:p-6",
+        className: "wh-main-canvas p-4 md:p-6",
         style: "margin-left:" + (collapsed ? "80px" : "260px") + ";transition:margin-left .2s;",
       });
       main.appendChild(pageRoot);
