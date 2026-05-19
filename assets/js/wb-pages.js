@@ -276,10 +276,10 @@
       };
     }
 
-    if (key === "wb-role") {
+    if (key === "wb-role" || key === "wb-permission") {
       return {
         pageType: "table",
-        title: "角色管理",
+        title: key === "wb-permission" ? "权限管理" : "角色管理",
         filters: [
           { key: "roleName", label: "角色名称" },
           { key: "roleKey", label: "权限字符" },

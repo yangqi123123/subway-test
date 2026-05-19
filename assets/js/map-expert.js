@@ -75,19 +75,28 @@
         .addTo(map);
     });
 
-    var alarmIcon = L.divIcon({
-      className: "",
-      html: '<div class="expert-alarm-marker"><i class="fa-solid fa-location-dot"></i></div>',
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
-    });
+    var alarmLabel = "\u91cd\u70b9\u544a\u8b66\u70b9";
+    try {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get("location")) alarmLabel = params.get("location");
+    } catch (e) {}
+
+    var alarmIcon =
+      window.WuhanGIS && typeof window.WuhanGIS.makeBadgeIcon === "function"
+        ? window.WuhanGIS.makeBadgeIcon("#ef4444", "fa-solid fa-circle-exclamation", 28)
+        : L.divIcon({
+            className: "gis-badge-icon",
+            html: '<div style="width:28px;height:28px;border-radius:999px;background:#ef4444;border:2px solid rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;color:#fff;"><i class="fa-solid fa-circle-exclamation"></i></div>',
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+          });
 
     L.marker([30.576, 114.338], { icon: alarmIcon })
-      .bindTooltip("\u91cd\u70b9\u544a\u8b66\u70b9", {
-        direction: "bottom",
-        offset: [0, 4],
+      .bindTooltip(alarmLabel, {
+        direction: "top",
+        offset: [0, -14],
         className: "expert-map-label",
-        permanent: true,
+        permanent: false,
       })
       .addTo(map);
 

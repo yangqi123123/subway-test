@@ -9,342 +9,75 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="assets/css/theme.css" />
     <link rel="stylesheet" href="assets/css/map-gis.css" />
+    <link rel="stylesheet" href="assets/css/map-cockpit.css" />
     <style>
       body { overflow: hidden; }
-      .map-breadcrumb {
-        margin-bottom: 12px;
-        padding: 10px 16px;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px;
-        font-size: 11px;
-        color: #94a3b8;
-      }
-      .map-breadcrumb__icon { color: #22d3ee; }
-      .map-breadcrumb__sep { color: #475569; }
-      .map-breadcrumb__current {
-        color: #f8fafc;
-        font-weight: 600;
-        letter-spacing: .02em;
-      }
-      .cockpit-shell {
-        background:
-          linear-gradient(180deg, rgba(4, 18, 32, 0.9), rgba(3, 12, 24, 0.98)),
-          url("https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1800&q=80") center/cover no-repeat;
-      }
-      .panel-frame {
-        position: relative;
-        border: 1px solid rgba(84, 233, 255, 0.42);
-        background: linear-gradient(180deg, rgba(7, 26, 43, 0.92), rgba(8, 22, 36, 0.92));
-        box-shadow: 0 0 0 1px rgba(84, 233, 255, 0.12), 0 0 28px rgba(34, 211, 238, 0.16);
-        overflow: hidden;
-      }
-      .panel-frame::before,
-      .panel-frame::after {
-        content: "";
-        position: absolute;
-        width: 34px;
-        height: 34px;
-        border-top: 3px solid #6ff6ff;
-        border-left: 3px solid #6ff6ff;
-        z-index: 6;
-      }
-      .panel-frame::before { left: 8px; top: 8px; }
-      .panel-frame::after { right: 8px; top: 8px; transform: scaleX(-1); }
-      .side-panel {
-        position: relative;
-        border: 1px solid rgba(84, 233, 255, 0.38);
-        background: linear-gradient(180deg, rgba(7, 26, 43, 0.96), rgba(6, 20, 34, 0.96));
-        box-shadow: 0 0 0 1px rgba(84, 233, 255, 0.08), 0 0 24px rgba(34, 211, 238, 0.14);
-        overflow: hidden;
-      }
-      .side-title {
-        position: relative;
-        height: 42px;
-        padding: 0 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        color: #ecfeff;
-        font-size: 14px;
-        font-weight: 700;
-        background: linear-gradient(90deg, rgba(37, 99, 235, 0.48), rgba(14, 165, 233, 0.08));
-      }
-      .side-title::after {
-        content: "";
-        position: absolute;
-        right: 14px;
-        top: 8px;
-        width: 54px;
-        height: 14px;
-        border-top: 2px solid rgba(84, 233, 255, 0.7);
-        border-right: 2px solid rgba(84, 233, 255, 0.7);
-        transform: skewX(-35deg);
-      }
-      .map-note {
-        position: absolute;
-        left: 78px;
-        top: 60px;
-        z-index: 500;
-        font-size: 14px;
-        color: #ff3b30;
-        font-weight: 700;
-        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
-      }
-      .airport-card {
-        border: 1px solid rgba(84, 233, 255, 0.16);
-        background: rgba(15, 38, 58, 0.86);
-      }
-      .airport-card.active {
-        border-color: rgba(111, 246, 255, 0.78);
-        box-shadow: 0 0 16px rgba(34, 211, 238, 0.22);
-      }
-      .label-txt { color: #9cc6df; font-size: 12px; }
-      .value-txt { color: #ecfeff; font-size: 12px; }
-      .action-btn {
-        height: 32px;
-        padding: 0 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 700;
-        color: #ecfeff;
-        border: 1px solid rgba(124, 232, 255, 0.4);
-        background: linear-gradient(180deg, rgba(93, 151, 177, 0.9), rgba(41, 95, 118, 0.92));
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 14px rgba(34, 211, 238, 0.14);
-        white-space: nowrap;
-      }
-      .action-btn.warn {
-        background: linear-gradient(180deg, rgba(211, 82, 82, 0.96), rgba(144, 40, 40, 0.96));
-        border-color: rgba(255, 127, 127, 0.45);
-      }
-      .unlock-btn {
-        color: #54f1ff;
-        font-size: 13px;
-        font-weight: 700;
-      }
-      .camera-box {
-        min-height: 320px;
-        background: #938d8f;
-        position: relative;
-      }
-      .camera-box img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      .camera-empty {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: rgba(255, 255, 255, 0.82);
-        font-size: 20px;
-      }
-      .confirm-mask {
-        position: fixed;
-        inset: 0;
-        z-index: 1200;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        background: rgba(0, 10, 20, 0.58);
-      }
-      .confirm-mask.show { display: flex; }
-      .confirm-card {
-        position: relative;
-        width: 300px;
-        min-height: 185px;
-        border-radius: 8px;
-        border: 1px solid rgba(84, 233, 255, 0.26);
-        background: linear-gradient(180deg, #0b3c4a 0%, #0a3442 100%);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-      }
-      .close-x {
-        position: absolute;
-        right: 10px;
-        top: 8px;
-        width: 22px;
-        height: 22px;
-        border-radius: 999px;
-        background: rgba(0, 0, 0, 0.28);
-        color: #dce8f8;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .manual-drawer {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 1100;
-        transform: translateY(100%);
-        transition: transform 0.24s ease;
-        pointer-events: none;
-      }
-      .manual-drawer.show {
-        transform: translateY(0);
-        pointer-events: auto;
-      }
-      .manual-card {
-        width: min(1080px, calc(100vw - 20px));
-        margin: 0 auto 10px;
-        border: 1px solid rgba(84, 233, 255, 0.26);
-        background: linear-gradient(180deg, #202d3f 0%, #1f2a3a 100%);
-        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48);
-      }
-      .manual-head {
-        position: relative;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #ecfeff;
-        font-size: 18px;
-        font-weight: 700;
-        background: linear-gradient(90deg, rgba(67, 151, 204, 0.58), rgba(67, 151, 204, 0.14));
-      }
-      .manual-head .close-x {
-        right: 14px;
-        top: 13px;
-      }
-      .manual-layout {
-        display: grid;
-        grid-template-columns: 130px 1fr 130px;
-        align-items: center;
-        gap: 20px;
-        padding: 18px 26px 24px;
-      }
-      .manual-pad {
-        width: 92px;
-        height: 92px;
-        margin: 0 auto;
-        border-radius: 999px;
-        border: 1px solid rgba(84, 233, 255, 0.4);
-        background: radial-gradient(circle at 50% 40%, rgba(82, 182, 219, 0.28), rgba(25, 63, 90, 0.8));
-        position: relative;
-        color: #dce8f8;
-      }
-      .manual-pad span {
-        position: absolute;
-        font-size: 12px;
-        font-weight: 700;
-        text-align: center;
-        line-height: 1.15;
-      }
-      .manual-pad .up { top: 8px; left: 50%; transform: translateX(-50%); }
-      .manual-pad .down { bottom: 8px; left: 50%; transform: translateX(-50%); }
-      .manual-pad .left { left: 10px; top: 50%; transform: translateY(-50%); }
-      .manual-pad .right { right: 10px; top: 50%; transform: translateY(-50%); }
-      .manual-pad .mid { left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 11px; }
-      .manual-axis {
-        writing-mode: vertical-rl;
-        text-orientation: mixed;
-        color: #9cc6df;
-        font-size: 14px;
-        letter-spacing: 0;
-      }
-      .manual-center {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 18px;
-        flex-wrap: wrap;
-      }
-      .manual-op {
-        min-width: 110px;
-        height: 36px;
-        padding: 0 16px;
-        border-radius: 8px;
-        border: 1px solid rgba(124, 232, 255, 0.4);
-        background: linear-gradient(180deg, rgba(93, 151, 177, 0.9), rgba(41, 95, 118, 0.92));
-        color: #ecfeff;
-        font-size: 16px;
-        font-weight: 700;
-      }
-      #prep-map,
-      #prep-map .leaflet-container {
-        background: #edf3f8;
-        font-family: inherit;
-      }
-      #prep-map .leaflet-control-attribution { display: none; }
-      #prep-map .leaflet-control-zoom {
-        margin-top: 14px;
-        margin-left: 14px;
-      }
-      #prep-map .leaflet-control-zoom a {
-        width: 28px;
-        height: 28px;
-        line-height: 27px;
-        color: #fff;
-        background: rgba(9, 18, 36, 0.78);
-      }
     </style>
   </head>
-  <body data-shell="fullscreen" data-top="map">
-    <div id="page-root" class="cockpit-shell h-[calc(100vh-64px)] p-3 text-[#dce8f8] flex flex-col">
-      <nav class="neon-panel neon-panel--tight map-breadcrumb">
-        <span class="map-breadcrumb__icon"><i class="fa-solid fa-location-crosshairs"></i></span>
+  <body data-shell="fullscreen" data-top="cockpit">
+    <div id="page-root" class="cockpit-screen h-[calc(100vh-64px)] px-5 py-4 flex flex-col gap-4">
+      <nav class="cockpit-panel cockpit-crumb">
+        <span class="cockpit-crumb__icon"><i class="fa-solid fa-location-crosshairs"></i></span>
         <span>全景地图</span>
-        <span class="map-breadcrumb__sep">&gt;&gt;</span>
-        <span class="map-breadcrumb__current">虚拟座舱</span>
+        <span class="cockpit-crumb__sep">&gt;&gt;</span>
+        <span class="cockpit-crumb__current">虚拟座舱</span>
       </nav>
-      <div class="flex-1 min-h-0 grid grid-cols-[1fr_360px] gap-4">
-        <section class="flex min-h-0 flex-col">
-          <div class="panel-frame flex-1 min-h-0 p-3">
-            <div class="relative h-full">
-              <div id="prep-map" class="h-full"></div>
-              <div class="map-note">默认显示地图内所有机场及待复核区域，便于分配任务</div>
+      <div class="flex-1 min-h-0 grid grid-cols-[1fr_360px] gap-5">
+        <section class="flex min-h-0 flex-col gap-3">
+          <div class="cockpit-panel flex-1 min-h-0 flex flex-col">
+            <div class="cockpit-map-wrap">
+              <div class="cockpit-map-inner">
+                <div id="prep-map" class="cockpit-leaflet h-full w-full"></div>
+                <div class="cockpit-map-note">默认显示地图内所有机场及待复核区域，便于分配任务</div>
+              </div>
             </div>
           </div>
-          <div class="flex items-center gap-4 pt-2">
-            <button id="btn-unlock" type="button" class="unlock-btn"><i class="fa-solid fa-lock-open mr-1"></i>点击解锁人工操控</button>
-            <button id="btn-direct" type="button" class="action-btn">一键起飞</button>
-            <button id="btn-stop" type="button" class="action-btn warn">急停</button>
-            <button id="btn-back" type="button" class="action-btn">智能返航</button>
+          <div class="cockpit-actions">
+            <button id="btn-unlock" type="button" class="cockpit-btn cockpit-btn--ghost"><i class="fa-solid fa-lock-open mr-1"></i>点击解锁人工操控</button>
+            <button id="btn-direct" type="button" class="cockpit-btn">一键起飞</button>
+            <button id="btn-stop" type="button" class="cockpit-btn cockpit-btn--warn">急停</button>
+            <button id="btn-back" type="button" class="cockpit-btn">智能返航</button>
           </div>
         </section>
 
         <aside class="flex min-h-0 flex-col gap-4">
-          <section class="side-panel min-h-0 flex flex-col">
-            <div class="side-title">选择机场</div>
-            <div id="airport-list" class="grid grid-cols-2 gap-px bg-cyan-400/20 p-px"></div>
+          <section class="cockpit-panel min-h-0 flex flex-col">
+            <div class="cockpit-title">选择机场</div>
+            <div id="airport-list" class="grid grid-cols-2 gap-px p-px" style="background: rgba(52, 211, 235, 0.12)"></div>
           </section>
-          <section class="side-panel min-h-0 flex-1 flex flex-col">
-            <div class="side-title">
+          <section class="cockpit-panel min-h-0 flex-1 flex flex-col">
+            <div class="cockpit-title">
               <span>机场镜头</span>
-              <span class="text-[12px] text-cyan-200"><i class="fa-solid fa-expand mr-1"></i>放大</span>
+              <span class="cockpit-title__sub"><i class="fa-solid fa-expand mr-1"></i>放大</span>
             </div>
-            <div class="camera-box flex-1">
+            <div class="cockpit-camera flex-1">
               <img id="camera-image" src="https://images.unsplash.com/photo-1511818966892-d7d671e672a2?auto=format&fit=crop&w=1200&q=80" alt="机场镜头" />
-              <div id="camera-empty" class="camera-empty hidden">请等待信号源</div>
+              <div id="camera-empty" class="cockpit-camera-empty hidden">请等待信号源</div>
             </div>
           </section>
         </aside>
       </div>
     </div>
 
-    <div id="confirm-modal" class="confirm-mask">
-      <div class="confirm-card px-6 pt-10 pb-8">
-        <button id="close-confirm" type="button" class="close-x">×</button>
+    <div id="confirm-modal" class="cockpit-mask">
+      <div class="cockpit-dialog px-6 pt-10 pb-8">
+        <button id="close-confirm" type="button" class="cockpit-close">×</button>
         <div class="mt-2 text-center text-[15px] font-semibold leading-8 text-white">相关空域在有效期内，请确认是否立即起飞</div>
         <div class="mt-10 flex justify-center">
-          <button id="btn-go-fly" type="button" class="action-btn min-w-[130px]">立即起飞</button>
+          <button id="btn-go-fly" type="button" class="cockpit-btn min-w-[130px]">立即起飞</button>
         </div>
       </div>
     </div>
 
-    <div id="manual-drawer" class="manual-drawer">
-      <div class="manual-card rounded-[6px] overflow-hidden">
-        <div class="manual-head">
+    <div id="manual-drawer" class="cockpit-drawer">
+      <div class="cockpit-drawer-card">
+        <div class="cockpit-drawer-head">
           无人机操控台
-          <button id="close-manual" type="button" class="close-x">×</button>
+          <button id="close-manual" type="button" class="cockpit-close">×</button>
         </div>
-        <div class="manual-layout">
+        <div class="cockpit-manual-layout">
           <div class="flex items-center justify-center gap-3">
-            <div class="manual-pad">
+            <div class="cockpit-pad">
               <span class="up">前进<br />W</span>
               <span class="down">后退<br />S</span>
               <span class="left">左<br />A</span>
@@ -352,20 +85,20 @@
               <span class="mid">↕</span>
             </div>
           </div>
-          <div class="manual-center">
-            <button type="button" class="manual-op" data-console="takeoff">一键起飞</button>
-            <button type="button" class="manual-op" data-console="camera-down">镜头向下</button>
-            <button type="button" class="manual-op" data-console="camera-up">镜头向上</button>
+          <div class="cockpit-manual-center">
+            <button type="button" class="cockpit-manual-op" data-console="takeoff">一键起飞</button>
+            <button type="button" class="cockpit-manual-op" data-console="camera-down">镜头向下</button>
+            <button type="button" class="cockpit-manual-op" data-console="camera-up">镜头向上</button>
           </div>
           <div class="flex items-center justify-center gap-3">
-            <div class="manual-pad">
+            <div class="cockpit-pad">
               <span class="up">上升</span>
               <span class="down">下降</span>
               <span class="left">左转</span>
               <span class="right">右转</span>
               <span class="mid">机身方向</span>
             </div>
-            <div class="manual-axis">机身方向</div>
+            <div class="cockpit-manual-axis">机身方向</div>
           </div>
         </div>
       </div>
@@ -376,6 +109,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="assets/js/menu-config.js"></script>
     <script src="assets/js/shell.js"></script>
+    <script src="assets/js/map-metro-data.js"></script>
+    <script src="assets/js/map-patrol-overlay.js"></script>
     <script src="assets/js/map-gis.js"></script>
     <script>
       const airports = [
@@ -397,18 +132,18 @@
       function renderAirports() {
         const wrap = document.getElementById("airport-list");
         wrap.innerHTML = airports.map((item) => `
-          <div class="airport-card ${item.id === selectedAirport.id ? "active" : ""} p-3">
+          <div class="cockpit-airport-card ${item.id === selectedAirport.id ? "active" : ""} p-3">
             <div class="flex items-center justify-between">
-              <div class="text-[14px] font-semibold text-white">${item.name}</div>
-              <div class="text-[12px] ${item.status === "离线" ? "text-rose-400" : "text-white"}">${item.status}</div>
+              <div class="cockpit-card-head">${item.name}</div>
+              <div class="cockpit-card-head__status ${item.status === "离线" ? "is-offline" : ""}">${item.status}</div>
             </div>
             <div class="mt-3 space-y-2">
-              <div class="flex justify-between"><span class="label-txt">无人机状态：</span><span class="value-txt">${item.drone}</span></div>
-              <div class="flex justify-between"><span class="label-txt">无人机电量：</span><span class="value-txt">${item.battery}</span></div>
-              <div class="flex justify-between"><span class="label-txt">是否满足起飞条件：</span><span class="value-txt ${item.condition === "不满足" ? "text-rose-400" : "text-emerald-300"}">${item.condition}</span></div>
+              <div class="flex justify-between"><span class="cockpit-label">无人机状态：</span><span class="cockpit-value">${item.drone}</span></div>
+              <div class="flex justify-between"><span class="cockpit-label">无人机电量：</span><span class="cockpit-value">${item.battery}</span></div>
+              <div class="flex justify-between"><span class="cockpit-label">是否满足起飞条件：</span><span class="cockpit-value ${item.condition === "不满足" ? "cockpit-value--not-ready" : "cockpit-value--ready"}">${item.condition}</span></div>
             </div>
             <div class="mt-3 flex justify-end">
-              <button type="button" class="action-btn !h-[30px] !px-4 !text-[12px]" data-select-airport="${item.id}">选择</button>
+              <button type="button" class="cockpit-btn !h-[30px] !px-4 !text-[12px]" data-select-airport="${item.id}">选择</button>
             </div>
           </div>
         `).join("");
@@ -480,21 +215,6 @@
             { ll: [30.588, 114.302], airportName: "机场1", droneName: "001", battery: "100%", ready: true, readyText: "满足" },
             { ll: [30.602, 114.338], airportName: "机场2", droneName: "002", battery: "86%", ready: true, readyText: "满足" }
           ],
-          alarmDetails: [
-            {
-              ll: [30.598, 114.318],
-              items: [
-                { airportName: "机场1", airportStatus: "在线", droneName: "001", droneStatus: "在线", battery: "100%", ready: true, readyText: "满足", distance: "1.3km" },
-                { airportName: "机场2", airportStatus: "在线", droneName: "002", droneStatus: "在线", battery: "30%", ready: false, readyText: "不满足", distance: "5.3km" }
-              ]
-            }
-          ],
-          polylines: [
-            { points: [[30.612,114.264],[30.602,114.302],[30.593,114.334],[30.582,114.362],[30.566,114.387],[30.546,114.426],[30.524,114.454]], color: "#ef4444", weight: 4 },
-            { points: [[30.612,114.264],[30.602,114.302],[30.593,114.334],[30.582,114.362],[30.566,114.387],[30.546,114.426],[30.524,114.454]], color: "#10b981", weight: 2, opacity: 0.9 },
-            { points: [[30.595,114.281],[30.581,114.315],[30.573,114.352],[30.564,114.39],[30.548,114.432],[30.532,114.465]], color: "#ef4444", weight: 4 },
-            { points: [[30.595,114.281],[30.581,114.315],[30.573,114.352],[30.564,114.39],[30.548,114.432],[30.532,114.465]], color: "#10b981", weight: 2, opacity: 0.9 }
-          ]
         });
       }
     </script>

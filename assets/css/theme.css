@@ -71,11 +71,16 @@ body {
   padding: 0 !important;
 }
 
-/* 顶栏 */
+/* 顶栏：允许一级菜单下的绝对定位下拉溢出绘制 */
 .wh-header {
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(34, 211, 238, 0.12);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+  overflow: visible;
+}
+
+#app-layout > .wh-header {
+  overflow: visible;
 }
 
 .wh-top-nav {

@@ -40,9 +40,254 @@
   window.WuhanGIS = window.WuhanGIS || {};
   window.WuhanGIS.createSharedMap = createSharedMap;
 
-  function buildAirportDronePanelHtml(items) {
+  /** Catmull-Rom 样条：将折线锚点转为贴合道路走向的平滑曲线 */
+  function smoothMetroCurve(points, options) {
+    options = options || {};
+    var segments = options.segmentsPerLeg == null ? 16 : options.segmentsPerLeg;
+    if (!points || points.length < 2) return points ? points.slice() : [];
+
+    function sample(p0, p1, p2, p3, t) {
+      var t2 = t * t;
+      var t3 = t2 * t;
+      return [
+        0.5 *
+          (2 * p1[0] +
+            (-p0[0] + p2[0]) * t +
+            (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 +
+            (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3),
+        0.5 *
+          (2 * p1[1] +
+            (-p0[1] + p2[1]) * t +
+            (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 +
+            (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3),
+      ];
+    }
+
+    var result = [];
+    var extended = [points[0]].concat(points).concat([points[points.length - 1]]);
+    for (var i = 1; i < extended.length - 2; i++) {
+      var p0 = extended[i - 1];
+      var p1 = extended[i];
+      var p2 = extended[i + 1];
+      var p3 = extended[i + 2];
+      for (var j = 0; j < segments; j++) {
+        if (i > 1 || j > 0) result.push(sample(p0, p1, p2, p3, j / segments));
+      }
+    }
+    result.push(points[points.length - 1]);
+    return result;
+  }
+
+  window.WuhanGIS.smoothMetroCurve = smoothMetroCurve;
+
+  function lineKeyFromLabel(line) {
+    if (!line) return null;
+    if (line.indexOf("阳逻") >= 0) return "lyl";
+    var m = String(line).match(/(\d+)\s*号线/);
+    return m ? "l" + m[1] : null;
+  }
+
+  function buildInfoGridHtml(fields) {
     return (
-      '<div class="gis-airport-panel' + (items.length === 1 ? " gis-airport-panel--single" : "") + '">' +
+      '<div class="gis-info-grid">' +
+      fields
+        .map(function (field) {
+          return (
+            '<div class="gis-detail-field">' +
+            '<div class="gis-detail-label">' +
+            field.label +
+            "</div>" +
+            '<div class="gis-detail-value">' +
+            (field.value || "-") +
+            "</div>" +
+            "</div>"
+          );
+        })
+        .join("") +
+      "</div>"
+    );
+  }
+
+  var defaultAlarmAirportPair = [
+    {
+      airportName: "机场1",
+      airportStatus: "在线",
+      droneName: "001",
+      droneStatus: "在线",
+      battery: "100%",
+      ready: true,
+      readyText: "满足",
+      distance: "1.3km",
+    },
+    {
+      airportName: "机场2",
+      airportStatus: "在线",
+      droneName: "002",
+      droneStatus: "在线",
+      battery: "30%",
+      ready: false,
+      readyText: "不满足",
+      distance: "5.3km",
+    },
+  ];
+
+  function resolveAlarmAirports(airports) {
+    var list = airports && airports.length ? airports.slice() : [];
+    if (list.length >= 2) return list;
+    return defaultAlarmAirportPair.map(function (item) {
+      return {
+        airportName: item.airportName,
+        airportStatus: item.airportStatus,
+        droneName: item.droneName,
+        droneStatus: item.droneStatus,
+        battery: item.battery,
+        ready: item.ready,
+        readyText: item.readyText,
+        distance: item.distance,
+      };
+    });
+  }
+
+  function buildAlarmAirportCardHtml(item) {
+    return (
+      '<div class="gis-airport-card gis-alarm-carousel__card" data-carousel-card>' +
+      '<div class="gis-airport-card__row"><span class="gis-airport-card__label">机场名称:</span><span class="gis-airport-card__value">' +
+      item.airportName +
+      "</span></div>" +
+      '<div class="gis-airport-card__row"><span class="gis-airport-card__label">当前状态:</span><span class="gis-airport-status"><i class="fa-solid fa-circle"></i>' +
+      item.airportStatus +
+      "</span></div>" +
+      '<div class="gis-airport-card__spacer"></div>' +
+      '<div class="gis-airport-card__row"><span class="gis-airport-card__label">无人机名称:</span><span class="gis-airport-card__value">' +
+      item.droneName +
+      "</span></div>" +
+      '<div class="gis-airport-card__row"><span class="gis-airport-card__label">当前状态:</span><span class="gis-airport-status"><i class="fa-solid fa-circle"></i>' +
+      item.droneStatus +
+      "</span></div>" +
+      '<div class="gis-airport-card__row"><span class="gis-airport-card__label">电量:</span><span class="gis-airport-card__value">' +
+      item.battery +
+      "</span></div>" +
+      '<div class="gis-airport-card__row"><span class="gis-airport-card__label">是否满足起飞条件:</span><span class="gis-airport-card__value ' +
+      (item.ready ? "is-ready" : "is-not-ready") +
+      '">' +
+      item.readyText +
+      "</span></div>" +
+      (item.distance
+        ? '<div class="gis-airport-card__row"><span class="gis-airport-card__label">与该报警点之间的距离:</span><span class="gis-airport-card__value ' +
+          (item.ready ? "" : "is-not-ready") +
+          '">' +
+          item.distance +
+          "</span></div>"
+        : "") +
+      "</div>"
+    );
+  }
+
+  function buildAlarmPanelHtml(alarm, airports, options) {
+    options = options || {};
+    var statusClass =
+      alarm.status === "已复核" ? "gis-alarm-status gis-alarm-status--done" : "gis-alarm-status gis-alarm-status--pending";
+    var airportList = resolveAlarmAirports(airports);
+    var airportPanelClass =
+      "gis-airport-panel gis-alarm-carousel__viewport" + (airportList.length === 1 ? " gis-airport-panel--single" : "");
+    var panelClass = "gis-alarm-panel" + (options.hideCockpitNav ? " gis-alarm-panel--cockpit" : "");
+
+    return (
+      '<div class="' +
+      panelClass +
+      '">' +
+      '<section class="gis-alarm-section">' +
+      '<h4 class="gis-alarm-section__title">告警信息</h4>' +
+      buildInfoGridHtml([
+        { label: "项目名称", value: alarm.projectName },
+        { label: "报警区间", value: alarm.alarmSection },
+        { label: "报警位置", value: alarm.alarmPosition },
+        { label: "开始时间", value: alarm.startTime },
+        { label: "最新报警时间", value: alarm.latestTime },
+        {
+          label: "状态",
+          value: '<span class="' + statusClass + '">' + (alarm.status || "-") + "</span>",
+        },
+      ]) +
+      "</section>" +
+      '<section class="gis-alarm-section gis-alarm-section--airport" data-alarm-carousel data-carousel-page-size="2">' +
+      '<div class="gis-alarm-section__head">' +
+      '<h4 class="gis-alarm-section__title">附近机场及关联无人机详情</h4>' +
+      '<div class="gis-alarm-section__arrows">' +
+      '<button type="button" class="gis-alarm-carousel__btn gis-alarm-carousel__btn--mini" data-carousel-prev aria-label="上一组机场"><i class="fa-solid fa-chevron-left"></i></button>' +
+      '<button type="button" class="gis-alarm-carousel__btn gis-alarm-carousel__btn--mini" data-carousel-next aria-label="下一组机场"><i class="fa-solid fa-chevron-right"></i></button>' +
+      "</div>" +
+      "</div>" +
+      '<div class="' +
+      airportPanelClass +
+      '">' +
+      airportList.map(buildAlarmAirportCardHtml).join("") +
+      "</div>" +
+      "</section>" +
+      (options.hideCockpitNav
+        ? ""
+        : '<div class="gis-detail-action gis-alarm-panel__action">' +
+          '<button type="button" class="gis-detail-btn gis-detail-btn--block" data-cockpit-url="map-cockpit-prep.html">前往虚拟座舱</button>' +
+          "</div>") +
+      "</div>"
+    );
+  }
+
+  function wireDetailInteractivity(body) {
+    if (!body) return;
+    body.querySelectorAll("[data-flight-url]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        window.location.href = btn.getAttribute("data-flight-url");
+      });
+    });
+    body.querySelectorAll("[data-cockpit-url]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        window.location.href = btn.getAttribute("data-cockpit-url");
+      });
+    });
+    var carousel = body.querySelector("[data-alarm-carousel]");
+    if (!carousel) return;
+    var cards = carousel.querySelectorAll("[data-carousel-card]");
+    if (!cards.length) return;
+    var prev = carousel.querySelector("[data-carousel-prev]");
+    var next = carousel.querySelector("[data-carousel-next]");
+    var pageSize = parseInt(carousel.getAttribute("data-carousel-page-size"), 10) || 2;
+    var page = 0;
+    function renderCarousel() {
+      var totalPages = Math.max(1, Math.ceil(cards.length / pageSize));
+      cards.forEach(function (card, i) {
+        card.classList.toggle("is-active", i >= page * pageSize && i < page * pageSize + pageSize);
+      });
+      if (prev) prev.disabled = page <= 0;
+      if (next) next.disabled = page >= totalPages - 1;
+    }
+    if (prev) {
+      prev.addEventListener("click", function () {
+        if (page > 0) {
+          page -= 1;
+          renderCarousel();
+        }
+      });
+    }
+    if (next) {
+      next.addEventListener("click", function () {
+        var totalPages = Math.max(1, Math.ceil(cards.length / pageSize));
+        if (page < totalPages - 1) {
+          page += 1;
+          renderCarousel();
+        }
+      });
+    }
+    renderCarousel();
+  }
+
+  function buildAirportDronePanelHtml(items, options) {
+    options = options || {};
+    return (
+      '<div class="gis-airport-panel' +
+      (items.length === 1 ? " gis-airport-panel--single" : "") +
+      (options.hideCockpitNav ? " gis-airport-panel--cockpit" : "") +
+      '">' +
       items
         .map(function (item) {
           return (
@@ -75,7 +320,9 @@
                 item.distance +
                 "</span></div>"
               : "") +
-            '<div class="gis-detail-action"><button type="button" class="gis-detail-btn" data-flight-url="map-cockpit-fly.html">启用此无人机</button></div>' +
+            (options.hideCockpitNav
+              ? ""
+              : '<div class="gis-detail-action"><button type="button" class="gis-detail-btn" data-cockpit-url="map-cockpit-prep.html">前往虚拟座舱</button></div>') +
             "</div>"
           );
         })
@@ -115,11 +362,7 @@
       detailEls.title.textContent = title;
       detailEls.body.innerHTML = html;
       detailEls.panel.classList.remove("hidden");
-      detailEls.body.querySelectorAll("[data-flight-url]").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          window.location.href = btn.getAttribute("data-flight-url");
-        });
-      });
+      wireDetailInteractivity(detailEls.body);
     }
     if (detailEls.close && !detailEls.close.dataset.bound) {
       detailEls.close.dataset.bound = "1";
@@ -128,7 +371,66 @@
     return { openPanel: openPanel, closePanel: closePanel };
   }
 
+  var defaultAlarmDetails = [
+    {
+      ll: [30.598, 114.318],
+      projectName: "光谷广场综合体基坑项目",
+      alarmSection: "省博湖北日报-中南医院",
+      alarmPosition: "里程Z23+200,左线外侧37米",
+      startTime: "2026-03-05 08:21:36",
+      latestTime: "2026-03-05 08:27:27",
+      status: "已复核",
+      airports: [
+        { airportName: "机场1", airportStatus: "在线", droneName: "001", droneStatus: "在线", battery: "100%", ready: true, readyText: "满足", distance: "1.3km" },
+        { airportName: "机场2", airportStatus: "在线", droneName: "002", droneStatus: "在线", battery: "30%", ready: false, readyText: "不满足", distance: "5.3km" },
+      ],
+    },
+    {
+      ll: [30.572, 114.292],
+      projectName: "武昌滨江总部基地项目",
+      alarmSection: "武昌火车站-梅苑小区",
+      alarmPosition: "里程Y18+065,右线外侧21米",
+      startTime: "2026-03-05 07:52:10",
+      latestTime: "2026-03-05 08:04:18",
+      status: "已复核",
+      airports: [
+        { airportName: "机场1", airportStatus: "在线", droneName: "001", droneStatus: "在线", battery: "92%", ready: true, readyText: "满足", distance: "2.1km" },
+      ],
+    },
+    {
+      ll: [30.618, 114.328],
+      projectName: "后湖大道市政管廊项目",
+      alarmSection: "宏图大道-市民之家",
+      alarmPosition: "里程Z31+480,左线外侧15米",
+      startTime: "2026-03-05 09:10:02",
+      latestTime: "2026-03-05 09:18:44",
+      status: "已复核",
+      airports: [
+        { airportName: "机场2", airportStatus: "在线", droneName: "002", droneStatus: "在线", battery: "64%", ready: true, readyText: "满足", distance: "2.8km" },
+      ],
+    },
+  ];
+
   window.WuhanGIS.renderAirportDronePanelHtml = buildAirportDronePanelHtml;
+  window.WuhanGIS.buildAlarmPanelHtml = buildAlarmPanelHtml;
+  window.WuhanGIS.wireDetailInteractivity = wireDetailInteractivity;
+  function normalizeCockpitAlarm(item, index) {
+    var base = defaultAlarmDetails[index] || defaultAlarmDetails[0];
+    if (!item) return Object.assign({}, base);
+    return {
+      ll: item.ll || base.ll,
+      projectName: item.projectName || base.projectName,
+      alarmSection: item.alarmSection || base.alarmSection,
+      alarmPosition: item.alarmPosition || base.alarmPosition,
+      startTime: item.startTime || base.startTime,
+      latestTime: item.latestTime || base.latestTime,
+      status: item.status || base.status,
+      airports: item.airports || item.items || base.airports,
+    };
+  }
+
+  window.WuhanGIS.normalizeCockpitAlarm = normalizeCockpitAlarm;
+  window.WuhanGIS.defaultAlarmDetails = defaultAlarmDetails;
   window.WuhanGIS.mountCockpitMap = function (containerId, options) {
     if (typeof L === "undefined") return null;
     var container = typeof containerId === "string" ? document.getElementById(containerId) : containerId;
@@ -143,27 +445,7 @@
       { ll: [30.588, 114.302], airportName: "机场1", droneName: "001", battery: "100%", ready: true, readyText: "满足" },
       { ll: [30.602, 114.338], airportName: "机场2", droneName: "002", battery: "86%", ready: true, readyText: "满足" },
     ];
-    var alarmDetails = config.alarmDetails || [
-      {
-        ll: [30.598, 114.318],
-        items: [
-          { airportName: "机场1", airportStatus: "在线", droneName: "001", droneStatus: "在线", battery: "100%", ready: true, readyText: "满足", distance: "1.3km" },
-          { airportName: "机场2", airportStatus: "在线", droneName: "002", droneStatus: "在线", battery: "30%", ready: false, readyText: "不满足", distance: "5.3km" },
-        ],
-      },
-      {
-        ll: [30.572, 114.292],
-        items: [
-          { airportName: "机场1", airportStatus: "在线", droneName: "001", droneStatus: "在线", battery: "92%", ready: true, readyText: "满足", distance: "2.1km" },
-        ],
-      },
-      {
-        ll: [30.618, 114.328],
-        items: [
-          { airportName: "机场2", airportStatus: "在线", droneName: "002", droneStatus: "在线", battery: "64%", ready: true, readyText: "满足", distance: "2.8km" },
-        ],
-      },
-    ];
+    var alarmDetails = config.alarmDetails || defaultAlarmDetails;
 
     var map = createSharedMap(container, {
       center: config.center || [30.585, 114.365],
@@ -180,34 +462,57 @@
       }).addTo(map);
     });
 
+    var patrolLayers = {
+      patrolDone: L.layerGroup().addTo(map),
+      patrolTodo: L.layerGroup().addTo(map),
+      patrolPhotos: L.layerGroup().addTo(map),
+    };
+    if (window.WuhanGIS.mountPatrolLayers) {
+      window.WuhanGIS.mountPatrolLayers(map, {
+        layers: patrolLayers,
+        showPhotos: config.showPatrolPhotos !== false,
+        makePhotoDropIcon: makePhotoDropIcon,
+        halfWidthM: config.patrolHalfWidthM,
+      });
+    }
+
     airportDetails.forEach(function (item) {
       var marker = L.marker(item.ll, { icon: makeBadgeIcon("#0f766e", "fa-solid fa-plane-departure", 30) }).addTo(map);
       marker.on("click", function () {
         detailApi.openPanel(
           "机场及关联无人机详情",
-          buildAirportDronePanelHtml([
-            {
-              airportName: item.airportName,
-              airportStatus: item.airportStatus || "在线",
-              droneName: item.droneName,
-              droneStatus: item.droneStatus || "在线",
-              battery: item.battery,
-              ready: item.ready,
-              readyText: item.readyText,
-            },
-          ])
+          buildAirportDronePanelHtml(
+            [
+              {
+                airportName: item.airportName,
+                airportStatus: item.airportStatus || "在线",
+                droneName: item.droneName,
+                droneStatus: item.droneStatus || "在线",
+                battery: item.battery,
+                ready: item.ready,
+                readyText: item.readyText,
+              },
+            ],
+            { hideCockpitNav: config.hideCockpitNav !== false }
+          )
         );
       });
     });
 
-    alarmDetails.forEach(function (item) {
-      var marker = L.marker(item.ll, { icon: makeBadgeIcon("#ef4444", "fa-solid fa-circle-exclamation", 28) }).addTo(map);
+    alarmDetails.forEach(function (item, alarmIdx) {
+      var alarm = normalizeCockpitAlarm(item, alarmIdx);
+      var marker = L.marker(alarm.ll, { icon: makeBadgeIcon("#ef4444", "fa-solid fa-circle-exclamation", 28) }).addTo(map);
       marker.on("click", function () {
-        detailApi.openPanel("附近机场及关联无人机详情", buildAirportDronePanelHtml(item.items));
+        detailApi.openPanel(
+          "告警详情",
+          buildAlarmPanelHtml(alarm, alarm.airports, {
+            hideCockpitNav: config.hideCockpitNav !== false,
+          })
+        );
       });
     });
 
-    return { map: map, detailApi: detailApi };
+    return { map: map, detailApi: detailApi, patrolLayers: patrolLayers };
   };
 
   function haversineM(a, b) {
@@ -260,6 +565,8 @@
     });
   }
 
+  window.WuhanGIS.makeBadgeIcon = makeBadgeIcon;
+
   function makePhotoDropIcon() {
     return L.divIcon({
       className: "gis-photo-drop-icon",
@@ -270,6 +577,8 @@
       tooltipAnchor: [0, -18],
     });
   }
+
+  window.WuhanGIS.makePhotoDropIcon = makePhotoDropIcon;
 
   function init() {
     var container = document.getElementById("map-container");
@@ -328,10 +637,14 @@
       patrolDone: false,
       patrolTodo: true,
       emergency: {},
-      metro: {},
     };
 
-    var metroColors = {
+    var metroKeys = ["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "l11", "l16", "l19", "lyl"];
+    /** 线路多选：与图层开关叠加，选中线路的关联要素才显示 */
+    var lineSelected = {};
+    var filteredFeatures = [];
+
+    var metroColors = window.WuhanGIS.METRO_COLORS || {
       l1: "#1d4ed8",
       l2: "#db2777",
       l3: "#ca8a04",
@@ -345,8 +658,139 @@
       l19: "#0d9488",
       lyl: "#6d28d9",
     };
-    var emKeys = ["e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8"];
-    var patrolPhotoMarkerCreated = false;
+    var emKeys = ["e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "ew"];
+    var emergencyWarehouses = [
+      {
+        ll: [30.5184, 114.3521],
+        name: "南湖应急仓",
+        materialCount: "326 件",
+        lng: "114.352100",
+        lat: "30.518400",
+        address: "洪山区南湖大道 88 号",
+        manager: "赵敏",
+        phone: "138 0000 2001",
+        line: "武汉地铁 7 号线",
+      },
+      {
+        ll: [30.5081, 114.3148],
+        name: "白沙洲应急仓",
+        materialCount: "158 件",
+        lng: "114.314800",
+        lat: "30.508100",
+        address: "武昌区白沙洲大道 120 号",
+        manager: "刘凯",
+        phone: "138 0000 2002",
+        line: "武汉地铁 5 号线",
+      },
+      {
+        ll: [30.6479, 114.2406],
+        name: "金银潭应急仓",
+        materialCount: "412 件",
+        lng: "114.240600",
+        lat: "30.647900",
+        address: "江汉区常青一路 66 号",
+        manager: "李倩",
+        phone: "138 0000 2003",
+        line: "武汉地铁 2 号线",
+      },
+      {
+        ll: [30.4896, 114.4215],
+        name: "光谷东应急仓",
+        materialCount: "203 件",
+        lng: "114.421500",
+        lat: "30.489600",
+        address: "东湖高新区高新大道 188 号",
+        manager: "陈涛",
+        phone: "138 0000 2004",
+        line: "武汉地铁 7 号线",
+      },
+    ];
+    var staffLineKeys = ["l2", "l4", "l5", "l8", "l2", "l4"];
+
+    function registerFeature(layer, parent, category, metroKey, emergencyKey) {
+      filteredFeatures.push({
+        layer: layer,
+        parent: parent,
+        category: category,
+        metroKey: metroKey,
+        emergencyKey: emergencyKey || null,
+      });
+    }
+
+    metroKeys.forEach(function (k) {
+      lineSelected[k] = true;
+    });
+
+    function matchesLineFilter(metroKey) {
+      if (!metroKey) return false;
+      return !!lineSelected[metroKey];
+    }
+
+    function isCategoryOn(f) {
+      if (f.category === "emergency") return !!state.emergency[f.emergencyKey];
+      if (f.category === "patrolPhotos") return !!state.patrolDone;
+      return !!state[f.category];
+    }
+
+    function shouldShowFeature(f) {
+      return isCategoryOn(f) && matchesLineFilter(f.metroKey);
+    }
+
+    function syncFilteredFeatures() {
+      filteredFeatures.forEach(function (f) {
+        var show = shouldShowFeature(f);
+        if (show) {
+          if (!f.parent.hasLayer(f.layer)) f.parent.addLayer(f.layer);
+        } else if (f.parent.hasLayer(f.layer)) {
+          f.parent.removeLayer(f.layer);
+        }
+      });
+    }
+
+    function refreshMetroLineStyles() {
+      var allOn = metroKeys.every(function (k) {
+        return !!lineSelected[k];
+      });
+      var anyOn = metroKeys.some(function (k) {
+        return !!lineSelected[k];
+      });
+      Object.keys(layers.metro).forEach(function (k) {
+        var entry = layers.metro[k];
+        if (!entry || !entry.line) return;
+        var focused = allOn || !anyOn || !!lineSelected[k];
+        entry.line.setStyle({
+          opacity: focused ? 0.95 : 0.32,
+          weight: focused ? 5 : 3,
+        });
+        entry.glow.setStyle({
+          opacity: focused ? 0.18 : 0.05,
+          weight: focused ? 9 : 5,
+        });
+      });
+    }
+
+    function setLineFilterBtn(btn, on) {
+      if (!btn) return;
+      btn.classList.toggle("gis-line-btn--active", !!on);
+    }
+
+    function refreshMetroBatchSwitch() {
+      setBatchSwitch(
+        "metro",
+        metroKeys.every(function (k) {
+          return !!lineSelected[k];
+        })
+      );
+    }
+
+    function refreshMetroFilterUI() {
+      document.querySelectorAll("[data-metro]").forEach(function (btn) {
+        var key = btn.getAttribute("data-metro");
+        setLineFilterBtn(btn, !!lineSelected[key]);
+      });
+      refreshMetroBatchSwitch();
+      refreshMetroLineStyles();
+    }
 
     function closeDetailPanel() {
       if (!detailPanel) return;
@@ -358,11 +802,7 @@
       detailTitle.textContent = title;
       detailBody.innerHTML = html;
       detailPanel.classList.remove("hidden");
-      detailBody.querySelectorAll("[data-flight-url]").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          window.location.href = btn.getAttribute("data-flight-url");
-        });
-      });
+      wireDetailInteractivity(detailBody);
     }
 
     if (detailClose) {
@@ -478,7 +918,7 @@
                 item.distance +
                 "</span></div>"
               : "") +
-            '<div class="gis-detail-action"><button type="button" class="gis-detail-btn" data-flight-url="map-cockpit-fly.html">启用此无人机</button></div>' +
+            '<div class="gis-detail-action"><button type="button" class="gis-detail-btn" data-cockpit-url="map-cockpit-prep.html">前往虚拟座舱</button></div>' +
             "</div>"
           );
         })
@@ -501,74 +941,29 @@
       return ((seed * 9301 + 49297 + i * 17) % 233280) / 233280 - 0.5;
     }
 
-    var metroPaths = {
-      l1: [
-        [30.614, 114.214], [30.610, 114.242], [30.606, 114.268], [30.602, 114.296], [30.600, 114.323],
-        [30.598, 114.349], [30.596, 114.374], [30.594, 114.401], [30.592, 114.428]
-      ],
-      l2: [
-        [30.671, 114.211], [30.653, 114.235], [30.635, 114.258], [30.618, 114.281], [30.602, 114.304],
-        [30.586, 114.329], [30.571, 114.352], [30.556, 114.377], [30.541, 114.401]
-      ],
-      l3: [
-        [30.645, 114.253], [30.629, 114.266], [30.612, 114.280], [30.595, 114.295], [30.578, 114.309],
-        [30.563, 114.323], [30.548, 114.336], [30.532, 114.350]
-      ],
-      l4: [
-        [30.625, 114.188], [30.617, 114.223], [30.609, 114.258], [30.601, 114.293], [30.592, 114.327],
-        [30.584, 114.362], [30.576, 114.396], [30.568, 114.430]
-      ],
-      l5: [
-        [30.621, 114.272], [30.607, 114.286], [30.593, 114.301], [30.579, 114.315], [30.565, 114.329],
-        [30.551, 114.344], [30.537, 114.358]
-      ],
-      l6: [
-        [30.690, 114.247], [30.667, 114.260], [30.644, 114.274], [30.620, 114.287], [30.597, 114.301],
-        [30.574, 114.314], [30.551, 114.327]
-      ],
-      l7: [
-        [30.654, 114.292], [30.635, 114.297], [30.616, 114.302], [30.597, 114.307], [30.578, 114.312],
-        [30.559, 114.318], [30.540, 114.323]
-      ],
-      l8: [
-        [30.676, 114.327], [30.654, 114.331], [30.632, 114.335], [30.610, 114.339], [30.588, 114.343],
-        [30.566, 114.347], [30.544, 114.351]
-      ],
-      l11: [
-        [30.602, 114.292], [30.594, 114.311], [30.586, 114.330], [30.579, 114.349], [30.572, 114.368],
-        [30.565, 114.387], [30.558, 114.406]
-      ],
-      l16: [
-        [30.739, 114.218], [30.714, 114.236], [30.690, 114.254], [30.666, 114.272], [30.642, 114.290],
-        [30.618, 114.308]
-      ],
-      l19: [
-        [30.746, 114.379], [30.724, 114.373], [30.701, 114.367], [30.678, 114.361], [30.655, 114.355],
-        [30.632, 114.349], [30.609, 114.343]
-      ],
-      lyl: [
-        [30.614, 114.252], [30.608, 114.270], [30.603, 114.289], [30.598, 114.307], [30.593, 114.326],
-        [30.588, 114.344], [30.583, 114.363]
-      ]
-    };
+    var metroPaths = window.WuhanGIS.METRO_PATHS;
+    if (!metroPaths) return;
 
     ["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "l11", "l16", "l19", "lyl"].forEach(function (key) {
-      var glow = L.polyline(metroPaths[key], {
+      var curve = smoothMetroCurve(metroPaths[key], { segmentsPerLeg: 16 });
+      var glow = L.polyline(curve, {
         color: metroColors[key],
         weight: 9,
         opacity: 0.18,
         lineCap: "round",
-        lineJoin: "round"
+        lineJoin: "round",
+        smoothFactor: 0
       });
-      var poly = L.polyline(metroPaths[key], {
+      var poly = L.polyline(curve, {
         color: metroColors[key],
         weight: 5,
         opacity: 0.95,
         lineCap: "round",
-        lineJoin: "round"
+        lineJoin: "round",
+        smoothFactor: 0
       });
-      layers.metro[key] = L.layerGroup([glow, poly]);
-      state.metro[key] = key === "l8";
+      layers.metro[key] = { group: L.layerGroup([glow, poly]), glow: glow, line: poly };
+      map.addLayer(layers.metro[key].group);
     });
 
     [
@@ -634,6 +1029,7 @@
       },
     ].forEach(function (item) {
       var marker = L.marker(item.ll, { icon: makeBadgeIcon("#2563eb", "fa-solid fa-train-subway", 28) }).addTo(layers.stations);
+      registerFeature(marker, layers.stations, "stations", lineKeyFromLabel(item.line));
       marker.on("click", function () {
         openDetailPanel(
           "站点详情",
@@ -650,13 +1046,19 @@
       });
     });
 
+    function projectMarkerIcon(level) {
+      var isKey = level === "重点项目";
+      return makeBadgeIcon(isKey ? "#ef4444" : "#f97316", "fa-solid fa-building", 28);
+    }
+
     [
       {
         ll: [30.605, 114.295],
         name: "武昌段排水改造工程",
         line: "武汉地铁 2 号线",
         section: "积玉桥站 - 螃蟹岬站",
-        projectType: "市政施工",
+        level: "重点项目",
+        workType: "市政施工",
         category: "基坑开挖",
         minDistance: "13.6 米",
         depth: "18.2 米",
@@ -667,7 +1069,8 @@
         name: "武珞路电力迁改项目",
         line: "武汉地铁 5 号线",
         section: "复兴路站 - 宝通寺站",
-        projectType: "管线迁改",
+        level: "一般项目",
+        workType: "管线迁改",
         category: "浅埋开挖",
         minDistance: "10.8 米",
         depth: "15.4 米",
@@ -678,7 +1081,8 @@
         name: "徐东片区综合开发",
         line: "武汉地铁 8 号线",
         section: "岳家嘴站 - 徐东站",
-        projectType: "房建工程",
+        level: "重点项目",
+        workType: "房建工程",
         category: "桩基施工",
         minDistance: "21.3 米",
         depth: "22.6 米",
@@ -689,14 +1093,16 @@
         name: "首义片区道路整治",
         line: "武汉地铁 4 号线",
         section: "复兴路站 - 首义路站",
-        projectType: "道路提升",
+        level: "一般项目",
+        workType: "道路提升",
         category: "路面翻修",
         minDistance: "8.9 米",
         depth: "12.8 米",
         relation: "项目位于站点西南侧，施工车辆频繁进出，需重点关注路面荷载与围挡稳定情况。",
       },
     ].forEach(function (item) {
-      var marker = L.marker(item.ll, { icon: makeBadgeIcon("#f97316", "fa-solid fa-building", 28) }).addTo(layers.projects);
+      var marker = L.marker(item.ll, { icon: projectMarkerIcon(item.level) }).addTo(layers.projects);
+      registerFeature(marker, layers.projects, "projects", lineKeyFromLabel(item.line));
       marker.on("click", function () {
         openDetailPanel(
           "项目详情",
@@ -704,7 +1110,8 @@
             { label: "项目名称", value: item.name },
             { label: "所属线路", value: item.line },
             { label: "所在区间站点", value: item.section },
-            { label: "项目类型", value: item.projectType },
+            { label: "项目类型", value: item.level },
+            { label: "工程类型", value: item.workType },
             { label: "工程类别", value: item.category },
             { label: "距离地铁结构最小净距", value: item.minDistance },
             { label: "地铁结构埋深", value: item.depth },
@@ -712,30 +1119,6 @@
           ])
         );
       });
-
-      var latestPhoto = getProjectLatestPhoto(item);
-      if (latestPhoto && !patrolPhotoMarkerCreated) {
-        patrolPhotoMarkerCreated = true;
-        L.marker(latestPhoto.ll || item.ll, { icon: makePhotoDropIcon(), zIndexOffset: 680 })
-          .addTo(layers.patrolPhotos)
-          .bindTooltip(
-            '<div class="gis-photo-tooltip">' +
-              '<div class="gis-photo-tooltip__head">' +
-                '<span class="gis-photo-tooltip__title">工地最新照片</span>' +
-                '<span class="gis-photo-tooltip__time">' + latestPhoto.time + "</span>" +
-              "</div>" +
-              '<div class="gis-photo-tooltip__name">' + item.name + "</div>" +
-              '<img class="gis-photo-tooltip__image" src="' + latestPhoto.src + '" alt="' + item.name + ' 最新照片" />' +
-            "</div>",
-            {
-              direction: "top",
-              offset: [0, -20],
-              opacity: 1,
-              className: "gis-photo-tooltip-wrap",
-              sticky: true,
-            }
-          );
-      }
     });
 
     [
@@ -799,101 +1182,32 @@
           { code: "Y18837-249176", time: "2026/04/13 17:48:36" },
         ],
       },
-    ].forEach(function (item) {
+    ].forEach(function (item, staffIdx) {
       var marker = L.marker(item.ll, {
         icon: makeBadgeIcon("#2563eb", "fa-solid fa-person-walking", 28),
       }).addTo(layers.staff);
+      registerFeature(marker, layers.staff, "staff", staffLineKeys[staffIdx % staffLineKeys.length]);
       marker.on("click", function () {
         openDetailPanel("人员轨迹", renderTrackPanel(item));
       });
     });
 
-    [
-      [30.598, 114.318],
-      [30.572, 114.292],
-      [30.618, 114.328],
-    ].forEach(function (ll, i) {
-      var marker = L.marker(ll, { icon: makeBadgeIcon("#ef4444", "fa-solid fa-circle-exclamation", 28) }).addTo(layers.alarms);
-      marker.on("click", function () {
-        openDetailPanel(
-          "告警点详情",
-          renderDetailFields([
-            { label: "告警编号", value: "ALM-20260514-0" + (i + 1) },
-            { label: "告警类型", value: i === 0 ? "沉降异常" : i === 1 ? "越界施工" : "夜间违规作业" },
-            { label: "所属线路", value: i === 0 ? "武汉地铁 2 号线" : i === 1 ? "武汉地铁 5 号线" : "武汉地铁 8 号线" },
-            { label: "告警时间", value: i === 0 ? "2026/05/14 09:18:23" : i === 1 ? "2026/05/14 11:06:42" : "2026/05/14 18:32:17" },
-            { label: "处置状态", value: i === 2 ? "待复核" : "处理中" },
-          ])
-        );
-      });
-    });
-
-    [
-      {
-        ll: [30.588, 114.302],
-        name: "武昌机场站点 01",
-        line: "武汉地铁 2 号线",
-        manager: "陈志远",
-        phone: "138 0000 1298",
-        coordinate: "114.302000, 30.588000",
-      },
-      {
-        ll: [30.602, 114.338],
-        name: "中北路机场站点 02",
-        line: "武汉地铁 8 号线",
-        manager: "王晓峰",
-        phone: "138 0000 5516",
-        coordinate: "114.338000, 30.602000",
-      },
-    ].forEach(function (item) {
-      var marker = L.marker(item.ll, { icon: makeBadgeIcon("#0f766e", "fa-solid fa-plane-departure", 30) }).addTo(layers.airports);
-      marker.on("click", function () {
-        openDetailPanel(
-          "机场详情",
-          renderDetailFields([
-            { label: "机场名称", value: item.name },
-            { label: "所属线路", value: item.line },
-            { label: "负责人", value: item.manager },
-            { label: "联系电话", value: item.phone },
-            { label: "位置坐标", value: item.coordinate },
-          ])
-        );
-      });
-    });
-
     layers.alarms.clearLayers();
-    [
-      [30.598, 114.318],
-      [30.572, 114.292],
-      [30.618, 114.328],
-    ].forEach(function (ll) {
-      var alarmMarker = L.marker(ll, { icon: makeBadgeIcon("#ef4444", "fa-solid fa-circle-exclamation", 28) }).addTo(layers.alarms);
+    defaultAlarmDetails.forEach(function (alarm, i) {
+      var alarmLines = ["l2", "l5", "l8"];
+      var alarmMarker = L.marker(alarm.ll, { icon: makeBadgeIcon("#ef4444", "fa-solid fa-circle-exclamation", 28) }).addTo(layers.alarms);
+      registerFeature(alarmMarker, layers.alarms, "alarms", alarmLines[i]);
+      alarmMarker.bindTooltip(alarm.alarmPosition, {
+        direction: "top",
+        offset: [0, -14],
+        opacity: 0.96,
+        className: "gis-alarm-tooltip",
+      });
+      alarmMarker.on("mouseover", function () {
+        alarmMarker.openTooltip();
+      });
       alarmMarker.on("click", function () {
-        openDetailPanel(
-          "附近机场及关联无人机详情",
-          renderAirportDronePanel([
-            {
-              airportName: "机场1",
-              airportStatus: "在线",
-              droneName: "001",
-              droneStatus: "在线",
-              battery: "100%",
-              ready: true,
-              readyText: "满足",
-              distance: "1.3km",
-            },
-            {
-              airportName: "机场2",
-              airportStatus: "在线",
-              droneName: "002",
-              droneStatus: "在线",
-              battery: "30%",
-              ready: false,
-              readyText: "不满足",
-              distance: "5.3km",
-            },
-          ])
-        );
+        openDetailPanel("告警详情", buildAlarmPanelHtml(alarm, alarm.airports || []));
       });
     });
 
@@ -901,8 +1215,9 @@
     [
       { ll: [30.588, 114.302], name: "机场1" },
       { ll: [30.602, 114.338], name: "机场2" },
-    ].forEach(function (item) {
+    ].forEach(function (item, airportIdx) {
       var airportMarker = L.marker(item.ll, { icon: makeBadgeIcon("#0f766e", "fa-solid fa-plane-departure", 30) }).addTo(layers.airports);
+      registerFeature(airportMarker, layers.airports, "airports", airportIdx === 0 ? "l2" : "l8");
       airportMarker.on("click", function () {
         openDetailPanel(
           "机场及关联无人机详情",
@@ -942,70 +1257,84 @@
           { code: "FLIGHT-350-1933", time: "2026/05/13 17:31:08" },
         ],
       },
-    ].forEach(function (item) {
+    ].forEach(function (item, droneIdx) {
       var marker = L.marker(item.ll, { icon: makeBadgeIcon("#2563eb", "fa-solid fa-helicopter-symbol", 28) }).addTo(layers.drones);
+      registerFeature(marker, layers.drones, "drones", droneIdx === 0 ? "l2" : "l8");
       marker.on("click", function () {
         openDetailPanel("无人机详情", renderTrackPanel(item));
       });
     });
 
-    L.polygon(
-      [
-        [30.578, 114.288],
-        [30.592, 114.288],
-        [30.592, 114.308],
-        [30.578, 114.308],
-      ],
-      { color: "#22c55e", weight: 2, fillColor: "#22c55e", fillOpacity: 0.18 }
-    ).bindPopup("已巡查区域").addTo(layers.patrolDone);
-
-    L.polygon(
-      [
-        [30.598, 114.312],
-        [30.612, 114.312],
-        [30.612, 114.332],
-        [30.598, 114.332],
-      ],
-      { color: "#db2777", weight: 2, fillColor: "#db2777", fillOpacity: 0.2 }
-    ).bindPopup("待巡查区域").addTo(layers.patrolTodo);
+    if (window.WuhanGIS.mountPatrolLayers) {
+      window.WuhanGIS.mountPatrolLayers(map, {
+        layers: layers,
+        registerFeature: registerFeature,
+        makePhotoDropIcon: makePhotoDropIcon,
+        showPhotos: true,
+      });
+    }
 
     emKeys.forEach(function (ek, idx) {
       var g = L.layerGroup();
-      for (var k = 0; k < 2; k++) {
-        (function (markerIndex) {
-          var person = {
-            name: ["张鹏", "李威", "周敏", "徐强", "刘畅", "何俊", "陈洁", "彭凯"][(idx + markerIndex) % 8],
-            phone: "138 0000 " + String(1200 + idx * 10 + markerIndex).padStart(4, "0"),
-            code: "EMP" + String(8600 + idx * 10 + markerIndex),
-            line: ["武汉地铁 2 号线", "武汉地铁 4 号线", "武汉地铁 5 号线", "武汉地铁 8 号线"][idx % 4],
-            dept: ["抢险队", "轨道车间", "应急中心", "机电班组"][markerIndex % 4],
-            post: ["应急抢修员", "值班员", "现场协调员", "巡查员"][idx % 4],
-            address: ["武昌区中北路值守点", "洪山区宝通寺值守点", "青山区徐东应急点", "汉阳区钟家村值守点"][(idx + markerIndex) % 4],
-          };
-          var marker = L.marker(
-          [
-            WUHAN[0] + 0.02 * Math.sin(idx + k) + jitter(200 + idx, k) * 0.02,
-            WUHAN[1] + 0.025 * Math.cos(idx * 2 + k) + jitter(201 + idx, k) * 0.02,
-          ],
-          {
-            icon: makeBadgeIcon("#f97316", "fa-solid fa-user", 28),
-          }
-          ).addTo(g);
+      if (ek === "ew") {
+        emergencyWarehouses.forEach(function (wh) {
+          var marker = L.marker(wh.ll, {
+            icon: makeBadgeIcon("#d97706", "fa-solid fa-warehouse", 28),
+          }).addTo(g);
+          registerFeature(marker, g, "emergency", lineKeyFromLabel(wh.line), ek);
           marker.on("click", function () {
             openDetailPanel(
-              "人员信息",
+              "仓库信息",
               renderDetailFields([
-                { label: "姓名", value: person.name },
-                { label: "电话", value: person.phone },
-                { label: "工号", value: person.code },
-                { label: "所属线路", value: person.line },
-                { label: "部门", value: person.dept },
-                { label: "岗位", value: person.post },
-                { label: "常驻地址", value: person.address },
+                { label: "仓库名称", value: wh.name },
+                { label: "存储物资数量", value: wh.materialCount },
+                { label: "仓库经度", value: wh.lng },
+                { label: "仓库纬度", value: wh.lat },
+                { label: "仓库地址", value: wh.address },
+                { label: "仓库负责人", value: wh.manager },
+                { label: "联系电话", value: wh.phone },
               ])
             );
           });
-        })(k);
+        });
+      } else {
+        for (var k = 0; k < 2; k++) {
+          (function (markerIndex) {
+            var person = {
+              name: ["张鹏", "李威", "周敏", "徐强", "刘畅", "何俊", "陈洁", "彭凯"][(idx + markerIndex) % 8],
+              phone: "138 0000 " + String(1200 + idx * 10 + markerIndex).padStart(4, "0"),
+              code: "EMP" + String(8600 + idx * 10 + markerIndex),
+              line: ["武汉地铁 2 号线", "武汉地铁 4 号线", "武汉地铁 5 号线", "武汉地铁 8 号线"][idx % 4],
+              dept: ["抢险队", "轨道车间", "应急中心", "机电班组"][markerIndex % 4],
+              post: ["应急抢修员", "值班员", "现场协调员", "巡查员"][idx % 4],
+              address: ["武昌区中北路值守点", "洪山区宝通寺值守点", "青山区徐东应急点", "汉阳区钟家村值守点"][(idx + markerIndex) % 4],
+            };
+            var marker = L.marker(
+              [
+                WUHAN[0] + 0.02 * Math.sin(idx + k) + jitter(200 + idx, k) * 0.02,
+                WUHAN[1] + 0.025 * Math.cos(idx * 2 + k) + jitter(201 + idx, k) * 0.02,
+              ],
+              {
+                icon: makeBadgeIcon("#f97316", "fa-solid fa-user", 28),
+              }
+            ).addTo(g);
+            registerFeature(marker, g, "emergency", lineKeyFromLabel(person.line), ek);
+            marker.on("click", function () {
+              openDetailPanel(
+                "人员信息",
+                renderDetailFields([
+                  { label: "姓名", value: person.name },
+                  { label: "电话", value: person.phone },
+                  { label: "工号", value: person.code },
+                  { label: "所属线路", value: person.line },
+                  { label: "部门", value: person.dept },
+                  { label: "岗位", value: person.post },
+                  { label: "常驻地址", value: person.address },
+                ])
+              );
+            });
+          })(k);
+        }
       }
       layers.emergency[ek] = g;
       state.emergency[ek] = false;
@@ -1021,29 +1350,27 @@
       syncLayer(layers.projects, state.projects);
       syncLayer(layers.staff, state.staff);
       syncLayer(layers.alarms, state.alarms);
+      syncFilteredFeatures();
     }
 
     function applyAirports() {
       syncLayer(layers.airports, state.airports);
       syncLayer(layers.drones, state.drones);
+      syncFilteredFeatures();
     }
 
     function applyPatrol() {
       syncLayer(layers.patrolDone, state.patrolDone);
       syncLayer(layers.patrolTodo, state.patrolTodo);
       syncLayer(layers.patrolPhotos, state.patrolDone);
-    }
-
-    function applyMetro() {
-      Object.keys(layers.metro).forEach(function (k) {
-        syncLayer(layers.metro[k], !!state.metro[k]);
-      });
+      syncFilteredFeatures();
     }
 
     function applyEmergency() {
       emKeys.forEach(function (k) {
         syncLayer(layers.emergency[k], !!state.emergency[k]);
       });
+      syncFilteredFeatures();
     }
 
     function setToggleBtn(el, on) {
@@ -1063,17 +1390,6 @@
 
     function refreshPatrolBatchSwitch() {
       setBatchSwitch("patrol", state.patrolDone && state.patrolTodo);
-    }
-
-    function refreshMetroBatchSwitch() {
-      var keys = Object.keys(state.metro);
-      setBatchSwitch(
-        "metro",
-        keys.length > 0 &&
-          keys.every(function (k) {
-            return !!state.metro[k];
-          })
-      );
     }
 
     function refreshEmergencyBatchSwitch() {
@@ -1183,12 +1499,13 @@
     document.querySelectorAll("[data-metro]").forEach(function (btn) {
       var k = btn.getAttribute("data-metro");
       btn.addEventListener("click", function () {
-        state.metro[k] = !state.metro[k];
-        setToggleBtn(btn, state.metro[k]);
-        applyMetro();
+        lineSelected[k] = !lineSelected[k];
+        setLineFilterBtn(btn, lineSelected[k]);
         refreshMetroBatchSwitch();
+        refreshMetroLineStyles();
+        syncFilteredFeatures();
       });
-      setToggleBtn(btn, !!state.metro[k]);
+      setLineFilterBtn(btn, !!lineSelected[k]);
     });
 
     var metroBatch = document.querySelector('[data-batch-switch="metro"]');
@@ -1196,14 +1513,15 @@
       metroBatch.addEventListener("click", function (event) {
         event.stopPropagation();
         var next = !metroBatch.classList.contains("is-on");
-        Object.keys(state.metro).forEach(function (k) {
-          state.metro[k] = next;
-          document.querySelectorAll('[data-metro="' + k + '"]').forEach(function (btn) {
-            setToggleBtn(btn, next);
+        metroKeys.forEach(function (key) {
+          lineSelected[key] = next;
+          document.querySelectorAll('[data-metro="' + key + '"]').forEach(function (lineBtn) {
+            setLineFilterBtn(lineBtn, next);
           });
         });
-        applyMetro();
-        refreshMetroBatchSwitch();
+        setBatchSwitch("metro", next);
+        refreshMetroLineStyles();
+        syncFilteredFeatures();
       });
     }
 
@@ -1273,7 +1591,14 @@
     var distLine = null;
     var areaPoints = [];
     var areaPreview = null;
-    var pickCount = 0;
+    var coordPanel = document.getElementById("gis-coord-panel");
+    var coordLngInput = document.getElementById("gis-coord-lng");
+    var coordLatInput = document.getElementById("gis-coord-lat");
+    var coordAltInput = document.getElementById("gis-coord-alt");
+    var coordPickMapBtn = document.getElementById("gis-coord-pick-map");
+    var coordLocateBtn = document.getElementById("gis-coord-locate");
+    var coordCloseBtn = document.getElementById("gis-coord-close");
+    var coordMapPickActive = false;
 
     function clearToolGeometry() {
       drawLayer.clearLayers();
@@ -1282,7 +1607,85 @@
       distLine = null;
       areaPoints = [];
       areaPreview = null;
-      pickCount = 0;
+    }
+
+    function parseCoordInputs() {
+      if (!coordLngInput || !coordLatInput) return null;
+      var lng = parseFloat(String(coordLngInput.value).trim());
+      var lat = parseFloat(String(coordLatInput.value).trim());
+      if (!isFinite(lng) || !isFinite(lat)) return null;
+      if (lng < -180 || lng > 180 || lat < -90 || lat > 90) return null;
+      return {
+        lng: lng,
+        lat: lat,
+        alt: coordAltInput ? String(coordAltInput.value).trim() : "",
+      };
+    }
+
+    function setCoordInputs(lng, lat, alt) {
+      if (coordLngInput) coordLngInput.value = Number(lng).toFixed(6);
+      if (coordLatInput) coordLatInput.value = Number(lat).toFixed(6);
+      if (coordAltInput && alt != null && alt !== "") coordAltInput.value = alt;
+    }
+
+    function mockElevation(lat, lng) {
+      return (18 + Math.abs(Math.sin(lat * 120 + lng * 80)) * 12).toFixed(1);
+    }
+
+    function showCoordMarker(lat, lng) {
+      pickLayer.clearLayers();
+      L.marker([lat, lng], {
+        icon: makeBadgeIcon("#22d3ee", "fa-solid fa-location-crosshairs", 28),
+      }).addTo(pickLayer);
+    }
+
+    function stopCoordMapPick() {
+      coordMapPickActive = false;
+      if (coordPickMapBtn) coordPickMapBtn.classList.remove("gis-coord-btn--active");
+      if (toolMode !== "distance" && toolMode !== "area") {
+        map.getContainer().style.cursor = "";
+        map.doubleClickZoom.enable();
+      }
+    }
+
+    function startCoordMapPick() {
+      stopCoordMapPick();
+      coordMapPickActive = true;
+      if (coordPickMapBtn) coordPickMapBtn.classList.add("gis-coord-btn--active");
+      map.getContainer().style.cursor = "crosshair";
+      map.doubleClickZoom.disable();
+    }
+
+    function closeCoordPanel() {
+      if (coordPanel) coordPanel.classList.add("hidden");
+      stopCoordMapPick();
+      pickLayer.clearLayers();
+      if (toolMode === "pick") {
+        toolMode = null;
+        document.querySelectorAll("[data-tool]").forEach(function (btn) {
+          btn.classList.remove("gis-toolbar__btn--active");
+        });
+      }
+    }
+
+    function openCoordPanel() {
+      if (coordPanel) coordPanel.classList.remove("hidden");
+      toolMode = "pick";
+      document.querySelectorAll("[data-tool]").forEach(function (btn) {
+        btn.classList.toggle("gis-toolbar__btn--active", btn.getAttribute("data-tool") === "pick");
+      });
+      hudHide();
+    }
+
+    function locateByCoords() {
+      var coords = parseCoordInputs();
+      if (!coords) {
+        alert("请输入有效的经度和纬度。");
+        return;
+      }
+      setCoordInputs(coords.lng, coords.lat, coords.alt);
+      showCoordMarker(coords.lat, coords.lng);
+      map.flyTo([coords.lat, coords.lng], 16, { duration: 0.85 });
     }
 
     function bindHudCancel() {
@@ -1328,17 +1731,15 @@
         btn.classList.toggle("gis-toolbar__btn--active", btn.getAttribute("data-tool") === mode);
       });
 
-      if (mode === "pick" || mode === "distance" || mode === "area") map.doubleClickZoom.disable();
-      else map.doubleClickZoom.enable();
+      if (mode === "distance" || mode === "area") map.doubleClickZoom.disable();
+      else if (mode !== "pick") map.doubleClickZoom.enable();
 
       if (mode === "distance") refreshDistanceHud();
       else if (mode === "area") refreshAreaHud();
-      else if (mode === "pick") {
-        hudShow(
-          '<span class="text-cyan-100">坐标拾取：</span>点击地图获取经纬度，可连续拾取。<button type="button" class="gis-hud-btn" data-hud-cancel>结束</button>'
-        );
-        bindHudCancel();
-      } else hudHide();
+      else if (mode !== "pick") {
+        stopCoordMapPick();
+        hudHide();
+      }
     }
 
     function finishDistanceMeasure() {
@@ -1373,22 +1774,10 @@
     }
 
     map.on("click", function (e) {
-      if (toolMode === "pick") {
-        pickCount += 1;
-        L.marker(e.latlng, {
-          icon: L.divIcon({
-            className: "",
-            html:
-              '<div style="min-width:22px;height:22px;border-radius:999px;background:#0ea5e9;border:2px solid #67e8f9;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#042f2e;">' +
-              pickCount +
-              "</div>",
-            iconSize: [24, 24],
-            iconAnchor: [12, 12],
-          }),
-        })
-          .bindPopup("<b>拾取坐标</b><br/>" + e.latlng.lat.toFixed(6) + ", " + e.latlng.lng.toFixed(6))
-          .addTo(pickLayer)
-          .openPopup();
+      if (coordMapPickActive) {
+        setCoordInputs(e.latlng.lng, e.latlng.lat, mockElevation(e.latlng.lat, e.latlng.lng));
+        showCoordMarker(e.latlng.lat, e.latlng.lng);
+        stopCoordMapPick();
         return;
       }
 
@@ -1441,15 +1830,26 @@
       });
     }
 
+    if (coordCloseBtn) {
+      coordCloseBtn.addEventListener("click", closeCoordPanel);
+    }
+    if (coordPickMapBtn) {
+      coordPickMapBtn.addEventListener("click", function () {
+        if (coordMapPickActive) stopCoordMapPick();
+        else startCoordMapPick();
+      });
+    }
+    if (coordLocateBtn) {
+      coordLocateBtn.addEventListener("click", locateByCoords);
+    }
+
     var pickBtn = document.querySelector('[data-tool="pick"]');
     if (pickBtn) {
       pickBtn.addEventListener("click", function () {
-        if (toolMode === "pick") {
-          setToolMode(null);
-          map.getContainer().style.cursor = "";
+        if (coordPanel && !coordPanel.classList.contains("hidden")) {
+          closeCoordPanel();
         } else {
-          setToolMode("pick");
-          map.getContainer().style.cursor = "crosshair";
+          openCoordPanel();
         }
       });
     }
@@ -1489,6 +1889,7 @@
       resetBtn.addEventListener("click", function () {
         clearToolGeometry();
         closeDetailPanel();
+        closeCoordPanel();
         setToolMode(null);
         map.doubleClickZoom.enable();
         map.getContainer().style.cursor = "";
@@ -1547,11 +1948,12 @@
     applyAnnotation();
     applyAirports();
     applyPatrol();
-    applyMetro();
     applyEmergency();
+    refreshMetroFilterUI();
+    syncFilteredFeatures();
+    refreshMetroBatchSwitch();
     refreshAnnoBatchSwitch();
     refreshPatrolBatchSwitch();
-    refreshMetroBatchSwitch();
     refreshEmergencyBatchSwitch();
 
     setTimeout(function () {

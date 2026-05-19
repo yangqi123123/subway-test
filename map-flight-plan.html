@@ -28,6 +28,14 @@
       .approval-item.wait::before { background:#f59e0b; box-shadow:0 0 0 4px rgba(245,158,11,.16); }
       .approval-item.reject::before { background:#ef4444; box-shadow:0 0 0 4px rgba(239,68,68,.16); }
       .nowrap-cell { white-space:nowrap; }
+      .exec-strategy-block { display:none; }
+      .exec-strategy-block.is-active { display:block; }
+      .exec-cycle-sub { display:none; }
+      .exec-cycle-sub.is-active { display:block; }
+      .weekday-grid { display:flex; flex-wrap:wrap; gap:10px 14px; }
+      .weekday-grid label { display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; color:#cdeeff; user-select:none; }
+      .weekday-grid input { accent-color:#22d3ee; width:14px; height:14px; }
+      .month-days-select { min-height: 168px; max-width: 28rem; }
     </style>
   </head>
   <body data-shell="fullscreen" data-top="map">
@@ -85,10 +93,47 @@
             <label><span class="field-label">计划类型</span><select id="p-type" class="wh-input w-full px-3 py-2"><option>常规巡检</option><option>告警复核</option><option>临时任务</option></select></label>
             <label><span class="field-label">飞行策略</span><select id="p-strategy" class="wh-input w-full px-3 py-2"><option>立即起飞</option><option>单次定时</option><option>周期定时</option></select></label>
             <label><span class="field-label">申请人</span><input id="p-applicant" class="wh-input w-full px-3 py-2" value="当前用户" readonly /></label>
-            <label><span class="field-label req">计划执行时间</span><input id="p-planTime" type="datetime-local" class="wh-input w-full px-3 py-2" /></label>
-            <label><span class="field-label">实际执行时间</span><input id="p-actualStart" class="wh-input w-full px-3 py-2" value="系统回填" readonly /></label>
-            <label><span class="field-label">实际结束时间</span><input id="p-actualEnd" class="wh-input w-full px-3 py-2" value="系统回填" readonly /></label>
           </div>
+
+          <section id="exec-time-panel" class="rounded border border-cyan-400/20 bg-slate-950/25 p-4 mt-4 space-y-3" aria-labelledby="exec-time-heading">
+            <h4 id="exec-time-heading" class="text-sm font-semibold text-cyan-100">执行时间</h4>
+
+            <div id="exec-block-single" class="exec-strategy-block">
+              <label><span class="field-label req">计划执行时间</span><input id="p-single-datetime" type="datetime-local" class="wh-input w-full max-w-md px-3 py-2" /></label>
+            </div>
+
+            <div id="exec-block-periodic" class="exec-strategy-block space-y-4">
+              <label><span class="field-label req">周期类型</span><select id="p-cycle-type" class="wh-input w-full max-w-xs px-3 py-2"><option value="日">日</option><option value="周">周</option><option value="月">月</option></select></label>
+
+              <div id="exec-cycle-day" class="exec-cycle-sub">
+                <label><span class="field-label req">每天执行时间</span><input id="p-cycle-daily-time" type="time" class="wh-input w-full max-w-xs px-3 py-2" /></label>
+              </div>
+
+              <div id="exec-cycle-week" class="exec-cycle-sub space-y-3">
+                <div>
+                  <span class="field-label req">执行星期（可多选）</span>
+                  <div class="weekday-grid mt-2" id="p-weekday-wrap">
+                    <label><input type="checkbox" class="p-weekday" value="1" />周一</label>
+                    <label><input type="checkbox" class="p-weekday" value="2" />周二</label>
+                    <label><input type="checkbox" class="p-weekday" value="3" />周三</label>
+                    <label><input type="checkbox" class="p-weekday" value="4" />周四</label>
+                    <label><input type="checkbox" class="p-weekday" value="5" />周五</label>
+                    <label><input type="checkbox" class="p-weekday" value="6" />周六</label>
+                    <label><input type="checkbox" class="p-weekday" value="7" />周日</label>
+                  </div>
+                </div>
+                <label><span class="field-label req">执行时间</span><input id="p-cycle-week-time" type="time" class="wh-input w-full max-w-xs px-3 py-2" /></label>
+              </div>
+
+              <div id="exec-cycle-month" class="exec-cycle-sub space-y-3">
+                <label class="block"><span class="field-label req">每月执行日期（可多选）</span>
+                  <select id="p-cycle-month-days" class="wh-input w-full px-2 py-1 text-sm month-days-select" multiple size="8" aria-label="选择每月几号执行"></select>
+                </label>
+                <label><span class="field-label req">执行时间</span><input id="p-cycle-month-time" type="time" class="wh-input w-full max-w-xs px-3 py-2" /></label>
+              </div>
+            </div>
+          </section>
+
           <div class="rounded border border-cyan-400/20 bg-cyan-950/20 p-3 text-xs text-cyan-100 leading-6">
             业务校验：仅可选择审批通过且空域许可有效的航线；计划需完成“提交 → 工长 → 工务 → 物管 → 车间主任 → 部门领导”审批后才允许执行；空域许可临期自动预警。
           </div>
@@ -111,14 +156,141 @@
         "5号线": { airports:["青山机场"], drones:{"青山机场":["青山巡检无人机 M350"]}, routes:["青山站周期巡检航线"] }
       };
       let plans = [
-        {id:1,name:"8号线车辆段常规巡检",route:"车辆段日常巡查航线",airport:"车辆段机场",drone:"车辆段无人机 M350",type:"常规巡检",strategy:"单次定时",line:"8号线",applicant:"张三",submit:"2026-05-13 09:20",audit:"审核通过",exec:"未执行",planTime:"2026-05-13 15:30",actualStart:"-",actualEnd:"-"},
-        {id:2,name:"梨园站告警复核",route:"梨园-中南医院演示航线",airport:"梨园机场",drone:"梨园巡检无人机 M30T",type:"告警复核",strategy:"立即起飞",line:"2号线",applicant:"李四",submit:"2026-05-13 10:15",audit:"审核中",exec:"未执行",planTime:"2026-05-13 16:00",actualStart:"-",actualEnd:"-"},
-        {id:3,name:"长江新区临时巡检",route:"涉铁施工复核航线",airport:"车辆段机场",drone:"长江新区无人机 M300",type:"临时任务",strategy:"立即起飞",line:"8号线",applicant:"王五",submit:"2026-05-12 18:40",audit:"已驳回",exec:"执行终止",planTime:"2026-05-13 08:30",actualStart:"-",actualEnd:"-"},
-        {id:4,name:"青山站周期巡检",route:"青山站周期巡检航线",airport:"青山机场",drone:"青山巡检无人机 M350",type:"常规巡检",strategy:"周期定时",line:"5号线",applicant:"赵六",submit:"2026-05-11 14:05",audit:"审核通过",exec:"已执行",planTime:"2026-05-12 09:00",actualStart:"2026-05-12 09:02",actualEnd:"2026-05-12 09:38"}
+        {id:1,name:"8号线车辆段常规巡检",route:"车辆段日常巡查航线",airport:"车辆段机场",drone:"车辆段无人机 M350",type:"常规巡检",strategy:"单次定时",line:"8号线",applicant:"张三",submit:"2026-05-13 09:20",audit:"审核通过",exec:"未执行",planTime:"2026-05-13 15:30",actualStart:"-",actualEnd:"-",execMeta:{singleAt:"2026-05-13T15:30"}},
+        {id:2,name:"梨园站告警复核",route:"梨园-中南医院演示航线",airport:"梨园机场",drone:"梨园巡检无人机 M30T",type:"告警复核",strategy:"立即起飞",line:"2号线",applicant:"李四",submit:"2026-05-13 10:15",audit:"审核中",exec:"未执行",planTime:"2026-05-13 16:00（即时起飞）",actualStart:"-",actualEnd:"-",execMeta:{immediateAt:"2026-05-13T16:00"}},
+        {id:3,name:"长江新区临时巡检",route:"涉铁施工复核航线",airport:"车辆段机场",drone:"长江新区无人机 M300",type:"临时任务",strategy:"立即起飞",line:"8号线",applicant:"王五",submit:"2026-05-12 18:40",audit:"已驳回",exec:"执行终止",planTime:"2026-05-13 08:30（即时起飞）",actualStart:"-",actualEnd:"-",execMeta:{immediateAt:"2026-05-13T08:30"}},
+        {id:4,name:"青山站周期巡检",route:"青山站周期巡检航线",airport:"青山机场",drone:"青山巡检无人机 M350",type:"常规巡检",strategy:"周期定时",line:"5号线",applicant:"赵六",submit:"2026-05-11 14:05",audit:"审核通过",exec:"已执行",planTime:"每日 09:00",actualStart:"2026-05-12 09:02",actualEnd:"2026-05-12 09:38",execMeta:{cycleType:"日",cycleDailyTime:"09:00"}}
       ];
       let editingId = null;
       let approvalId = null;
       const $ = id => document.getElementById(id);
+      const WEEKDAY_LABELS = ["","周一","周二","周三","周四","周五","周六","周日"];
+      function pad2(n){ return String(n).padStart(2,"0"); }
+      function getNowDatetimeLocal(){
+        const d = new Date();
+        return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+"T"+pad2(d.getHours())+":"+pad2(d.getMinutes());
+      }
+      function clearWeekdayChecks(){ document.querySelectorAll(".p-weekday").forEach(c=>{ c.checked=false; }); }
+      function syncCycleTypeUI(){
+        const t = $("p-cycle-type").value;
+        ["exec-cycle-day","exec-cycle-week","exec-cycle-month"].forEach(id=>{ $(id).classList.remove("is-active"); });
+        if(t==="日") $("exec-cycle-day").classList.add("is-active");
+        else if(t==="周") $("exec-cycle-week").classList.add("is-active");
+        else $("exec-cycle-month").classList.add("is-active");
+      }
+      function syncStrategyExecUI(){
+        const strategy = $("p-strategy").value;
+        const panel = $("exec-time-panel");
+        if(panel){
+          if(strategy==="立即起飞") panel.classList.add("hidden");
+          else panel.classList.remove("hidden");
+        }
+        ["exec-block-single","exec-block-periodic"].forEach(id=>{ $(id).classList.remove("is-active"); });
+        if(strategy==="立即起飞") { /* 执行时间整块隐藏 */ }
+        else if(strategy==="单次定时") $("exec-block-single").classList.add("is-active");
+        else $("exec-block-periodic").classList.add("is-active");
+        if(strategy==="周期定时") syncCycleTypeUI();
+      }
+      function onStrategyChangeForExec(){
+        syncStrategyExecUI();
+      }
+      function clearMonthDayMulti(){
+        const sel = $("p-cycle-month-days");
+        if(!sel) return;
+        Array.from(sel.options).forEach(function(o){ o.selected = false; });
+      }
+      function initMonthDayMulti(){
+        const sel = $("p-cycle-month-days");
+        if(!sel || sel.options.length) return;
+        for(var i=1;i<=31;i++){
+          var o = document.createElement("option");
+          o.value = String(i);
+          o.textContent = i + "号";
+          sel.appendChild(o);
+        }
+      }
+      function fillExecFormFromPlan(p){
+        clearWeekdayChecks();
+        clearMonthDayMulti();
+        $("p-cycle-type").value = "日";
+        $("p-cycle-daily-time").value = "";
+        $("p-cycle-week-time").value = "";
+        $("p-cycle-month-time").value = "";
+        $("p-single-datetime").value = "";
+        if(!p){
+          $("p-single-datetime").value = getNowDatetimeLocal();
+          return;
+        }
+        const ex = p.execMeta;
+        if(p.strategy==="立即起飞"){
+          /* 无表单字段 */
+        } else if(p.strategy==="单次定时"){
+          if(ex && ex.singleAt) $("p-single-datetime").value = ex.singleAt;
+          else $("p-single-datetime").value = String(p.planTime||"").replace(" ","T").slice(0,16);
+        } else if(p.strategy==="周期定时"){
+          if(ex){
+            $("p-cycle-type").value = ex.cycleType || "日";
+            $("p-cycle-daily-time").value = ex.cycleDailyTime || "";
+            $("p-cycle-week-time").value = ex.cycleWeekTime || "";
+            $("p-cycle-month-time").value = ex.cycleMonthTime || "";
+            (ex.cycleWeekdays||[]).forEach(function(v){
+              var cb = document.querySelector('.p-weekday[value="'+v+'"]');
+              if(cb) cb.checked = true;
+            });
+            var days = ex.cycleMonthDays || (ex.cycleMonthDay ? [String(ex.cycleMonthDay)] : []);
+            var sel = $("p-cycle-month-days");
+            days.forEach(function(d){
+              var opt = sel.querySelector('option[value="'+d+'"]');
+              if(opt) opt.selected = true;
+            });
+          } else {
+            var m = String(p.planTime||"").match(/(\d{1,2}:\d{2})/);
+            $("p-cycle-daily-time").value = m ? m[1] : "";
+          }
+        }
+      }
+      function collectExecTimeFromForm(){
+        const strategy = $("p-strategy").value;
+        const execMeta = { strategy };
+        let planTime = "";
+        if(strategy==="立即起飞"){
+          var v = getNowDatetimeLocal();
+          execMeta.immediateAt = v;
+          planTime = v.replace("T"," ") + "（即时起飞）";
+        } else if(strategy==="单次定时"){
+          const v = $("p-single-datetime").value;
+          if(!v) return toast("请选择计划执行时间"), null;
+          execMeta.singleAt = v;
+          planTime = v.replace("T"," ");
+        } else {
+          const cycle = $("p-cycle-type").value;
+          execMeta.cycleType = cycle;
+          if(cycle==="日"){
+            const t = $("p-cycle-daily-time").value;
+            if(!t) return toast("请填写每天执行时间"), null;
+            execMeta.cycleDailyTime = t;
+            planTime = "每日 " + t;
+          } else if(cycle==="周"){
+            const days = [...document.querySelectorAll(".p-weekday:checked")].map(c=>c.value).sort((a,b)=>Number(a)-Number(b));
+            const t = $("p-cycle-week-time").value;
+            if(!days.length) return toast("请至少选择一个执行星期"), null;
+            if(!t) return toast("请填写执行时间"), null;
+            execMeta.cycleWeekdays = days;
+            execMeta.cycleWeekTime = t;
+            planTime = "每周" + days.map(d=>WEEKDAY_LABELS[Number(d)]).join("、") + " " + t;
+          } else {
+            var monthSel = $("p-cycle-month-days");
+            var mDays = Array.from(monthSel.selectedOptions).map(function(o){ return o.value; }).sort(function(a,b){ return Number(a)-Number(b); });
+            var mt = $("p-cycle-month-time").value;
+            if(!mDays.length) return toast("请至少选择每月执行日期"), null;
+            if(!mt) return toast("请填写执行时间"), null;
+            execMeta.cycleMonthDays = mDays;
+            execMeta.cycleMonthTime = mt;
+            planTime = "每月" + mDays.map(function(d){ return d + "号"; }).join("、") + " " + mt;
+          }
+        }
+        return { planTime, execMeta };
+      }
       const badge = (text, type) => `<span class="wh-status ${type}"><span class="status-dot" style="background:currentColor"></span>${text}</span>`;
       const auditBadge = s => badge(s, s === "审核通过" ? "wh-status--done" : s === "审核中" ? "wh-status--progress" : "wh-status--pending");
       const execBadge = s => badge(s, s === "已执行" ? "wh-status--done" : s === "未执行" ? "wh-status--progress" : "wh-status--pending");
@@ -138,6 +310,9 @@
       function syncAirport(){ const line=$("p-line").value, airport=$("p-airport").value; fillSelect("p-drone", linkData[line].drones[airport] || []); }
       $("p-line").onchange=syncLine;
       $("p-airport").onchange=syncAirport;
+      $("p-strategy").addEventListener("change", onStrategyChangeForExec);
+      $("p-cycle-type").addEventListener("change", syncCycleTypeUI);
+      initMonthDayMulti();
       function openForm(p){
         editingId = p ? p.id : null;
         $("form-title").textContent = p ? "编辑飞行计划" : "新增飞行计划";
@@ -145,17 +320,22 @@
         $("p-line").value = p?.line || "8号线";
         syncLine();
         if(p){
-          $("p-name").value=p.name; $("p-route").value=p.route; $("p-airport").value=p.airport; syncAirport(); $("p-drone").value=p.drone; $("p-type").value=p.type; $("p-strategy").value=p.strategy; $("p-applicant").value=p.applicant; $("p-planTime").value=p.planTime.replace(" ","T"); $("p-actualStart").value=p.actualStart; $("p-actualEnd").value=p.actualEnd;
+          $("p-name").value=p.name; $("p-route").value=p.route; $("p-airport").value=p.airport; syncAirport(); $("p-drone").value=p.drone; $("p-type").value=p.type; $("p-strategy").value=p.strategy; $("p-applicant").value=p.applicant;
         } else {
-          ["p-name","p-planTime"].forEach(id=>$(id).value="");
-          $("p-type").value="常规巡检"; $("p-strategy").value="单次定时"; $("p-applicant").value="当前用户"; $("p-actualStart").value="系统回填"; $("p-actualEnd").value="系统回填";
+          $("p-name").value="";
+          $("p-type").value="常规巡检";
+          $("p-strategy").value="单次定时";
+          $("p-applicant").value="当前用户";
         }
+        fillExecFormFromPlan(p);
+        syncStrategyExecUI();
         openModal("form-modal");
       }
       function savePlan(){
         if(!$("p-name").value.trim()) return toast("请填写计划名称");
-        if(!$("p-planTime").value) return toast("请选择计划执行时间");
-        const data={name:$("p-name").value.trim(),line:$("p-line").value,route:$("p-route").value,airport:$("p-airport").value,drone:$("p-drone").value,type:$("p-type").value,strategy:$("p-strategy").value,applicant:$("p-applicant").value,planTime:$("p-planTime").value.replace("T"," ")};
+        const exec = collectExecTimeFromForm();
+        if(!exec) return;
+        const data={name:$("p-name").value.trim(),line:$("p-line").value,route:$("p-route").value,airport:$("p-airport").value,drone:$("p-drone").value,type:$("p-type").value,strategy:$("p-strategy").value,applicant:$("p-applicant").value,planTime:exec.planTime,execMeta:exec.execMeta};
         if(editingId){ Object.assign(plans.find(p=>p.id===editingId), data, {audit:"审核中", exec:"未执行"}); }
         else { plans.unshift({id:Date.now(),...data,submit:"2026-05-13 11:30",audit:"审核中",exec:"未执行",actualStart:"-",actualEnd:"-"}); }
         closeModal("form-modal"); render(); toast("已保存，进入审批流程");
@@ -200,7 +380,7 @@
         openModal("report-modal");
       }
       function openCockpit(id){ const p=plans.find(x=>x.id===id); if(p.audit!=="审核通过") return toast("飞行计划未审批通过，不能进入虚拟座舱"); location.href="map-cockpit-prep.html"; }
-      function copyPlan(id){ const p=plans.find(x=>x.id===id); plans.unshift({...p,id:Date.now(),name:p.name+"（复制）",audit:"审核中",exec:"未执行",actualStart:"-",actualEnd:"-",submit:"2026-05-13 11:35"}); render(); toast("已复制计划，可继续编辑提交"); }
+      function copyPlan(id){ const p=plans.find(x=>x.id===id); plans.unshift({...p,id:Date.now(),name:p.name+"（复制）",audit:"审核中",exec:"未执行",actualStart:"-",actualEnd:"-",submit:"2026-05-13 11:35",execMeta:p.execMeta?JSON.parse(JSON.stringify(p.execMeta)):undefined}); render(); toast("已复制计划，可继续编辑提交"); }
       function submitApproval(status){
         const p=plans.find(x=>x.id===approvalId);
         const opinion=($("approval-opinion")?.value || "").trim();

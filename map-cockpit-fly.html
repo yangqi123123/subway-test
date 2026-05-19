@@ -9,319 +9,38 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="assets/css/theme.css" />
     <link rel="stylesheet" href="assets/css/map-gis.css" />
+    <link rel="stylesheet" href="assets/css/map-cockpit.css" />
     <style>
       body { overflow: hidden; }
-      .fly-shell {
-        background:
-          linear-gradient(180deg, rgba(4, 18, 32, 0.9), rgba(3, 12, 24, 0.98)),
-          url("https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1800&q=80") center/cover no-repeat;
-      }
-      .frame {
-        position: relative;
-        border: 1px solid rgba(84, 233, 255, 0.42);
-        background: linear-gradient(180deg, rgba(7, 26, 43, 0.92), rgba(8, 22, 36, 0.92));
-        box-shadow: 0 0 0 1px rgba(84, 233, 255, 0.12), 0 0 28px rgba(34, 211, 238, 0.16);
-        overflow: hidden;
-      }
-      .frame::before,
-      .frame::after {
-        content: "";
-        position: absolute;
-        width: 34px;
-        height: 34px;
-        border-top: 3px solid #6ff6ff;
-        border-left: 3px solid #6ff6ff;
-        z-index: 6;
-      }
-      .frame::before { left: 8px; top: 8px; }
-      .frame::after { right: 8px; top: 8px; transform: scaleX(-1); }
-      .info-card {
-        position: relative;
-        border: 1px solid rgba(84, 233, 255, 0.38);
-        background: linear-gradient(180deg, rgba(7, 26, 43, 0.96), rgba(6, 20, 34, 0.96));
-        box-shadow: 0 0 0 1px rgba(84, 233, 255, 0.08), 0 0 24px rgba(34, 211, 238, 0.14);
-        overflow: hidden;
-      }
-      .info-title {
-        position: relative;
-        height: 42px;
-        padding: 0 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        color: #ecfeff;
-        font-size: 14px;
-        font-weight: 700;
-        background: linear-gradient(90deg, rgba(37, 99, 235, 0.48), rgba(14, 165, 233, 0.08));
-      }
-      .info-title::after {
-        content: "";
-        position: absolute;
-        right: 14px;
-        top: 8px;
-        width: 54px;
-        height: 14px;
-        border-top: 2px solid rgba(84, 233, 255, 0.7);
-        border-right: 2px solid rgba(84, 233, 255, 0.7);
-        transform: skewX(-35deg);
-      }
-      .grid-pairs {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 10px 12px;
-        font-size: 13px;
-      }
-      .grid-pairs dt { color: #9cc6df; }
-      .grid-pairs dd { color: #ecfeff; margin: 0; font-weight: 600; }
-      .fly-btn {
-        height: 32px;
-        padding: 0 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 700;
-        color: #ecfeff;
-        border: 1px solid rgba(124, 232, 255, 0.4);
-        background: linear-gradient(180deg, rgba(93, 151, 177, 0.9), rgba(41, 95, 118, 0.92));
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 14px rgba(34, 211, 238, 0.14);
-        white-space: nowrap;
-      }
-      .fly-btn.warn {
-        background: linear-gradient(180deg, rgba(211, 82, 82, 0.96), rgba(144, 40, 40, 0.96));
-        border-color: rgba(255, 127, 127, 0.45);
-      }
-      .unlock-btn {
-        color: #54f1ff;
-        font-size: 13px;
-        font-weight: 700;
-      }
-      .video-image {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center center;
-      }
-      .video-tools {
-        position: absolute;
-        right: 12px;
-        top: 10px;
-        z-index: 20;
-        display: flex;
-        gap: 8px;
-      }
-      .tool-icon {
-        width: 24px;
-        height: 24px;
-        border: 1px solid rgba(255, 255, 255, 0.55);
-        background: rgba(9, 18, 36, 0.54);
-        color: #fff;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .video-time {
-        position: absolute;
-        left: 12px;
-        bottom: 12px;
-        z-index: 20;
-        font-size: 12px;
-        color: #fff;
-        background: rgba(0, 0, 0, 0.36);
-        padding: 2px 6px;
-      }
-      .bottom-actions {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding-top: 10px;
-        flex-wrap: wrap;
-      }
-      .side-top {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-      }
-      .side-panel {
-        min-width: 0;
-      }
-      .map-box {
-        position: relative;
-        min-height: 348px;
-      }
-      .map-note {
-        position: absolute;
-        left: 14px;
-        top: 14px;
-        z-index: 500;
-        max-width: 250px;
-        color: #ff3b30;
-        font-size: 14px;
-        font-weight: 700;
-        line-height: 1.45;
-        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.35);
-      }
-      .manual-drawer {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 1100;
-        transform: translateY(100%);
-        transition: transform 0.24s ease;
-        pointer-events: none;
-      }
-      .manual-drawer.show {
-        transform: translateY(0);
-        pointer-events: auto;
-      }
-      .manual-card {
-        width: min(1080px, calc(100vw - 20px));
-        margin: 0 auto 10px;
-        border: 1px solid rgba(84, 233, 255, 0.26);
-        background: linear-gradient(180deg, #202d3f 0%, #1f2a3a 100%);
-        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48);
-      }
-      .manual-head {
-        position: relative;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #ecfeff;
-        font-size: 18px;
-        font-weight: 700;
-        background: linear-gradient(90deg, rgba(67, 151, 204, 0.58), rgba(67, 151, 204, 0.14));
-      }
-      .close-x {
-        position: absolute;
-        right: 14px;
-        top: 13px;
-        width: 22px;
-        height: 22px;
-        border-radius: 999px;
-        background: rgba(0, 0, 0, 0.28);
-        color: #dce8f8;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .manual-layout {
-        display: grid;
-        grid-template-columns: 130px 1fr 130px;
-        align-items: center;
-        gap: 20px;
-        padding: 18px 26px 24px;
-      }
-      .manual-pad {
-        width: 92px;
-        height: 92px;
-        margin: 0 auto;
-        border-radius: 999px;
-        border: 1px solid rgba(84, 233, 255, 0.4);
-        background: radial-gradient(circle at 50% 40%, rgba(82, 182, 219, 0.28), rgba(25, 63, 90, 0.8));
-        position: relative;
-        color: #dce8f8;
-      }
-      .manual-pad span {
-        position: absolute;
-        font-size: 12px;
-        font-weight: 700;
-        text-align: center;
-        line-height: 1.15;
-      }
-      .manual-pad .up { top: 8px; left: 50%; transform: translateX(-50%); }
-      .manual-pad .down { bottom: 8px; left: 50%; transform: translateX(-50%); }
-      .manual-pad .left { left: 7px; top: 50%; transform: translateY(-50%); }
-      .manual-pad .right { right: 7px; top: 50%; transform: translateY(-50%); }
-      .manual-pad .mid { left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 10px; max-width: 34px; }
-      .manual-axis {
-        writing-mode: vertical-rl;
-        text-orientation: mixed;
-        color: #9cc6df;
-        font-size: 14px;
-      }
-      .manual-pad--body .up,
-      .manual-pad--body .down,
-      .manual-pad--body .left,
-      .manual-pad--body .right {
-        font-size: 11px;
-      }
-      .manual-pad--body .up { top: 6px; }
-      .manual-pad--body .down { bottom: 6px; }
-      .manual-pad--body .left { left: 5px; }
-      .manual-pad--body .right { right: 5px; }
-      .manual-pad--body .mid { font-size: 9px; max-width: 28px; }
-      .manual-center {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 18px;
-        flex-wrap: wrap;
-      }
-      .manual-op {
-        min-width: 110px;
-        height: 36px;
-        padding: 0 16px;
-        border-radius: 8px;
-        border: 1px solid rgba(124, 232, 255, 0.4);
-        background: linear-gradient(180deg, rgba(93, 151, 177, 0.9), rgba(41, 95, 118, 0.92));
-        color: #ecfeff;
-        font-size: 16px;
-        font-weight: 700;
-      }
-      #fly-mini-map,
-      #fly-mini-map .leaflet-container {
-        background: #edf3f8;
-        font-family: inherit;
-      }
-      #fly-mini-map .leaflet-control-attribution { display: none; }
-      #fly-mini-map .leaflet-control-zoom {
-        margin-top: 48px;
-        margin-right: 12px;
-      }
-      #fly-mini-map .leaflet-right .leaflet-control { margin-right: 12px; }
-      #fly-mini-map .leaflet-control-zoom a {
-        width: 28px;
-        height: 28px;
-        line-height: 27px;
-        color: #fff;
-        background: rgba(9, 18, 36, 0.78);
-      }
-      @media (max-width: 1600px) {
-        .side-top {
-          grid-template-columns: 1fr;
-        }
-      }
     </style>
   </head>
-  <body data-shell="fullscreen" data-top="map">
-    <div id="page-root" class="fly-shell h-[calc(100vh-64px)] p-3 text-[#dce8f8]">
-      <div class="h-full grid grid-cols-[minmax(0,1fr)_minmax(540px,0.58fr)] gap-4">
-        <section class="flex min-h-0 flex-col">
-          <div class="frame flex-1 min-h-0">
-            <img class="video-image" src="assets/img/虚拟座舱飞行中.png" alt="飞行画面" />
-            <div class="video-tools">
-              <button type="button" class="tool-icon"><i class="fa-regular fa-square"></i></button>
-              <button type="button" class="tool-icon"><i class="fa-solid fa-face-smile"></i></button>
+  <body data-shell="fullscreen" data-top="cockpit">
+    <div id="page-root" class="cockpit-screen h-[calc(100vh-64px)] px-5 py-4">
+      <div class="h-full grid grid-cols-[minmax(0,1fr)_minmax(540px,0.58fr)] gap-5">
+        <section class="flex min-h-0 flex-col gap-3">
+          <div class="cockpit-panel cockpit-video flex-1 min-h-0">
+            <img class="cockpit-video__img" src="assets/img/虚拟座舱飞行中.png" alt="飞行画面" />
+            <div class="cockpit-video__tools">
+              <button type="button" class="cockpit-video__tool"><i class="fa-regular fa-square"></i></button>
+              <button type="button" class="cockpit-video__tool"><i class="fa-solid fa-face-smile"></i></button>
             </div>
-            <div class="video-time">2025-04-07 11:08:23</div>
+            <div class="cockpit-video__time">2025-04-07 11:08:23</div>
           </div>
-          <div class="bottom-actions">
-            <button id="btn-back-cockpit" type="button" class="fly-btn"><i class="fa-solid fa-arrow-left mr-1"></i>返回虚拟座舱</button>
-            <button id="btn-unlock" type="button" class="unlock-btn"><i class="fa-solid fa-lock-open mr-1"></i>点击解锁人工操控</button>
-            <button id="btn-takeoff" type="button" class="fly-btn">一键起飞</button>
-            <button id="btn-stop" type="button" class="fly-btn warn">急停</button>
-            <button id="btn-return" type="button" class="fly-btn">智能返航</button>
+          <div class="cockpit-actions">
+            <button id="btn-back-cockpit" type="button" class="cockpit-btn"><i class="fa-solid fa-arrow-left mr-1"></i>返回虚拟座舱</button>
+            <button id="btn-unlock" type="button" class="cockpit-btn cockpit-btn--ghost"><i class="fa-solid fa-lock-open mr-1"></i>点击解锁人工操控</button>
+            <button id="btn-takeoff" type="button" class="cockpit-btn">一键起飞</button>
+            <button id="btn-stop" type="button" class="cockpit-btn cockpit-btn--warn">急停</button>
+            <button id="btn-return" type="button" class="cockpit-btn">智能返航</button>
           </div>
         </section>
 
-        <aside class="side-panel flex min-h-0 flex-col gap-4">
-          <div class="side-top">
-            <section class="info-card">
-              <div class="info-title">无人机基本信息</div>
+        <aside class="flex min-h-0 flex-col gap-4">
+          <div class="cockpit-side-top grid grid-cols-2 gap-4 min-w-0">
+            <section class="cockpit-panel min-w-0">
+              <div class="cockpit-title">无人机基本信息</div>
               <div class="p-4">
-                <dl class="grid-pairs">
+                <dl class="cockpit-grid-pairs">
                   <dt>无人机设备编号</dt><dd>001</dd>
                   <dt>剩余电量</dt><dd>53%</dd>
                   <dt>预计剩余飞行时间</dt><dd>15分钟</dd>
@@ -333,10 +52,10 @@
                 </dl>
               </div>
             </section>
-            <section class="info-card">
-              <div class="info-title">机场信息</div>
+            <section class="cockpit-panel min-w-0">
+              <div class="cockpit-title">机场信息</div>
               <div class="p-4">
-                <dl class="grid-pairs">
+                <dl class="cockpit-grid-pairs">
                   <dt>机场名称</dt><dd id="airport-name">黄家湖机场</dd>
                   <dt>状态</dt><dd>工作中</dd>
                   <dt>风速</dt><dd>3m/s</dd>
@@ -350,29 +69,31 @@
             </section>
           </div>
 
-          <section class="info-card flex-1 min-h-0 flex flex-col">
-            <div class="info-title">
+          <section class="cockpit-panel flex-1 min-h-0 flex flex-col">
+            <div class="cockpit-title">
               <span>地图信息</span>
-              <span class="text-[12px] text-cyan-200"><i class="fa-solid fa-expand mr-1"></i>放大</span>
+              <span class="cockpit-title__sub"><i class="fa-solid fa-expand mr-1"></i>放大</span>
             </div>
-            <div class="map-box flex-1">
-              <div id="fly-mini-map" class="h-full"></div>
-              <div class="map-note">起飞后此处先显示机场画面（无人机上升过程中地图平面位置无变化，但机场摄像头可观察无人机上升过程），完全升空后自动切换到实时地图信息</div>
+            <div class="cockpit-map-wrap flex-1" style="padding-bottom: 12px">
+              <div class="cockpit-map-inner">
+                <div id="fly-mini-map" class="cockpit-leaflet h-full w-full"></div>
+                <div class="cockpit-map-note">起飞后此处先显示机场画面（无人机上升过程中地图平面位置无变化，但机场摄像头可观察无人机上升过程），完全升空后自动切换到实时地图信息</div>
+              </div>
             </div>
           </section>
         </aside>
       </div>
     </div>
 
-    <div id="manual-drawer" class="manual-drawer">
-      <div class="manual-card rounded-[6px] overflow-hidden">
-        <div class="manual-head">
+    <div id="manual-drawer" class="cockpit-drawer">
+      <div class="cockpit-drawer-card">
+        <div class="cockpit-drawer-head">
           无人机操控台
-          <button id="close-manual" type="button" class="close-x">×</button>
+          <button id="close-manual" type="button" class="cockpit-close">×</button>
         </div>
-          <div class="manual-layout">
+          <div class="cockpit-manual-layout">
             <div class="flex items-center justify-center gap-3">
-              <div class="manual-pad">
+              <div class="cockpit-pad">
               <span class="up">前进<br />W</span>
               <span class="down">后退<br />S</span>
               <span class="left">左<br />A</span>
@@ -380,20 +101,20 @@
               <span class="mid">↕</span>
             </div>
           </div>
-          <div class="manual-center">
-            <button type="button" class="manual-op" data-console="takeoff">一键起飞</button>
-            <button type="button" class="manual-op" data-console="camera-down">镜头向下</button>
-            <button type="button" class="manual-op" data-console="camera-up">镜头向上</button>
+          <div class="cockpit-manual-center">
+            <button type="button" class="cockpit-manual-op" data-console="takeoff">一键起飞</button>
+            <button type="button" class="cockpit-manual-op" data-console="camera-down">镜头向下</button>
+            <button type="button" class="cockpit-manual-op" data-console="camera-up">镜头向上</button>
           </div>
           <div class="flex items-center justify-center gap-3">
-            <div class="manual-pad manual-pad--body">
+            <div class="cockpit-pad cockpit-pad--body">
               <span class="up">上升</span>
               <span class="down">下降</span>
               <span class="left">左转</span>
               <span class="right">右转</span>
               <span class="mid">机身方向</span>
             </div>
-            <div class="manual-axis">机身方向</div>
+            <div class="cockpit-manual-axis">机身方向</div>
           </div>
         </div>
       </div>
@@ -404,6 +125,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="assets/js/menu-config.js"></script>
     <script src="assets/js/shell.js"></script>
+    <script src="assets/js/map-metro-data.js"></script>
+    <script src="assets/js/map-patrol-overlay.js"></script>
     <script src="assets/js/map-gis.js"></script>
     <script>
       const airportNames = { a1: "黄家湖机场", a2: "XX机场", a3: "梨园机场", a4: "XX机场" };
@@ -467,16 +190,9 @@
           center: [30.585, 114.365],
           zoom: 14,
           zoomControl: true,
+          alarmDetails: (window.WuhanGIS.defaultAlarmDetails || []).slice(0, 1),
           airportDetails: [
             { ll: [30.6042, 114.3728], airportName: "机场1", droneName: "001", battery: "53%", ready: true, readyText: "满足" }
-          ],
-          alarmDetails: [
-            {
-              ll: [30.5686, 114.3346],
-              items: [
-                { airportName: "机场1", airportStatus: "在线", droneName: "001", droneStatus: "在线", battery: "53%", ready: true, readyText: "满足", distance: "1.8km" }
-              ]
-            }
           ],
           polylines: [
             { points: [[30.6042,114.3728],[30.5968,114.3659],[30.5882,114.3543],[30.5784,114.3442],[30.5686,114.3346]], color: "#3b82f6", weight: 5 }

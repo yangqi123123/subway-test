@@ -66,6 +66,10 @@
     if (document.getElementById("wb-module-style")) return;
     document.head.insertAdjacentHTML("beforeend", '<style id="wb-module-style">' +
       '.wb-hero{border:1px solid rgba(34,211,238,.16);background:linear-gradient(135deg,rgba(2,8,23,.92),rgba(8,47,73,.28));box-shadow:0 22px 60px rgba(0,0,0,.28);border-radius:8px}.wb-stat{border-left:1px solid rgba(34,211,238,.18);padding-left:18px}.wb-table th,.wb-table td{height:52px;border-bottom:1px solid rgba(34,211,238,.09);border-right:1px solid rgba(34,211,238,.06);vertical-align:middle}.wb-table th:last-child,.wb-table td:last-child{border-right:0}.wb-table thead th{background:rgba(2,8,23,.72);font-size:12px;font-weight:600;white-space:nowrap}.wb-table tbody td{font-size:12px;color:rgba(226,245,255,.9)}.wb-tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;border:1px solid rgba(34,211,238,.22);background:rgba(34,211,238,.08);color:#bae6fd;font-size:11px}.wb-tag--warn{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.08);color:#fde68a}.wb-tag--danger{border-color:rgba(251,113,133,.32);background:rgba(251,113,133,.08);color:#fecdd3}.wb-tag--ok{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.08);color:#bbf7d0}.wb-action{display:inline-flex;align-items:center;gap:5px;margin-right:10px;white-space:nowrap;cursor:pointer;color:#67e8f9}.wb-action:hover{color:#fff}.wb-action--hot{color:#fbbf24}.wb-action--danger{color:#fb7185}.wb-modal-mask{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;background:rgba(2,8,23,.68);padding:20px}.wb-modal-mask.show{display:flex}.wb-modal{width:min(760px,94vw);border:1px solid rgba(34,211,238,.2);border-radius:8px;background:#071426;box-shadow:0 30px 90px rgba(0,0,0,.5)}' +
+      '.wb-approval-mask{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;background:rgba(2,8,23,.72);padding:22px}.wb-approval-mask.show{display:flex}.wb-approval-modal{width:min(1080px,96vw);max-height:88vh;overflow:auto;border:1px solid rgba(34,211,238,.25);border-radius:10px;background:#071b33;box-shadow:0 20px 60px rgba(0,0,0,.55)}' +
+      '.wb-approval-modal .field-label{color:#9cc6df;font-size:12px;margin-bottom:6px;display:block}.status-dot{width:7px;height:7px;border-radius:999px;display:inline-block;margin-right:6px}' +
+      '.approval-item{position:relative;padding:0 0 18px 28px;border-left:1px solid rgba(34,211,238,.28)}.approval-item:last-child{padding-bottom:0}.approval-item::before{content:"";position:absolute;left:-6px;top:2px;width:11px;height:11px;border-radius:50%;background:#64748b;box-shadow:0 0 0 4px rgba(100,116,139,.15)}' +
+      '.approval-item.pass::before{background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.16)}.approval-item.wait::before{background:#f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.16)}.approval-item.reject::before{background:#ef4444;box-shadow:0 0 0 4px rgba(239,68,68,.16)}' +
     '</style>');
   }
 
@@ -80,16 +84,20 @@
   }
 
   function rowCells(key, row, index) {
-    if (key === "wb-todo") return [row.title, tag(row.type), row.source, row.user, row.time, tag(row.status), actions(index)];
-    if (key === "wb-sys-notify") return [row.title, tag(row.type), row.source, row.time, tag(row.read), actions(index)];
-    return [row.title, tag(row.type), row.source, row.user, row.time, tag(row.result), row.opinion, actions(index)];
+    if (key === "wb-todo") return [row.title, tag(row.type), row.source, row.user, row.time, tag(row.status), actions(row, index)];
+    if (key === "wb-sys-notify") return [row.title, tag(row.type), row.source, row.time, tag(row.read), actions(row, index)];
+    return [row.title, tag(row.type), row.source, row.user, row.time, tag(row.result), row.opinion, actions(row, index)];
   }
 
-  function actions(index) {
-    return current.actions.map(function (name) {
-      var cls = name.indexOf("删除") > -1 ? " wb-action--danger" : name.indexOf("处理") > -1 || name.indexOf("标记") > -1 ? " wb-action--hot" : "";
-      var icon = name.indexOf("删除") > -1 ? "fa-trash-can" : name.indexOf("处理") > -1 ? "fa-bolt" : name.indexOf("标记") > -1 ? "fa-envelope-open" : "fa-eye";
-      return '<span class="wb-action' + cls + '" data-action="' + esc(name) + '" data-index="' + index + '"><i class="fa-regular ' + icon + '"></i>' + name + '</span>';
+  function actions(row, index) {
+    var names = current.actions.slice();
+    if (document.body.dataset.sidebarKey === "wb-todo" && row.type === "审批" && row.source === "飞行计划") {
+      names = names.map(function (n) { return n === "立即处理" ? "审批" : n; });
+    }
+    return names.map(function (name) {
+      var cls = name.indexOf("删除") > -1 ? " wb-action--danger" : name.indexOf("处理") > -1 || name.indexOf("标记") > -1 || name === "审批" ? " wb-action--hot" : "";
+      var icon = name.indexOf("删除") > -1 ? "fa-trash-can" : name === "审批" ? "fa-file-signature" : name.indexOf("处理") > -1 ? "fa-bolt" : name.indexOf("标记") > -1 ? "fa-envelope-open" : "fa-eye";
+      return '<span class="wb-action' + cls + '" data-action="' + esc(name) + '" data-index="' + index + '" data-row-title="' + esc(row.title) + '"><i class="fa-regular ' + icon + '"></i>' + name + "</span>";
     }).join("");
   }
 
@@ -101,6 +109,71 @@
         return '<td class="px-3">' + cell + '</td>';
       }).join("") + '</tr>';
     }).join("");
+  }
+
+  function rowByTitle(title) {
+    var t = title == null ? "" : String(title);
+    return current.rows.find(function (r) { return r.title === t; });
+  }
+
+  function todoPlanFromRow(row) {
+    var name = row.title.indexOf("飞行计划审批 ") === 0 ? row.title.slice("飞行计划审批 ".length) : row.title;
+    return { name: name || row.title, audit: "审核中" };
+  }
+
+  function approvalRecordsTodo(plan) {
+    var base = [
+      { person: "张工", time: "2026-05-13 09:24", status: "审批通过", opinion: "申请资料完整，航线与空域许可匹配。" },
+      { person: "李工", time: "2026-05-13 09:42", status: "审批通过", opinion: "施工保护区范围核对无误，同意执行。" },
+      { person: "陈工", time: "2026-05-13 10:05", status: "审核中", opinion: "待核验无人机电池与载荷状态。" },
+      { person: "王主任", time: "-", status: "待审批", opinion: "-" },
+      { person: "赵经理", time: "-", status: "待审批", opinion: "-" }
+    ];
+    if (plan.audit === "审核通过") return base.map(function (r) { return Object.assign({}, r, { status: "审批通过", time: r.time === "-" ? "2026-05-13 10:36" : r.time, opinion: r.opinion === "-" ? "审批通过，同意按计划执行。" : r.opinion }); });
+    if (plan.audit === "已驳回") return base.map(function (r, i) { return i === 2 ? Object.assign({}, r, { status: "已驳回", time: "2026-05-13 10:12", opinion: "空域许可临期，请补充续期材料后重新提交。" }) : r; });
+    return base;
+  }
+
+  function recordClassTodo(status) {
+    if (status === "审批通过") return "pass";
+    if (status === "审核中") return "wait";
+    if (status === "已驳回") return "reject";
+    return "";
+  }
+
+  function auditBadgeHtml(text) {
+    var type = text === "审核通过" || text === "审批通过" ? "wh-status--done" : text === "审核中" ? "wh-status--progress" : "wh-status--pending";
+    return '<span class="wh-status ' + type + '"><span class="status-dot" style="background:currentColor"></span>' + esc(text) + "</span>";
+  }
+
+  function renderApprovalRecordsTodo(plan) {
+    return approvalRecordsTodo(plan).map(function (r) {
+      var badgeText = r.status === "待审批" ? "审核中" : r.status;
+      return '<div class="approval-item ' + recordClassTodo(r.status) + '"><div class="flex flex-wrap items-center gap-3"><span class="font-semibold text-cyan-100">' + esc(r.person) + "</span>" + auditBadgeHtml(badgeText) + '<span class="text-xs text-slate-400">' + esc(r.time) + '</span></div><div class="mt-2 text-xs text-slate-300 leading-5">审批意见：' + esc(r.opinion) + "</div></div>";
+    }).join("");
+  }
+
+  function buildTodoApprovalHtml(plan) {
+    return '<div class="mb-4 flex items-center justify-between gap-3"><div><div class="text-cyan-100 font-semibold">' + esc(plan.name) + '</div><div class="mt-1 text-xs text-slate-400">审批流程：提交 → 工长 → 工务 → 物管 → 车间主任 → 部门领导</div></div>' + auditBadgeHtml(plan.audit) + '</div><div class="grid md:grid-cols-[360px_1fr] gap-4"><section class="rounded border border-cyan-400/20 bg-slate-950/25 p-4"><div class="text-sm font-semibold text-cyan-100 mb-3">审批意见</div><label><span class="field-label">审批意见</span><textarea id="wb-approval-opinion" class="wh-input w-full px-3 py-2 min-h-[132px]" placeholder="请输入审批意见">同意该飞行计划按审批流程继续执行。</textarea></label><div class="mt-4 flex justify-end gap-2"><button type="button" id="wb-reject-btn" class="wh-btn-ghost px-4 py-2">驳回</button><button type="button" id="wb-approve-btn" class="wh-btn-primary px-4 py-2">审批通过</button></div><div class="mt-3 text-xs text-cyan-100 leading-6">系统校验：空域许可有效、无人机状态正常、航线审批通过后才允许起飞。</div></section><section class="rounded border border-cyan-400/20 bg-slate-950/25 p-4"><div class="text-sm font-semibold text-cyan-100 mb-4">审批记录</div><div id="wb-approval-records">' + renderApprovalRecordsTodo(plan) + "</div></section></div>";
+  }
+
+  function openTodoFlightApproval(row) {
+    var plan = todoPlanFromRow(row);
+    document.getElementById("wb-approval-box").innerHTML = buildTodoApprovalHtml(plan);
+    document.getElementById("wb-approve-btn").onclick = function () { submitTodoApproval("审批通过"); };
+    document.getElementById("wb-reject-btn").onclick = function () { submitTodoApproval("已驳回"); };
+    document.getElementById("wb-approval-mask").classList.add("show");
+  }
+
+  function submitTodoApproval(status) {
+    var ta = document.getElementById("wb-approval-opinion");
+    var opinion = (ta && ta.value || "").trim();
+    if (!opinion) {
+      alert("请填写审批意见");
+      return;
+    }
+    document.getElementById("wb-approval-mask").classList.remove("show");
+    alert(status === "审批通过" ? "审批通过，已写入审批记录" : "已驳回，审批意见已记录");
   }
 
   function detail(row) {
@@ -140,7 +213,8 @@
       '<section class="neon-panel neon-panel--tight p-3 mb-4 flex flex-wrap items-end gap-3">' + current.filters.map(filterControl).join("") + '<div class="ml-auto flex gap-2"><button data-action="query" class="px-4 h-8 rounded text-xs wh-btn-primary">查询</button><button data-action="reset" class="px-4 h-8 rounded text-xs wh-btn-ghost">重置</button></div></section>' +
       '<section class="neon-panel neon-panel--tight p-3 mb-4 flex flex-wrap items-center gap-2">' + (current.toolbar || []).map(function (name) { return '<button data-action="' + name + '" class="px-4 h-8 rounded text-xs wh-btn-primary">' + name + '</button>'; }).join("") + '<button data-action="export" class="px-4 h-8 rounded text-xs wh-btn-ghost">导出</button></section>' +
       '<section class="wh-table-shell bg-slate-950/35"><div class="overflow-x-auto"><table class="wb-table min-w-[1180px] w-full text-left"><thead><tr>' + current.columns.map(function (col) { return '<th class="px-3 text-cyan-50/95">' + col + '</th>'; }).join("") + '</tr></thead><tbody id="wb-body"></tbody></table></div><div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400"><span>共 <b id="wb-total" class="text-cyan-200">0</b> 条</span><button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button></div></section>' +
-      '<div id="wb-modal-mask" class="wb-modal-mask"><div class="wb-modal"><div class="h-14 px-6 flex items-center border-b border-cyan-400/15"><h3 class="text-white text-[16px] font-semibold">详情</h3><button data-action="close-modal" class="ml-auto text-slate-400 hover:text-slate-200 text-xl">×</button></div><div id="wb-modal-body" class="p-6 space-y-3"></div></div></div>';
+      '<div id="wb-modal-mask" class="wb-modal-mask"><div class="wb-modal"><div class="h-14 px-6 flex items-center border-b border-cyan-400/15"><h3 class="text-white text-[16px] font-semibold">详情</h3><button data-action="close-modal" class="ml-auto text-slate-400 hover:text-slate-200 text-xl">×</button></div><div id="wb-modal-body" class="p-6 space-y-3"></div></div></div>' +
+      '<div id="wb-approval-mask" class="wb-approval-mask"><div class="wb-approval-modal"><div class="flex items-center justify-between px-5 py-4 border-b border-white/10"><h3 class="text-base font-semibold text-white">飞行计划审批</h3><button type="button" data-action="close-approval" class="px-3 py-1 rounded text-xs wh-btn-ghost">关闭</button></div><div id="wb-approval-box" class="p-5"></div></div></div>';
     renderRows(current.rows);
     document.addEventListener("click", function (event) {
       var node = event.target.closest("[data-action]");
@@ -150,7 +224,16 @@
       if (action === "query") applyFilter();
       if (action === "reset") { document.querySelectorAll("[data-filter]").forEach(function (el) { el.selectedIndex = 0; el.value = ""; }); renderRows(current.rows); }
       if (action === "close-modal") document.getElementById("wb-modal-mask").classList.remove("show");
-      if (action === "查看" || action === "查看详情") detail(current.rows[index]);
+      if (action === "close-approval") document.getElementById("wb-approval-mask").classList.remove("show");
+      var rowFromClick = rowByTitle(node.dataset.rowTitle);
+      if (action === "查看" || action === "查看详情") {
+        var r = rowFromClick != null ? rowFromClick : current.rows[index];
+        if (r) detail(r);
+      }
+      if (action === "审批") {
+        var ar = rowFromClick != null ? rowFromClick : current.rows[index];
+        if (ar && ar.type === "审批" && ar.source === "飞行计划") openTodoFlightApproval(ar);
+      }
       if (action === "立即处理" || action === "标记已读" || action === "全部已读" || action === "删除" || action === "export") alert("原型演示：操作已触发");
     });
   }

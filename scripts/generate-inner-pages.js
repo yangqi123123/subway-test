@@ -18,7 +18,17 @@ const head = (title) => `<!DOCTYPE html>
 </head>`;
 
 function moduleName(top) {
-  const map = { dc: "数据中心", am: "资产管理", in: "智慧巡检", wb: "我的工作台" };
+  const map = {
+    dc: "数据中心",
+    am: "资产管理",
+    in: "智慧巡检",
+    wb: "我的工作台",
+    patrol: "巡查记录",
+    st: "数据统计",
+    cockpit: "虚拟座舱",
+    map: "全景地图",
+    ai: "AI识别",
+  };
   return map[top] || "";
 }
 
@@ -48,7 +58,7 @@ function metricsRow(items) {
 function wrapPage(title, top, key, inner) {
   const mod = moduleName(top);
   return `${head(title)}
-<body data-shell="default" data-top="${top}" data-sidebar-key="${key}">
+<body data-shell="default" data-top="${top}" data-sidebar-key="${key}"${top === "wb" ? ' data-wb-view="page"' : ""}>
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
     <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
       <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
@@ -64,7 +74,7 @@ function wrapPage(title, top, key, inner) {
     ${inner}
   </div>
   <script src="assets/js/menu-config.js"></script>
-  <script src="assets/js/shell.js"></script>
+  ${top === "wb" ? '<script src="assets/js/workbench-mega.js"></script>\n  ' : ""}<script src="assets/js/shell.js"></script>
 </body>
 </html>`;
 }

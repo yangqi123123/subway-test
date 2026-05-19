@@ -56,6 +56,18 @@
         width: 100%;
         height: 318px;
       }
+      .sit-alarm-tooltip {
+        border: 1px solid rgba(34, 211, 238, 0.35);
+        background: rgba(6, 33, 50, 0.95);
+        color: #f8fafc;
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      }
+      .sit-list-row {
+        cursor: pointer;
+      }
       .sit-list-head th {
         font-size: 12px;
         font-weight: 600;
@@ -261,38 +273,7 @@
                     <th class="px-3 py-2 text-left">处理状态</th>
                   </tr>
                 </thead>
-                <tbody id="situation-rows">
-                  <tr class="sit-list-row">
-                    <td class="px-3 py-3 text-slate-100">省博湖北日报-中南医院 V20+065</td>
-                    <td class="px-3 py-3 text-slate-100">2026-03-05 08:27:27</td>
-                    <td class="px-3 py-3 text-slate-100">AI</td>
-                    <td class="px-3 py-3 text-slate-100">已复核</td>
-                  </tr>
-                  <tr class="sit-list-row">
-                    <td class="px-3 py-3 text-slate-100">中南医院-省博湖北日报 V20+066</td>
-                    <td class="px-3 py-3 text-slate-100">2026-03-05 08:27:07</td>
-                    <td class="px-3 py-3 text-slate-100">AI</td>
-                    <td class="px-3 py-3 text-slate-100">已复核</td>
-                  </tr>
-                  <tr class="sit-list-row">
-                    <td class="px-3 py-3 text-slate-100">省博湖北日报-中南医院 V20+030</td>
-                    <td class="px-3 py-3 text-slate-100">2026-03-05 08:21:36</td>
-                    <td class="px-3 py-3 text-slate-100">AI</td>
-                    <td class="px-3 py-3 text-slate-100">已复核</td>
-                  </tr>
-                  <tr class="sit-list-row">
-                    <td class="px-3 py-3 text-slate-100">岳家嘴-梨园 Y16+581</td>
-                    <td class="px-3 py-3 text-slate-100">2026-03-05 05:55:29</td>
-                    <td class="px-3 py-3 text-slate-100">传统</td>
-                    <td class="px-3 py-3 text-slate-100">已复核</td>
-                  </tr>
-                  <tr class="sit-list-row active">
-                    <td class="px-3 py-3 text-slate-100">黄浦路-赵家条 Z8+689</td>
-                    <td class="px-3 py-3 text-slate-100">2026-03-05 00:14:51</td>
-                    <td class="px-3 py-3 text-slate-100">传统</td>
-                    <td class="px-3 py-3 text-slate-100">未处理</td>
-                  </tr>
-                </tbody>
+                <tbody id="situation-rows"></tbody>
               </table>
             </div>
             <div class="px-3 py-2 border-t border-cyan-400/10 flex items-center justify-end gap-2 text-[11px] text-slate-400">
@@ -366,14 +347,6 @@
         { x: 16, y: 4, w: 2, c: "bar" }, { x: 16, y: 14, w: 2, c: "bar" }, { x: 22, y: 3, w: 2, c: "bar warn" },
         { x: 23, y: 15, w: 1, c: "bar danger" }
       ];
-      const rowMarkers = [
-        [30.5878, 114.3004],
-        [30.5859, 114.3122],
-        [30.5842, 114.3188],
-        [30.5677, 114.3651],
-        [30.6201, 114.3039]
-      ];
-
       function buildYAxis(id) {
         const wrap = document.getElementById(id);
         const times = [];
@@ -404,54 +377,14 @@
         }).join("");
       }
 
-      function showToast(message) {
-        const toast = document.getElementById("situation-toast");
-        toast.textContent = message;
-        toast.classList.add("show");
-        window.clearTimeout(showToast.timer);
-        showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1500);
-      }
-
-      const map = L.map("situation-map", { zoomControl: true }).setView([30.5806, 114.3205], 11);
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-        subdomains: "abcd",
-        maxZoom: 20,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
-      }).addTo(map);
-
-      const markers = rowMarkers.map(([lat, lng], index) => {
-        const label = String(index + 1);
-        const icon = L.divIcon({
-          className: "",
-          html: `<div style="width:22px;height:22px;border-radius:999px;background:rgba(255,87,34,.92);border:2px solid #fff;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 10px rgba(255,87,34,.35)">${label}</div>`,
-          iconSize: [22, 22],
-          iconAnchor: [11, 11]
-        });
-        return L.marker([lat, lng], { icon }).addTo(map);
-      });
-
       buildYAxis("left-y");
       buildYAxis("right-y");
       buildStations("left-stations");
       buildStations("right-stations");
       buildBars("left-plot", leftBars);
       buildBars("right-plot", rightBars);
-
-      document.querySelectorAll("#situation-rows tr").forEach((row, index) => {
-        row.addEventListener("click", () => {
-          document.querySelectorAll("#situation-rows tr").forEach((item) => item.classList.remove("active"));
-          row.classList.add("active");
-          const marker = markers[index];
-          if (marker) {
-            map.flyTo(marker.getLatLng(), 13, { duration: 0.6 });
-          }
-          if (index === 4) {
-            location.href = "map-expert.html";
-            return;
-          }
-          showToast("已定位到对应预警区段");
-        });
-      });
     </script>
+    <script src="assets/js/map-gis.js"></script>
+    <script src="assets/js/map-situation.js"></script>
   </body>
 </html>

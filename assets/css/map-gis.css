@@ -414,6 +414,7 @@
 /* 筛选 / 图层开启高亮 */
 .gis-toggle--on,
 .gis-line-btn.gis-toggle--on,
+.gis-line-btn.gis-line-btn--active,
 .gis-em-btn.gis-toggle--on {
   outline: 2px solid rgba(250, 250, 250, 0.95);
   outline-offset: 1px;
@@ -523,6 +524,9 @@
 .gis-e8 {
   background: #db2777;
 }
+.gis-ew {
+  background: #d97706;
+}
 
 .gis-all-btn {
   background: rgba(34, 211, 238, 0.15);
@@ -612,6 +616,101 @@
 
 .gis-detail-panel.hidden {
   display: none;
+}
+
+.gis-coord-panel {
+  position: absolute;
+  top: 64px;
+  right: 12px;
+  z-index: 1006;
+  width: min(360px, calc(100vw - 24px));
+  border-radius: 10px;
+  border: 1px solid rgba(34, 211, 238, 0.26);
+  background: rgba(6, 12, 28, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), 0 0 24px rgba(34, 211, 238, 0.12);
+}
+
+.gis-coord-panel.hidden {
+  display: none;
+}
+
+.gis-coord-body {
+  padding: 14px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gis-coord-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gis-coord-label {
+  font-size: 12px;
+  color: #9cc6df;
+}
+
+.gis-coord-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  background: rgba(15, 23, 42, 0.72);
+  color: #eaf6ff;
+  font-size: 13px;
+  outline: none;
+}
+
+.gis-coord-input:focus {
+  border-color: rgba(34, 211, 238, 0.55);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.12);
+}
+
+.gis-coord-foot {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+
+.gis-coord-btn {
+  flex: 1;
+  height: 36px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.gis-coord-btn--ghost {
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  background: rgba(15, 23, 42, 0.65);
+  color: #e2f5ff;
+}
+
+.gis-coord-btn--ghost:hover {
+  background: rgba(34, 211, 238, 0.1);
+}
+
+.gis-coord-btn--ghost.gis-coord-btn--active {
+  border-color: rgba(34, 211, 238, 0.75);
+  background: rgba(34, 211, 238, 0.18);
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.25);
+}
+
+.gis-coord-btn--primary {
+  border: 1px solid rgba(34, 211, 238, 0.45);
+  background: linear-gradient(135deg, #0c8de5, #117cd0);
+  color: #fff;
+}
+
+.gis-coord-btn--primary:hover {
+  filter: brightness(1.06);
 }
 
 .gis-detail-head {
@@ -785,10 +884,14 @@
 
 .gis-airport-card__value.is-ready {
   color: #22c55e;
+  font-size: inherit;
+  font-weight: 400;
 }
 
 .gis-airport-card__value.is-not-ready {
   color: #ef4444;
+  font-size: inherit;
+  font-weight: 400;
 }
 
 .gis-airport-card__spacer {
@@ -805,6 +908,160 @@
 .gis-airport-status i {
   font-size: 9px;
   color: #22c55e;
+}
+
+.gis-alarm-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gis-alarm-section {
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+}
+
+.gis-alarm-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.gis-alarm-section__title {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #7dd3fc;
+  letter-spacing: 0.04em;
+}
+
+.gis-alarm-section--airport .gis-alarm-section__title {
+  margin: 0;
+}
+
+.gis-alarm-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.gis-alarm-section__arrows {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.gis-alarm-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.gis-alarm-status--done {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.gis-alarm-status--pending {
+  color: #fde68a;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.32);
+}
+
+.gis-alarm-carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gis-alarm-carousel__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.gis-alarm-carousel__nav--single {
+  justify-content: flex-end;
+}
+
+.gis-alarm-carousel__btn--mini {
+  width: 26px;
+  height: 26px;
+  font-size: 11px;
+}
+
+.gis-alarm-carousel__btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  background: rgba(15, 23, 42, 0.72);
+  color: #e2f5ff;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.gis-alarm-carousel__btn:hover:not(:disabled) {
+  background: rgba(34, 211, 238, 0.12);
+  border-color: rgba(34, 211, 238, 0.5);
+}
+
+.gis-alarm-carousel__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.gis-alarm-carousel__indicator {
+  min-width: 48px;
+  text-align: center;
+  font-size: 12px;
+  color: #9cc6df;
+}
+
+.gis-alarm-carousel__viewport.gis-airport-panel {
+  min-height: 0;
+}
+
+.gis-alarm-carousel__viewport .gis-alarm-carousel__card {
+  display: none;
+}
+
+.gis-alarm-carousel__viewport .gis-alarm-carousel__card.is-active {
+  display: block;
+}
+
+.gis-detail-panel:has(.gis-alarm-panel) {
+  width: min(520px, calc(100vw - 24px));
+}
+
+.gis-alarm-panel__action {
+  margin-top: 4px;
+  padding-top: 4px;
+}
+
+.gis-alarm-panel--cockpit .gis-alarm-section--airport {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.gis-detail-btn--block {
+  width: 100%;
+}
+
+.leaflet-tooltip.gis-alarm-tooltip {
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  background: rgba(6, 12, 28, 0.92);
+  color: #fecaca;
+  font-size: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
 }
 
 /* 底部 HUD（测距 / 测面 / 拾取） */

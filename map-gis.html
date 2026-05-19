@@ -182,14 +182,37 @@
         <div class="gis-detail-body" id="gis-detail-body"></div>
       </div>
 
+
+      <div id="gis-coord-panel" class="gis-coord-panel hidden" aria-live="polite">
+        <div class="gis-detail-head">
+          <div class="gis-detail-title">坐标拾取</div>
+          <button type="button" class="gis-detail-close" id="gis-coord-close" aria-label="关闭">×</button>
+        </div>
+        <div class="gis-coord-body">
+          <label class="gis-coord-field">
+            <span class="gis-coord-label">经度</span>
+            <input type="text" id="gis-coord-lng" class="gis-coord-input" placeholder="如 114.305500" inputmode="decimal" />
+          </label>
+          <label class="gis-coord-field">
+            <span class="gis-coord-label">纬度</span>
+            <input type="text" id="gis-coord-lat" class="gis-coord-input" placeholder="如 30.592800" inputmode="decimal" />
+          </label>
+          <label class="gis-coord-field">
+            <span class="gis-coord-label">高程</span>
+            <input type="text" id="gis-coord-alt" class="gis-coord-input" placeholder="如 28.5（米）" inputmode="decimal" />
+          </label>
+        </div>
+        <div class="gis-coord-foot">
+          <button type="button" class="gis-coord-btn gis-coord-btn--ghost" id="gis-coord-pick-map">图上拾取</button>
+          <button type="button" class="gis-coord-btn gis-coord-btn--primary" id="gis-coord-locate">坐标定位</button>
+        </div>
+      </div>
+
       <div id="gis-hud" class="gis-hud hidden" role="status" aria-live="polite"></div>
 
       <div class="absolute bottom-4 left-1/2 z-[410] flex max-w-[98vw] -translate-x-1/2 flex-wrap justify-center gap-2 px-3">
-        <a href="map-cockpit-prep.html" class="gis-fab py-2 text-[11px] no-underline">虚拟座舱</a>
         <a href="map-situation.html" class="gis-fab py-2 text-[11px] no-underline">态势感知</a>
-        <a href="map-expert.html" class="gis-fab py-2 text-[11px] no-underline">专家工具</a>
         <a href="map-flight-plan.html" class="gis-fab py-2 text-[11px] no-underline">飞行计划</a>
-        <a href="map-routes.html" class="gis-fab py-2 text-[11px] no-underline">航线管理</a>
         <a href="map-alerts.html" class="gis-fab py-2 text-[11px] no-underline">告警信息</a>
       </div>
 
@@ -198,6 +221,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="assets/js/menu-config.js"></script>
     <script src="assets/js/shell.js"></script>
+    <script src="assets/js/map-metro-data.js"></script>
+    <script src="assets/js/map-patrol-overlay.js"></script>
     <script src="assets/js/map-gis.js"></script>
   </body>
 </html>

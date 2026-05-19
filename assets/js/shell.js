@@ -1,5 +1,5 @@
 /**
- * 公共布局：顶部一级菜单 + 左侧二三级菜单（与 menu-config 同步注入）。
+ * 公共布局：顶部一级菜单（含下拉）+ 左侧菜单 / 工作台超级卡片（与 menu-config 同步）。
  * 页面声明：body[data-shell] data-top data-sidebar-key
  */
 (function () {
@@ -18,7 +18,36 @@
     return e;
   }
 
-  function buildHeader(topId, shellMode) {
+  function injectShellStyles() {
+    var s = document.getElementById("wh-shell-style");
+    if (!s) {
+      s = document.createElement("style");
+      s.id = "wh-shell-style";
+      document.head.appendChild(s);
+    }
+    s.textContent =
+      "#app-layout>.wh-header{overflow:visible!important;}" +
+      "#app-layout>.wh-header>nav.wh-top-nav-strip{overflow:visible!important;max-width:100%;flex-wrap:wrap;justify-content:center;}" +
+      ".wh-shell-row{display:flex;min-height:calc(100vh - 64px);min-height:calc(100dvh - 64px);width:100%;}" +
+      ".wh-top-drop{position:relative;display:flex;align-items:stretch;align-self:stretch;}" +
+      ".wh-top-drop:hover,.wh-top-drop.wh-top-drop--open{z-index:200;}" +
+      ".wh-top-drop__btn{position:relative;display:flex;align-items:center;height:100%;min-height:48px;padding:0 12px;border:none;background:transparent;cursor:pointer;color:rgba(226,245,255,.78);font-size:13px;white-space:nowrap;border-radius:6px;transition:color .15s,background .15s;}" +
+      ".wh-top-drop__btn:hover{color:#fff;background:rgba(34,211,238,.08);}" +
+      ".wh-top-drop__btn.wh-top-nav--active{color:#fff;background:rgba(34,211,238,.14);box-shadow:inset 0 -2px 0 #22d3ee;}" +
+      ".wh-top-drop__panel{position:absolute;left:0;top:100%;z-index:201;display:none;box-sizing:border-box;min-width:100%;padding-top:6px;}" +
+      ".wh-top-drop:hover .wh-top-drop__panel,.wh-top-drop.wh-top-drop--open .wh-top-drop__panel{display:block;}" +
+      ".wh-top-drop__panel-inner{padding:6px;border-radius:8px;background:rgba(7,27,51,.96);border:1px solid rgba(34,211,238,.22);box-shadow:0 16px 48px rgba(0,0,0,.5);}" +
+      ".wh-top-drop__panel a{display:block;padding:8px 12px;border-radius:6px;font-size:12px;color:rgba(226,245,255,.88);text-decoration:none;white-space:nowrap;}" +
+      ".wh-top-drop__panel a:hover{background:rgba(34,211,238,.1);color:#fff;}";
+  }
+
+  function navHighlightId(bodyTopId) {
+    var file = WHMetroMenu.pageFile();
+    return WHMetroMenu.topNavMatchId(file, bodyTopId);
+  }
+
+  function buildHeader(bodyTopId) {
+    var highlight = navHighlightId(bodyTopId);
     var header = el("header", {
       className:
         "wh-header fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-6 border-b border-cyan-400/20",
@@ -32,7 +61,7 @@
       '<span class="text-white text-sm md:text-[15px] font-semibold tracking-wide truncate">武汉地铁保护区管理平台</span>' +
       '<span class="text-[10px] text-cyan-200/50 uppercase tracking-[0.2em] hidden sm:block">O&M Command</span>' +
       "</div></div>" +
-      '<nav class="flex flex-1 justify-center items-stretch gap-0.5 md:gap-1 mx-2 overflow-x-auto no-scrollbar min-w-0">' +
+      '<nav class="wh-top-nav-strip flex flex-1 justify-center items-stretch gap-0.5 md:gap-1 mx-2 min-w-0">' +
       "</nav>" +
       '<div class="flex items-center gap-2 md:gap-3 text-cyan-50 shrink-0">' +
       '<button type="button" class="p-2 rounded-lg transition-ui border border-transparent hover:border-cyan-400/30 hover:bg-cyan-500/10 hover:shadow-[0_0_16px_rgba(34,211,238,0.2)]" title="搜索"><i class="fa-solid fa-magnifying-glass text-lg text-cyan-200"></i></button>' +
@@ -46,31 +75,181 @@
 
     var nav = header.querySelector("nav");
     WHMetroMenu.TOP_NAV.forEach(function (item) {
-      var a = el("a", {
-        href: item.href,
+      if (item.kind === "dropdown") {
+        var wrap = el("div", { className: "wh-top-drop" });
+        var active = item.id === highlight;
+        var btn = el("button", {
+          type: "button",
+          className:
+            "wh-top-drop__btn wh-top-nav " +
+            (active ? "wh-top-nav--active" : ""),
+          "aria-haspopup": "true",
+        });
+        btn.textContent = item.label;
+        var panel = el("div", { className: "wh-top-drop__panel", role: "menu" });
+        var inner = el("div", { className: "wh-top-drop__panel-inner" });
+        item.items.forEach(function (sub) {
+          var a = el("a", { href: sub.href, role: "menuitem" });
+          a.textContent = sub.label;
+          inner.appendChild(a);
+        });
+        panel.appendChild(inner);
+        wrap.appendChild(btn);
+        wrap.appendChild(panel);
+        wrap.addEventListener("mouseenter", function () {
+          wrap.classList.add("wh-top-drop--open");
+        });
+        wrap.addEventListener("mouseleave", function () {
+          wrap.classList.remove("wh-top-drop--open");
+        });
+        nav.appendChild(wrap);
+      } else {
+        var a = el("a", {
+          href: item.href || "#",
         className:
-          "wh-top-nav whitespace-nowrap transition-ui " +
-          (item.id === topId ? "wh-top-nav--active" : ""),
-      });
-      a.textContent = item.label;
-      nav.appendChild(a);
+          "wh-top-nav relative whitespace-nowrap transition-ui flex items-center px-3 " +
+            (item.id === highlight ? "wh-top-nav--active" : ""),
+        });
+        a.textContent = item.label;
+        nav.appendChild(a);
+      }
     });
 
     return header;
   }
 
+  function leafIcon(key) {
+    var icon = "fa-regular fa-file-lines";
+    if (key.indexOf("am-") === 0) icon = "fa-solid fa-train-subway";
+    if (key.indexOf("dc-") === 0) icon = "fa-solid fa-database";
+    if (key.indexOf("in-") === 0) icon = "fa-solid fa-route";
+    if (key.indexOf("wb-") === 0) icon = "fa-solid fa-briefcase";
+    if (key === "wb-permission") icon = "fa-solid fa-shield-halved";
+    return icon;
+  }
+
+  function sidebarLeaf(item, activeKey, collapsed, indent) {
+    var isActive = item.key === activeKey;
+    var a = el("a", {
+      href: item.href,
+      title: item.label,
+      className:
+        "flex items-center gap-2 py-2.5 pr-3 rounded-r-full mr-2 text-sm transition-ui " +
+        (indent ? "pl-8" : "pl-4") +
+        " " +
+        (collapsed ? "justify-center pl-2" : ""),
+    });
+    if (isActive) {
+      a.setAttribute("data-active", "1");
+      a.classList.add("wh-side-link--active");
+    } else {
+      a.style.color = indent ? "rgba(148, 163, 184, 0.95)" : "rgba(226, 245, 255, 0.78)";
+    }
+    a.addEventListener("mouseenter", function () {
+      if (!isActive) a.style.background = "rgba(34, 211, 238, 0.08)";
+    });
+    a.addEventListener("mouseleave", function () {
+      if (!isActive) a.style.background = "transparent";
+    });
+    var icon = leafIcon(item.key);
+    a.innerHTML =
+      '<i class="' +
+      icon +
+      ' w-5 text-center shrink-0 text-[15px]"></i><span class="wh-side-text truncate ' +
+      (collapsed ? "hidden" : "") +
+      '">' +
+      item.label +
+      "</span>";
+    return a;
+  }
+
+  function attachSidebarChrome(aside, scroll, collapsed) {
+    var foot = el("div", {
+      className: "p-2 border-t border-cyan-400/15 bg-black/20",
+    });
+    var toggle = el("button", {
+      type: "button",
+      className:
+        "w-full flex items-center justify-center gap-2 py-2 rounded text-slate-400 text-sm transition-ui hover:bg-cyan-500/10 hover:text-cyan-100",
+    });
+    toggle.innerHTML =
+      '<i class="fa-solid wh-toggle-ico ' +
+      (collapsed ? "fa-chevron-right" : "fa-chevron-left") +
+      '"></i><span class="wh-toggle-label ' +
+      (collapsed ? "hidden" : "") +
+      '">收起菜单</span>';
+
+    function applyCollapsed(c) {
+      var mainEl = document.getElementById("shell-main");
+      if (c) {
+        aside.style.width = "80px";
+        aside.classList.add("wh-collapsed");
+        localStorage.setItem(STORAGE_SIDEBAR, "1");
+        if (mainEl) mainEl.style.marginLeft = "80px";
+        scroll.querySelectorAll(".wh-group-body").forEach(function (b) {
+          b.classList.add("hidden");
+        });
+        scroll.querySelectorAll(".wh-side-text, .wh-side-chev").forEach(function (s) {
+          s.classList.add("hidden");
+        });
+        scroll.querySelectorAll(".wh-wb-mega-sub").forEach(function (s) {
+          s.classList.add("hidden");
+        });
+        var tl = toggle.querySelector(".wh-toggle-label");
+        if (tl) tl.classList.add("hidden");
+        var ico = toggle.querySelector(".wh-toggle-ico");
+        if (ico) ico.className = "fa-solid wh-toggle-ico fa-chevron-right";
+      } else {
+        aside.style.width = "260px";
+        aside.classList.remove("wh-collapsed");
+        localStorage.setItem(STORAGE_SIDEBAR, "0");
+        if (mainEl) mainEl.style.marginLeft = "260px";
+        scroll.querySelectorAll(".wh-group-body").forEach(function (b) {
+          b.classList.remove("hidden");
+        });
+        scroll.querySelectorAll(".wh-side-text, .wh-side-chev").forEach(function (s) {
+          s.classList.remove("hidden");
+        });
+        scroll.querySelectorAll(".wh-wb-mega-sub").forEach(function (s) {
+          s.classList.remove("hidden");
+        });
+        var tl2 = toggle.querySelector(".wh-toggle-label");
+        if (tl2) tl2.classList.remove("hidden");
+        var ico2 = toggle.querySelector(".wh-toggle-ico");
+        if (ico2) ico2.className = "fa-solid wh-toggle-ico fa-chevron-left";
+      }
+    }
+
+    toggle.addEventListener("click", function () {
+      applyCollapsed(!aside.classList.contains("wh-collapsed"));
+    });
+    foot.appendChild(toggle);
+    aside.appendChild(scroll);
+    aside.appendChild(foot);
+    if (collapsed) aside.classList.add("wh-collapsed");
+
+    var activeLink = scroll.querySelector("a[data-active='1']");
+    if (activeLink) {
+      var groupBody = activeLink.closest(".wh-group-body");
+      if (groupBody) {
+        groupBody.classList.remove("hidden");
+        var head = groupBody.previousElementSibling;
+        if (head && head.classList.contains("wh-group-head")) {
+          var chev = head.querySelector(".fa-chevron-down");
+          if (chev) chev.style.transform = "rotate(0deg)";
+        }
+      }
+    }
+
+    return { applyCollapsed: applyCollapsed, toggle: toggle };
+  }
+
   function buildSidebar(topId, activeKey, collapsed) {
     var aside = el("aside", {
       className: "wh-sidebar fixed left-0 z-40 flex flex-col transition-ui",
-      style:
-        "top:64px;width:" +
-        (collapsed ? "80px" : "260px") +
-        ";",
+      style: "top:64px;width:" + (collapsed ? "80px" : "260px") + ";",
     });
-
-    var scroll = el("div", {
-      className: "flex-1 overflow-y-auto py-3",
-    });
+    var scroll = el("div", { className: "flex-1 overflow-y-auto py-3" });
     var tree = WHMetroMenu.SIDEBAR[topId];
     if (!tree) {
       scroll.innerHTML =
@@ -108,9 +287,8 @@
             if (collapsed) return;
             expanded = !expanded;
             body.classList.toggle("hidden", !expanded);
-            gh.querySelector(".fa-chevron-down").style.transform = expanded
-              ? "rotate(0deg)"
-              : "rotate(-90deg)";
+            var ch = gh.querySelector(".fa-chevron-down");
+            if (ch) ch.style.transform = expanded ? "rotate(0deg)" : "rotate(-90deg)";
           });
           groupWrap.appendChild(gh);
           groupWrap.appendChild(body);
@@ -118,123 +296,16 @@
         }
       });
     }
-
-    var foot = el("div", {
-      className: "p-2 border-t border-cyan-400/15 bg-black/20",
-    });
-    var toggle = el("button", {
-      type: "button",
-      className:
-        "w-full flex items-center justify-center gap-2 py-2 rounded text-slate-400 text-sm transition-ui hover:bg-cyan-500/10 hover:text-cyan-100",
-    });
-    toggle.innerHTML =
-      '<i class="fa-solid wh-toggle-ico ' +
-      (collapsed ? "fa-chevron-right" : "fa-chevron-left") +
-      '"></i><span class="wh-toggle-label ' +
-      (collapsed ? "hidden" : "") +
-      '">收起菜单</span>';
-    function applyCollapsed(c) {
-      var mainEl = document.getElementById("shell-main");
-      if (c) {
-        aside.style.width = "80px";
-        aside.classList.add("wh-collapsed");
-        localStorage.setItem(STORAGE_SIDEBAR, "1");
-        if (mainEl) mainEl.style.marginLeft = "80px";
-        scroll.querySelectorAll(".wh-group-body").forEach(function (b) {
-          b.classList.add("hidden");
-        });
-        scroll.querySelectorAll(".wh-side-text, .wh-side-chev").forEach(function (s) {
-          s.classList.add("hidden");
-        });
-        var tl = toggle.querySelector(".wh-toggle-label");
-        if (tl) tl.classList.add("hidden");
-        var ico = toggle.querySelector(".wh-toggle-ico");
-        if (ico) ico.className = "fa-solid wh-toggle-ico fa-chevron-right";
-      } else {
-        aside.style.width = "260px";
-        aside.classList.remove("wh-collapsed");
-        localStorage.setItem(STORAGE_SIDEBAR, "0");
-        if (mainEl) mainEl.style.marginLeft = "260px";
-        scroll.querySelectorAll(".wh-group-body").forEach(function (b) {
-          b.classList.remove("hidden");
-        });
-        scroll.querySelectorAll(".wh-side-text, .wh-side-chev").forEach(function (s) {
-          s.classList.remove("hidden");
-        });
-        var tl2 = toggle.querySelector(".wh-toggle-label");
-        if (tl2) tl2.classList.remove("hidden");
-        var ico2 = toggle.querySelector(".wh-toggle-ico");
-        if (ico2) ico2.className = "fa-solid wh-toggle-ico fa-chevron-left";
-      }
-    }
-    toggle.addEventListener("click", function () {
-      applyCollapsed(!aside.classList.contains("wh-collapsed"));
-    });
-    foot.appendChild(toggle);
-    aside.appendChild(scroll);
-    aside.appendChild(foot);
-    if (collapsed) aside.classList.add("wh-collapsed");
-
-    var activeLink = scroll.querySelector("a[data-active='1']");
-    if (activeLink) {
-      var groupBody = activeLink.closest(".wh-group-body");
-      if (groupBody) {
-        groupBody.classList.remove("hidden");
-        var head = groupBody.previousElementSibling;
-        if (head && head.classList.contains("wh-group-head")) {
-          var chev = head.querySelector(".fa-chevron-down");
-          if (chev) chev.style.transform = "rotate(0deg)";
-        }
-      }
-    }
-
+    attachSidebarChrome(aside, scroll, collapsed);
     return aside;
-  }
-
-  function sidebarLeaf(item, activeKey, collapsed, indent) {
-    var isActive = item.key === activeKey;
-    var a = el("a", {
-      href: item.href,
-      title: item.label,
-      className:
-        "flex items-center gap-2 py-2.5 pr-3 rounded-r-full mr-2 text-sm transition-ui " +
-        (indent ? "pl-8" : "pl-4") +
-        " " +
-        (collapsed ? "justify-center pl-2" : ""),
-    });
-    if (isActive) {
-      a.setAttribute("data-active", "1");
-      a.classList.add("wh-side-link--active");
-    } else {
-      a.style.color = indent ? "rgba(148, 163, 184, 0.95)" : "rgba(226, 245, 255, 0.78)";
-    }
-    a.addEventListener("mouseenter", function () {
-      if (!isActive) a.style.background = "rgba(34, 211, 238, 0.08)";
-    });
-    a.addEventListener("mouseleave", function () {
-      if (!isActive) a.style.background = "transparent";
-    });
-    var icon = "fa-regular fa-file-lines";
-    if (item.key.indexOf("am-") === 0) icon = "fa-solid fa-train-subway";
-    if (item.key.indexOf("dc-") === 0) icon = "fa-solid fa-chart-column";
-    if (item.key.indexOf("in-") === 0) icon = "fa-solid fa-route";
-    if (item.key.indexOf("wb-") === 0) icon = "fa-solid fa-briefcase";
-    a.innerHTML =
-      '<i class="' +
-      icon +
-      ' w-5 text-center shrink-0 text-[15px]"></i><span class="wh-side-text truncate ' +
-      (collapsed ? "hidden" : "") +
-      '">' +
-      item.label +
-      "</span>";
-    return a;
   }
 
   function init() {
     if (typeof WHMetroMenu === "undefined") return;
+    injectShellStyles();
     var body = document.body;
     var shell = body.getAttribute("data-shell") || "default";
-    var topId = body.getAttribute("data-top") || "dc";
+    var topId = body.getAttribute("data-top") || "wb";
     var activeKey = body.getAttribute("data-sidebar-key") || "";
     var pageRoot = document.getElementById("page-root");
     if (!pageRoot) return;
@@ -242,7 +313,7 @@
     var collapsed = localStorage.getItem(STORAGE_SIDEBAR) === "1";
 
     var layout = el("div", { id: "app-layout" });
-    var header = buildHeader(topId, shell);
+    var header = buildHeader(topId);
     layout.appendChild(header);
 
     var row = el("div", {
@@ -257,6 +328,38 @@
       });
       mainFs.appendChild(pageRoot);
       row.appendChild(mainFs);
+    } else if (topId === "patrol" || topId === "st") {
+      body.classList.add("wh-layout-no-sidebar");
+      var mainNoSide = el("main", {
+        id: "shell-main",
+        className: "wh-main-canvas p-4 md:p-6",
+        style: "margin-left:0;transition:margin-left .2s;",
+      });
+      mainNoSide.appendChild(pageRoot);
+      row.appendChild(mainNoSide);
+    } else if (topId === "wb") {
+      body.classList.add("wh-layout-wb");
+      var wbView = body.getAttribute("data-wb-view") || "page";
+      var isHub = wbView === "hub" || activeKey === "wb-hub";
+      if (isHub) body.classList.add("wh-wb-hub");
+      var mainWb = el("main", {
+        id: "shell-main",
+        className: "wh-main-canvas" + (isHub ? " wh-main-canvas--wb-hub" : " p-4 md:p-6"),
+        style: "margin-left:0;transition:margin-left .2s;",
+      });
+      if (isHub && typeof WHWorkbenchMega !== "undefined") {
+        var mega = WHWorkbenchMega.build(activeKey);
+        if (mega) {
+          mega.classList.add("wh-wb-mega-wrap--fullscreen");
+          mainWb.appendChild(mega);
+        }
+        pageRoot.setAttribute("aria-hidden", "true");
+        pageRoot.classList.add("hidden");
+        mainWb.appendChild(pageRoot);
+      } else {
+        mainWb.appendChild(pageRoot);
+      }
+      row.appendChild(mainWb);
     } else {
       var aside = buildSidebar(topId, activeKey, collapsed);
       var main = el("main", {
