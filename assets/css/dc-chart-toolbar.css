@@ -1,0 +1,169 @@
+/* 图例居左、小工具始终靠右（与当日巡查 Tab 一致） */
+.dc-chart-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  min-height: 32px;
+}
+
+.dc-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  min-width: 0;
+}
+
+.dc-chart-legend:empty {
+  display: none;
+}
+
+.dc-chart-tools-slot {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.dc-chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.dc-chart-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.dc-chart-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dc-chart-tool {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  background: rgba(8, 15, 35, 0.78);
+  color: #94a3b8;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.dc-chart-tool:hover {
+  color: #e0f2fe;
+  border-color: rgba(34, 211, 238, 0.42);
+  background: rgba(34, 211, 238, 0.1);
+}
+
+.dc-chart-tool.is-active {
+  color: #67e8f9;
+  border-color: rgba(34, 211, 238, 0.5);
+  background: rgba(34, 211, 238, 0.16);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.2);
+}
+
+.dc-chart-tool:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.dc-chart-tool-wrap {
+  position: relative;
+}
+
+.dc-chart-download-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 20;
+  min-width: 128px;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(34, 211, 238, 0.24);
+  background: rgba(7, 20, 38, 0.98);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.dc-chart-download-menu.show {
+  display: block;
+}
+
+.dc-chart-download-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.dc-chart-download-menu button:hover {
+  background: rgba(34, 211, 238, 0.12);
+  color: #f0fdfa;
+}
+
+.dc-chart-stage {
+  position: relative;
+}
+
+.dc-chart-table-wrap {
+  display: none;
+  width: 100%;
+  max-height: 430px;
+  overflow: auto;
+  border: 1px solid rgba(34, 211, 238, 0.12);
+  border-radius: 8px;
+  background: rgba(2, 8, 23, 0.35);
+}
+
+.dc-chart-table-wrap.is-visible {
+  display: block;
+}
+
+.dc-chart-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.dc-chart-table th,
+.dc-chart-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.1);
+  text-align: center;
+}
+
+.dc-chart-table th {
+  color: #67e8f9;
+  background: rgba(15, 23, 42, 0.65);
+  font-weight: 600;
+}
+
+.dc-chart-table td {
+  color: #e2e8f0;
+}
+
+.dc-chart-table tbody tr:hover td {
+  background: rgba(34, 211, 238, 0.06);
+}
+
+.dc-chart-canvas.is-hidden {
+  display: none;
+}

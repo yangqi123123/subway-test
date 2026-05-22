@@ -56,8 +56,9 @@
       border: 1px solid rgba(34,211,238,.16);
       background: #071426;
       box-shadow: 0 24px 80px rgba(0,0,0,.48);
-      overflow: hidden;
+      overflow: visible;
     }
+    .staff-modal .p-6 { overflow: visible; }
     .staff-form-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -179,14 +180,14 @@
 
   <div id="staff-modal-mask" class="staff-modal-mask">
     <div class="staff-modal">
-      <div class="h-14 px-6 flex items-center border-b border-cyan-400/15">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
         <h3 id="staff-modal-title" class="text-white text-[16px] font-semibold">新增应急人员</h3>
-        <button type="button" class="ml-auto text-slate-400 hover:text-slate-200 text-xl leading-none" data-action="close-staff-modal">×</button>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-staff-modal">×</button>
       </div>
       <div class="p-6">
         <div class="staff-form-grid">
           <label class="staff-form-item"><span class="staff-form-label is-required">姓名：</span><input id="staff-name" class="wh-input h-8 flex-1 px-3" placeholder="请输入姓名" /></label>
-          <label class="staff-form-item"><span class="staff-form-label">部门：</span><select id="staff-dept" class="wh-input h-8 flex-1 px-2"><option>应急中心</option><option>巡检部</option><option>调度部</option></select></label>
+          <label class="staff-form-item wh-form-item--select"><span class="staff-form-label is-required">部门：</span><div id="staff-dept-select" class="wh-search-select flex-1 min-w-0" data-input-id="staff-dept"></div></label>
           <label class="staff-form-item"><span class="staff-form-label is-required">工号：</span><input id="staff-no" class="wh-input h-8 flex-1 px-3" placeholder="请输入工号" /></label>
           <label class="staff-form-item"><span class="staff-form-label">岗位：</span><input id="staff-post" class="wh-input h-8 flex-1 px-3" placeholder="请输入岗位" /></label>
           <label class="staff-form-item"><span class="staff-form-label">所属线路：</span><select id="staff-line" class="wh-input h-8 flex-1 px-2"><option>2号线</option><option>5号线</option><option>7号线</option><option>11号线</option></select></label>
@@ -215,8 +216,11 @@
     </div>
   </div>
 
+  <script src="assets/js/search-select.js"></script>
   <script>
     (function () {
+      var deptSelect = WHSearchSelect.mountById("staff-dept-select", "请搜索或选择部门", WHSearchSelect.DEPT_OPTIONS);
+
       var rows = [
         { name:"王强", dept:"应急中心", no:"E1029", post:"应急主管", line:"7号线", phone:"13800001001", address:"洪山区民族大道 188 号", lng:"114.4035", lat:"30.5112", remark:"夜间值守" },
         { name:"李倩", dept:"巡检部", no:"E1038", post:"巡检专员", line:"2号线", phone:"13800001002", address:"江汉区常青一路 56 号", lng:"114.2418", lat:"30.6492", remark:"常备无人机证照" },
@@ -254,11 +258,12 @@
       }
 
       function openModal(mode, index) {
+        WHSearchSelect.closeAll(null);
         editIndex = mode === "edit" ? index : -1;
         modalTitle.textContent = mode === "edit" ? "编辑应急人员" : "新增应急人员";
         var row = index > -1 ? rows[index] : null;
         document.getElementById("staff-name").value = row ? row.name : "";
-        document.getElementById("staff-dept").value = row ? row.dept : "应急中心";
+        if (deptSelect) deptSelect.setValue(row ? row.dept : "");
         document.getElementById("staff-no").value = row ? row.no : "";
         document.getElementById("staff-post").value = row ? row.post : "";
         document.getElementById("staff-line").value = row ? row.line : "2号线";
@@ -278,13 +283,18 @@
         var name = document.getElementById("staff-name").value.trim();
         var no = document.getElementById("staff-no").value.trim();
         var phone = document.getElementById("staff-phone").value.trim();
+        var dept = deptSelect ? deptSelect.getValue() : "";
         if (!name || !no || !phone) {
           alert("请完善必填项：姓名、工号、联系方式");
           return;
         }
+        if (!dept) {
+          alert("请选择部门");
+          return;
+        }
         var row = {
           name: name,
-          dept: document.getElementById("staff-dept").value,
+          dept: dept,
           no: no,
           post: document.getElementById("staff-post").value.trim() || "-",
           line: document.getElementById("staff-line").value,

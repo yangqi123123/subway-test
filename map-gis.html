@@ -177,7 +177,7 @@
       <div id="gis-detail-panel" class="gis-detail-panel hidden" aria-live="polite">
         <div class="gis-detail-head">
           <div class="gis-detail-title" id="gis-detail-title">详情</div>
-          <button type="button" class="gis-detail-close" id="gis-detail-close">×</button>
+          <button type="button" class="wh-modal-close gis-detail-close" id="gis-detail-close" aria-label="关闭">×</button>
         </div>
         <div class="gis-detail-body" id="gis-detail-body"></div>
       </div>
@@ -186,7 +186,7 @@
       <div id="gis-coord-panel" class="gis-coord-panel hidden" aria-live="polite">
         <div class="gis-detail-head">
           <div class="gis-detail-title">坐标拾取</div>
-          <button type="button" class="gis-detail-close" id="gis-coord-close" aria-label="关闭">×</button>
+          <button type="button" class="wh-modal-close gis-detail-close" id="gis-coord-close" aria-label="关闭">×</button>
         </div>
         <div class="gis-coord-body">
           <label class="gis-coord-field">
@@ -196,10 +196,6 @@
           <label class="gis-coord-field">
             <span class="gis-coord-label">纬度</span>
             <input type="text" id="gis-coord-lat" class="gis-coord-input" placeholder="如 30.592800" inputmode="decimal" />
-          </label>
-          <label class="gis-coord-field">
-            <span class="gis-coord-label">高程</span>
-            <input type="text" id="gis-coord-alt" class="gis-coord-input" placeholder="如 28.5（米）" inputmode="decimal" />
           </label>
         </div>
         <div class="gis-coord-foot">

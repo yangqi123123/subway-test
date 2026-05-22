@@ -1,11 +1,22 @@
 /* 虚拟座舱 — 与 AI 识别页 (ai.html) 一致的深色科技风，无包围角标 */
 
 .cockpit-screen {
+  --cockpit-aside-width: 460px;
   background:
     linear-gradient(180deg, rgba(12, 54, 76, 0.38), rgba(5, 24, 40, 0.9)),
     radial-gradient(circle at top, rgba(34, 211, 238, 0.18), transparent 40%),
     #071426;
   color: #e2f5ff;
+}
+
+.cockpit-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--cockpit-aside-width);
+  gap: 1.25rem;
+}
+
+.cockpit-layout--fly {
+  grid-template-columns: minmax(0, 1fr) minmax(580px, 0.6fr);
 }
 
 .cockpit-panel {
@@ -137,10 +148,67 @@
   color: #fb7185;
 }
 
+.cockpit-airport-card__head {
+  margin-bottom: 0;
+}
+
+.cockpit-card-plan {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  min-width: 0;
+  width: 100%;
+}
+
+.cockpit-card-plan .cockpit-label {
+  flex-shrink: 0;
+}
+
+.cockpit-card-plan .cockpit-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.cockpit-grid-pairs #flight-plan-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+
+.cockpit-title:has(.cockpit-title__sub) {
+  padding-right: 12px;
+  clip-path: polygon(0 0, 96% 0, 100% 100%, 0 100%);
+}
+
+.cockpit-title:has(.cockpit-title__sub)::before {
+  right: 10px;
+  z-index: 0;
+}
+
+.cockpit-title:has(.cockpit-title__sub)::after {
+  right: 20px;
+  z-index: 0;
+}
+
 .cockpit-title__sub {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  margin-right: 32px;
+  padding-right: 2px;
   font-size: 12px;
   font-weight: 400;
-  color: rgba(125, 211, 252, 0.88);
+  color: rgba(125, 211, 252, 0.95);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
 
 .cockpit-btn {
@@ -286,6 +354,12 @@
   gap: 12px;
   padding-top: 10px;
   flex-wrap: wrap;
+}
+
+.cockpit-actions--fly-left {
+  flex-shrink: 0;
+  justify-content: flex-start;
+  padding-top: 12px;
 }
 
 .cockpit-mask {
@@ -469,8 +543,193 @@
   font-size: 14px;
 }
 
+/* 飞行页：地图下方内联操控台（非弹窗） */
+.cockpit-manual-inline {
+  display: none;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(52, 211, 235, 0.16);
+  background: rgba(4, 29, 45, 0.92);
+}
+
+.cockpit-manual-inline.is-open {
+  display: block;
+}
+
+#fly-main-section.has-manual .cockpit-video {
+  flex: 1 1 auto;
+  min-height: 180px;
+}
+
+.cockpit-manual-inline--left {
+  width: 100%;
+  align-self: stretch;
+  border: 1px solid rgba(52, 211, 235, 0.16);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cockpit-manual-inline--left .cockpit-manual-inline__head {
+  justify-content: flex-start;
+  padding-left: 16px;
+}
+
+.cockpit-manual-inline--left .cockpit-manual-inline__actions {
+  justify-content: flex-start;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.cockpit-manual-inline--left .cockpit-manual-layout--inline {
+  justify-items: start;
+}
+
+.cockpit-manual-inline__head {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.28), rgba(8, 31, 53, 0.12));
+  border-bottom: 1px solid rgba(52, 211, 235, 0.12);
+}
+
+.cockpit-manual-inline__actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 16px;
+  flex-wrap: wrap;
+}
+
+.cockpit-manual-layout--inline {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 16px;
+  padding: 12px 16px 16px;
+}
+
+.cockpit-manual-layout__col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cockpit-manual-layout__label {
+  font-size: 12px;
+  color: #9cc6df;
+  font-weight: 600;
+}
+
+.cockpit-manual-center--stack {
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .cockpit-manual-layout--inline {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cockpit-map-inner--flight .cockpit-map-note {
+  display: none;
+}
+
+.cockpit-flight-marker {
+  background: transparent;
+  border: none;
+}
+
+.cockpit-flight-marker__wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.cockpit-flight-marker__airport {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #f59e0b;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+}
+
+.cockpit-flight-marker__target {
+  color: #ef4444;
+  font-size: 36px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+
+.cockpit-flight-marker__label {
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1e293b;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.cockpit-flight-marker__label--target {
+  color: #b91c1c;
+}
+
+.cockpit-drone-marker {
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+
+.cockpit-drone-marker__fov {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  margin-top: -6px;
+  border-left: 22px solid transparent;
+  border-right: 22px solid transparent;
+  border-bottom: 38px solid rgba(125, 211, 252, 0.38);
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 0 6px rgba(125, 211, 252, 0.35));
+}
+
+.cockpit-drone-marker__body {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  margin-left: -14px;
+  margin-top: -14px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3b82f6;
+  font-size: 14px;
+  z-index: 2;
+}
+
 .cockpit-leaflet .leaflet-container {
-  background: rgba(7, 20, 38, 0.85);
+  background: #e8ecf1;
   font-family: inherit;
 }
 

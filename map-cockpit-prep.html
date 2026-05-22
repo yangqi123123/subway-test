@@ -22,7 +22,7 @@
         <span class="cockpit-crumb__sep">&gt;&gt;</span>
         <span class="cockpit-crumb__current">虚拟座舱</span>
       </nav>
-      <div class="flex-1 min-h-0 grid grid-cols-[1fr_360px] gap-5">
+      <div class="flex-1 min-h-0 cockpit-layout">
         <section class="flex min-h-0 flex-col gap-3">
           <div class="cockpit-panel flex-1 min-h-0 flex flex-col">
             <div class="cockpit-map-wrap">
@@ -32,7 +32,7 @@
               </div>
             </div>
           </div>
-          <div class="cockpit-actions">
+          <div class="cockpit-actions hidden" aria-hidden="true">
             <button id="btn-unlock" type="button" class="cockpit-btn cockpit-btn--ghost"><i class="fa-solid fa-lock-open mr-1"></i>点击解锁人工操控</button>
             <button id="btn-direct" type="button" class="cockpit-btn">一键起飞</button>
             <button id="btn-stop" type="button" class="cockpit-btn cockpit-btn--warn">急停</button>
@@ -96,7 +96,6 @@
               <span class="down">下降</span>
               <span class="left">左转</span>
               <span class="right">右转</span>
-              <span class="mid">机身方向</span>
             </div>
             <div class="cockpit-manual-axis">机身方向</div>
           </div>
@@ -114,10 +113,10 @@
     <script src="assets/js/map-gis.js"></script>
     <script>
       const airports = [
-        { id: "a1", name: "黄家湖机场", status: "工作中", drone: "在线", battery: "100%", condition: "满足", latlng: [30.492, 114.315], camera: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?auto=format&fit=crop&w=1200&q=80" },
-        { id: "a2", name: "XX机场", status: "工作中", drone: "在线", battery: "100%", condition: "满足", latlng: [30.612, 114.413], camera: "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80" },
-        { id: "a3", name: "梨园机场", status: "工作中", drone: "在线", battery: "100%", condition: "满足", latlng: [30.562, 114.386], camera: "https://images.unsplash.com/photo-1496307653780-42ee777d4833?auto=format&fit=crop&w=1200&q=80" },
-        { id: "a4", name: "XX机场", status: "离线", drone: "离线", battery: "未知", condition: "不满足", latlng: [30.548, 114.472], camera: "" }
+        { id: "a1", name: "黄家湖机场", flightPlan: "8号线车辆段常规巡检", status: "工作中", drone: "在线", battery: "100%", condition: "满足", latlng: [30.492, 114.315], camera: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?auto=format&fit=crop&w=1200&q=80" },
+        { id: "a2", name: "XX机场", flightPlan: "涉铁施工复核航线", status: "工作中", drone: "在线", battery: "100%", condition: "满足", latlng: [30.612, 114.413], camera: "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80" },
+        { id: "a3", name: "梨园机场", flightPlan: "梨园站告警复核", status: "工作中", drone: "在线", battery: "100%", condition: "满足", latlng: [30.562, 114.386], camera: "https://images.unsplash.com/photo-1496307653780-42ee777d4833?auto=format&fit=crop&w=1200&q=80" },
+        { id: "a4", name: "XX机场", flightPlan: "涉铁施工复核航线", status: "工作中", drone: "在线", battery: "100%", condition: "满足", latlng: [30.548, 114.472], camera: "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80" }
       ];
       let selectedAirport = airports[0];
 
@@ -133,9 +132,14 @@
         const wrap = document.getElementById("airport-list");
         wrap.innerHTML = airports.map((item) => `
           <div class="cockpit-airport-card ${item.id === selectedAirport.id ? "active" : ""} p-3">
-            <div class="flex items-center justify-between">
-              <div class="cockpit-card-head">${item.name}</div>
-              <div class="cockpit-card-head__status ${item.status === "离线" ? "is-offline" : ""}">${item.status}</div>
+            <div class="cockpit-airport-card__head">
+              <div class="flex items-center justify-between">
+                <div class="cockpit-card-head">${item.name}</div>
+                <div class="cockpit-card-head__status ${item.status === "离线" ? "is-offline" : ""}">${item.status}</div>
+              </div>
+              <div class="cockpit-card-plan">
+                <span class="cockpit-label">飞行计划：</span><span class="cockpit-value">${item.flightPlan || "-"}</span>
+              </div>
             </div>
             <div class="mt-3 space-y-2">
               <div class="flex justify-between"><span class="cockpit-label">无人机状态：</span><span class="cockpit-value">${item.drone}</span></div>
@@ -165,11 +169,8 @@
       function bindAirportActions() {
         document.querySelectorAll("[data-select-airport]").forEach((btn) => {
           btn.addEventListener("click", () => {
-            selectedAirport = airports.find((item) => item.id === btn.dataset.selectAirport) || airports[0];
-            renderAirports();
-            bindAirportActions();
-            syncCamera();
-            document.getElementById("confirm-modal").classList.add("show");
+            const airport = airports.find((item) => item.id === btn.dataset.selectAirport) || airports[0];
+            location.href = "map-cockpit-fly.html?airport=" + encodeURIComponent(airport.id);
           });
         });
       }
@@ -212,8 +213,8 @@
           zoom: 12,
           zoomControl: true,
           airportDetails: [
-            { ll: [30.588, 114.302], airportName: "机场1", droneName: "001", battery: "100%", ready: true, readyText: "满足" },
-            { ll: [30.602, 114.338], airportName: "机场2", droneName: "002", battery: "86%", ready: true, readyText: "满足" }
+            { ll: [30.588, 114.302], airportName: "机场1", flightPlan: "8号线车辆段常规巡检", droneName: "001", battery: "100%", ready: true, readyText: "满足" },
+            { ll: [30.602, 114.338], airportName: "机场2", flightPlan: "青山站周期巡检", droneName: "002", battery: "86%", ready: true, readyText: "满足" }
           ],
         });
       }

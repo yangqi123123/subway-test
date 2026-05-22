@@ -14,8 +14,8 @@
       items: [
         { label: "病害巡查", href: "in-disease.html" },
         { label: "夜班作业", href: "in-night.html" },
-        { label: "无人机巡查报告", href: "in-uav-report.html" },
-        { label: "人工巡查报告", href: "in-manual.html" },
+        { label: "无人机巡查记录", href: "in-uav-report.html" },
+        { label: "人工巡查记录", href: "in-manual.html" },
       ],
     },
     { id: "ai", label: "AI识别", kind: "link", href: "ai.html" },
@@ -42,10 +42,10 @@
       {
         type: "group",
         key: "patrol-reports",
-        label: "巡查报告",
+        label: "巡查记录",
         children: [
-          { key: "in-uav-report", label: "无人机巡查报告", href: "in-uav-report.html" },
-          { key: "in-manual", label: "人工巡查报告", href: "in-manual.html" },
+          { key: "in-uav-report", label: "无人机巡查记录", href: "in-uav-report.html" },
+          { key: "in-manual", label: "人工巡查记录", href: "in-manual.html" },
         ],
       },
     ],
@@ -147,10 +147,8 @@
             { key: "dc-drone-stats", label: "分析报告", href: "dc-drone-stats.html" },
             { key: "am-flight-log", label: "飞行日志记录", href: "am-flight-log.html" },
             { key: "am-maintenance", label: "维修与检修记录", href: "am-maintenance.html" },
-            { key: "am-ops-metro", label: "地铁信息系统运行管理", href: "am-ops-metro.html" },
-            { key: "am-ops-fulltime", label: "全时全域运行管理", href: "am-ops-fulltime.html" },
-            { key: "am-ops-uav", label: "无人机系统运行管理", href: "am-ops-uav.html" },
             { key: "dc-library", label: "资料库", href: "dc-library.html" },
+            /* 入口隐藏，页面保留：am-ops-fulltime.html、am-ops-uav.html */
           ],
         },
       ],
@@ -165,7 +163,6 @@
           items: [
             { key: "wb-user", label: "用户管理", href: "wb-user.html" },
             { key: "wb-role", label: "角色管理", href: "wb-role.html" },
-            { key: "wb-permission", label: "权限管理", href: "wb-permission.html" },
             { key: "wb-dept", label: "部门管理", href: "wb-dept.html" },
             { key: "wb-post", label: "岗位管理", href: "wb-post.html" },
             { key: "wb-menu", label: "菜单管理", href: "wb-menu.html" },
@@ -173,6 +170,8 @@
             { key: "wb-log", label: "日志管理", href: "wb-log.html" },
             { key: "wb-param", label: "参数设置", href: "wb-param.html" },
             { key: "wb-notice", label: "通知公告", href: "wb-notice.html" },
+            { key: "wb-msg-template", label: "消息模板", href: "wb-msg-template.html" },
+            { key: "am-ops-metro", label: "资源监控", href: "am-ops-metro.html" },
           ],
         },
         {
@@ -224,6 +223,48 @@
     return null;
   }
 
+  /** 顶部搜索：汇总所有可跳转菜单（按名称去重） */
+  function collectAllMenuItems() {
+    var list = [];
+    var seen = {};
+    function add(label, href, group) {
+      if (!href || !label || seen[href]) return;
+      seen[href] = true;
+      list.push({ label: label, href: href, group: group || "" });
+    }
+    TOP_NAV.forEach(function (item) {
+      if (item.href) add(item.label, item.href, "顶部导航");
+      if (item.items) {
+        item.items.forEach(function (sub) {
+          add(sub.label, sub.href, item.label);
+        });
+      }
+    });
+    Object.keys(SIDEBAR).forEach(function (topId) {
+      (SIDEBAR[topId] || []).forEach(function (node) {
+        if (node.type === "item") add(node.label, node.href, topId);
+        if (node.type === "group" && node.children) {
+          node.children.forEach(function (child) {
+            add(child.label, child.href, node.label);
+          });
+        }
+      });
+    });
+    WB_MEGA.forEach(function (card) {
+      (card.blocks || []).forEach(function (block) {
+        var group = card.title + (block.subtitle ? " · " + block.subtitle : "");
+        (block.items || []).forEach(function (item) {
+          if (item.hidden) return;
+          add(item.label, item.href, group);
+        });
+      });
+    });
+    list.sort(function (a, b) {
+      return a.label.localeCompare(b.label, "zh-CN");
+    });
+    return list;
+  }
+
   function findGroupContainingKey(topId, leafKey) {
     if (topId === "wb") {
       for (var c = 0; c < WB_MEGA.length; c++) {
@@ -245,8 +286,131 @@
     SIDEBAR: SIDEBAR,
     WB_MEGA: WB_MEGA,
     findGroupContainingKey: findGroupContainingKey,
+    collectAllMenuItems: collectAllMenuItems,
     pageFile: pageFile,
     topNavMatchId: topNavMatchId,
     dropdownContainsPage: dropdownContainsPage,
+  };
+})(typeof window !== "undefined" ? window : this);
+
+/** 顶栏待办 / 系统通知角标（与 workbench-module 列表对齐） */
+(function (global) {
+  var STORAGE_NOTIFY_READ = "whmetro-notify-read";
+  var TODO_PENDING_STATUS = ["待审批", "未复核", "已复核"];
+
+  var NOTIFY_ROWS = [
+    { id: "n1", read: "未读" },
+    { id: "n2", read: "已读" },
+    { id: "n3", read: "未读" },
+    { id: "n4", read: "未读" },
+  ];
+
+  var TODO_ROWS = [
+    { id: "t1", status: "待审批" },
+    { id: "t2", status: "待审批" },
+    { id: "t3", status: "未复核" },
+    { id: "t4", status: "已复核" },
+  ];
+
+  function getNotifyReadSet() {
+    try {
+      var raw = localStorage.getItem(STORAGE_NOTIFY_READ);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveNotifyReadSet(ids) {
+    localStorage.setItem(STORAGE_NOTIFY_READ, JSON.stringify(ids || []));
+  }
+
+  function isNotifyRead(row) {
+    if (!row) return true;
+    if (row.read === "已读") return true;
+    if (row.id && getNotifyReadSet().indexOf(row.id) >= 0) return true;
+    return false;
+  }
+
+  function notifyUnreadCount() {
+    return NOTIFY_ROWS.filter(function (r) {
+      return !isNotifyRead(r);
+    }).length;
+  }
+
+  function todoPendingCount() {
+    return TODO_ROWS.filter(function (r) {
+      return TODO_PENDING_STATUS.indexOf(r.status) >= 0;
+    }).length;
+  }
+
+  function formatBadgeCount(count) {
+    if (!count || count < 1) return "";
+    return count > 99 ? "99+" : String(count);
+  }
+
+  function badgeHtml(count) {
+    var text = formatBadgeCount(count);
+    if (!text) return "";
+    return (
+      '<span class="wh-shell-badge" aria-label="未处理 ' + text + ' 条">' + text + "</span>"
+    );
+  }
+
+  function markNotifyRead(rowOrId) {
+    var id = typeof rowOrId === "string" ? rowOrId : rowOrId && rowOrId.id;
+    if (!id) return;
+    var set = getNotifyReadSet();
+    if (set.indexOf(id) < 0) {
+      set.push(id);
+      saveNotifyReadSet(set);
+    }
+    NOTIFY_ROWS.forEach(function (r) {
+      if (r.id === id) r.read = "已读";
+    });
+    refresh();
+  }
+
+  function markAllNotifyRead() {
+    saveNotifyReadSet(
+      NOTIFY_ROWS.map(function (r) {
+        return r.id;
+      })
+    );
+    NOTIFY_ROWS.forEach(function (r) {
+      r.read = "已读";
+    });
+    refresh();
+  }
+
+  function applyNotifyReadToRows(rows) {
+    (rows || []).forEach(function (row, index) {
+      if (!row.id) row.id = NOTIFY_ROWS[index] && NOTIFY_ROWS[index].id;
+      if (row.id && isNotifyRead({ id: row.id, read: row.read })) row.read = "已读";
+    });
+    return rows;
+  }
+
+  function refresh() {
+    var todoCount = todoPendingCount();
+    var notifyCount = notifyUnreadCount();
+    document.querySelectorAll("[data-shell-badge='todo']").forEach(function (node) {
+      node.innerHTML = badgeHtml(todoCount);
+      node.classList.toggle("wh-shell-badge-wrap--hidden", !todoCount);
+    });
+    document.querySelectorAll("[data-shell-badge='notify']").forEach(function (node) {
+      node.innerHTML = badgeHtml(notifyCount);
+      node.classList.toggle("wh-shell-badge-wrap--hidden", !notifyCount);
+    });
+  }
+
+  global.WHHeaderBadges = {
+    todoPendingCount: todoPendingCount,
+    notifyUnreadCount: notifyUnreadCount,
+    badgeHtml: badgeHtml,
+    markNotifyRead: markNotifyRead,
+    markAllNotifyRead: markAllNotifyRead,
+    applyNotifyReadToRows: applyNotifyReadToRows,
+    refresh: refresh,
   };
 })(typeof window !== "undefined" ? window : this);

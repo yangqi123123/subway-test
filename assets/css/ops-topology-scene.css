@@ -1,0 +1,386 @@
+/* 服务器拓扑图 — 图1 科技风 3D 场景 */
+.ops-block--topology {
+  overflow: visible;
+}
+
+.topo-scene {
+  position: relative;
+  height: 440px;
+  padding: 26px 10px 10px;
+  box-sizing: border-box;
+  border-radius: 2px;
+  overflow: visible;
+  background: #030712;
+}
+
+.topo-scene__bg {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 100%, rgba(14, 116, 144, 0.18) 0%, transparent 55%),
+    radial-gradient(circle at 20% 15%, rgba(56, 189, 248, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 80% 25%, rgba(59, 130, 246, 0.05) 0%, transparent 35%),
+    linear-gradient(180deg, #020617 0%, #0a1628 45%, #061018 100%);
+}
+
+.topo-scene__grid {
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  bottom: -8%;
+  height: 55%;
+  transform: perspective(280px) rotateX(68deg);
+  transform-origin: center bottom;
+  background-image:
+    linear-gradient(rgba(34, 211, 238, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.22) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
+  opacity: 0.65;
+}
+
+.topo-scene__stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1px 1px at 30% 65%, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(1px 1px at 70% 30%, rgba(255, 255, 255, 0.25), transparent),
+    radial-gradient(1px 1px at 85% 75%, rgba(255, 255, 255, 0.15), transparent),
+    radial-gradient(1px 1px at 50% 10%, rgba(255, 255, 255, 0.2), transparent);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.topo-scene__links {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.topo-link-base {
+  stroke: rgba(56, 189, 248, 0.35);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.topo-link-glow {
+  stroke: url(#topoLineGlow);
+  stroke-width: 2;
+  fill: none;
+  filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.6));
+}
+
+.topo-pulse-dot {
+  fill: #f0fdff;
+  filter: drop-shadow(0 0 6px #38bdf8);
+}
+
+.topo-node {
+  position: absolute;
+  transform: translate(-50%, -54%);
+  z-index: 3;
+  text-align: center;
+  width: 120px;
+}
+
+/* 顶部节点：减少上移，避免机架图标被裁切 */
+.topo-node--north {
+  transform: translate(-50%, -46%);
+}
+
+.topo-node__halo {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 4px;
+}
+
+.topo-node__halo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, rgba(34, 211, 238, 0.55) 0%, rgba(6, 182, 212, 0.15) 45%, transparent 70%);
+  animation: topo-halo-pulse 2.8s ease-in-out infinite;
+}
+
+.topo-node__halo::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 76px;
+  height: 22px;
+  transform: translate(-50%, -20%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(34, 211, 238, 0.75) 0%, rgba(34, 211, 238, 0.05) 70%, transparent 100%);
+  filter: blur(2px);
+  animation: topo-halo-ring 2.8s ease-in-out infinite;
+}
+
+@keyframes topo-halo-pulse {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+@keyframes topo-halo-ring {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.95; }
+}
+
+.topo-node__device {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+/* —— 3D 设备模型 —— */
+.topo-dev {
+  position: relative;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.55));
+}
+
+/* 核心交换机 */
+.topo-dev--switch {
+  width: 44px;
+  height: 36px;
+}
+.topo-dev--switch .topo-dev__box {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(145deg, #1e3a5f 0%, #0c1929 40%, #152238 100%);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  box-shadow: inset 0 1px 0 rgba(125, 211, 252, 0.25), inset 0 -4px 12px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.topo-dev--switch .topo-dev__symbol {
+  color: #38bdf8;
+  font-size: 18px;
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.9);
+  font-weight: 700;
+}
+
+/* 应用服务器集群 */
+.topo-dev--cluster {
+  width: 56px;
+  height: 40px;
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  justify-content: center;
+}
+.topo-dev--cluster .topo-rack {
+  width: 22px;
+  height: 36px;
+  border-radius: 3px 3px 2px 2px;
+  background: linear-gradient(90deg, #1a3352 0%, #243b55 30%, #0f1c2e 100%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: inset 0 2px 0 rgba(125, 211, 252, 0.15);
+  position: relative;
+}
+.topo-dev--cluster .topo-rack::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  top: 6px;
+  height: 3px;
+  background: rgba(34, 211, 238, 0.35);
+  box-shadow: 0 6px 0 rgba(34, 211, 238, 0.25), 0 12px 0 rgba(34, 211, 238, 0.2), 0 18px 0 rgba(34, 211, 238, 0.15);
+}
+
+/* 数据库 */
+.topo-dev--db {
+  width: 40px;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.topo-dev--db .topo-cylinder {
+  width: 38px;
+  height: 13px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #4a90c8 0%, #1e4976 55%, #163a5f 100%);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  margin-top: -7px;
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.18), 0 2px 6px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+.topo-dev--db .topo-cylinder:first-child {
+  margin-top: 0;
+  z-index: 3;
+}
+.topo-dev--db .topo-cylinder:nth-child(2) { z-index: 2; }
+.topo-dev--db .topo-cylinder:nth-child(3) { z-index: 1; }
+
+/* 管理网关 */
+.topo-dev--gateway {
+  width: 40px;
+  height: 44px;
+}
+.topo-dev--gateway .topo-dev__box {
+  width: 38px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(145deg, #1e3a5f, #0f172a);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  position: relative;
+  margin: 10px auto 0;
+}
+.topo-dev--gateway .topo-dev__antenna {
+  position: absolute;
+  left: 50%;
+  top: -12px;
+  width: 2px;
+  height: 14px;
+  background: linear-gradient(180deg, #67e8f9, #334155);
+  transform: translateX(-50%);
+}
+.topo-dev--gateway .topo-dev__antenna::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+.topo-dev--gateway .topo-dev__shield {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38bdf8;
+  font-size: 14px;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+}
+
+/* 备份服务器 */
+.topo-dev--backup .topo-rack {
+  width: 28px;
+  height: 40px;
+  margin: 0 auto;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #1a3352, #0f1c2e);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  position: relative;
+}
+.topo-dev--backup .topo-rack::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 8px;
+  bottom: 8px;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(34, 211, 238, 0.2) 0px,
+    rgba(34, 211, 238, 0.2) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+/* 存储阵列 */
+.topo-dev--storage {
+  width: 58px;
+  height: 38px;
+}
+.topo-dev--storage .topo-storage-body {
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #1e4976 0%, #0f2744 100%);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+  padding: 5px 4px;
+  box-shadow: inset 0 1px 0 rgba(125, 211, 252, 0.2);
+}
+.topo-dev--storage .topo-storage-slot {
+  height: 6px;
+  border-radius: 1px;
+  background: rgba(34, 211, 238, 0.25);
+  box-shadow: 0 0 4px rgba(34, 211, 238, 0.15);
+}
+
+.topo-node__name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #e0f2fe;
+  margin: 2px 0 3px;
+  text-shadow: 0 0 12px rgba(34, 211, 238, 0.25);
+}
+
+.topo-node__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.topo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.topo-dot--ok {
+  background: #7ed321;
+  box-shadow: 0 0 8px #7ed321, 0 0 14px rgba(126, 211, 33, 0.4);
+}
+.topo-dot--warn {
+  background: #f5a623;
+  box-shadow: 0 0 8px #f5a623, 0 0 14px rgba(245, 166, 35, 0.4);
+}
+.topo-dot--danger {
+  background: #d0021b;
+  box-shadow: 0 0 8px #d0021b, 0 0 14px rgba(208, 2, 27, 0.45);
+}
+
+.topo-legend {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 5;
+  padding: 12px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  background: rgba(3, 10, 24, 0.82);
+  backdrop-filter: blur(8px);
+  font-size: 11px;
+  color: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.topo-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topo-node__halo::before,
+  .topo-node__halo::after {
+    animation: none;
+  }
+}

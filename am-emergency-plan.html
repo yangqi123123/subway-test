@@ -56,8 +56,9 @@
       border: 1px solid rgba(34,211,238,.16);
       background: #071426;
       box-shadow: 0 24px 80px rgba(0,0,0,.48);
-      overflow: hidden;
+      overflow: visible;
     }
+    .plan-modal .p-6 { overflow: visible; }
     .plan-form-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -79,15 +80,6 @@
       content: "*";
       color: #fb7185;
       margin-right: 4px;
-    }
-    .plan-multi-select {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 12px;
-      padding: 10px 12px;
-      border: 1px solid rgba(34,211,238,.18);
-      border-radius: 8px;
-      background: rgba(2,8,23,.38);
     }
     .confirm-card {
       width: 320px;
@@ -156,22 +148,14 @@
 
   <div id="plan-modal-mask" class="plan-modal-mask">
     <div class="plan-modal">
-      <div class="h-14 px-6 flex items-center border-b border-cyan-400/15">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
         <h3 id="plan-modal-title" class="text-white text-[16px] font-semibold">新增应急预案</h3>
-        <button type="button" class="ml-auto text-slate-400 hover:text-slate-200 text-xl leading-none" data-action="close-plan-modal">×</button>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-plan-modal">×</button>
       </div>
       <div class="p-6">
         <div class="plan-form-grid">
           <label class="plan-form-item"><span class="plan-form-label is-required">名称：</span><input id="plan-name" class="wh-input h-8 flex-1 px-3" placeholder="请输入名称" /></label>
-          <div class="plan-form-item">
-            <span class="plan-form-label">应急部门：</span>
-            <div class="plan-multi-select flex-1">
-              <label class="flex items-center gap-2 text-sm text-cyan-100/80"><input type="checkbox" class="accent-cyan-400" value="应急中心" data-plan-dept>应急中心</label>
-              <label class="flex items-center gap-2 text-sm text-cyan-100/80"><input type="checkbox" class="accent-cyan-400" value="巡检部" data-plan-dept>巡检部</label>
-              <label class="flex items-center gap-2 text-sm text-cyan-100/80"><input type="checkbox" class="accent-cyan-400" value="调度部" data-plan-dept>调度部</label>
-              <label class="flex items-center gap-2 text-sm text-cyan-100/80"><input type="checkbox" class="accent-cyan-400" value="物资部" data-plan-dept>物资部</label>
-            </div>
-          </div>
+          <label class="plan-form-item wh-form-item--select"><span class="plan-form-label is-required">应急部门：</span><div id="plan-dept-select" class="wh-search-select flex-1 min-w-0" data-input-id="plan-dept"></div></label>
           <label class="plan-form-item"><span class="plan-form-label">备注：</span><input id="plan-remark" class="wh-input h-8 flex-1 px-3" placeholder="请输入备注" /></label>
         </div>
       </div>
@@ -193,16 +177,19 @@
     </div>
   </div>
 
+  <script src="assets/js/search-select.js"></script>
   <script>
     (function () {
+      var deptSelect = WHSearchSelect.mountById("plan-dept-select", "请搜索或选择部门", WHSearchSelect.DEPT_OPTIONS);
+
       var rows = [
-        { name:"土建", dept:"应急中心、巡检部", remark:"适用于土建施工相关突发事件处置" },
-        { name:"隧道结构涌水涌沙", dept:"巡检部、调度部", remark:"适用于隧道结构突发涌水涌沙场景" },
-        { name:"道床变形", dept:"应急中心、物资部", remark:"适用于道床变形抢修处置" },
-        { name:"胀轨", dept:"巡检部、调度部", remark:"适用于高温胀轨应急处置" },
-        { name:"雨水倒灌", dept:"应急中心、巡检部", remark:"适用于强降雨倒灌抢险处置" },
-        { name:"钢轨折断", dept:"巡检部、物资部", remark:"适用于钢轨折断应急抢修" },
-        { name:"道岔挤岔", dept:"调度部、巡检部", remark:"适用于道岔异常挤岔处置" },
+        { name:"土建", dept:"应急中心", remark:"适用于土建施工相关突发事件处置" },
+        { name:"隧道结构涌水涌沙", dept:"巡检部", remark:"适用于隧道结构突发涌水涌沙场景" },
+        { name:"道床变形", dept:"应急中心", remark:"适用于道床变形抢修处置" },
+        { name:"胀轨", dept:"巡检部", remark:"适用于高温胀轨应急处置" },
+        { name:"雨水倒灌", dept:"应急中心", remark:"适用于强降雨倒灌抢险处置" },
+        { name:"钢轨折断", dept:"物资部", remark:"适用于钢轨折断应急抢修" },
+        { name:"道岔挤岔", dept:"调度部", remark:"适用于道岔异常挤岔处置" },
         { name:"其他", dept:"应急中心", remark:"适用于未归类应急场景" }
       ];
 
@@ -228,38 +215,37 @@
         }).join("");
       }
 
-      function setDeptSelection(values) {
-        var selected = values ? values.split("、") : [];
-        document.querySelectorAll("[data-plan-dept]").forEach(function (checkbox) {
-          checkbox.checked = selected.indexOf(checkbox.value) > -1;
-        });
-      }
-
-      function getDeptSelection() {
-        return Array.from(document.querySelectorAll("[data-plan-dept]:checked")).map(function (checkbox) {
-          return checkbox.value;
-        }).join("、") || "-";
+      function normalizeDeptValue(dept) {
+        if (!dept) return "";
+        var parts = String(dept).split("、");
+        return parts[0] ? parts[0].trim() : dept;
       }
 
       function openModal(mode, index) {
+        WHSearchSelect.closeAll(null);
         editIndex = mode === "edit" ? index : -1;
         modalTitle.textContent = mode === "edit" ? "编辑应急预案" : "新增应急预案";
         var row = index > -1 ? rows[index] : null;
         document.getElementById("plan-name").value = row ? row.name : "";
         document.getElementById("plan-remark").value = row ? row.remark : "";
-        setDeptSelection(row ? row.dept : "");
+        if (deptSelect) deptSelect.setValue(row ? normalizeDeptValue(row.dept) : "");
         modalMask.classList.add("show");
       }
 
       function savePlan() {
         var name = document.getElementById("plan-name").value.trim();
+        var dept = deptSelect ? deptSelect.getValue() : "";
         if (!name) {
           alert("请完善必填项：名称");
           return;
         }
+        if (!dept) {
+          alert("请选择应急部门");
+          return;
+        }
         var row = {
           name: name,
-          dept: getDeptSelection(),
+          dept: dept,
           remark: document.getElementById("plan-remark").value.trim() || "-"
         };
         if (editIndex > -1) rows[editIndex] = row;

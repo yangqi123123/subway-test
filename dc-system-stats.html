@@ -7,15 +7,14 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="assets/css/theme.css" />
+  <link rel="stylesheet" href="assets/css/dc-chart-toolbar.css" />
   <style>
     .sys-tab { height: 38px; padding: 0 4px; font-size: 13px; color: #cbd5e1; border-bottom: 2px solid transparent; }
     .sys-tab.active { color: #60a5fa; border-bottom-color: #3b82f6; }
     .sys-chart-panel { border-radius: 14px; border: 1px solid rgba(34, 211, 238, 0.14); background: rgba(7, 20, 38, 0.9); padding: 18px 20px 22px; }
     .sys-chart-title { text-align: center; color: #f8fafc; font-size: 16px; font-weight: 700; }
     .sys-chart-sub { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 6px; }
-    .sys-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
     .sys-canvas { width: 100%; height: 430px; display: block; }
-    .sys-toolbar-icons { color: #94a3b8; font-size: 14px; display: flex; gap: 12px; }
   </style>
 </head>
 <body data-shell="default" data-top="st" data-sidebar-key="dc-system-stats">
@@ -72,157 +71,183 @@
       <button type="button" class="sys-tab" data-tab="daily">当日巡查</button>
       <button type="button" class="sys-tab" data-tab="weekly">当周巡查</button>
       <button type="button" class="sys-tab" data-tab="risk">项目风险评估</button>
+      <button type="button" class="sys-tab" data-tab="techReply">技术回函</button>
     </section>
 
     <section class="sys-chart-panel">
-      <div class="sys-toolbar">
-        <div></div>
-        <div class="sys-toolbar-icons">
-          <i class="fa-solid fa-chart-column"></i>
-          <i class="fa-solid fa-chart-line"></i>
-          <i class="fa-solid fa-layer-group"></i>
-          <i class="fa-regular fa-file-lines"></i>
-          <i class="fa-solid fa-download"></i>
-          <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
-          <i class="fa-solid fa-arrow-trend-up"></i>
-          <i class="fa-regular fa-circle-dot"></i>
-          <i class="fa-regular fa-copy"></i>
-          <i class="fa-solid fa-expand"></i>
+      <div class="dc-chart-toolbar-row">
+        <div id="system-chart-legend" class="dc-chart-legend"></div>
+        <div class="dc-chart-tools-slot">
+          <div id="system-chart-tools"></div>
         </div>
       </div>
       <div id="chart-title" class="sys-chart-title">项目类型图</div>
       <div id="chart-sub" class="sys-chart-sub">总计701个项目</div>
-      <canvas id="system-chart" class="sys-canvas" width="1680" height="430"></canvas>
+      <div class="dc-chart-stage">
+        <canvas id="system-chart" class="sys-canvas dc-chart-canvas" width="1680" height="430"></canvas>
+        <div id="system-chart-table" class="dc-chart-table-wrap"></div>
+      </div>
     </section>
   </div>
 
   <script src="assets/js/menu-config.js"></script>
   <script src="assets/js/shell.js"></script>
+  <script src="assets/js/dc-chart-toolbar.js"></script>
   <script>
-    const chartConfigs = {
-      projectType: {
-        title: "项目类型图",
-        sub: "总计701个项目",
-        axisLabel: "工程类别",
-        yLabel: "项目数量",
-        max: 150,
-        labels: ["施工项目","轨土保护区","地铁保护工程","委外项目","桥梁工程","涉铁工程","泵站","检修工程","监测工程","临铁施工工程","拆除项目","围栏封闭&机电工程","桥改、扩建","道路（跨）穿轨道路","占用道路工程","零散劳务、站厅工程","采空沉降工程"],
-        values: [61,41,59,83,14,148,115,12,23,13,22,24,27,31,8,18,2],
-        colors: ["#5a72c8","#91cb74","#f7c85a","#f0625f","#78c6df","#44aa77","#ff874d","#a56cc1","#d36cc2","#f0b93f","#ff7a59","#61a4b7","#cd7b58","#c9332e","#3d566e","#5870c4","#8bc47c"]
-      },
-      safety: {
-        title: "安全协议图",
-        sub: "总计701个项目",
-        axisLabel: "签订状态",
-        yLabel: "项目数量",
-        max: 400,
-        labels: ["签订协议","未签订协议"],
-        values: [303,398],
-        colors: ["#5a72c8","#91cb74"]
-      },
-      daily: {
-        title: "日巡查统计图",
-        sub: "总计43次巡查记录",
-        axisLabel: "线路名称",
-        yLabel: "巡查数量",
-        max: 30,
-        labels: ["一般项目","重点项目"],
-        values: [26,17],
-        colors: ["#5a72c8","#91cb74"]
-      },
-      weekly: {
-        title: "周巡查统计图",
-        sub: "总计462次巡查记录",
-        axisLabel: "线路名称",
-        yLabel: "巡查数量",
-        max: 250,
-        labels: ["一般项目","重点项目"],
-        values: [226,236],
-        colors: ["#5a72c8","#91cb74"]
-      },
-      risk: {
-        title: "项目风险评估等级图",
-        sub: "总计701个项目",
-        axisLabel: "风险等级",
-        yLabel: "项目数量",
-        max: 600,
-        labels: ["一级","二级","三级","四级","特级","无"],
-        values: [31,18,28,7,66,551],
-        colors: ["#5a72c8","#8bc47c","#f7c85a","#f0625f","#6bb2cf","#44aa77"]
-      }
-    };
+    (function () {
+      var chartConfigs = {
+        projectType: {
+          title: "项目类型图",
+          sub: "总计701个项目",
+          axisLabel: "工程类别",
+          yLabel: "项目数量",
+          max: 150,
+          labels: [
+            "施工项目", "轨土保护区", "地铁保护工程", "委外项目", "桥梁工程", "涉铁工程", "泵站", "检修工程",
+            "监测工程", "临铁施工工程", "拆除项目", "围栏封闭&机电工程", "桥改、扩建", "道路（跨）穿轨道路",
+            "占用道路工程", "零散劳务、站厅工程", "采空沉降工程",
+          ],
+          series: [
+            {
+              name: "项目数量",
+              values: [61, 41, 59, 83, 14, 148, 115, 12, 23, 13, 22, 24, 27, 31, 8, 18, 2],
+              colors: [
+                "#5a72c8", "#91cb74", "#f7c85a", "#f0625f", "#78c6df", "#44aa77", "#ff874d", "#a56cc1",
+                "#d36cc2", "#f0b93f", "#ff7a59", "#61a4b7", "#cd7b58", "#c9332e", "#3d566e", "#5870c4", "#8bc47c",
+              ],
+            },
+          ],
+        },
+        safety: {
+          title: "安全协议图",
+          sub: "总计701个项目",
+          axisLabel: "签订状态",
+          yLabel: "项目数量",
+          max: 400,
+          labels: ["签订协议", "未签订协议"],
+          series: [
+            { name: "项目数量", values: [303, 398], colors: ["#5a72c8", "#91cb74"] },
+          ],
+        },
+        daily: {
+          title: "日巡查统计图",
+          sub: "总计43次巡查记录",
+          axisLabel: "项目类型",
+          yLabel: "巡查数量",
+          max: 30,
+          defaultBarLayout: "stacked",
+          labels: ["一般项目", "重点项目"],
+          legend: [
+            { name: "无人机巡查", color: "#5a72c8" },
+            { name: "人工巡查", color: "#91cb74" },
+          ],
+          series: [
+            { name: "无人机巡查", values: [18, 10], color: "#5a72c8" },
+            { name: "人工巡查", values: [8, 7], color: "#91cb74" },
+          ],
+        },
+        weekly: {
+          title: "周巡查统计图",
+          sub: "总计462次巡查记录",
+          axisLabel: "项目类型",
+          yLabel: "巡查数量",
+          max: 250,
+          defaultBarLayout: "stacked",
+          labels: ["一般项目", "重点项目"],
+          legend: [
+            { name: "无人机巡查", color: "#5a72c8" },
+            { name: "人工巡查", color: "#91cb74" },
+          ],
+          series: [
+            { name: "无人机巡查", values: [140, 152], color: "#5a72c8" },
+            { name: "人工巡查", values: [86, 84], color: "#91cb74" },
+          ],
+        },
+        risk: {
+          title: "项目风险评估等级图",
+          sub: "总计701个项目",
+          axisLabel: "风险等级",
+          yLabel: "项目数量",
+          max: 600,
+          labels: ["一级", "二级", "三级", "四级", "特级", "无"],
+          series: [
+            {
+              name: "项目数量",
+              values: [31, 18, 28, 7, 66, 551],
+              colors: ["#5a72c8", "#8bc47c", "#f7c85a", "#f0625f", "#6bb2cf", "#44aa77"],
+            },
+          ],
+        },
+        techReply: {
+          title: "技术回函图",
+          sub: "总计701个项目",
+          axisLabel: "回函类型",
+          yLabel: "项目数量",
+          max: 400,
+          labels: ["OA流转回复意见", "书面回函"],
+          series: [
+            { name: "项目数量", values: [412, 289], colors: ["#5a72c8", "#91cb74"] },
+          ],
+        },
+      };
 
-    const canvas = document.getElementById("system-chart");
-    const ctx = canvas.getContext("2d");
+      var activeTab = "projectType";
 
-    function drawBarChart(config) {
-      const w = canvas.width;
-      const h = canvas.height;
-      const left = 78;
-      const right = 40;
-      const top = 40;
-      const bottom = 64;
-      ctx.clearRect(0, 0, w, h);
-      ctx.font = "12px sans-serif";
-      ctx.fillStyle = "#94a3b8";
-      ctx.strokeStyle = "rgba(148,163,184,.18)";
+      document.getElementById("system-chart-tools").innerHTML = DCChartToolbar.createToolsHtml();
 
-      const gridCount = 6;
-      for (let i = 0; i <= gridCount; i++) {
-        const value = Math.round((config.max / gridCount) * i);
-        const y = h - bottom - ((h - top - bottom) / gridCount) * i;
-        ctx.beginPath();
-        ctx.moveTo(left, y);
-        ctx.lineTo(w - right, y);
-        ctx.stroke();
-        ctx.fillText(String(value), 34, y + 4);
-      }
-
-      ctx.fillText(config.yLabel, 22, top - 10);
-      ctx.fillText(config.axisLabel, w - right + 6, h - bottom + 12);
-
-      const slot = (w - left - right) / config.labels.length;
-      const barW = Math.min(74, slot * 0.56);
-
-      config.labels.forEach((label, i) => {
-        const x = left + slot * i + (slot - barW) / 2;
-        const value = config.values[i];
-        const barH = (value / config.max) * (h - top - bottom);
-        const y = h - bottom - barH;
-
-        ctx.fillStyle = config.colors[i % config.colors.length];
-        ctx.fillRect(x, y, barW, barH);
-
-        ctx.fillStyle = "#e2f5ff";
-        ctx.font = "bold 12px sans-serif";
-        ctx.fillText(String(value), x + Math.max(8, barW / 2 - 8), y - 10);
-
-        ctx.save();
-        ctx.translate(x + barW / 2, h - 34);
-        if (config.labels.length > 8) ctx.rotate(-Math.PI / 4);
-        ctx.fillStyle = "#94a3b8";
-        ctx.font = "12px sans-serif";
-        ctx.textAlign = config.labels.length > 8 ? "right" : "center";
-        ctx.fillText(label, 0, 0);
-        ctx.restore();
+      var toolbar = new DCChartToolbar({
+        canvas: document.getElementById("system-chart"),
+        toolsEl: document.getElementById("system-chart-tools"),
+        tableWrap: document.getElementById("system-chart-table"),
+        fileName: "全时全域数据统计",
+        getConfig: function () {
+          return chartConfigs[activeTab];
+        },
       });
-    }
 
-    function activateTab(key) {
-      const config = chartConfigs[key];
-      document.getElementById("chart-title").textContent = config.title;
-      document.getElementById("chart-sub").textContent = config.sub;
-      drawBarChart(config);
-      document.querySelectorAll(".sys-tab").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.tab === key);
+      function renderLegend(config) {
+        var legendEl = document.getElementById("system-chart-legend");
+        if (!legendEl) return;
+        if (!config.legend || !config.legend.length) {
+          legendEl.innerHTML = "";
+          return;
+        }
+        legendEl.innerHTML = config.legend
+          .map(function (item) {
+            return (
+              '<span class="dc-chart-legend-item">' +
+              '<span class="dc-chart-legend-dot" style="background:' + item.color + '"></span>' +
+              item.name +
+              "</span>"
+            );
+          })
+          .join("");
+      }
+
+      function activateTab(key) {
+        activeTab = key;
+        var config = chartConfigs[key];
+        document.getElementById("chart-title").textContent = config.title;
+        document.getElementById("chart-sub").textContent = config.sub;
+        document.querySelectorAll(".sys-tab").forEach(function (btn) {
+          btn.classList.toggle("active", btn.dataset.tab === key);
+        });
+        if (config.defaultBarLayout) {
+          toolbar.state.barLayout = config.defaultBarLayout;
+          toolbar.state.chartType = "bar";
+        }
+        renderLegend(config);
+        toolbar.render();
+      }
+
+      document.querySelectorAll(".sys-tab").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          activateTab(btn.dataset.tab);
+        });
       });
-    }
 
-    document.querySelectorAll(".sys-tab").forEach(btn => {
-      btn.addEventListener("click", () => activateTab(btn.dataset.tab));
-    });
-
-    activateTab("projectType");
+      activateTab("projectType");
+    })();
   </script>
 </body>
 </html>

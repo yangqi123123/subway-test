@@ -38,7 +38,39 @@
       ".wh-top-drop:hover .wh-top-drop__panel,.wh-top-drop.wh-top-drop--open .wh-top-drop__panel{display:block;}" +
       ".wh-top-drop__panel-inner{padding:6px;border-radius:8px;background:rgba(7,27,51,.96);border:1px solid rgba(34,211,238,.22);box-shadow:0 16px 48px rgba(0,0,0,.5);}" +
       ".wh-top-drop__panel a{display:block;padding:8px 12px;border-radius:6px;font-size:12px;color:rgba(226,245,255,.88);text-decoration:none;white-space:nowrap;}" +
-      ".wh-top-drop__panel a:hover{background:rgba(34,211,238,.1);color:#fff;}";
+      ".wh-top-drop__panel a:hover{background:rgba(34,211,238,.1);color:#fff;}" +
+      ".wh-shell-user-drop{position:relative;}" +
+      ".wh-shell-user-drop.wh-shell-user-drop--open{z-index:210;}" +
+      ".wh-shell-user-panel{position:absolute;right:0;top:calc(100% + 6px);z-index:211;display:none;min-width:140px;padding:6px;border-radius:8px;background:rgba(7,27,51,.96);border:1px solid rgba(34,211,238,.22);box-shadow:0 16px 48px rgba(0,0,0,.5);}" +
+      ".wh-shell-user-drop.wh-shell-user-drop--open .wh-shell-user-panel{display:block;}" +
+      ".wh-shell-user-panel button{display:block;width:100%;padding:8px 12px;border:none;border-radius:6px;background:transparent;color:rgba(226,245,255,.9);font-size:12px;text-align:left;cursor:pointer;}" +
+      ".wh-shell-user-panel button:hover{background:rgba(251,113,133,.12);color:#fecdd3;}" +
+      ".wh-shell-search-mask{position:fixed;inset:0;z-index:300;display:none;align-items:flex-start;justify-content:center;padding:88px 16px 16px;background:rgba(2,8,23,.72);}" +
+      ".wh-shell-search-mask.show{display:flex;}" +
+      ".wh-shell-search-box{width:min(560px,100%);border:1px solid rgba(34,211,238,.25);border-radius:10px;background:#071b33;box-shadow:0 24px 64px rgba(0,0,0,.55);overflow:hidden;}" +
+      ".wh-shell-search-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);}" +
+      ".wh-shell-search-head input{flex:1;height:36px;padding:0 12px;border:1px solid rgba(34,211,238,.2);border-radius:6px;background:rgba(15,23,42,.8);color:#ecfeff;font-size:13px;outline:none;}" +
+      ".wh-shell-search-head input:focus{border-color:rgba(34,211,238,.55);box-shadow:0 0 0 2px rgba(34,211,238,.15);}" +
+      ".wh-shell-search-list{max-height:min(420px,60vh);overflow-y:auto;padding:6px;}" +
+      ".wh-shell-search-item{display:block;width:100%;padding:10px 12px;border:none;border-radius:6px;background:transparent;text-align:left;cursor:pointer;}" +
+      ".wh-shell-search-item:hover{background:rgba(34,211,238,.1);}" +
+      ".wh-shell-search-item__label{display:block;font-size:13px;color:#ecfeff;font-weight:600;}" +
+      ".wh-shell-search-item__group{display:block;margin-top:3px;font-size:11px;color:#94a3b8;}" +
+      ".wh-shell-search-empty{padding:24px 12px;text-align:center;font-size:12px;color:#94a3b8;}" +
+      ".wh-shell-tool-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;}" +
+      ".wh-shell-badge-wrap{position:absolute;top:-2px;right:-2px;pointer-events:none;}" +
+      ".wh-shell-badge-wrap.wh-shell-badge-wrap--hidden{display:none;}" +
+      ".wh-shell-badge{min-width:18px;height:18px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;font-size:10px;font-weight:700;line-height:1;color:#fff;background:linear-gradient(135deg,#fb7185,#ef4444);box-shadow:0 0 10px rgba(251,113,133,.6);}";
+  }
+
+  function headerBadges() {
+    if (typeof WHHeaderBadges === "undefined") {
+      return { todo: "", notify: "" };
+    }
+    return {
+      todo: WHHeaderBadges.badgeHtml(WHHeaderBadges.todoPendingCount()),
+      notify: WHHeaderBadges.badgeHtml(WHHeaderBadges.notifyUnreadCount()),
+    };
   }
 
   function navHighlightId(bodyTopId) {
@@ -48,6 +80,7 @@
 
   function buildHeader(bodyTopId) {
     var highlight = navHighlightId(bodyTopId);
+    var badges = headerBadges();
     var header = el("header", {
       className:
         "wh-header fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-6 border-b border-cyan-400/20",
@@ -64,13 +97,25 @@
       '<nav class="wh-top-nav-strip flex flex-1 justify-center items-stretch gap-0.5 md:gap-1 mx-2 min-w-0">' +
       "</nav>" +
       '<div class="flex items-center gap-2 md:gap-3 text-cyan-50 shrink-0">' +
-      '<button type="button" class="p-2 rounded-lg transition-ui border border-transparent hover:border-cyan-400/30 hover:bg-cyan-500/10 hover:shadow-[0_0_16px_rgba(34,211,238,0.2)]" title="搜索"><i class="fa-solid fa-magnifying-glass text-lg text-cyan-200"></i></button>' +
-      '<button type="button" class="relative p-2 rounded-lg transition-ui border border-transparent hover:border-cyan-400/30 hover:bg-cyan-500/10" title="通知">' +
+      '<button type="button" data-shell-action="search" class="p-2 rounded-lg transition-ui border border-transparent hover:border-cyan-400/30 hover:bg-cyan-500/10 hover:shadow-[0_0_16px_rgba(34,211,238,0.2)]" title="搜索菜单"><i class="fa-solid fa-magnifying-glass text-lg text-cyan-200"></i></button>' +
+      '<a href="wb-todo.html" data-shell-action="todo" class="wh-shell-tool-btn p-2 rounded-lg transition-ui border border-transparent hover:border-cyan-400/30 hover:bg-cyan-500/10" title="待办"><i class="fa-solid fa-list-check text-lg text-cyan-200"></i><span data-shell-badge="todo" class="wh-shell-badge-wrap' +
+      (badges.todo ? "" : " wh-shell-badge-wrap--hidden") +
+      '">' +
+      badges.todo +
+      "</span></a>" +
+      '<a href="wb-sys-notify.html" data-shell-action="notify" class="wh-shell-tool-btn p-2 rounded-lg transition-ui border border-transparent hover:border-cyan-400/30 hover:bg-cyan-500/10" title="系统通知">' +
       '<i class="fa-regular fa-bell text-lg text-cyan-200"></i>' +
-      '<span class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[10px] font-bold text-white" style="background:linear-gradient(135deg,#fb7185,#ef4444);box-shadow:0 0 10px rgba(251,113,133,0.6)">12</span></button>' +
-      '<button type="button" class="flex items-center gap-2 rounded-lg transition-ui border border-cyan-400/20 hover:bg-cyan-500/10 pl-1 pr-2 py-1">' +
+      '<span data-shell-badge="notify" class="wh-shell-badge-wrap' +
+      (badges.notify ? "" : " wh-shell-badge-wrap--hidden") +
+      '">' +
+      badges.notify +
+      "</span></a>" +
+      '<div class="wh-shell-user-drop">' +
+      '<button type="button" data-shell-action="user-menu" class="flex items-center gap-2 rounded-lg transition-ui border border-cyan-400/20 hover:bg-cyan-500/10 pl-1 pr-2 py-1" aria-haspopup="true" aria-expanded="false">' +
       '<img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover ring-2 ring-cyan-400/40" alt=""/>' +
       '<span class="text-xs hidden lg:inline text-cyan-50/90">管理员</span><i class="fa-solid fa-chevron-down text-[10px] text-cyan-300/60"></i></button>' +
+      '<div class="wh-shell-user-panel" role="menu">' +
+      '<button type="button" data-shell-action="logout" role="menuitem">退出登录</button></div></div>' +
       "</div>";
 
     var nav = header.querySelector("nav");
@@ -115,7 +160,150 @@
       }
     });
 
+    bindHeaderActions(header);
+    if (typeof WHHeaderBadges !== "undefined") WHHeaderBadges.refresh();
     return header;
+  }
+
+  function escHtml(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch];
+    });
+  }
+
+  function ensureSearchOverlay() {
+    var mask = document.getElementById("wh-shell-search-mask");
+    if (mask) return mask;
+    mask = el("div", { id: "wh-shell-search-mask", className: "wh-shell-search-mask" });
+    mask.innerHTML =
+      '<div class="wh-shell-search-box" role="dialog" aria-modal="true" aria-label="搜索菜单">' +
+      '<div class="wh-shell-search-head">' +
+      '<i class="fa-solid fa-magnifying-glass text-cyan-300"></i>' +
+      '<input type="search" id="wh-shell-search-input" placeholder="输入菜单名称搜索…" autocomplete="off" />' +
+      '<button type="button" id="wh-shell-search-close" class="px-3 h-8 rounded text-xs wh-btn-ghost">关闭</button>' +
+      "</div>" +
+      '<div id="wh-shell-search-list" class="wh-shell-search-list"></div></div>';
+    document.body.appendChild(mask);
+    return mask;
+  }
+
+  function renderSearchResults(keyword) {
+    var listEl = document.getElementById("wh-shell-search-list");
+    if (!listEl || typeof WHMetroMenu === "undefined") return;
+    var q = (keyword || "").trim().toLowerCase();
+    var menus = WHMetroMenu.collectAllMenuItems();
+    var hits = menus.filter(function (item) {
+      return !q || item.label.toLowerCase().indexOf(q) > -1;
+    });
+    if (!hits.length) {
+      listEl.innerHTML = '<div class="wh-shell-search-empty">未找到匹配的菜单</div>';
+      return;
+    }
+    listEl.innerHTML = hits
+      .map(function (item) {
+        return (
+          '<button type="button" class="wh-shell-search-item" data-href="' +
+          escHtml(item.href) +
+          '"><span class="wh-shell-search-item__label">' +
+          escHtml(item.label) +
+          '</span><span class="wh-shell-search-item__group">' +
+          escHtml(item.group) +
+          "</span></button>"
+        );
+      })
+      .join("");
+  }
+
+  function openMenuSearch() {
+    var mask = ensureSearchOverlay();
+    var input = document.getElementById("wh-shell-search-input");
+    mask.classList.add("show");
+    renderSearchResults("");
+    if (input) {
+      input.value = "";
+      setTimeout(function () {
+        input.focus();
+      }, 30);
+    }
+  }
+
+  function closeMenuSearch() {
+    var mask = document.getElementById("wh-shell-search-mask");
+    if (mask) mask.classList.remove("show");
+  }
+
+  function bindHeaderActions(header) {
+    if (!header) return;
+
+    header.addEventListener("click", function (event) {
+      var actionBtn = event.target.closest("[data-shell-action]");
+      if (!actionBtn) return;
+      var action = actionBtn.getAttribute("data-shell-action");
+
+      if (action === "search") {
+        event.preventDefault();
+        openMenuSearch();
+        return;
+      }
+      if (action === "user-menu") {
+        event.preventDefault();
+        event.stopPropagation();
+        var drop = actionBtn.closest(".wh-shell-user-drop");
+        if (!drop) return;
+        var open = drop.classList.toggle("wh-shell-user-drop--open");
+        actionBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        return;
+      }
+      if (action === "logout") {
+        event.preventDefault();
+        window.location.href = "index.html";
+        return;
+      }
+    });
+
+    document.addEventListener("click", function (event) {
+      if (!event.target.closest(".wh-shell-user-drop")) {
+        document.querySelectorAll(".wh-shell-user-drop--open").forEach(function (drop) {
+          drop.classList.remove("wh-shell-user-drop--open");
+          var btn = drop.querySelector("[data-shell-action='user-menu']");
+          if (btn) btn.setAttribute("aria-expanded", "false");
+        });
+      }
+    });
+
+    var searchMask = ensureSearchOverlay();
+    var searchInput = document.getElementById("wh-shell-search-input");
+    var searchClose = document.getElementById("wh-shell-search-close");
+    var searchList = document.getElementById("wh-shell-search-list");
+
+    if (searchInput) {
+      searchInput.addEventListener("input", function () {
+        renderSearchResults(searchInput.value);
+      });
+      searchInput.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") closeMenuSearch();
+      });
+    }
+    if (searchClose) {
+      searchClose.addEventListener("click", function () {
+        closeMenuSearch();
+      });
+    }
+    searchMask.addEventListener("click", function (event) {
+      if (event.target === searchMask) closeMenuSearch();
+    });
+    if (searchList) {
+      searchList.addEventListener("click", function (event) {
+        var item = event.target.closest(".wh-shell-search-item");
+        if (!item) return;
+        var href = item.getAttribute("data-href");
+        if (href) window.location.href = href;
+      });
+    }
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") closeMenuSearch();
+    });
   }
 
   function leafIcon(key) {
@@ -124,7 +312,6 @@
     if (key.indexOf("dc-") === 0) icon = "fa-solid fa-database";
     if (key.indexOf("in-") === 0) icon = "fa-solid fa-route";
     if (key.indexOf("wb-") === 0) icon = "fa-solid fa-briefcase";
-    if (key === "wb-permission") icon = "fa-solid fa-shield-halved";
     return icon;
   }
 
@@ -310,6 +497,12 @@
     var pageRoot = document.getElementById("page-root");
     if (!pageRoot) return;
 
+    if (shell === "embed") {
+      body.classList.add("wh-layout-embed");
+      pageRoot.classList.add("wh-embed-page-root");
+      return;
+    }
+
     var collapsed = localStorage.getItem(STORAGE_SIDEBAR) === "1";
 
     var layout = el("div", { id: "app-layout" });
@@ -338,6 +531,7 @@
       mainNoSide.appendChild(pageRoot);
       row.appendChild(mainNoSide);
     } else if (topId === "wb") {
+      if (typeof WHWorkbenchMega !== "undefined") WHWorkbenchMega.ensureCss();
       body.classList.add("wh-layout-wb");
       var wbView = body.getAttribute("data-wb-view") || "page";
       var isHub = wbView === "hub" || activeKey === "wb-hub";

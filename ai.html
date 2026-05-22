@@ -147,55 +147,72 @@
       .ai-grade-2 { color: #ff9b22; }
       .ai-grade-3 { color: #ffd43b; }
       .ai-grade-4 { color: #fff35e; }
+      .ai-filter-bar {
+        border-bottom: 1px solid rgba(52, 211, 235, 0.12);
+      }
+      .ai-filter-bar .ai-field-label {
+        min-width: 62px;
+        font-size: 12px;
+      }
+      .ai-filter-btn {
+        height: 28px;
+        min-width: 56px;
+        padding: 0 12px;
+        font-size: 12px;
+        border-radius: 3px;
+        border: 1px solid rgba(34, 211, 238, 0.28);
+        color: #e0f2fe;
+        background: rgba(7, 20, 38, 0.85);
+      }
+      .ai-filter-btn--primary {
+        background: linear-gradient(135deg, rgba(34, 211, 238, 0.35), rgba(14, 165, 233, 0.28));
+        border-color: rgba(77, 231, 255, 0.4);
+      }
+      .ai-table .col-project {
+        max-width: 108px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     </style>
   </head>
   <body data-shell="fullscreen" data-top="ai">
     <div id="page-root" class="h-[calc(100vh-64px)] ai-screen px-5 py-4">
-      <div class="h-full grid grid-cols-[470px_1fr] gap-5">
+      <div class="h-full grid grid-cols-[520px_1fr] gap-5">
         <aside class="min-h-0 flex flex-col gap-4">
           <section class="ai-panel min-h-0 flex flex-col">
             <div class="ai-title">风险预警</div>
-            <div class="px-3 py-3 min-h-0 overflow-auto">
+            <div class="ai-filter-bar px-3 py-2 space-y-2 text-xs shrink-0">
+              <div class="flex items-center gap-2">
+                <span class="ai-field-label shrink-0">对应项目</span>
+                <select id="filter-project" class="ai-select flex-1 h-8 px-2 text-xs">
+                  <option value="">全部项目</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="ai-field-label shrink-0">预警时间</span>
+                <input type="datetime-local" id="filter-time-start" class="ai-input flex-1 min-w-0 h-8 px-2 text-xs" title="开始时间" />
+                <span class="text-slate-400 shrink-0">至</span>
+                <input type="datetime-local" id="filter-time-end" class="ai-input flex-1 min-w-0 h-8 px-2 text-xs" title="结束时间" />
+              </div>
+              <div class="flex justify-end gap-2">
+                <button type="button" class="ai-filter-btn ai-filter-btn--primary" id="filter-query">查询</button>
+                <button type="button" class="ai-filter-btn" id="filter-reset">重置</button>
+              </div>
+            </div>
+            <div class="px-3 py-2 min-h-0 flex-1 overflow-auto">
               <table class="ai-table w-full text-xs">
                 <thead class="sticky top-0 z-10">
                   <tr>
-                    <th class="px-3 py-2 text-left">时间</th>
-                    <th class="px-3 py-2 text-left">类型</th>
-                    <th class="px-3 py-2 text-left">等级</th>
-                    <th class="px-3 py-2 text-left">位置</th>
-                    <th class="px-3 py-2 text-left">操作</th>
+                    <th class="px-2 py-2 text-left">对应项目</th>
+                    <th class="px-2 py-2 text-left">时间</th>
+                    <th class="px-2 py-2 text-left">类型</th>
+                    <th class="px-2 py-2 text-left">等级</th>
+                    <th class="px-2 py-2 text-left">位置</th>
+                    <th class="px-2 py-2 text-left">操作</th>
                   </tr>
                 </thead>
-                <tbody id="alert-rows">
-                  <tr class="active">
-                    <td class="px-3 py-2 text-slate-100">2025-04-07 11:08:23</td>
-                    <td class="px-3 py-2 text-slate-100">挖机</td>
-                    <td class="px-3 py-2 ai-grade-1 font-semibold">特别严重</td>
-                    <td class="px-3 py-2 text-slate-100">保护区范围内</td>
-                    <td class="px-3 py-2"><button class="text-sky-300 hover:underline" type="button" data-row="0">查看详情</button></td>
-                  </tr>
-                  <tr>
-                    <td class="px-3 py-2 text-slate-100">2025-04-07 10:08:23</td>
-                    <td class="px-3 py-2 text-slate-100">挖机</td>
-                    <td class="px-3 py-2 ai-grade-2 font-semibold">严重</td>
-                    <td class="px-3 py-2 text-slate-100">保护区范围内</td>
-                    <td class="px-3 py-2"><button class="text-sky-300 hover:underline" type="button" data-row="1">查看详情</button></td>
-                  </tr>
-                  <tr>
-                    <td class="px-3 py-2 text-slate-100">2025-04-07 09:08:23</td>
-                    <td class="px-3 py-2 text-slate-100">挖机</td>
-                    <td class="px-3 py-2 ai-grade-3 font-semibold">较重</td>
-                    <td class="px-3 py-2 text-slate-100">保护区范围外</td>
-                    <td class="px-3 py-2"><button class="text-sky-300 hover:underline" type="button" data-row="2">查看详情</button></td>
-                  </tr>
-                  <tr>
-                    <td class="px-3 py-2 text-slate-100">2025-04-07 09:08:23</td>
-                    <td class="px-3 py-2 text-slate-100">挖机</td>
-                    <td class="px-3 py-2 ai-grade-4 font-semibold">一般</td>
-                    <td class="px-3 py-2 text-slate-100">保护区范围外</td>
-                    <td class="px-3 py-2"><button class="text-sky-300 hover:underline" type="button" data-row="3">查看详情</button></td>
-                  </tr>
-                </tbody>
+                <tbody id="alert-rows"></tbody>
               </table>
             </div>
           </section>
@@ -206,7 +223,11 @@
               <div class="mb-4 text-cyan-200 font-semibold">基本信息</div>
               <div class="space-y-3 mb-7">
                 <div class="flex gap-3"><span class="ai-field-label">预警时间</span><span id="detail-time">2025-04-07 11:08:23</span></div>
-                <div class="flex gap-3"><span class="ai-field-label">地理坐标</span><span id="detail-location" class="text-[#f8ff4d]">XXXXXXX(点击后右边图像显示地图位置)</span></div>
+                <div class="flex gap-3"><span class="ai-field-label">地理坐标</span><span id="detail-location" class="text-[#f8ff4d]">114.3052, 30.5928</span></div>
+                <div class="flex gap-3 items-center">
+                  <span class="ai-field-label shrink-0">对应项目</span>
+                  <input type="text" id="detail-project" class="ai-input flex-1 h-8 px-2 text-sm" placeholder="请输入对应项目" />
+                </div>
                 <div class="flex gap-3"><span class="ai-field-label">位置</span><span id="detail-area">保护区范围内</span></div>
                 <div class="flex gap-3"><span class="ai-field-label">类型</span><span id="detail-type">挖机</span></div>
                 <div class="flex gap-3"><span class="ai-field-label">等级</span><span id="detail-level" class="ai-grade-1 font-semibold">特别严重</span></div>
@@ -282,66 +303,262 @@
     <script src="assets/js/menu-config.js"></script>
     <script src="assets/js/shell.js"></script>
     <script>
-      const details = [
-        { time: "2025-04-07 11:08:23", area: "保护区范围内", type: "挖机", level: "特别严重", levelClass: "ai-grade-1", location: "XXXXXXX(点击后右边图像显示地图位置)" },
-        { time: "2025-04-07 10:08:23", area: "保护区范围内", type: "挖机", level: "严重", levelClass: "ai-grade-2", location: "XXXXXXX(点击后右边图像显示地图位置)" },
-        { time: "2025-04-07 09:08:23", area: "保护区范围外", type: "挖机", level: "较重", levelClass: "ai-grade-3", location: "XXXXXXX(点击后右边图像显示地图位置)" },
-        { time: "2025-04-07 09:08:23", area: "保护区范围外", type: "挖机", level: "一般", levelClass: "ai-grade-4", location: "XXXXXXX(点击后右边图像显示地图位置)" }
-      ];
+      (function () {
+        var alerts = [
+          {
+            id: "AI-20250407-001",
+            project: "金融街六中北项目",
+            time: "2025-04-07 11:08:23",
+            type: "挖机",
+            level: "特别严重",
+            levelClass: "ai-grade-1",
+            area: "保护区范围内",
+            location: "114.3052, 30.5928",
+            riskImage:
+              "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=80",
+          },
+          {
+            id: "AI-20250407-002",
+            project: "新建商业文化设施项目",
+            time: "2025-04-07 10:08:23",
+            type: "挖机",
+            level: "严重",
+            levelClass: "ai-grade-2",
+            area: "保护区范围内",
+            location: "114.3128, 30.6015",
+            riskImage:
+              "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1800&q=80",
+          },
+          {
+            id: "AI-20250407-003",
+            project: "洪山路至小洪山商业公寓项目",
+            time: "2025-04-07 09:08:23",
+            type: "挖机",
+            level: "较重",
+            levelClass: "ai-grade-3",
+            area: "保护区范围外",
+            location: "114.3186, 30.6082",
+            riskImage:
+              "https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=1800&q=80",
+          },
+          {
+            id: "AI-20250407-004",
+            project: "三金潭车辆段上盖物业综合开发项目",
+            time: "2025-04-07 08:42:11",
+            type: "堆土",
+            level: "一般",
+            levelClass: "ai-grade-4",
+            area: "保护区范围外",
+            location: "114.2891, 30.6344",
+            riskImage:
+              "https://images.unsplash.com/photo-1599707254554-027aeb4deacd?auto=format&fit=crop&w=1800&q=80",
+          },
+        ];
 
-      const rows = document.querySelectorAll("#alert-rows tr");
-      const detailTime = document.getElementById("detail-time");
-      const detailArea = document.getElementById("detail-area");
-      const detailType = document.getElementById("detail-type");
-      const detailLevel = document.getElementById("detail-level");
-      const detailLocation = document.getElementById("detail-location");
-      const mediaButtons = document.querySelectorAll("[data-media]");
-      const riskImage = document.getElementById("risk-image");
-      const riskVideo = document.getElementById("risk-video");
+        var filtered = alerts.slice();
+        var activeId = alerts[0] ? alerts[0].id : null;
 
-      function activateRow(index) {
-        rows.forEach((row, i) => row.classList.toggle("active", i === index));
-        const current = details[index];
-        detailTime.textContent = current.time;
-        detailArea.textContent = current.area;
-        detailType.textContent = current.type;
-        detailLevel.textContent = current.level;
-        detailLevel.className = current.levelClass + " font-semibold";
-        detailLocation.textContent = current.location;
-      }
+        var tbody = document.getElementById("alert-rows");
+        var filterProject = document.getElementById("filter-project");
+        var filterTimeStart = document.getElementById("filter-time-start");
+        var filterTimeEnd = document.getElementById("filter-time-end");
+        var detailTime = document.getElementById("detail-time");
+        var detailArea = document.getElementById("detail-area");
+        var detailType = document.getElementById("detail-type");
+        var detailLevel = document.getElementById("detail-level");
+        var detailLocation = document.getElementById("detail-location");
+        var detailProject = document.getElementById("detail-project");
+        var mediaButtons = document.querySelectorAll("[data-media]");
+        var riskImage = document.getElementById("risk-image");
+        var riskVideo = document.getElementById("risk-video");
 
-      rows.forEach((row, index) => {
-        row.addEventListener("click", () => activateRow(index));
-        const btn = row.querySelector("button");
-        if (btn) btn.addEventListener("click", () => activateRow(index));
-      });
+        function esc(value) {
+          return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+          });
+        }
 
-      mediaButtons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          mediaButtons.forEach((item) => item.classList.toggle("active", item === btn));
-          const isVideo = btn.dataset.media === "video";
-          riskImage.classList.toggle("hidden", isVideo);
-          riskVideo.classList.toggle("hidden", !isVideo);
+        function parseTime(str) {
+          if (!str) return null;
+          var t = new Date(String(str).replace(" ", "T"));
+          return isNaN(t.getTime()) ? null : t.getTime();
+        }
+
+        function initProjectFilter() {
+          var names = [];
+          alerts.forEach(function (a) {
+            if (a.project && names.indexOf(a.project) < 0) names.push(a.project);
+          });
+          names.forEach(function (name) {
+            var opt = document.createElement("option");
+            opt.value = name;
+            opt.textContent = name;
+            filterProject.appendChild(opt);
+          });
+        }
+
+        function applyFilter() {
+          var project = filterProject.value;
+          var start = filterTimeStart.value ? parseTime(filterTimeStart.value) : null;
+          var end = filterTimeEnd.value ? parseTime(filterTimeEnd.value) : null;
+          filtered = alerts.filter(function (row) {
+            if (project && row.project !== project) return false;
+            var ts = parseTime(row.time);
+            if (start != null && (ts == null || ts < start)) return false;
+            if (end != null && (ts == null || ts > end)) return false;
+            return true;
+          });
+          if (!filtered.length) {
+            activeId = null;
+            renderTable();
+            clearDetail();
+            return;
+          }
+          if (!filtered.some(function (r) { return r.id === activeId; })) {
+            activeId = filtered[0].id;
+          }
+          renderTable();
+          activateById(activeId);
+        }
+
+        function resetFilter() {
+          filterProject.value = "";
+          filterTimeStart.value = "";
+          filterTimeEnd.value = "";
+          applyFilter();
+        }
+
+        function findById(id) {
+          return alerts.find(function (r) { return r.id === id; });
+        }
+
+        function renderTable() {
+          if (!filtered.length) {
+            tbody.innerHTML =
+              '<tr><td colspan="6" class="px-3 py-6 text-center text-slate-400">暂无符合条件的预警</td></tr>';
+            return;
+          }
+          tbody.innerHTML = filtered
+            .map(function (row) {
+              return (
+                '<tr data-id="' +
+                esc(row.id) +
+                '" class="' +
+                (row.id === activeId ? "active" : "") +
+                '">' +
+                '<td class="px-2 py-2 text-slate-100 col-project" title="' +
+                esc(row.project) +
+                '">' +
+                esc(row.project) +
+                "</td>" +
+                '<td class="px-2 py-2 text-slate-100 whitespace-nowrap">' +
+                esc(row.time) +
+                "</td>" +
+                '<td class="px-2 py-2 text-slate-100">' +
+                esc(row.type) +
+                "</td>" +
+                '<td class="px-2 py-2 ' +
+                row.levelClass +
+                ' font-semibold">' +
+                esc(row.level) +
+                "</td>" +
+                '<td class="px-2 py-2 text-slate-100">' +
+                esc(row.area) +
+                "</td>" +
+                '<td class="px-2 py-2"><button class="text-sky-300 hover:underline" type="button" data-action="view-detail">查看详情</button></td>' +
+                "</tr>"
+              );
+            })
+            .join("");
+        }
+
+        function clearDetail() {
+          detailTime.textContent = "—";
+          detailLocation.textContent = "—";
+          detailProject.value = "";
+          detailArea.textContent = "—";
+          detailType.textContent = "—";
+          detailLevel.textContent = "—";
+          detailLevel.className = "font-semibold";
+        }
+
+        function activateById(id) {
+          var current = findById(id);
+          if (!current) return;
+          activeId = id;
+          Array.from(tbody.querySelectorAll("tr")).forEach(function (tr) {
+            tr.classList.toggle("active", tr.getAttribute("data-id") === id);
+          });
+          detailTime.textContent = current.time;
+          detailLocation.textContent = current.location;
+          detailProject.value = current.project || "";
+          detailArea.textContent = current.area;
+          detailType.textContent = current.type;
+          detailLevel.textContent = current.level;
+          detailLevel.className = current.levelClass + " font-semibold";
+          if (current.riskImage) riskImage.src = current.riskImage;
+        }
+
+        detailProject.addEventListener("change", function () {
+          var current = findById(activeId);
+          if (!current) return;
+          current.project = detailProject.value.trim();
+          var cell = tbody.querySelector('tr[data-id="' + activeId + '"] .col-project');
+          if (cell) {
+            cell.textContent = current.project;
+            cell.title = current.project;
+          }
         });
-      });
 
-      function showToast(text) {
-        const old = document.getElementById("ai-toast");
-        if (old) old.remove();
-        const toast = document.createElement("div");
-        toast.id = "ai-toast";
-        toast.className = "fixed right-5 bottom-5 z-[100] rounded bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg";
-        toast.textContent = text;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 1800);
-      }
+        tbody.addEventListener("click", function (e) {
+          var tr = e.target.closest("tr[data-id]");
+          if (!tr) return;
+          activateById(tr.getAttribute("data-id"));
+        });
 
-      document.getElementById("submit-btn").addEventListener("click", () => showToast("审批信息已提交"));
-      document.getElementById("next-btn").addEventListener("click", () => {
-        const activeIndex = Array.from(rows).findIndex((row) => row.classList.contains("active"));
-        activateRow((activeIndex + 1) % rows.length);
-        showToast("已切换到下一条预警");
-      });
+        mediaButtons.forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            mediaButtons.forEach(function (item) {
+              item.classList.toggle("active", item === btn);
+            });
+            var isVideo = btn.dataset.media === "video";
+            riskImage.classList.toggle("hidden", isVideo);
+            riskVideo.classList.toggle("hidden", !isVideo);
+          });
+        });
+
+        function showToast(text) {
+          var old = document.getElementById("ai-toast");
+          if (old) old.remove();
+          var toast = document.createElement("div");
+          toast.id = "ai-toast";
+          toast.className =
+            "fixed right-5 bottom-5 z-[100] rounded bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg";
+          toast.textContent = text;
+          document.body.appendChild(toast);
+          setTimeout(function () {
+            toast.remove();
+          }, 1800);
+        }
+
+        document.getElementById("filter-query").addEventListener("click", applyFilter);
+        document.getElementById("filter-reset").addEventListener("click", resetFilter);
+        document.getElementById("submit-btn").addEventListener("click", function () {
+          showToast("审批信息已提交");
+        });
+        document.getElementById("next-btn").addEventListener("click", function () {
+          if (!filtered.length) return;
+          var idx = filtered.findIndex(function (r) { return r.id === activeId; });
+          var next = filtered[(idx + 1) % filtered.length];
+          activateById(next.id);
+          showToast("已切换到下一条预警");
+        });
+
+        initProjectFilter();
+        filtered = alerts.slice();
+        renderTable();
+        if (activeId) activateById(activeId);
+      })();
     </script>
   </body>
 </html>

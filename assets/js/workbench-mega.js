@@ -8,7 +8,6 @@
     if (key.indexOf("dc-") === 0) icon = "fa-solid fa-database";
     if (key.indexOf("in-") === 0) icon = "fa-solid fa-route";
     if (key.indexOf("wb-") === 0) icon = "fa-solid fa-briefcase";
-    if (key === "wb-permission") icon = "fa-solid fa-shield-halved";
     return icon;
   }
 
@@ -140,6 +139,7 @@
           var gb = document.createElement("div");
           gb.className = "wh-wb-group__body";
           (block.items || []).forEach(function (it) {
+            if (it.hidden) return;
             gb.insertAdjacentHTML("beforeend", wbLeafHtml(it, activeKey, true));
           });
 
@@ -152,6 +152,7 @@
           body.appendChild(group);
         } else {
           (block.items || []).forEach(function (it) {
+            if (it.hidden) return;
             body.insertAdjacentHTML("beforeend", wbLeafHtml(it, activeKey, false));
           });
         }

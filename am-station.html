@@ -68,6 +68,8 @@
       align-items: center;
       gap: 10px;
     }
+    .station-form-item--select { align-items: flex-start; }
+    .station-form-item--select .station-form-label { line-height: 32px; }
     .station-form-label {
       width: 96px;
       flex: 0 0 96px;
@@ -88,6 +90,8 @@
       box-shadow: 0 24px 80px rgba(0,0,0,.48);
       overflow: hidden;
     }
+    .station-modal { overflow: visible; }
+    .station-modal .p-6 { overflow: visible; }
   </style>
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="am-station" data-wb-view="page">
@@ -168,9 +172,9 @@
 
   <div id="station-modal-mask" class="station-modal-mask">
     <div class="station-modal">
-      <div class="h-14 px-6 flex items-center border-b border-cyan-400/15">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
         <h3 id="station-modal-title" class="text-white text-[16px] font-semibold">新增站点</h3>
-        <button type="button" class="ml-auto text-slate-400 hover:text-slate-200 text-xl leading-none" data-action="close-station-modal">×</button>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-station-modal">×</button>
       </div>
       <div class="p-6">
         <div class="station-form-grid">
@@ -183,8 +187,8 @@
           <label class="station-form-item"><span class="station-form-label">长度：</span><input id="station-length" class="wh-input h-8 flex-1 px-3" placeholder="请输入长度（米）" /></label>
           <label class="station-form-item"><span class="station-form-label">经度：</span><input id="station-lng" class="wh-input h-8 flex-1 px-3" placeholder="请输入经度" /></label>
           <label class="station-form-item"><span class="station-form-label">纬度：</span><input id="station-lat" class="wh-input h-8 flex-1 px-3" placeholder="请输入纬度" /></label>
-          <label class="station-form-item"><span class="station-form-label">所处地层：</span><input id="station-strata" class="wh-input h-8 flex-1 px-3" placeholder="请输入所处地层" /></label>
-          <label class="station-form-item"><span class="station-form-label">施工单位：</span><input id="station-builder" class="wh-input h-8 flex-1 px-3" placeholder="请输入施工单位" /></label>
+          <label class="station-form-item station-form-item--select"><span class="station-form-label">所处地层：</span><div id="station-strata-select" class="wh-search-select" data-input-id="station-strata"></div></label>
+          <label class="station-form-item station-form-item--select"><span class="station-form-label">施工单位：</span><div id="station-builder-select" class="wh-search-select" data-input-id="station-builder"></div></label>
           <label class="station-form-item"><span class="station-form-label">施工方法：</span><input id="station-method" class="wh-input h-8 flex-1 px-3" placeholder="请输入施工方法" /></label>
         </div>
       </div>
@@ -206,14 +210,35 @@
     </div>
   </div>
 
+  <script src="assets/js/search-select.js"></script>
   <script>
     (function () {
+      var STRATA_OPTIONS = [
+        "3-2 黏土",
+        "(20a-2-2) 中风化泥岩",
+        "1-1 杂填土",
+        "(20c-1) 强风化泥岩",
+        "(10-1d) 粉质黏土",
+        "(18c-1) 强风化泥质砂岩",
+        "(13-1) 砂砾岩残积土",
+        "(18d-1) 强风化砂质泥岩"
+      ];
+      var BUILDER_OPTIONS = [
+        "中南勘基",
+        "武汉百纵商业发展有限公司",
+        "浙江八方电信有限公司",
+        "武汉城发智慧能源有限公司",
+        "团风立信特种犬防保安服务有限公司",
+        "汉阳区水务和湖泊局",
+        "汉阳区水务和湖泊局排水队"
+      ];
+
       var rows = [
-        { id:"S201", name:"常青花园", line:"2号线", startMile:"K12+320", endMile:"K13+180", length:"860", lng:"114.2415", lat:"30.6501", strata:"粉质黏土", builder:"武汉地铁集团", method:"明挖法", phone:"13800001201" },
-        { id:"S202", name:"长港路", line:"2号线", startMile:"K13+180", endMile:"K14+050", length:"870", lng:"114.2541", lat:"30.6428", strata:"砂质黏土", builder:"中铁十一局", method:"盾构法", phone:"13800001202" },
-        { id:"S501", name:"白沙六路", line:"5号线", startMile:"K21+100", endMile:"K21+980", length:"880", lng:"114.3142", lat:"30.5077", strata:"卵石层", builder:"中铁隧道局", method:"盖挖法", phone:"13800001203" },
-        { id:"S701", name:"光谷广场", line:"7号线", startMile:"K30+000", endMile:"K31+120", length:"1120", lng:"114.4035", lat:"30.5112", strata:"强风化岩层", builder:"中建三局", method:"暗挖法", phone:"13800001204" },
-        { id:"S1101", name:"光谷五路", line:"11号线", startMile:"K08+260", endMile:"K09+140", length:"880", lng:"114.4496", lat:"30.4855", strata:"中风化砂岩", builder:"中铁一局", method:"明挖法", phone:"13800001205" }
+        { id:"S201", name:"常青花园", line:"2号线", startMile:"K12+320", endMile:"K13+180", length:"860", lng:"114.2415", lat:"30.6501", strata:"(10-1d) 粉质黏土", builder:"中南勘基", method:"明挖法", phone:"13800001201" },
+        { id:"S202", name:"长港路", line:"2号线", startMile:"K13+180", endMile:"K14+050", length:"870", lng:"114.2541", lat:"30.6428", strata:"3-2 黏土", builder:"浙江八方电信有限公司", method:"盾构法", phone:"13800001202" },
+        { id:"S501", name:"白沙六路", line:"5号线", startMile:"K21+100", endMile:"K21+980", length:"880", lng:"114.3142", lat:"30.5077", strata:"1-1 杂填土", builder:"武汉城发智慧能源有限公司", method:"盖挖法", phone:"13800001203" },
+        { id:"S701", name:"光谷广场", line:"7号线", startMile:"K30+000", endMile:"K31+120", length:"1120", lng:"114.4035", lat:"30.5112", strata:"(18c-1) 强风化泥质砂岩", builder:"汉阳区水务和湖泊局", method:"暗挖法", phone:"13800001204" },
+        { id:"S1101", name:"光谷五路", line:"11号线", startMile:"K08+260", endMile:"K09+140", length:"880", lng:"114.4496", lat:"30.4855", strata:"(13-1) 砂砾岩残积土", builder:"武汉百纵商业发展有限公司", method:"明挖法", phone:"13800001205" }
       ];
 
       var editIndex = -1;
@@ -222,6 +247,16 @@
       var modalMask = document.getElementById("station-modal-mask");
       var confirmMask = document.getElementById("confirm-mask");
       var modalTitle = document.getElementById("station-modal-title");
+      var strataSelect = WHSearchSelect.create(
+        document.getElementById("station-strata-select"),
+        STRATA_OPTIONS,
+        "请搜索或选择所处地层"
+      );
+      var builderSelect = WHSearchSelect.create(
+        document.getElementById("station-builder-select"),
+        BUILDER_OPTIONS,
+        "请搜索或选择施工单位"
+      );
 
       function renderRows() {
         tableBody.innerHTML = rows.map(function (row, index) {
@@ -247,6 +282,7 @@
       }
 
       function openModal(mode, index) {
+        WHSearchSelect.closeAll(null);
         editIndex = mode === "edit" ? index : -1;
         modalTitle.textContent = mode === "edit" ? "编辑站点" : "新增站点";
         var row = index > -1 ? rows[index] : null;
@@ -259,8 +295,8 @@
         document.getElementById("station-length").value = row ? row.length : "";
         document.getElementById("station-lng").value = row ? row.lng : "";
         document.getElementById("station-lat").value = row ? row.lat : "";
-        document.getElementById("station-strata").value = row ? row.strata : "";
-        document.getElementById("station-builder").value = row ? row.builder : "";
+        strataSelect.setValue(row ? row.strata : "");
+        builderSelect.setValue(row ? row.builder : "");
         document.getElementById("station-method").value = row ? row.method : "";
         modalMask.classList.add("show");
       }
@@ -288,8 +324,8 @@
           length: document.getElementById("station-length").value.trim() || "0",
           lng: document.getElementById("station-lng").value.trim() || "-",
           lat: document.getElementById("station-lat").value.trim() || "-",
-          strata: document.getElementById("station-strata").value.trim() || "-",
-          builder: document.getElementById("station-builder").value.trim() || "-",
+          strata: strataSelect.getValue() || "-",
+          builder: builderSelect.getValue() || "-",
           method: document.getElementById("station-method").value.trim() || "-"
         };
         if (editIndex > -1) rows[editIndex] = row;

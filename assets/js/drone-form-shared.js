@@ -42,7 +42,7 @@
     document.body.insertAdjacentHTML("beforeend",
       '<div id="drone-form-mask" class="dr-modal-mask">' +
         '<div class="dr-modal">' +
-          '<div class="h-14 px-6 flex items-center border-b border-cyan-400/15"><h3 id="drone-form-title" class="text-white text-[16px] font-semibold">新增无人机设备</h3><button type="button" class="ml-auto text-slate-400 hover:text-slate-200 text-xl" data-action="close-drone-form">×</button></div>' +
+          '<div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15"><h3 id="drone-form-title" class="text-white text-[16px] font-semibold">新增无人机设备</h3><button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-drone-form">×</button></div>' +
           '<div class="p-6"><div class="dr-form-grid">' +
             '<label class="dr-form-item"><span class="dr-form-label"><b class="req">*</b>设备型号：</span><input id="df-model" class="wh-input h-8 flex-1 px-3" /></label>' +
             '<label class="dr-form-item"><span class="dr-form-label"><b class="req">*</b>设备SN：</span><input id="df-sn" class="wh-input h-8 flex-1 px-3" /></label>' +

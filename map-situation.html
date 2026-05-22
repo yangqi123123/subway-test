@@ -103,12 +103,13 @@
         background:
           linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 100%),
           linear-gradient(to right, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 100%);
-        background-size: 100% 21px, 32px 100%;
+        background-size: 100% 21px, calc(100% / 26) 100%;
       }
       .sit-track-grid {
         display: grid;
         grid-template-columns: 56px 1fr;
         height: 100%;
+        min-height: 210px;
       }
       .sit-track-y {
         font-size: 11px;
@@ -126,9 +127,31 @@
       .sit-track-plot {
         position: relative;
         overflow: hidden;
+        min-height: 210px;
+        width: 100%;
+      }
+      .sit-interval-grid {
+        width: calc(100% * 25 / 26);
+        margin-left: calc(100% / 52);
+        height: 100%;
+        min-height: 210px;
+        display: grid;
+        grid-template-columns: repeat(25, minmax(0, 1fr));
+        box-sizing: border-box;
+      }
+      .sit-interval-cell {
+        position: relative;
+        min-width: 0;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .sit-interval-cell:last-child {
+        border-right: none;
       }
       .sit-bar {
         position: absolute;
+        left: 12%;
+        right: 12%;
+        width: auto;
         height: 4px;
         border-radius: 999px;
         background: #47a6ff;
@@ -164,7 +187,7 @@
       }
       .sit-station-grid {
         display: grid;
-        grid-template-columns: repeat(26, minmax(0, 1fr));
+        grid-template-columns: repeat(var(--sit-station-count, 26), minmax(0, 1fr));
         height: 82px;
       }
       .sit-station {
@@ -335,17 +358,45 @@
     <script>
       const stations = ["香港路", "赵家条", "三阳路", "黄浦路", "徐州新村", "二七路", "头道街", "罗家庄", "岳家嘴", "梨园", "东湖路", "省博站", "中南站", "楚河汉街", "洪山广场", "街道口", "广埠屯", "虎泉", "杨家湾", "光谷广场", "金融港", "流芳", "高新二路", "佛祖岭", "左岭", "葛店"]
 
-      const leftBars = [
-        { x: 1, y: 12, w: 1, c: "bar" }, { x: 4, y: 10, w: 2, c: "bar" }, { x: 4, y: 16, w: 2, c: "bar" },
-        { x: 11, y: 8, w: 1, c: "bar" }, { x: 11, y: 13, w: 1, c: "bar" }, { x: 11, y: 18, w: 1, c: "bar" },
-        { x: 16, y: 6, w: 2, c: "bar" }, { x: 16, y: 14, w: 2, c: "bar" }, { x: 22, y: 4, w: 2, c: "bar warn" },
-        { x: 22, y: 12, w: 2, c: "bar warn" }, { x: 24, y: 2, w: 2, c: "bar danger" }, { x: 24, y: 16, w: 2, c: "bar danger" }
+      /** seg：相邻站点区间索引，0 表示第 1 站与第 2 站之间，共 stations.length - 1 段 */
+      const leftSegments = [
+        { seg: 1, y: 12, c: "bar" },
+        { seg: 4, y: 10, c: "bar" },
+        { seg: 5, y: 10, c: "bar" },
+        { seg: 4, y: 16, c: "bar" },
+        { seg: 5, y: 16, c: "bar" },
+        { seg: 11, y: 8, c: "bar" },
+        { seg: 11, y: 13, c: "bar" },
+        { seg: 11, y: 18, c: "bar" },
+        { seg: 16, y: 6, c: "bar" },
+        { seg: 17, y: 6, c: "bar" },
+        { seg: 16, y: 14, c: "bar" },
+        { seg: 17, y: 14, c: "bar" },
+        { seg: 22, y: 4, c: "bar warn" },
+        { seg: 23, y: 4, c: "bar warn" },
+        { seg: 22, y: 12, c: "bar warn" },
+        { seg: 23, y: 12, c: "bar warn" },
+        { seg: 24, y: 2, c: "bar danger" },
+        { seg: 24, y: 16, c: "bar danger" },
       ];
-      const rightBars = [
-        { x: 0, y: 2, w: 1, c: "bar" }, { x: 2, y: 6, w: 1, c: "bar" }, { x: 4, y: 4, w: 2, c: "bar" },
-        { x: 11, y: 1, w: 2, c: "bar" }, { x: 11, y: 10, w: 1, c: "bar warn" }, { x: 12, y: 10, w: 1, c: "bar danger" },
-        { x: 16, y: 4, w: 2, c: "bar" }, { x: 16, y: 14, w: 2, c: "bar" }, { x: 22, y: 3, w: 2, c: "bar warn" },
-        { x: 23, y: 15, w: 1, c: "bar danger" }
+      /** 右线展示顺序为葛店→香港路，seg 与站名轴同向 */
+      const rightSegments = [
+        { seg: 0, y: 2, c: "bar" },
+        { seg: 1, y: 2, c: "bar" },
+        { seg: 2, y: 6, c: "bar" },
+        { seg: 3, y: 4, c: "bar" },
+        { seg: 4, y: 4, c: "bar" },
+        { seg: 11, y: 1, c: "bar" },
+        { seg: 12, y: 1, c: "bar" },
+        { seg: 11, y: 10, c: "bar warn" },
+        { seg: 12, y: 10, c: "bar danger" },
+        { seg: 16, y: 4, c: "bar" },
+        { seg: 17, y: 4, c: "bar" },
+        { seg: 16, y: 14, c: "bar" },
+        { seg: 17, y: 14, c: "bar" },
+        { seg: 22, y: 3, c: "bar warn" },
+        { seg: 23, y: 3, c: "bar warn" },
+        { seg: 23, y: 15, c: "bar danger" },
       ];
       function buildYAxis(id) {
         const wrap = document.getElementById(id);
@@ -356,35 +407,80 @@
         wrap.innerHTML = times.map((t) => "<div>" + t + "</div>").join("");
       }
 
-      function buildStations(id) {
+      function buildStations(id, reversed) {
         const wrap = document.getElementById(id);
-        wrap.innerHTML = stations.map((name) => {
+        wrap.style.setProperty("--sit-station-count", String(stations.length));
+        const list = reversed ? stations.slice().reverse() : stations;
+        wrap.innerHTML = list.map((name) => {
           const verticalName = Array.from(name).map((char) => `<i>${char}</i>`).join("");
           return `<div class="sit-station"><span>${verticalName}</span></div>`;
         }).join("");
       }
 
-      function buildBars(id, bars) {
+      function barClass(tone) {
+        if (tone === "warn") return "sit-bar warn";
+        if (tone === "danger") return "sit-bar danger";
+        return "sit-bar";
+      }
+
+      function buildBars(id, segments) {
         const wrap = document.getElementById(id);
-        const col = 32;
+        if (!wrap) return;
         const plotHeight = 210;
         const plotRows = 20;
         const row = plotHeight / plotRows;
         const barHeight = 4;
-        wrap.innerHTML = bars.map((bar) => {
-          const top = Math.max(6, Math.min(bar.y * row + 6, plotHeight - barHeight - 6));
-          return `<span class="sit-bar ${bar.c}" style="left:${bar.x * col + 2}px;top:${top}px;width:${bar.w * col - 6}px"></span>`;
-        }).join("");
+        const segCount = stations.length - 1;
+        const buckets = Array.from({ length: segCount }, function () {
+          return [];
+        });
+        segments.forEach(function (bar) {
+          if (bar.seg >= 0 && bar.seg < segCount) buckets[bar.seg].push(bar);
+        });
+        wrap.innerHTML =
+          '<div class="sit-interval-grid">' +
+          buckets
+            .map(function (bars, segIndex) {
+              const barsHtml = bars
+                .map(function (bar) {
+                  const top = Math.max(6, Math.min(bar.y * row + 6, plotHeight - barHeight - 6));
+                  const tone = String(bar.c || "bar")
+                    .replace(/^bar\s*/, "")
+                    .trim();
+                  return (
+                    '<span class="' +
+                    barClass(tone) +
+                    '" style="top:' +
+                    top +
+                    'px" title="区间 ' +
+                    (segIndex + 1) +
+                    '"></span>'
+                  );
+                })
+                .join("");
+              return '<div class="sit-interval-cell">' + barsHtml + "</div>";
+            })
+            .join("") +
+          "</div>";
       }
 
-      buildYAxis("left-y");
-      buildYAxis("right-y");
-      buildStations("left-stations");
-      buildStations("right-stations");
-      buildBars("left-plot", leftBars);
-      buildBars("right-plot", rightBars);
+      function initWaterfallCharts() {
+        buildYAxis("left-y");
+        buildYAxis("right-y");
+        buildStations("left-stations", false);
+        buildStations("right-stations", true);
+        buildBars("left-plot", leftSegments);
+        buildBars("right-plot", rightSegments);
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initWaterfallCharts);
+      } else {
+        initWaterfallCharts();
+      }
     </script>
     <script src="assets/js/map-gis.js"></script>
+    <script src="assets/js/map-situation-gis.js"></script>
     <script src="assets/js/map-situation.js"></script>
   </body>
 </html>

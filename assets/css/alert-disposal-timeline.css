@@ -1,0 +1,139 @@
+/* 处警记录 — 告警详情 / 待办告警详情共用 */
+.alert-side-body {
+  padding: 14px 16px;
+  font-size: 12px;
+  color: #dce8f8;
+  line-height: 1.6;
+}
+
+.alert-disposal-scroll {
+  max-height: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2px 8px 2px 2px;
+}
+
+.alert-disposal-empty {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.alert-timeline {
+  padding: 0;
+}
+
+.alert-timeline-item {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  margin-bottom: 18px;
+}
+
+.alert-timeline-item--last {
+  margin-bottom: 0;
+}
+
+.alert-timeline-item__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.alert-timeline-item__dot {
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  min-height: 12px;
+  border-radius: 50%;
+  background: #64748b;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.alert-timeline-item__line {
+  flex: 1;
+  width: 2px;
+  min-height: 14px;
+  margin-top: 4px;
+  background: rgba(148, 163, 184, 0.22);
+  border-radius: 1px;
+}
+
+.alert-timeline-item--pass .alert-timeline-item__dot {
+  background: #22c55e;
+}
+
+.alert-timeline-item--wait .alert-timeline-item__dot {
+  background: #f59e0b;
+}
+
+.alert-timeline-item--reject .alert-timeline-item__dot {
+  background: #ef4444;
+}
+
+.alert-timeline-item__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-time {
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.alert-disposal-text {
+  font-size: 12px;
+  color: #dce8f8;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.alert-disposal-detail {
+  margin-top: 12px;
+}
+
+.alert-disposal-detail > div {
+  font-size: 12px;
+  color: #cbd5e1;
+  line-height: 1.55;
+  margin-bottom: 4px;
+}
+
+.alert-disposal-detail > div:last-child {
+  margin-bottom: 0;
+}
+
+.alert-uav-shot__highlight {
+  color: #ff5c7a;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+.alert-disposal-result--pass {
+  color: #34d399;
+}
+
+.alert-disposal-result--reject {
+  color: #fb7185;
+}
+
+.todo-alarm-side-card--disposal .alert-side-body {
+  padding: 0;
+}
+
+.todo-alarm-layout__aside .alert-disposal-scroll {
+  flex: 1;
+  min-height: 0;
+  max-height: min(560px, calc(88vh - 200px));
+}
+
+@media (max-width: 900px) {
+  .todo-alarm-layout__aside .alert-disposal-scroll {
+    max-height: min(360px, 42vh);
+  }
+}

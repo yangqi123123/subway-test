@@ -111,6 +111,7 @@
   var defaultAlarmAirportPair = [
     {
       airportName: "机场1",
+      flightPlan: "8号线车辆段常规巡检",
       airportStatus: "在线",
       droneName: "001",
       droneStatus: "在线",
@@ -121,6 +122,7 @@
     },
     {
       airportName: "机场2",
+      flightPlan: "长江新区临时巡检",
       airportStatus: "在线",
       droneName: "002",
       droneStatus: "在线",
@@ -143,17 +145,28 @@
         battery: item.battery,
         ready: item.ready,
         readyText: item.readyText,
+        flightPlan: item.flightPlan,
         distance: item.distance,
       };
     });
   }
 
+
+  function gisAirportCardFlightPlanRow(item) {
+    var plan = item.flightPlan || "-";
+    return (
+      '<div class="gis-airport-card__row gis-airport-card__row--plan"><span class="gis-airport-card__label">飞行计划:</span><span class="gis-airport-card__value">' +
+      plan +
+      "</span></div>"
+    );
+  }
   function buildAlarmAirportCardHtml(item) {
     return (
       '<div class="gis-airport-card gis-alarm-carousel__card" data-carousel-card>' +
       '<div class="gis-airport-card__row"><span class="gis-airport-card__label">机场名称:</span><span class="gis-airport-card__value">' +
       item.airportName +
       "</span></div>" +
+      gisAirportCardFlightPlanRow(item) +
       '<div class="gis-airport-card__row"><span class="gis-airport-card__label">当前状态:</span><span class="gis-airport-status"><i class="fa-solid fa-circle"></i>' +
       item.airportStatus +
       "</span></div>" +
@@ -295,6 +308,7 @@
             '<div class="gis-airport-card__row"><span class="gis-airport-card__label">机场名称:</span><span class="gis-airport-card__value">' +
             item.airportName +
             "</span></div>" +
+            gisAirportCardFlightPlanRow(item) +
             '<div class="gis-airport-card__row"><span class="gis-airport-card__label">当前状态:</span><span class="gis-airport-status"><i class="fa-solid fa-circle"></i>' +
             item.airportStatus +
             "</span></div>" +
@@ -340,7 +354,7 @@
       panel.innerHTML =
         '<div class="gis-detail-head">' +
         '<div class="gis-detail-title">详情</div>' +
-        '<button type="button" class="gis-detail-close">×</button>' +
+        '<button type="button" class="wh-modal-close gis-detail-close" aria-label="关闭">×</button>' +
         "</div>" +
         '<div class="gis-detail-body"></div>';
       container.appendChild(panel);
@@ -381,8 +395,8 @@
       latestTime: "2026-03-05 08:27:27",
       status: "已复核",
       airports: [
-        { airportName: "机场1", airportStatus: "在线", droneName: "001", droneStatus: "在线", battery: "100%", ready: true, readyText: "满足", distance: "1.3km" },
-        { airportName: "机场2", airportStatus: "在线", droneName: "002", droneStatus: "在线", battery: "30%", ready: false, readyText: "不满足", distance: "5.3km" },
+        { airportName: "机场1", flightPlan: "8号线车辆段常规巡检", airportStatus: "在线", droneName: "001", droneStatus: "在线", battery: "100%", ready: true, readyText: "满足", distance: "1.3km" },
+        { airportName: "机场2", flightPlan: "长江新区临时巡检", airportStatus: "在线", droneName: "002", droneStatus: "在线", battery: "30%", ready: false, readyText: "不满足", distance: "5.3km" },
       ],
     },
     {
@@ -394,7 +408,7 @@
       latestTime: "2026-03-05 08:04:18",
       status: "已复核",
       airports: [
-        { airportName: "机场1", airportStatus: "在线", droneName: "001", droneStatus: "在线", battery: "92%", ready: true, readyText: "满足", distance: "2.1km" },
+        { airportName: "机场1", flightPlan: "8号线车辆段常规巡检", airportStatus: "在线", droneName: "001", droneStatus: "在线", battery: "92%", ready: true, readyText: "满足", distance: "2.1km" },
       ],
     },
     {
@@ -406,7 +420,7 @@
       latestTime: "2026-03-05 09:18:44",
       status: "已复核",
       airports: [
-        { airportName: "机场2", airportStatus: "在线", droneName: "002", droneStatus: "在线", battery: "64%", ready: true, readyText: "满足", distance: "2.8km" },
+        { airportName: "机场2", flightPlan: "青山站周期巡检", airportStatus: "在线", droneName: "002", droneStatus: "在线", battery: "64%", ready: true, readyText: "满足", distance: "2.8km" },
       ],
     },
   ];
@@ -442,8 +456,8 @@
     var detailApi = wireDetailPanel(detailEls);
     var config = options || {};
     var airportDetails = config.airportDetails || [
-      { ll: [30.588, 114.302], airportName: "机场1", droneName: "001", battery: "100%", ready: true, readyText: "满足" },
-      { ll: [30.602, 114.338], airportName: "机场2", droneName: "002", battery: "86%", ready: true, readyText: "满足" },
+      { ll: [30.588, 114.302], airportName: "机场1", flightPlan: "8号线车辆段常规巡检", droneName: "001", battery: "100%", ready: true, readyText: "满足" },
+      { ll: [30.602, 114.338], airportName: "机场2", flightPlan: "青山站周期巡检", droneName: "002", battery: "86%", ready: true, readyText: "满足" },
     ];
     var alarmDetails = config.alarmDetails || defaultAlarmDetails;
 
@@ -453,6 +467,10 @@
       zoomControl: config.zoomControl !== false,
     });
     if (!map) return null;
+
+    if (config.flightTrack) {
+      return mountCockpitFlightTrackLayers(map, config.flightTrack, config);
+    }
 
     (config.polylines || []).forEach(function (line) {
       L.polyline(line.points, {
@@ -491,6 +509,7 @@
                 battery: item.battery,
                 ready: item.ready,
                 readyText: item.readyText,
+                flightPlan: item.flightPlan,
               },
             ],
             { hideCockpitNav: config.hideCockpitNav !== false }
@@ -513,6 +532,210 @@
     });
 
     return { map: map, detailApi: detailApi, patrolLayers: patrolLayers };
+  };
+
+  function pathLengthM(points) {
+    var len = 0;
+    for (var i = 1; i < points.length; i++) len += haversineM(points[i - 1], points[i]);
+    return len;
+  }
+
+  function splitPathAtFraction(points, frac) {
+    var f = Math.max(0, Math.min(1, frac));
+    if (points.length < 2) {
+      return { traveled: points.slice(), remaining: points.slice(), drone: points[0] || [0, 0] };
+    }
+    var total = pathLengthM(points);
+    if (total <= 0) {
+      return { traveled: [points[0]], remaining: [points[0]], drone: points[0] };
+    }
+    var target = total * f;
+    var traveled = [points[0]];
+    var acc = 0;
+    for (var i = 1; i < points.length; i++) {
+      var seg = haversineM(points[i - 1], points[i]);
+      if (acc + seg >= target) {
+        var r = (target - acc) / seg;
+        var mid = [
+          points[i - 1][0] + (points[i][0] - points[i - 1][0]) * r,
+          points[i - 1][1] + (points[i][1] - points[i - 1][1]) * r,
+        ];
+        traveled.push(mid);
+        var remaining = [mid];
+        for (var j = i; j < points.length; j++) remaining.push(points[j]);
+        return { traveled: traveled, remaining: remaining, drone: mid };
+      }
+      traveled.push(points[i]);
+      acc += seg;
+    }
+    return { traveled: points, remaining: [points[points.length - 1]], drone: points[points.length - 1] };
+  }
+
+  function bearingDeg(a, b) {
+    var lat1 = (a[0] * Math.PI) / 180;
+    var lat2 = (b[0] * Math.PI) / 180;
+    var dLng = ((b[1] - a[1]) * Math.PI) / 180;
+    var y = Math.sin(dLng) * Math.cos(lat2);
+    var x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+    return (Math.atan2(y, x) * 180) / Math.PI;
+  }
+
+  function makeFlightAirportIcon() {
+    return L.divIcon({
+      className: "cockpit-flight-marker",
+      html:
+        '<div class="cockpit-flight-marker__wrap">' +
+        '<div class="cockpit-flight-marker__airport"><i class="fa-solid fa-plane-departure"></i></div>' +
+        '<span class="cockpit-flight-marker__label">机场</span></div>',
+      iconSize: [56, 62],
+      iconAnchor: [28, 30],
+    });
+  }
+
+  function makeFlightTargetIcon() {
+    return L.divIcon({
+      className: "cockpit-flight-marker",
+      html:
+        '<div class="cockpit-flight-marker__wrap">' +
+        '<div class="cockpit-flight-marker__target"><i class="fa-solid fa-location-dot"></i></div>' +
+        '<span class="cockpit-flight-marker__label cockpit-flight-marker__label--target">目标点</span></div>',
+      iconSize: [56, 68],
+      iconAnchor: [28, 52],
+    });
+  }
+
+  function makeFlightDroneIcon(heading) {
+    var deg = heading || 0;
+    return L.divIcon({
+      className: "cockpit-flight-marker",
+      html:
+        '<div class="cockpit-drone-marker" style="transform:rotate(' +
+        deg +
+        'deg)">' +
+        '<div class="cockpit-drone-marker__fov"></div>' +
+        '<div class="cockpit-drone-marker__body"><i class="fa-solid fa-location-arrow"></i></div>' +
+        "</div>",
+      iconSize: [72, 72],
+      iconAnchor: [36, 36],
+    });
+  }
+
+  function mountCockpitFlightTrackLayers(map, trackOpts, config) {
+    trackOpts = trackOpts || {};
+    var path = trackOpts.path || [
+      [30.6042, 114.3728],
+      [30.5968, 114.3659],
+      [30.5882, 114.3543],
+      [30.5784, 114.3442],
+      [30.5686, 114.3346],
+    ];
+    var airportLl = trackOpts.airport || path[0];
+    var targetLl = trackOpts.target || path[path.length - 1];
+    var lineWeight = trackOpts.weight || 5;
+    var lineColor = trackOpts.color || "#3b82f6";
+
+    var trackGroup = L.layerGroup().addTo(map);
+    var layers = { traveled: null, remaining: null, drone: null, airport: null, target: null };
+
+    function drawProgress(frac) {
+      if (layers.traveled) trackGroup.removeLayer(layers.traveled);
+      if (layers.remaining) trackGroup.removeLayer(layers.remaining);
+      if (layers.drone) trackGroup.removeLayer(layers.drone);
+
+      var split = splitPathAtFraction(path, frac);
+      if (split.traveled.length >= 2) {
+        layers.traveled = L.polyline(split.traveled, {
+          color: lineColor,
+          weight: lineWeight,
+          opacity: 1,
+          lineCap: "round",
+          lineJoin: "round",
+        }).addTo(trackGroup);
+      }
+      if (split.remaining.length >= 2) {
+        layers.remaining = L.polyline(split.remaining, {
+          color: lineColor,
+          weight: lineWeight,
+          opacity: 0.95,
+          dashArray: "10 8",
+          lineCap: "round",
+          lineJoin: "round",
+        }).addTo(trackGroup);
+      }
+
+      var next =
+        split.remaining.length >= 2
+          ? split.remaining[1]
+          : split.traveled.length >= 2
+            ? split.traveled[split.traveled.length - 1]
+            : split.drone;
+      var prev =
+        split.traveled.length >= 2
+          ? split.traveled[split.traveled.length - 2]
+          : path[0];
+      var heading = bearingDeg(prev, next);
+      layers.drone = L.marker(split.drone, { icon: makeFlightDroneIcon(heading), zIndexOffset: 800 }).addTo(
+        trackGroup
+      );
+    }
+
+    layers.airport = L.marker(airportLl, { icon: makeFlightAirportIcon(), zIndexOffset: 600 }).addTo(trackGroup);
+    layers.target = L.marker(targetLl, { icon: makeFlightTargetIcon(), zIndexOffset: 600 }).addTo(trackGroup);
+
+    var progress = trackOpts.progress != null ? trackOpts.progress : 0.42;
+    drawProgress(progress);
+
+    try {
+      map.fitBounds(L.latLngBounds(path), { padding: [28, 28], maxZoom: trackOpts.maxZoom || 15 });
+    } catch (e) {}
+
+    var animId = null;
+    if (trackOpts.animate !== false) {
+      var p = progress;
+      var dir = 1;
+      animId = setInterval(function () {
+        p += dir * 0.006;
+        if (p >= 0.78) dir = -1;
+        if (p <= 0.18) dir = 1;
+        drawProgress(p);
+      }, 120);
+    }
+
+    return {
+      map: map,
+      trackGroup: trackGroup,
+      stopAnimation: function () {
+        if (animId) {
+          clearInterval(animId);
+          animId = null;
+        }
+      },
+      setProgress: drawProgress,
+    };
+  }
+
+  window.WuhanGIS.mountCockpitFlightTrackMap = function (containerId, options) {
+    if (typeof L === "undefined") return null;
+    var container = typeof containerId === "string" ? document.getElementById(containerId) : containerId;
+    if (!container) return null;
+    options = options || {};
+    var trackOpts = options.flightTrack || options;
+    var path = trackOpts.path || [
+      [30.6042, 114.3728],
+      [30.5968, 114.3659],
+      [30.5882, 114.3543],
+      [30.5784, 114.3442],
+      [30.5686, 114.3346],
+    ];
+
+    var map = createSharedMap(container, {
+      center: options.center || path[Math.floor(path.length / 2)],
+      zoom: options.zoom || 14,
+      zoomControl: options.zoomControl === true,
+    });
+    if (!map) return null;
+
+    return mountCockpitFlightTrackLayers(map, trackOpts, options);
   };
 
   function haversineM(a, b) {
@@ -893,6 +1116,7 @@
               '<div class="gis-airport-card__row"><span class="gis-airport-card__label">机场名称:</span><span class="gis-airport-card__value">' +
               item.airportName +
               "</span></div>" +
+              gisAirportCardFlightPlanRow(item) +
               '<div class="gis-airport-card__row"><span class="gis-airport-card__label">当前状态:</span><span class="gis-airport-status"><i class="fa-solid fa-circle"></i>' +
               item.airportStatus +
               "</span></div>" +
@@ -1224,6 +1448,7 @@
           renderAirportDronePanel([
             {
               airportName: item.name,
+              flightPlan: item.name === "机场1" ? "8号线车辆段常规巡检" : "青山站周期巡检",
               airportStatus: "在线",
               droneName: item.name === "机场1" ? "001" : "002",
               droneStatus: "在线",
@@ -1594,7 +1819,6 @@
     var coordPanel = document.getElementById("gis-coord-panel");
     var coordLngInput = document.getElementById("gis-coord-lng");
     var coordLatInput = document.getElementById("gis-coord-lat");
-    var coordAltInput = document.getElementById("gis-coord-alt");
     var coordPickMapBtn = document.getElementById("gis-coord-pick-map");
     var coordLocateBtn = document.getElementById("gis-coord-locate");
     var coordCloseBtn = document.getElementById("gis-coord-close");
@@ -1615,21 +1839,12 @@
       var lat = parseFloat(String(coordLatInput.value).trim());
       if (!isFinite(lng) || !isFinite(lat)) return null;
       if (lng < -180 || lng > 180 || lat < -90 || lat > 90) return null;
-      return {
-        lng: lng,
-        lat: lat,
-        alt: coordAltInput ? String(coordAltInput.value).trim() : "",
-      };
+      return { lng: lng, lat: lat };
     }
 
-    function setCoordInputs(lng, lat, alt) {
+    function setCoordInputs(lng, lat) {
       if (coordLngInput) coordLngInput.value = Number(lng).toFixed(6);
       if (coordLatInput) coordLatInput.value = Number(lat).toFixed(6);
-      if (coordAltInput && alt != null && alt !== "") coordAltInput.value = alt;
-    }
-
-    function mockElevation(lat, lng) {
-      return (18 + Math.abs(Math.sin(lat * 120 + lng * 80)) * 12).toFixed(1);
     }
 
     function showCoordMarker(lat, lng) {
@@ -1683,7 +1898,7 @@
         alert("请输入有效的经度和纬度。");
         return;
       }
-      setCoordInputs(coords.lng, coords.lat, coords.alt);
+      setCoordInputs(coords.lng, coords.lat);
       showCoordMarker(coords.lat, coords.lng);
       map.flyTo([coords.lat, coords.lng], 16, { duration: 0.85 });
     }
@@ -1775,7 +1990,7 @@
 
     map.on("click", function (e) {
       if (coordMapPickActive) {
-        setCoordInputs(e.latlng.lng, e.latlng.lat, mockElevation(e.latlng.lat, e.latlng.lng));
+        setCoordInputs(e.latlng.lng, e.latlng.lat);
         showCoordMarker(e.latlng.lat, e.latlng.lng);
         stopCoordMapPick();
         return;

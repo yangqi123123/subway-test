@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="assets/css/theme.css" />
     <link rel="stylesheet" href="assets/css/map-gis.css" />
+    <link rel="stylesheet" href="assets/css/map-alerts.css" />
+    <link rel="stylesheet" href="assets/css/alert-disposal-timeline.css" />
+    <link rel="stylesheet" href="assets/css/expert-review-modal.css" />
     <style>
       .map-breadcrumb {
         margin: 16px 16px 0;
@@ -202,12 +205,6 @@
         background: #2d8cf0;
         vertical-align: -3px;
       }
-      .alert-side-body {
-        padding: 14px 16px;
-        font-size: 12px;
-        color: #dce8f8;
-        line-height: 1.6;
-      }
       .alert-detail-block {
         border: 1px solid rgba(148, 163, 184, 0.18);
         background: linear-gradient(180deg, rgba(9, 18, 36, 0.96) 0%, rgba(7, 14, 29, 0.96) 100%);
@@ -278,35 +275,6 @@
         background: #fbbe00;
         vertical-align: -1px;
       }
-      .alert-timeline {
-        max-height: 222px;
-        overflow-y: auto;
-        padding-left: 22px;
-        border-left: 2px solid rgba(226, 232, 240, 0.18);
-      }
-      .alert-timeline-item {
-        position: relative;
-        margin-bottom: 22px;
-      }
-      .alert-timeline-item::before {
-        content: "";
-        position: absolute;
-        left: -29px;
-        top: 4px;
-        width: 14px;
-        height: 14px;
-        border-radius: 999px;
-        background: #cbd5e1;
-      }
-      .alert-time {
-        margin-bottom: 8px;
-        color: #94a3b8;
-        font-weight: 600;
-      }
-      .alert-disposal-text {
-        color: #dce8f8;
-        font-weight: 600;
-      }
       .alert-uav-shot {
         max-height: 218px;
         overflow-y: auto;
@@ -320,11 +288,6 @@
         font-size: 14px;
         color: #dce8f8;
         line-height: 1.7;
-      }
-      .alert-uav-shot__highlight {
-        color: #ff5c7a;
-        font-size: inherit;
-        font-weight: 700;
       }
       .alert-uav-shot img {
         width: 220px;
@@ -376,76 +339,71 @@
         <span class="map-breadcrumb__sep">&gt;&gt;</span>
         <span class="map-breadcrumb__current">告警信息</span>
       </nav>
-      <div class="px-4 pt-3">
-        <div class="flex items-end gap-1">
-          <button id="tab-list" type="button" class="alert-tab active">告警信息</button>
-          <button id="tab-detail" type="button" class="alert-tab">告警详情</button>
-        </div>
-      </div>
-
-      <section id="view-list" class="px-4 pb-4">
+      <section id="view-list" class="px-4 pb-4 pt-3">
         <div class="alert-panel overflow-hidden">
-          <div id="map-container" class="alert-map"></div>
-        </div>
-
-          <div class="alert-panel mt-4 p-4">
-          <div class="alert-section-title mb-4">查询</div>
-          <div class="grid grid-cols-6 gap-4 items-end">
-            <div class="alert-field">
-              <div class="alert-label">告警处理状态</div>
-              <select id="filter-status" class="alert-select">
-                <option value="">全部</option>
-                <option value="已复核">已复核</option>
-                <option value="未处理">未处理</option>
-              </select>
-            </div>
-            <div class="alert-field col-span-2">
-              <div class="alert-label">时间范围</div>
-              <div class="grid grid-cols-2 gap-2">
-                <input id="filter-start" type="datetime-local" class="alert-input" value="2025-07-09T00:00" />
-                <input id="filter-end" type="datetime-local" class="alert-input" value="2026-01-19T10:46" />
-              </div>
-            </div>
-            <div class="alert-field">
-              <div class="alert-label">告警来源</div>
-              <select id="filter-source" class="alert-select">
-                <option value="">传统+AI</option>
-                <option value="传统">传统</option>
-                <option value="AI">AI</option>
-              </select>
-            </div>
-            <div class="alert-field">
-              <div class="alert-label">区间</div>
-              <div class="grid grid-cols-2 gap-2">
-                <select id="filter-section-a" class="alert-select">
-                  <option value="">起始区间</option>
-                  <option value="新港线-竹叶山北">新港线-竹叶山北</option>
-                  <option value="竹叶山北-赵家条">竹叶山北-赵家条</option>
-                </select>
-                <select id="filter-section-b" class="alert-select">
-                  <option value="">终止区间</option>
-                  <option value="竹叶山北-赵家条">竹叶山北-赵家条</option>
-                  <option value="赵家条-三阳路">赵家条-三阳路</option>
-                </select>
-              </div>
-            </div>
-            <div class="flex items-center justify-end gap-2">
-              <button id="btn-search" type="button" class="alert-btn primary">搜索</button>
-              <button id="btn-reset" type="button" class="alert-btn ghost">重置</button>
-              <button id="btn-export" type="button" class="alert-btn ghost">导出</button>
-            </div>
+          <div class="alert-sit-map-wrap">
+            <div class="px-3 pt-2 text-[12px] font-semibold text-cyan-100">GIS地图</div>
+            <div id="alerts-situation-map" class="alert-sit-map"></div>
           </div>
         </div>
 
         <div class="alert-panel mt-4">
-          <div class="px-4 pt-4 pb-2 alert-section-title">列表</div>
-          <div class="overflow-auto">
-            <table class="w-full alert-table">
+          <div class="px-4 pt-4 pb-2 alert-section-title">告警列表</div>
+          <div class="alert-filter-bar px-4 pb-3">
+            <div class="alert-filter-grid">
+              <div class="alert-filter-field">
+                <label class="wh-filter-label" for="alert-filter-handle-mode">告警处理状态</label>
+                <select id="alert-filter-handle-mode" class="wh-input w-full h-8 px-2 text-xs">
+                  <option value="">全部</option>
+                  <option value="AI">AI</option>
+                  <option value="传统">传统</option>
+                  <option value="AI+传统">AI+传统</option>
+                </select>
+              </div>
+              <div class="alert-filter-field alert-filter-field--range">
+                <label class="wh-filter-label">时间范围</label>
+                <div class="alert-filter-range">
+                  <input id="alert-filter-time-start" type="datetime-local" class="wh-input h-8 px-2 text-xs flex-1 min-w-0" />
+                  <span class="alert-filter-range-sep">至</span>
+                  <input id="alert-filter-time-end" type="datetime-local" class="wh-input h-8 px-2 text-xs flex-1 min-w-0" />
+                </div>
+              </div>
+              <div class="alert-filter-field">
+                <label class="wh-filter-label" for="alert-filter-source">告警来源</label>
+                <select id="alert-filter-source" class="wh-input w-full h-8 px-2 text-xs">
+                  <option value="">全部</option>
+                  <option value="AI">AI</option>
+                  <option value="传统">传统</option>
+                  <option value="AI+传统">AI+传统</option>
+                </select>
+              </div>
+              <div class="alert-filter-field alert-filter-field--range">
+                <label class="wh-filter-label">区间</label>
+                <div class="alert-filter-range">
+                  <select id="alert-filter-interval-start" class="wh-input h-8 px-2 text-xs flex-1 min-w-0">
+                    <option value="">起始区间</option>
+                  </select>
+                  <span class="alert-filter-range-sep">至</span>
+                  <select id="alert-filter-interval-end" class="wh-input h-8 px-2 text-xs flex-1 min-w-0">
+                    <option value="">终止区间</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="alert-filter-actions">
+              <button id="alert-filter-search" type="button" class="px-5 h-8 rounded text-xs wh-btn-primary">查询</button>
+              <button id="alert-filter-reset" type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">重置</button>
+              <button id="alert-filter-export" type="button" class="px-5 h-8 rounded text-xs wh-btn-gold">导出</button>
+            </div>
+          </div>
+          <div class="overflow-auto px-2 pb-3">
+            <table class="alert-tree-table">
               <thead>
                 <tr>
+                  <th style="width:32px"></th>
                   <th>项目名称</th>
                   <th>报警位置</th>
-                  <th>报警区域</th>
+                  <th>报警区间</th>
                   <th>开始时间</th>
                   <th>最新时间</th>
                   <th>告警来源</th>
@@ -457,20 +415,16 @@
                   <th>操作</th>
                 </tr>
               </thead>
-              <tbody id="alert-table-body"></tbody>
+              <tbody id="alert-tree-body"></tbody>
             </table>
-          </div>
-          <div class="px-4 py-3 flex items-center justify-end gap-3 border-t border-cyan-400/10 alert-pager">
-            <span>共 1 条</span>
-            <span>10 条/页</span>
-            <button class="w-7 h-7 rounded wh-btn-ghost text-xs" type="button">‹</button>
-            <button class="w-7 h-7 rounded wh-btn-primary text-xs" type="button">1</button>
-            <button class="w-7 h-7 rounded wh-btn-ghost text-xs" type="button">›</button>
           </div>
         </div>
       </section>
 
-      <section id="view-detail" class="px-4 pb-4 hidden-view">
+      <section id="view-detail" class="px-4 pb-4 pt-3 hidden-view">
+        <button id="alert-back-list" type="button" class="alert-back-list mb-3">
+          <i class="fa-solid fa-arrow-left"></i> 返回告警列表
+        </button>
         <div class="alert-detail-shell">
           <div class="min-w-0">
             <div class="alert-detail-map-wrap">
@@ -502,225 +456,73 @@
       </section>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    
+    <div id="expert-review-modal-mask" class="expert-modal-mask" role="dialog" aria-modal="true">
+      <div class="expert-modal">
+        <div class="expert-modal__head">
+          <h3 class="expert-modal__title">编辑复核情况</h3>
+          <button type="button" class="wh-modal-close expert-modal__close" data-action="close-review-modal" aria-label="关闭">×</button>
+        </div>
+        <form id="expert-review-form" class="expert-modal__body">
+          <div class="expert-form-row">
+            <label class="expert-form-label">是否误报</label>
+            <div class="expert-radio-group">
+              <label><input type="radio" name="review-false-alarm" value="非误报" checked /> 非误报</label>
+              <label><input type="radio" name="review-false-alarm" value="误报" /> 误报</label>
+            </div>
+          </div>
+          <div class="expert-form-row" data-review-field-group="detail">
+            <label class="expert-form-label" for="review-level-adjust">报警级别调整</label>
+            <select id="review-level-adjust" class="expert-select">
+              <option value="一级告警">一级告警</option>
+              <option value="二级告警">二级告警</option>
+              <option value="三级告警">三级告警</option>
+            </select>
+          </div>
+          <div class="expert-form-row" data-review-field-group="detail">
+            <label class="expert-form-label" for="review-scene">现场情况</label>
+            <textarea id="review-scene" class="expert-textarea" placeholder="请填写现场复核情况"></textarea>
+          </div>
+          <div class="expert-form-row" data-review-field-group="detail">
+            <label class="expert-form-label">现场照片</label>
+            <div id="review-modal-photos" class="expert-photo-grid"></div>
+            <p class="expert-photo-upload"><input id="review-photo-input" type="file" accept="image/*" multiple /> 支持多图上传</p>
+          </div>
+        </form>
+        <div class="expert-modal__foot">
+          <button type="button" class="px-4 h-8 rounded text-[12px] wh-btn-ghost" data-action="close-review-modal">取消</button>
+          <button type="button" class="px-4 h-8 rounded bg-[#178df2] text-white text-[12px]" data-action="save-review-modal">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="alert-audit-modal-mask" class="expert-modal-mask" role="dialog" aria-modal="true">
+      <div class="expert-modal">
+        <div class="expert-modal__head">
+          <h3 class="expert-modal__title">告警审核</h3>
+          <button type="button" class="wh-modal-close expert-modal__close" data-action="close-audit-modal" aria-label="关闭">×</button>
+        </div>
+        <div class="expert-modal__body">
+          <div class="expert-form-row">
+            <label class="expert-form-label" for="audit-opinion">审批意见</label>
+            <textarea id="audit-opinion" class="expert-textarea" placeholder="请填写审批意见"></textarea>
+          </div>
+        </div>
+        <div class="expert-modal__foot">
+          <button type="button" class="px-4 h-8 rounded text-[12px] border border-rose-400/50 text-rose-200" data-action="audit-reject">驳回</button>
+          <button type="button" class="px-4 h-8 rounded bg-[#178df2] text-white text-[12px]" data-action="audit-pass">审批通过</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="expert-toast" class="expert-toast" role="status"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="assets/js/menu-config.js"></script>
     <script src="assets/js/shell.js"></script>
     <script src="assets/js/map-gis.js"></script>
-    <script>
-      const alerts = [
-        {
-          id: 1,
-          projectName: "地铁8号线-小洪山->洪山路",
-          alarmPosition: "里程Z23+200 左线外侧37米",
-          alarmArea: "地铁8号线-小洪山->洪山路",
-          startTime: "2026-04-07 02:05:50",
-          latestTime: "2026-04-07 02:05:50",
-          source: "传统+AI",
-          status: "已复核",
-          mistaken: "否",
-          detail: "竹叶山北地铁盾构施工地有打桩作业",
-          image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=220&q=80",
-          params: "1",
-          latlng: [30.5274, 114.3427],
-          mapCenter: [30.5274, 114.3427],
-          zoom: 16,
-          type: "疑似钻探施工",
-          code: "7.0.345.S",
-          section: "地铁8号线-小洪山->洪山路",
-          location: "里程Z23+200 左线外侧37米",
-          lastTime: "2026-04-07 02:05:50",
-          moment: "已生成",
-          patrolAction: "生成  查看  典型事件标注",
-          alarmRecord: {
-            code: "7.0.345.S",
-            duration: "nu秒",
-            time: "04-07 02:05:50 ~"
-          },
-          uavRecord: {
-            time: "2026-04-07 10:20",
-            user: "wangweiwei",
-            mistaken: "否",
-            level: "一级告警",
-            situation: "金融街T2大楼破拆机拆除",
-            image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=520&q=80"
-          },
-          disposalRecord: [
-            { time: "2026-04-07 02:05:50", text: "告警产生，系统发送告警信息" },
-            { time: "2026-04-07 10:08:50", text: "hudanfeng确认接受工单，即将前往现场" },
-            { time: "2026-04-07 10:10:50", text: "hudanfeng提交现场复核情况", review: true }
-          ]
-        }
-      ];
-
-      let currentAlert = alerts[0];
-      let detailMapInited = false;
-
-      function renderTable(rows) {
-        const body = document.getElementById("alert-table-body");
-        body.innerHTML = rows.map((item) => `
-          <tr>
-            <td>${item.projectName}</td>
-            <td>${item.alarmPosition}</td>
-            <td>${item.alarmArea}</td>
-            <td>${item.startTime}</td>
-            <td>${item.latestTime}</td>
-            <td>${item.source}</td>
-            <td class="${item.status === "已复核" ? "alert-status-done" : "alert-status-pending"}">${item.status}</td>
-            <td>${item.mistaken}</td>
-            <td>${item.detail}</td>
-            <td><img src="${item.image}" alt="" class="h-14 w-20 rounded object-cover border border-[#e5edf7]" /></td>
-            <td>${item.params}</td>
-            <td><button type="button" class="alert-link" data-action="open-detail" data-id="${item.id}">详情</button></td>
-          </tr>
-        `).join("");
-      }
-
-      function fillDetail(item) {
-        document.getElementById("alert-detail-grid").innerHTML = [
-          ["报警类型", item.type],
-          ["报警区间", item.section],
-          ["位置", item.location],
-          ["测点编码", '<span class="alert-code-tag">' + item.code + '</span>'],
-          ["报警开始时间", item.startTime],
-          ["最新报警时间", item.lastTime],
-          ["时域图", "已生成"],
-          ["时域图操作", '<span class="alert-detail-link">生成</span><span class="alert-detail-link">查看</span><span class="alert-detail-link">典型事件标注</span>'],
-          ["", ""]
-        ].map(([k, v]) => `
-          <div class="alert-detail-item">
-            <div class="alert-detail-key">${k || "&nbsp;"}</div>
-            <div class="alert-detail-val">${v || "&nbsp;"}</div>
-          </div>
-        `).join("");
-
-        document.getElementById("record-alarm").innerHTML = `
-          <div class="flex items-center justify-center gap-3 mb-3">
-            <span class="alert-dot"></span>
-            <span class="alert-code-tag">${item.alarmRecord.code}</span>
-            <span class="alert-duration-pill">持续时间：${item.alarmRecord.duration}</span>
-          </div>
-          <div class="text-center text-[18px] text-slate-500">${item.alarmRecord.time}</div>
-        `;
-        document.getElementById("record-uav").innerHTML = `
-          <div class="alert-uav-shot">
-            <img src="${item.uavRecord.image}" alt="无人机实拍记录" />
-          </div>
-        `;
-        document.getElementById("record-disposal").innerHTML = `
-          <div class="alert-timeline">
-            ${item.disposalRecord.map((record) => `
-              <div class="alert-timeline-item">
-                <div class="alert-time">${record.time}</div>
-                <div class="alert-disposal-text">${record.text}</div>
-                ${record.review ? `
-                  <div class="mt-3 space-y-1 text-xs text-slate-300">
-                    <div>是否误报：<span class="alert-uav-shot__highlight">${item.uavRecord.mistaken}</span></div>
-                    <div>报警级别调整：<span class="alert-uav-shot__highlight">${item.uavRecord.level}</span></div>
-                    <div>现场情况：<span class="alert-uav-shot__highlight">${item.uavRecord.situation}</span></div>
-                  </div>
-                ` : ""}
-              </div>
-            `).join("")}
-          </div>
-        `;
-      }
-
-      function showListView() {
-        document.getElementById("view-list").classList.remove("hidden-view");
-        document.getElementById("view-detail").classList.add("hidden-view");
-        document.getElementById("tab-list").classList.add("active");
-        document.getElementById("tab-detail").classList.remove("active");
-      }
-
-      function showDetailView(item) {
-        currentAlert = item;
-        fillDetail(item);
-        document.getElementById("view-list").classList.add("hidden-view");
-        document.getElementById("view-detail").classList.remove("hidden-view");
-        document.getElementById("tab-list").classList.remove("active");
-        document.getElementById("tab-detail").classList.add("active");
-
-        if (!detailMapInited && window.WuhanGIS && window.WuhanGIS.createSharedMap) {
-          window.WuhanGIS.createSharedMap("alert-detail-map", {
-            center: item.mapCenter,
-            zoom: item.zoom,
-            zoomControl: true,
-            markers: [
-              {
-                latlng: item.latlng,
-                iconHtml:
-                  '<div style="width:22px;height:22px;border-radius:999px;background:#ef4444;border:3px solid #fff;box-shadow:0 0 0 10px rgba(45,140,240,0.15),0 0 0 18px rgba(45,140,240,0.08);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;"><i class="fa-solid fa-location-crosshairs"></i></div>',
-                iconSize: [22, 22],
-                iconAnchor: [11, 11],
-                popup: item.location
-              }
-            ],
-            polylines: [
-              {
-                points: [
-                  [30.6164, 114.3095],
-                  [30.6158, 114.3144],
-                  [30.6154, 114.3234],
-                  [30.6151, 114.3286]
-                ],
-                color: "#4f81ff",
-                weight: 4
-              }
-            ]
-          });
-          detailMapInited = true;
-        }
-        setTimeout(function () {
-          var mapEl = document.getElementById("alert-detail-map");
-          if (mapEl && mapEl._leaflet_map && mapEl._leaflet_map.invalidateSize) {
-            mapEl._leaflet_map.invalidateSize();
-          }
-        }, 50);
-      }
-
-      function applyFilters() {
-        const status = document.getElementById("filter-status").value;
-        const source = document.getElementById("filter-source").value;
-        const sectionA = document.getElementById("filter-section-a").value;
-        const sectionB = document.getElementById("filter-section-b").value;
-        const rows = alerts.filter((item) => {
-          if (status && item.status !== status) return false;
-          if (source && item.source !== source && !(source === "传统+AI" && item.source === "传统+AI")) return false;
-          if (sectionA && !item.projectName.includes(sectionA) && !item.alarmArea.includes(sectionA)) return false;
-          if (sectionB && !item.alarmArea.includes(sectionB) && !item.projectName.includes(sectionB)) return false;
-          return true;
-        });
-        renderTable(rows);
-        bindTableActions(rows);
-      }
-
-      function bindTableActions(rows) {
-        document.querySelectorAll('[data-action="open-detail"]').forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const item = rows.find((row) => String(row.id) === btn.dataset.id) || alerts[0];
-            showDetailView(item);
-          });
-        });
-      }
-
-      document.getElementById("btn-search").addEventListener("click", applyFilters);
-      document.getElementById("btn-reset").addEventListener("click", () => {
-        document.getElementById("filter-status").value = "";
-        document.getElementById("filter-start").value = "2025-07-09T00:00";
-        document.getElementById("filter-end").value = "2026-01-19T10:46";
-        document.getElementById("filter-source").value = "";
-        document.getElementById("filter-section-a").value = "";
-        document.getElementById("filter-section-b").value = "";
-        applyFilters();
-      });
-      document.getElementById("btn-export").addEventListener("click", () => {
-        alert("已按当前筛选条件导出告警信息");
-      });
-      document.getElementById("tab-list").addEventListener("click", showListView);
-      document.getElementById("tab-detail").addEventListener("click", () => showDetailView(currentAlert));
-
-      renderTable(alerts);
-      bindTableActions(alerts);
-    </script>
+    <script src="assets/js/map-situation-gis.js"></script>
+    <script src="assets/js/alert-disposal-timeline.js"></script>
+    <script src="assets/js/expert-review-modal.js"></script>
+    <script src="assets/js/map-alerts.js"></script>
   </body>
 </html>

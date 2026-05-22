@@ -13,14 +13,54 @@
     .mm-op-btn:hover { color: #67e8f9; text-decoration: underline; }
     .mm-search { height: 32px; }
     .mm-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
-    .mm-modal-mask { position: fixed; inset: 0; background: rgba(2, 8, 23, 0.72); display: none; align-items: center; justify-content: center; z-index: 80; padding: 20px; }
+    .mm-modal-mask {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 8, 23, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 80;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
     .mm-modal-mask.show { display: flex; }
-    .mm-modal { width: min(960px, 96vw); max-height: 88vh; overflow: auto; background: #071b33; border: 1px solid rgba(34, 211, 238, 0.22); border-radius: 10px; box-shadow: 0 18px 56px rgba(0, 0, 0, 0.45); }
+    .mm-modal {
+      width: min(960px, calc(100vw - 40px));
+      background: #071b33;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      border-radius: 10px;
+      box-shadow: 0 18px 56px rgba(0, 0, 0, 0.45);
+    }
+    .mm-modal:not(.mm-modal--form) {
+      max-height: min(88vh, calc(100vh - 40px));
+      overflow: auto;
+    }
+    .mm-modal--form {
+      display: flex;
+      flex-direction: column;
+      max-height: min(88vh, calc(100vh - 40px));
+      overflow: hidden;
+    }
+    .mm-modal__head,
+    .mm-modal__foot {
+      flex-shrink: 0;
+    }
+    .mm-modal__body {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    .mm-detail-photo { height: 112px; border-radius: 8px; border: 1px solid rgba(34, 211, 238, 0.16); overflow: hidden; background: #0f172a; }
+    .mm-detail-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mm-detail-video { max-width: 280px; border-radius: 8px; border: 1px solid rgba(34, 211, 238, 0.16); background: #0f172a; }
+    .mm-detail-video video { width: 100%; display: block; }
     .mm-label { display: block; margin-bottom: 6px; font-size: 12px; color: #9cc6df; }
     .mm-required::before { content: "*"; color: #fb7185; margin-right: 3px; }
     .mm-readonly { min-height: 34px; display: flex; align-items: center; padding: 0 12px; }
-    .mm-close-x { margin-left: auto; color: #94a3b8; font-size: 22px; line-height: 1; }
-    .mm-close-x:hover { color: #e2e8f0; }
   </style>
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="am-maintenance" data-wb-view="page">
@@ -107,16 +147,24 @@
   </div>
 
   <div id="form-modal" class="mm-modal-mask">
-    <div class="mm-modal">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-white/10">
+    <div class="mm-modal mm-modal--form">
+      <div class="mm-modal__head flex items-center justify-between px-5 py-4 border-b border-white/10">
         <h3 id="form-title" class="text-base font-semibold text-white">新增维修记录</h3>
-        <button type="button" class="mm-close-x" data-close="form-modal">×</button>
+        <button type="button" class="wh-modal-close" data-close="form-modal" aria-label="关闭">×</button>
       </div>
-      <div class="p-5 space-y-4">
+      <div class="mm-modal__body p-5 space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           <label>
+            <span class="mm-label mm-required">设备类型</span>
+            <select id="f-device-type" class="wh-input w-full px-3 py-2">
+              <option value="">请选择</option>
+              <option value="drone">无人机</option>
+              <option value="airport">机场</option>
+            </select>
+          </label>
+          <label>
             <span class="mm-label mm-required">关联设备</span>
-            <input id="f-device" list="device-options" class="wh-input w-full px-3 py-2" placeholder="输入设备编号/名称搜索" />
+            <div id="f-device-wrap" data-input-id="f-device"></div>
           </label>
           <label>
             <span class="mm-label mm-required">维修类型</span>
@@ -157,12 +205,35 @@
             <span class="mm-label mm-required">维护内容摘要</span>
             <textarea id="f-summary" class="wh-input w-full px-3 py-2 min-h-[120px]" placeholder="请输入维护内容摘要"></textarea>
           </div>
-        </div>
-        <div class="rounded border border-cyan-400/20 bg-cyan-950/20 p-3 text-xs text-cyan-100 leading-6">
-          业务规则：维修记录需关联具体设备；设备详情页可查看历史维修记录；完成维修后自动更新设备维护状态；删除记录需二次确认。
+          <div class="md:col-span-2 xl:col-span-3 border-t border-cyan-400/10 pt-4 space-y-4">
+            <div>
+              <span class="mm-label">维修资料</span>
+              <div class="flex flex-wrap gap-3 items-start mt-1">
+                <label id="f-doc-tile" class="upload-tile"><i class="fa-solid fa-plus text-lg"></i><span>上传</span><input id="f-doc-input" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar" /></label>
+                <div id="f-doc-list" class="flex flex-wrap gap-2 flex-1 min-w-0"></div>
+              </div>
+              <p id="f-doc-hint" class="upload-hint">支持 PDF、Word（doc/docx）、Excel（xls/xlsx）、ZIP/RAR，单文件不超过 50MB</p>
+            </div>
+            <div>
+              <span class="mm-label">维修照片</span>
+              <div class="flex flex-wrap gap-3 items-start mt-1">
+                <label id="f-photo-tile" class="upload-tile"><i class="fa-solid fa-plus text-lg"></i><span>上传</span><input id="f-photo-input" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif" /></label>
+                <div id="f-photo-list" class="flex flex-wrap gap-2 flex-1 min-w-0"></div>
+              </div>
+              <p id="f-photo-hint" class="upload-hint">支持 JPG、PNG、WEBP、GIF，最多上传 9 张，单张不超过 20MB</p>
+            </div>
+            <div>
+              <span class="mm-label">维修视频</span>
+              <div class="flex flex-wrap gap-3 items-start mt-1">
+                <label id="f-video-tile" class="upload-tile"><i class="fa-solid fa-plus text-lg"></i><span>上传</span><input id="f-video-input" type="file" multiple accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" /></label>
+                <div id="f-video-list" class="flex flex-wrap gap-2 flex-1 min-w-0"></div>
+              </div>
+              <p id="f-video-hint" class="upload-hint">支持 MP4、WEBM、MOV，最多上传 9 个，单个不超过 200MB</p>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="px-5 py-4 border-t border-white/10 flex justify-end gap-2">
+      <div class="mm-modal__foot px-5 py-4 border-t border-white/10 flex justify-end gap-2">
         <button type="button" class="wh-btn-ghost px-4 py-2" data-close="form-modal">取消</button>
         <button id="save-btn" type="button" class="wh-btn-primary px-4 py-2">保存</button>
       </div>
@@ -170,12 +241,12 @@
   </div>
 
   <div id="detail-modal" class="mm-modal-mask">
-    <div class="mm-modal">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-white/10">
+    <div class="mm-modal mm-modal--form">
+      <div class="mm-modal__head flex items-center justify-between px-5 py-4 border-b border-white/10">
         <h3 class="text-base font-semibold text-white">维修记录详情</h3>
-        <button type="button" class="mm-close-x" data-close="detail-modal">×</button>
+        <button type="button" class="wh-modal-close" data-close="detail-modal" aria-label="关闭">×</button>
       </div>
-      <div id="detail-body" class="p-5"></div>
+      <div id="detail-body" class="mm-modal__body p-5"></div>
     </div>
   </div>
 
@@ -190,26 +261,127 @@
     </div>
   </div>
 
-  <datalist id="device-options">
-    <option value="UAV-MR-001 / 8号线车辆段无人机"></option>
-    <option value="UAV-MR-002 / 梨园巡检无人机"></option>
-    <option value="UAV-MR-003 / 青山机场设备"></option>
-    <option value="UAV-MR-004 / 长江新区无人机"></option>
-  </datalist>
-
   <script src="assets/js/menu-config.js"></script>
   <script src="assets/js/workbench-mega.js"></script>
   <script src="assets/js/shell.js"></script>
+  <script src="assets/js/search-select.js"></script>
+  <script src="assets/js/upload-widget.js"></script>
   <script>
+    const SAMPLE_PHOTOS = [
+      "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=520&q=80",
+      "https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=520&q=80"
+    ];
+    const SAMPLE_VIDEO_URL = "https://www.w3schools.com/html/mov_bbb.mp4";
+
+    const DEVICE_CATALOG = [
+      { type: "drone", label: "UAV-MR-001 / 8号线车辆段无人机" },
+      { type: "drone", label: "UAV-MR-002 / 梨园巡检无人机" },
+      { type: "drone", label: "UAV-MR-004 / 长江新区无人机" },
+      { type: "drone", label: "UAV-MR-005 / 青山巡检无人机" },
+      { type: "airport", label: "AP-MR-001 / 8号线车辆段机场" },
+      { type: "airport", label: "AP-MR-002 / 青山机场" },
+      { type: "airport", label: "AP-MR-003 / 长江新区机场" }
+    ];
+    const DEVICE_TYPE_LABEL = { drone: "无人机", airport: "机场" };
+
     const records = [
-      { id: "WX20251119001", device: "UAV-MR-001 / 8号线车辆段无人机", type: "故障处理", summary: "云台自检异常，完成返厂检测并重新校准。", parts: "云台减震球", owner: "张工", start: "2025-11-19 11:12:45", end: "2025-11-27 17:30:00", status: "已完成" },
-      { id: "WX20251119002", device: "UAV-MR-002 / 梨园巡检无人机", type: "定期检修", summary: "完成电池循环检测、固件升级与机身外观检查。", parts: "桨叶组件", owner: "王晨", start: "2025-11-19 11:12:45", end: "", status: "进行中" }
+      {
+        id: "WX20251119001",
+        deviceType: "drone",
+        device: "UAV-MR-001 / 8号线车辆段无人机",
+        type: "故障处理",
+        summary: "云台自检异常，完成返厂检测并重新校准。",
+        parts: "云台减震球",
+        owner: "张工",
+        start: "2025-11-19 11:12:45",
+        end: "2025-11-27 17:30:00",
+        status: "已完成",
+        docs: [{ name: "云台检测报告.pdf" }, { name: "返厂校准记录.xlsx" }],
+        photos: SAMPLE_PHOTOS,
+        videos: [{ name: "维修过程记录.mp4", url: SAMPLE_VIDEO_URL }]
+      },
+      {
+        id: "WX20251119002",
+        deviceType: "drone",
+        device: "UAV-MR-002 / 梨园巡检无人机",
+        type: "定期检修",
+        summary: "完成电池循环检测、固件升级与机身外观检查。",
+        parts: "桨叶组件",
+        owner: "王晨",
+        start: "2025-11-19 11:12:45",
+        end: "",
+        status: "进行中",
+        docs: [{ name: "电池循环检测表.pdf" }],
+        photos: [SAMPLE_PHOTOS[0]],
+        videos: []
+      }
     ];
     let filtered = [...records];
     let editingId = null;
     let deletingId = null;
+    let deviceSelect = null;
+    let docUploader = null;
+    let photoUploader = null;
+    let videoUploader = null;
 
     const $ = id => document.getElementById(id);
+
+    function deviceOptionsByType(deviceType) {
+      if (!deviceType) return [];
+      return DEVICE_CATALOG.filter(function (item) {
+        return item.type === deviceType;
+      }).map(function (item) {
+        return item.label;
+      });
+    }
+
+    function inferDeviceType(item) {
+      if (item && item.deviceType) return item.deviceType;
+      if (item && /机场/.test(item.device || "")) return "airport";
+      return "drone";
+    }
+
+    function initUploaders() {
+      docUploader = window.WHUpload.createDocUploader({
+        inputId: "f-doc-input",
+        listId: "f-doc-list",
+        tileId: "f-doc-tile",
+        hintId: "f-doc-hint"
+      });
+      photoUploader = window.WHUpload.createPhotoUploader({
+        inputId: "f-photo-input",
+        listId: "f-photo-list",
+        tileId: "f-photo-tile",
+        hintId: "f-photo-hint"
+      });
+      videoUploader = window.WHUpload.createVideoUploader({
+        inputId: "f-video-input",
+        listId: "f-video-list",
+        tileId: "f-video-tile",
+        hintId: "f-video-hint"
+      });
+    }
+
+    function clearUploaders() {
+      if (docUploader) docUploader.clear();
+      if (photoUploader) photoUploader.clear();
+      if (videoUploader) videoUploader.clear();
+    }
+
+    function loadUploaders(item) {
+      docUploader.setFromItems(item?.docs || []);
+      photoUploader.setFromItems(item?.photos || []);
+      videoUploader.setFromItems(item?.videos || []);
+    }
+
+    function mountDeviceSelect(deviceType, selected) {
+      var wrap = $("f-device-wrap");
+      if (!wrap) return;
+      wrap.innerHTML = "";
+      var options = deviceOptionsByType(deviceType);
+      deviceSelect = window.WHSearchSelect.create(wrap, options, deviceType ? "请搜索或选择关联设备" : "请先选择设备类型");
+      if (selected) deviceSelect.setValue(selected);
+    }
 
     function statusHtml(status) {
       if (status === "已完成") {
@@ -270,7 +442,9 @@
     }
 
     function fillForm(item) {
-      $("f-device").value = item?.device || "";
+      var deviceType = item ? inferDeviceType(item) : "";
+      $("f-device-type").value = deviceType;
+      mountDeviceSelect(deviceType, item?.device || "");
       $("f-type").value = item?.type || "故障处理";
       $("f-owner").value = item?.owner || "张工";
       $("f-parts").value = item?.parts || "";
@@ -278,6 +452,7 @@
       $("f-end").value = item?.end ? item.end.replace(" ", "T") : "";
       $("f-status").value = item?.status || "进行中";
       $("f-summary").value = item?.summary || "";
+      loadUploaders(item);
     }
 
     function openAdd() {
@@ -297,7 +472,8 @@
     }
 
     function saveForm() {
-      const device = $("f-device").value.trim();
+      const deviceType = $("f-device-type").value;
+      const device = deviceSelect ? deviceSelect.getValue().trim() : "";
       const type = $("f-type").value;
       const owner = $("f-owner").value;
       const start = $("f-start").value;
@@ -306,13 +482,15 @@
       const status = $("f-status").value;
       const parts = $("f-parts").value.trim();
 
-      if (!device) return showToast("请填写关联设备");
+      if (!deviceType) return showToast("请选择设备类型");
+      if (!device) return showToast("请选择关联设备");
       if (!type) return showToast("请选择维修类型");
       if (!owner) return showToast("请选择责任人");
       if (!start) return showToast("请选择开始维修时间");
       if (!summary) return showToast("请填写维护内容摘要");
 
       const payload = {
+        deviceType,
         device,
         type,
         owner,
@@ -320,7 +498,10 @@
         summary,
         status,
         start: start.replace("T", " "),
-        end: end ? end.replace("T", " ") : ""
+        end: end ? end.replace("T", " ") : "",
+        docs: docUploader.serialize(),
+        photos: photoUploader.getPhotoUrls(),
+        videos: videoUploader.serialize()
       };
 
       if (editingId) {
@@ -335,7 +516,34 @@
       filtered = [...records];
       renderTable();
       closeModal("form-modal");
+      clearUploaders();
       showToast("维修记录已保存");
+    }
+
+    function renderDetailDocs(docs) {
+      if (!docs || !docs.length) return '<span class="text-slate-400">暂无维修资料</span>';
+      return '<div class="flex flex-wrap gap-2">' + docs.map(function (d) {
+        var name = typeof d === "string" ? d : d.name;
+        return '<span class="upload-chip"><i class="fa-regular fa-file-lines text-cyan-300 mr-1"></i><span>' + name + '</span></span>';
+      }).join("") + "</div>";
+    }
+
+    function renderDetailPhotos(photos) {
+      if (!photos || !photos.length) return '<span class="text-slate-400">暂无维修照片</span>';
+      return '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">' + photos.map(function (src, i) {
+        return '<div class="mm-detail-photo"><img src="' + src + '" alt="维修照片' + (i + 1) + '" loading="lazy" /></div>';
+      }).join("") + "</div>";
+    }
+
+    function renderDetailVideos(videos) {
+      if (!videos || !videos.length) return '<span class="text-slate-400">暂无维修视频</span>';
+      return '<div class="flex flex-wrap gap-3">' + videos.map(function (v, i) {
+        var name = v.name || "视频" + (i + 1);
+        if (v.url) {
+          return '<div class="mm-detail-video"><video src="' + v.url + '" controls preload="metadata"></video><div class="px-2 py-1 text-[11px] text-slate-400">' + name + "</div></div>";
+        }
+        return '<span class="upload-chip"><i class="fa-solid fa-film text-cyan-300 mr-1"></i><span>' + name + "</span></span>";
+      }).join("") + "</div>";
     }
 
     function showDetail(id) {
@@ -345,6 +553,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 text-sm">
           ${[
             ["记录编号", item.id],
+            ["设备类型", DEVICE_TYPE_LABEL[inferDeviceType(item)] || "--"],
             ["关联设备", item.device],
             ["维修类型", item.type],
             ["责任人", item.owner],
@@ -361,6 +570,18 @@
           <div class="md:col-span-2 xl:col-span-3 rounded border border-cyan-400/15 bg-slate-900/30 p-3">
             <div class="text-cyan-300 text-xs mb-1">维护内容摘要</div>
             <div class="text-slate-100 leading-7">${item.summary}</div>
+          </div>
+          <div class="md:col-span-2 xl:col-span-3 rounded border border-cyan-400/15 bg-slate-900/30 p-3">
+            <div class="text-cyan-300 text-xs mb-2">维修资料</div>
+            ${renderDetailDocs(item.docs)}
+          </div>
+          <div class="md:col-span-2 xl:col-span-3 rounded border border-cyan-400/15 bg-slate-900/30 p-3">
+            <div class="text-cyan-300 text-xs mb-2">维修照片</div>
+            ${renderDetailPhotos(item.photos)}
+          </div>
+          <div class="md:col-span-2 xl:col-span-3 rounded border border-cyan-400/15 bg-slate-900/30 p-3">
+            <div class="text-cyan-300 text-xs mb-2">维修视频</div>
+            ${renderDetailVideos(item.videos)}
           </div>
         </div>
       `;
@@ -394,7 +615,14 @@
     }
 
     document.querySelectorAll("[data-close]").forEach(btn => {
-      btn.addEventListener("click", () => closeModal(btn.dataset.close));
+      btn.addEventListener("click", () => {
+        if (btn.dataset.close === "form-modal") clearUploaders();
+        closeModal(btn.dataset.close);
+      });
+    });
+
+    $("f-device-type").addEventListener("change", function () {
+      mountDeviceSelect($("f-device-type").value, "");
     });
 
     $("add-btn").addEventListener("click", openAdd);
@@ -408,6 +636,7 @@
     window.openEdit = openEdit;
     window.askDelete = askDelete;
 
+    initUploaders();
     renderTable();
   </script>
 </body>

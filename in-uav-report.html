@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>无人机巡检报告</title>
+  <title>无人机巡查记录</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="assets/css/theme.css" />
@@ -21,73 +21,6 @@
       border-right: 0;
     }
 
-    .uav-media-img {
-      width: 34px;
-      height: 34px;
-      flex: 0 0 34px;
-      margin-right: 6px;
-      border: 1px solid rgba(148, 226, 255, 0.45);
-      border-radius: 3px;
-      object-fit: cover;
-      background: rgba(15, 23, 42, 0.72);
-    }
-
-    .uav-video-thumb {
-      position: relative;
-      display: inline-flex;
-      width: 34px;
-      height: 34px;
-      flex: 0 0 34px;
-      margin-right: 6px;
-      border-radius: 3px;
-      overflow: hidden;
-      border: 1px solid rgba(148, 226, 255, 0.45);
-      vertical-align: middle;
-    }
-
-    .uav-media-strip {
-      display: flex;
-      align-items: center;
-      max-width: 166px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding-bottom: 3px;
-      margin: 0 auto;
-    }
-
-    .uav-media-strip::-webkit-scrollbar {
-      height: 5px;
-    }
-
-    .uav-media-strip::-webkit-scrollbar-thumb {
-      background: rgba(34, 211, 238, 0.38);
-      border-radius: 999px;
-    }
-
-    .uav-media-strip::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.75);
-    }
-
-    .uav-video-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .uav-video-thumb::after {
-      content: "\f04b";
-      font-family: "Font Awesome 6 Free";
-      font-weight: 900;
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ffffff;
-      font-size: 10px;
-      background: rgba(0, 0, 0, 0.28);
-    }
-
     .uav-link {
       color: #38bdf8;
       text-decoration: none;
@@ -101,16 +34,17 @@
   </style>
 </head>
 <body data-shell="default" data-top="patrol" data-sidebar-key="in-uav-report">
+  <script src="assets/js/page-embed-bootstrap.js"></script>
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
-    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+    <nav data-embed-hide class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
       <span class="text-cyan-400"><i class="fa-solid fa-plane"></i></span>
       <span>巡查记录</span>
       <span class="text-slate-600">&gt;&gt;</span>
       <span class="text-cyan-50 font-semibold tracking-wide">无人机巡检报告</span>
     </nav>
 
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
-      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">无人机巡检报告</h1>
+    <div data-embed-hide class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">无人机巡查记录</h1>
     </div>
 
     <div class="neon-panel neon-panel--tight p-4 mb-5">
@@ -159,47 +93,7 @@
               <th class="px-3 text-cyan-50/95">操作</th>
             </tr>
           </thead>
-          <tbody>
-            <tr class="bg-slate-950/25">
-              <td class="px-3 text-slate-100/95 leading-relaxed">唯一标识（如<br />FL20251225001）</td>
-              <td class="px-3 text-slate-100/95">8号线</td>
-              <td class="px-3 text-slate-100/95">徐东~梨园</td>
-              <td class="px-3 text-slate-100/95">项目1、项目2、项目3</td>
-              <td class="px-3 leading-relaxed">
-                <a class="uav-link">显示设备名称（可点击跳转设备详情页面）</a>
-              </td>
-              <td class="px-3 text-slate-100/95">自动执行计划/临时任务</td>
-              <td class="px-3">
-                <div class="uav-media-strip">
-                <img class="uav-media-img" src="https://images.unsplash.com/photo-1508610492156-ea1acabf2964?auto=format&fit=crop&w=120&q=80" alt="巡查照片" />
-                <img class="uav-media-img" src="https://images.unsplash.com/photo-1494412574643-ff11b0a101c0?auto=format&fit=crop&w=120&q=80" alt="巡查照片" />
-                <img class="uav-media-img" src="https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=120&q=80" alt="巡查照片" />
-                <img class="uav-media-img" src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=120&q=80" alt="巡查照片" />
-                <img class="uav-media-img" src="https://images.unsplash.com/photo-1541976590-713941681591?auto=format&fit=crop&w=120&q=80" alt="巡查照片" />
-                </div>
-              </td>
-              <td class="px-3">
-                <div class="uav-media-strip">
-                <span class="uav-video-thumb"><img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=120&q=80" alt="巡查视频" /></span>
-                <span class="uav-video-thumb"><img src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=120&q=80" alt="巡查视频" /></span>
-                <span class="uav-video-thumb"><img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=120&q=80" alt="巡查视频" /></span>
-                <span class="uav-video-thumb"><img src="https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=120&q=80" alt="巡查视频" /></span>
-                <span class="uav-video-thumb"><img src="https://images.unsplash.com/photo-1599707254554-027aeb4deacd?auto=format&fit=crop&w=120&q=80" alt="巡查视频" /></span>
-                </div>
-              </td>
-              <td class="px-3 leading-relaxed">
-                <a class="uav-link">显示关联计划名称（可点击跳转对应的计划详情页面）</a>
-              </td>
-              <td class="px-3 text-slate-100/95">2025-12-25 10:00</td>
-              <td class="px-3 text-slate-100/95">2025-12-25 18:15</td>
-              <td class="px-3 text-slate-100/95">XX</td>
-              <td class="px-3 text-slate-100/95">2</td>
-              <td class="px-3 whitespace-nowrap">
-                <a class="uav-link mr-3">查看报告</a>
-                <a class="uav-link">下载报告</a>
-              </td>
-            </tr>
-          </tbody>
+          <tbody id="uav-report-tbody"></tbody>
         </table>
       </div>
       <div class="flex flex-wrap items-center justify-end gap-2 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
@@ -220,7 +114,16 @@
       </div>
     </div>
   </div>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="assets/js/menu-config.js"></script>
   <script src="assets/js/shell.js"></script>
+  <script src="assets/js/map-gis.js"></script>
+  <script src="assets/js/track-playback.js"></script>
+  <script src="assets/js/approval-timeline.js"></script>
+  <script src="assets/js/expert-review-modal.js"></script>
+  <script src="assets/js/flight-report-modal.js"></script>
+  <script src="assets/js/patrol-media-gallery.js"></script>
+  <script src="assets/js/in-uav-report.js"></script>
 </body>
 </html>

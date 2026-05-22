@@ -56,8 +56,9 @@
       border: 1px solid rgba(34,211,238,.16);
       background: #071426;
       box-shadow: 0 24px 80px rgba(0,0,0,.48);
-      overflow: hidden;
+      overflow: visible;
     }
+    .warehouse-modal .p-6 { overflow: visible; }
     .warehouse-form-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -171,14 +172,14 @@
 
   <div id="warehouse-modal-mask" class="warehouse-modal-mask">
     <div class="warehouse-modal">
-      <div class="h-14 px-6 flex items-center border-b border-cyan-400/15">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
         <h3 id="warehouse-modal-title" class="text-white text-[16px] font-semibold">新增应急仓库</h3>
-        <button type="button" class="ml-auto text-slate-400 hover:text-slate-200 text-xl leading-none" data-action="close-warehouse-modal">×</button>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-warehouse-modal">×</button>
       </div>
       <div class="p-6">
         <div class="warehouse-form-grid">
           <label class="warehouse-form-item"><span class="warehouse-form-label is-required">名称：</span><input id="warehouse-name" class="wh-input h-8 flex-1 px-3" placeholder="请输入名称" /></label>
-          <label class="warehouse-form-item"><span class="warehouse-form-label">所属部门：</span><select id="warehouse-dept" class="wh-input h-8 flex-1 px-2"><option>物资部</option><option>巡检部</option><option>应急中心</option></select></label>
+          <label class="warehouse-form-item wh-form-item--select"><span class="warehouse-form-label is-required">所属部门：</span><div id="warehouse-dept-select" class="wh-search-select flex-1 min-w-0" data-input-id="warehouse-dept"></div></label>
           <label class="warehouse-form-item"><span class="warehouse-form-label">所属线路：</span><select id="warehouse-line" class="wh-input h-8 flex-1 px-2"><option>2号线</option><option>5号线</option><option>7号线</option></select></label>
           <label class="warehouse-form-item"><span class="warehouse-form-label is-required">仓库地址：</span><input id="warehouse-address" class="wh-input h-8 flex-1 px-3" placeholder="请输入仓库地址" /></label>
           <label class="warehouse-form-item"><span class="warehouse-form-label">地址经度：</span><input id="warehouse-lng" class="wh-input h-8 flex-1 px-3" placeholder="请输入仓库地址经度" /></label>
@@ -206,8 +207,11 @@
     </div>
   </div>
 
+  <script src="assets/js/search-select.js"></script>
   <script>
     (function () {
+      var deptSelect = WHSearchSelect.mountById("warehouse-dept-select", "请搜索或选择部门", WHSearchSelect.DEPT_OPTIONS);
+
       var rows = [
         { name:"南湖应急仓", dept:"物资部", line:"7号线", address:"洪山区南湖大道 88 号", lng:"114.3521", lat:"30.5184", owner:"赵敏", phone:"13800002001", remark:"主仓库" },
         { name:"白沙洲应急仓", dept:"应急中心", line:"5号线", address:"武昌区白沙洲大道 120 号", lng:"114.3148", lat:"30.5081", owner:"刘凯", phone:"13800002002", remark:"夜间值守" },
@@ -244,11 +248,12 @@
       }
 
       function openModal(mode, index) {
+        WHSearchSelect.closeAll(null);
         editIndex = mode === "edit" ? index : -1;
         modalTitle.textContent = mode === "edit" ? "编辑应急仓库" : "新增应急仓库";
         var row = index > -1 ? rows[index] : null;
         document.getElementById("warehouse-name").value = row ? row.name : "";
-        document.getElementById("warehouse-dept").value = row ? row.dept : "物资部";
+        if (deptSelect) deptSelect.setValue(row ? row.dept : "");
         document.getElementById("warehouse-line").value = row ? row.line : "2号线";
         document.getElementById("warehouse-address").value = row ? row.address : "";
         document.getElementById("warehouse-lng").value = row ? row.lng : "";
@@ -264,13 +269,18 @@
         var address = document.getElementById("warehouse-address").value.trim();
         var owner = document.getElementById("warehouse-owner").value.trim();
         var phone = document.getElementById("warehouse-phone").value.trim();
+        var dept = deptSelect ? deptSelect.getValue() : "";
         if (!name || !address || !owner || !phone) {
           alert("请完善必填项：名称、仓库地址、负责人、联系电话");
           return;
         }
+        if (!dept) {
+          alert("请选择所属部门");
+          return;
+        }
         var row = {
           name: name,
-          dept: document.getElementById("warehouse-dept").value,
+          dept: dept,
           line: document.getElementById("warehouse-line").value,
           address: address,
           lng: document.getElementById("warehouse-lng").value.trim() || "-",

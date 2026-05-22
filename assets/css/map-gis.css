@@ -728,18 +728,6 @@
   color: #ffffff;
 }
 
-.gis-detail-close {
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  border: 1px solid rgba(34, 211, 238, 0.22);
-  background: rgba(15, 23, 42, 0.72);
-  color: #e2f5ff;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-}
-
 .gis-detail-body {
   padding: 14px 16px 16px;
   color: #e2f5ff;
@@ -876,6 +864,33 @@
 .gis-airport-card__label {
   color: #9cc6df;
   white-space: nowrap;
+}
+
+.gis-airport-card__row--plan {
+  margin-bottom: 6px;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+
+.gis-airport-card__row--plan .gis-airport-card__label {
+  flex-shrink: 0;
+}
+
+.gis-airport-card__row--plan .gis-airport-card__value {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+
+body[data-top="cockpit"] .gis-detail-panel {
+  width: min(480px, calc(100vw - 24px));
+}
+
+body[data-top="cockpit"] .gis-airport-panel--cockpit {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .gis-airport-card__value {

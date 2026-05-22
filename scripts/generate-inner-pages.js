@@ -440,7 +440,7 @@ add({
   file: "in-uav-report.html",
   top: "in",
   key: "in-uav-report",
-  title: "无人机巡查报告",
+  title: "无人机巡查记录",
   inner: () => `<div class="grid lg:grid-cols-3 gap-4">
     <div class="lg:col-span-2 space-y-4">
       <div class="rounded-lg p-4 border border-white/10" style="background:#0c203f">

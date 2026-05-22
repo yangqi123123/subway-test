@@ -32,7 +32,7 @@
       '<div class="wb-modal-card">' +
       '  <div class="wb-modal-head">' +
       '    <div class="wb-modal-title" id="wb-modal-title">编辑</div>' +
-      '    <button type="button" class="wb-modal-close" id="wb-modal-close">×</button>' +
+      '    <button type="button" class="wh-modal-close wb-modal-close" id="wb-modal-close" aria-label="关闭">×</button>' +
       "  </div>" +
       '  <div id="wb-modal-body"></div>' +
       '  <div class="wb-modal-foot">' +
@@ -48,20 +48,71 @@
     });
   }
 
-  function openModal(title, bodyHtml, onSave) {
+  function openModal(title, bodyHtml, onSave, onOpen, options) {
+    options = options || {};
     if (!$("wb-modal-mask")) createModal();
+    var card = $("wb-modal-mask").querySelector(".wb-modal-card");
+    if (card) card.className = "wb-modal-card" + (options.size ? " wb-modal-card--" + options.size : "");
     $("wb-modal-title").textContent = title;
     $("wb-modal-body").innerHTML = bodyHtml;
     $("wb-modal-mask").classList.add("show");
-    $("wb-modal-save").onclick = function () {
+    var saveBtn = $("wb-modal-save");
+    saveBtn.textContent = options.saveLabel || "确定";
+    saveBtn.style.display = options.hideSave ? "none" : "";
+    saveBtn.onclick = function () {
       if (typeof onSave === "function") onSave();
-      closeModal();
+      if (!options.keepOpen) closeModal();
     };
+    if (typeof onOpen === "function") onOpen();
+  }
+
+  function resolveFormHtml(page, row) {
+    if (typeof page.buildFormHtml === "function") return page.buildFormHtml(row);
+    return createFormHtml(page.formFields, row);
+  }
+
+  function readModalFormData() {
+    var data = {};
+    document.querySelectorAll("#wb-modal-body [data-form]").forEach(function (el) {
+      data[el.getAttribute("data-form")] = el.value;
+    });
+    return data;
+  }
+
+  function openRecordModal(page, title, row, successText) {
+    openModal(
+      title,
+      resolveFormHtml(page, row),
+      function () {
+        if (typeof page.onModalSave === "function") {
+          var data =
+            typeof WBMsgTemplateForm !== "undefined" && WBMsgTemplateForm.collectMsgTemplateFormData
+              ? WBMsgTemplateForm.collectMsgTemplateFormData()
+              : readModalFormData();
+          if (page.onModalSave(row, data) === false) return;
+        }
+        toast(successText || "已保存");
+        if (typeof window.__wbRender === "function") window.__wbRender();
+      },
+      function () {
+        if (typeof page.onFormOpen === "function") page.onFormOpen(row);
+      },
+      { size: page.modalSize }
+    );
   }
 
   function closeModal() {
     var mask = $("wb-modal-mask");
-    if (mask) mask.classList.remove("show");
+    if (mask) {
+      mask.classList.remove("show");
+      var card = mask.querySelector(".wb-modal-card");
+      if (card) card.className = "wb-modal-card";
+      var saveBtn = $("wb-modal-save");
+      if (saveBtn) {
+        saveBtn.style.display = "";
+        saveBtn.textContent = "确定";
+      }
+    }
   }
 
   function confirmAction(message, onConfirm) {
@@ -192,12 +243,15 @@
       );
       button.onclick = function () {
         if (btn.action === "add") {
-          openModal(btn.modalTitle || page.addTitle || "新增", createFormHtml(page.formFields, null), function () {
-            toast((btn.modalTitle || page.addTitle || "新增") + "成功");
-          });
-        } else {
-          toast(btn.tip || btn.label + "已执行");
+          openRecordModal(page, btn.modalTitle || page.addTitle || "新增", null, (btn.modalTitle || "新增") + "成功");
+          return;
         }
+        if (btn.action === "import") {
+          if (typeof page.openImport === "function") page.openImport();
+          else toast("导入功能已打开");
+          return;
+        }
+        toast(btn.tip || btn.label + "已执行");
       };
       right.appendChild(button);
     });
@@ -276,8 +330,8 @@
             (field.full ? " wb-form-item--full" : "") +
             '">' +
             "<label>" +
+            (field.required ? '<span class="text-rose-400">*</span> ' : "") +
             field.label +
-            (field.required ? ' <span class="text-rose-400">*</span>' : "") +
             "</label>";
 
           if (field.type === "textarea") {
@@ -372,9 +426,7 @@
       return;
     }
     if (action.type === "edit" || action.type === "view" || action.modal) {
-      openModal(action.modalTitle || action.label, createFormHtml(page.formFields, row), function () {
-        toast(action.successText || "已保存");
-      });
+      openRecordModal(page, action.modalTitle || action.label, row, action.successText || "已保存");
       return;
     }
     toast((action.label || "操作") + "已打开");
@@ -385,8 +437,17 @@
     if (col.type === "switch") {
       td.appendChild(
         statusSwitch(!!row[col.key], function () {
-          row[col.key] = !row[col.key];
-          toast((row.name || row.label || row.username || page.title) + (row[col.key] ? "已启用" : "已停用"));
+          var next = !row[col.key];
+          if (typeof page.onStatusToggle === "function") {
+            if (page.onStatusToggle(row, next) === false) {
+              if (typeof window.__wbRender === "function") window.__wbRender();
+              return;
+            }
+          } else {
+            row[col.key] = next;
+          }
+          var tipName = row.templateName || row.roleName || row.menuName || row.postName || page.title;
+          toast(tipName + (row[col.key] ? " 已启用" : " 已禁用"));
           window.__wbRender();
         })
       );

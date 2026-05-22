@@ -133,9 +133,18 @@
 
     .project-readonly .wh-input,
     .project-readonly textarea,
-    .project-readonly select {
+    .project-readonly select,
+    .project-readonly .wh-search-select {
       pointer-events: none;
       opacity: 0.78;
+    }
+
+    .project-form-row--select {
+      align-items: flex-start;
+    }
+
+    .project-form-row--select .project-form-label {
+      line-height: 32px;
     }
 
     .project-hidden-when-readonly {
@@ -324,6 +333,47 @@
     .unit-inline-action.unit-inline-action--danger {
       color: #fb7185;
     }
+
+    .project-patrol-tabs {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 34px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+      margin-bottom: 16px;
+    }
+
+    .project-patrol-frame-wrap {
+      min-height: calc(100vh - 200px);
+      border: 1px solid rgba(34, 211, 238, 0.12);
+      border-radius: 8px;
+      overflow: hidden;
+      background: rgba(2, 8, 23, 0.45);
+    }
+
+    .project-patrol-frame-wrap iframe {
+      display: block;
+      width: 100%;
+      min-height: calc(100vh - 200px);
+      height: calc(100vh - 200px);
+      border: 0;
+      background: #020617;
+    }
+
+    .project-patrol-tab {
+      height: 44px;
+      border-bottom: 2px solid transparent;
+      color: rgba(226, 245, 255, 0.78);
+      white-space: nowrap;
+      font-size: 13px;
+      background: transparent;
+      padding: 0 4px;
+    }
+
+    .project-patrol-tab.active {
+      color: #67e8f9;
+      border-color: #38bdf8;
+    }
   </style>
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="in-project" data-wb-view="page">
@@ -383,7 +433,7 @@
             </label>
             <label class="flex items-center gap-2">
               <span class="w-28 text-right text-cyan-100/75">评估报告风险：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>低风险</option><option>中风险</option><option>高风险</option></select>
+              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>一级</option><option>二级</option><option>三级</option><option>四级</option><option>特级</option><option>无</option></select>
             </label>
             <label class="flex items-center gap-2">
               <span class="w-28 text-right text-cyan-100/75">地铁结构类型：</span>
@@ -486,6 +536,7 @@
           <button type="button" class="project-tab" data-tab="units">参建单位信息</button>
           <button type="button" class="project-tab" data-tab="docs">项目相关资料</button>
           <button type="button" class="project-tab" data-tab="exchange">项目交底及交涉信息</button>
+          <button type="button" class="project-tab" data-tab="monitor">监测台账</button>
         </div>
 
         <div class="project-tab-panel" data-panel="base">
@@ -523,17 +574,24 @@
               <label class="project-form-label">站点：</label>
               <select class="wh-input h-8 flex-1 px-2"><option>请选择站点</option></select>
             </div>
+            <div class="flex items-start gap-3 project-form-row--select">
+              <label class="project-form-label project-required">地址类型：</label>
+              <div id="proj-addr-type-select" class="wh-search-select flex-1 min-w-0" data-input-id="proj-addr-type"></div>
+            </div>
             <div class="flex items-center gap-3">
               <label class="project-form-label project-required">项目类型：</label>
               <select class="wh-input h-8 flex-1 px-2"><option>重点项目</option><option>一般项目</option></select>
             </div>
             <div class="flex items-center gap-3">
               <label class="project-form-label">评估报告风险等级：</label>
-              <select class="wh-input h-8 flex-1 px-2"><option>请选择评估报告风险等级</option><option>中风险</option></select>
+              <select id="proj-risk-level" class="wh-input h-8 flex-1 px-2">
+                <option value="">请选择评估报告风险等级</option>
+                <option>一级</option><option>二级</option><option>三级</option><option>四级</option><option>特级</option><option>无</option>
+              </select>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-start gap-3 project-form-row--select xl:col-span-2">
               <label class="project-form-label project-required">工程类别：</label>
-              <select class="wh-input h-8 flex-1 px-2"><option>钻孔、地勘、打桩</option></select>
+              <div id="proj-category-select" class="wh-search-select flex-1 min-w-0" data-input-id="proj-category"></div>
             </div>
             <div class="flex items-center gap-3">
               <label class="project-form-label">经度：</label>
@@ -557,13 +615,13 @@
               <select class="wh-input h-8 flex-1 px-2"><option>否</option><option>是</option></select>
             </div>
             <div></div>
-            <div class="flex items-center gap-3 xl:col-span-2">
+            <div class="flex items-start gap-3 project-form-row--select xl:col-span-2">
               <label class="project-form-label project-required">地铁结构类型：</label>
-              <input class="wh-input h-8 flex-1 px-2" value="盾构结构" />
+              <div id="proj-struct-type-select" class="wh-search-select flex-1 min-w-0" data-input-id="proj-struct-type"></div>
             </div>
-            <div class="flex items-center gap-3 xl:col-span-2">
+            <div class="flex items-start gap-3 project-form-row--select xl:col-span-2">
               <label class="project-form-label project-required">地铁结构状态：</label>
-              <input class="wh-input h-8 flex-1 px-2" value="良好" />
+              <div id="proj-struct-status-select" class="wh-search-select flex-1 min-w-0" data-input-id="proj-struct-status"></div>
             </div>
             <div></div>
             <div class="flex items-center gap-3">
@@ -587,11 +645,10 @@
         </div>
 
         <div class="project-tab-panel hidden" data-panel="status">
-          <h2 class="text-center text-xl text-white mb-8">项目状态信息</h2>
           <div class="max-w-[960px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-x-24 gap-y-5">
             <div class="flex items-center gap-3 md:col-span-2">
               <label class="project-form-label project-required">项目状态：</label>
-              <select class="wh-input h-8 flex-1 px-2"><option>未开工</option><option>已开工</option><option>停工</option><option>完工</option></select>
+              <select class="wh-input h-8 flex-1 px-2"><option>未开工</option><option>正在施工</option><option>停工</option><option>完工</option></select>
             </div>
             <div class="flex items-center gap-3">
               <label class="project-form-label">开工日期：</label>
@@ -619,23 +676,43 @@
         </div>
 
         <div class="project-tab-panel hidden" data-panel="units">
-          <h2 class="text-center text-xl text-white mb-8">参建单位信息</h2>
           <div class="max-w-[940px] mx-auto divide-y divide-cyan-400/10" id="unit-list"></div>
         </div>
 
         <div class="project-tab-panel hidden" data-panel="docs">
-          <h2 class="text-center text-xl text-white mb-8">项目相关资料</h2>
           <div class="space-y-7" id="doc-list"></div>
         </div>
 
         <div class="project-tab-panel hidden" data-panel="exchange">
-          <h2 class="text-center text-xl text-white mb-8">项目交底及交涉信息</h2>
           <div class="flex justify-end mb-3">
             <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="open-exchange-modal"><i class="fa-solid fa-plus mr-1"></i>新增</button>
           </div>
           <div id="exchange-list"></div>
         </div>
 
+        <div class="project-tab-panel hidden" data-panel="monitor" id="monitor-tab-root"></div>
+
+      </div>
+    </section>
+
+    <section id="project-patrol-view" class="hidden">
+      <div class="mb-4 flex flex-wrap items-center gap-3">
+        <button type="button" class="w-8 h-8 rounded-md wh-btn-ghost" data-action="back-list" title="返回">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div>
+          <h1 class="text-base font-semibold text-white tracking-tight">项目巡查</h1>
+          <div id="project-patrol-subtitle" class="text-[11px] text-slate-400 mt-0.5"></div>
+        </div>
+      </div>
+      <div class="neon-panel neon-panel--tight p-4">
+        <div class="project-patrol-tabs" id="project-patrol-tabs">
+          <button type="button" class="project-patrol-tab active" data-patrol-tab="manual">人工巡查</button>
+          <button type="button" class="project-patrol-tab" data-patrol-tab="uav">无人机巡查</button>
+        </div>
+        <div class="project-patrol-frame-wrap">
+          <iframe id="project-patrol-frame" title="巡查记录"></iframe>
+        </div>
       </div>
     </section>
   </div>
@@ -655,8 +732,33 @@
   </div>
   <div class="project-toast" id="project-toast">已完成</div>
 
+  <div id="project-record-mask" class="project-modal-mask" aria-hidden="true">
+    <div class="project-modal record-dialog" role="dialog" aria-labelledby="project-record-title">
+      <div class="record-dialog__head h-12 px-5 flex items-center justify-between gap-3 border-b border-cyan-400/15">
+        <h3 id="project-record-title" class="record-dialog__title text-white font-semibold m-0">操作记录</h3>
+        <button type="button" class="wh-modal-close" data-action="close-project-record" aria-label="关闭">×</button>
+      </div>
+      <div id="project-record-body" class="record-list p-6"></div>
+    </div>
+  </div>
+
+  <script src="assets/js/search-select.js"></script>
+  <script src="assets/js/upload-widget.js"></script>
+  <script src="assets/js/project-doc-shared.js"></script>
+  <script src="assets/js/project-exchange-shared.js"></script>
+  <script src="assets/js/project-monitor-shared.js"></script>
+  <script src="assets/js/project-operation-log.js"></script>
   <script>
     (function () {
+      var PROJECT_CATEGORY_OPTIONS = [
+        "钻孔、地勘、打桩", "道路排水工程", "房建工程", "燃气热力、电力工程", "园林绿化景观工程",
+        "建构筑物改造", "普通工程", "浅埋开挖", "基坑开挖", "桩基施工", "路面翻修", "其他"
+      ];
+      var PROJECT_STRUCT_TYPE_OPTIONS = ["盾构结构", "明挖结构", "高架结构", "车站结构", "附属结构", "联络通道"];
+      var PROJECT_STRUCT_STATUS_OPTIONS = ["良好", "一般", "较差", "需加固", "施工中", "已停运"];
+      var PROJECT_ADDR_TYPE_OPTIONS = ["区间", "车站", "出入口", "停车场", "风亭", "冷却塔", "变电所", "车辆段", "其他"];
+      var projectFieldSelects = [];
+
       var projects = [
         ["1318", "航空室内柜建设项目", "一般项目", "普通工程", "7号线", "松槐路~天阳大道", "下行", "2026-03-04 17:01", "114.270805", "30.782717", "", "", ""],
         ["1317", "万源广场停车场充电桩项目", "一般项目", "燃气热力、电力工程", "4号线", "蔡甸广场~凤凰路", "下行", "2026-03-04 15:12", "114.049839", "30.566645", "2026-03-04 09:30", "", "该项目为充电停车位施工，临近轨道保护区。"],
@@ -706,11 +808,11 @@
       };
       var unitContacts = {
         "建设单位": [
-          { name: "张建国", phone: "13871560218", role: "项目负责人", remark: "负责对接开工审批" },
-          { name: "刘晓岚", phone: "13986221106", role: "现场协调", remark: "夜间施工窗口联络" }
+          { name: "张建国", phone: "13871560218", otherContact: "027-88886666" },
+          { name: "刘晓岚", phone: "13986221106", otherContact: "liuxl@example.com" }
         ],
         "第三方监测单位": [
-          { name: "陈志坤", phone: "13627190514", role: "监测负责人", remark: "日报统一回传" }
+          { name: "陈志坤", phone: "13627190514", otherContact: "chenzk_wx" }
         ],
         "总承包单位": [],
         "设计单位": [],
@@ -723,23 +825,54 @@
       var currentDocCategory = "";
       var currentDocEditIndex = -1;
       var currentExchangeEditIndex = -1;
+      var docModalSelects = [];
       var docLibrary = {
-        "告知函": [
-          { name: "告知函-花山河口公园项目.pdf", date: "2026-03-03", fileName: "告知函-花山河口公园项目.pdf" }
+        "项目告知单": [
+          {
+            noticeName: "花山河口公园项目告知单",
+            noticeNo: "GZD-2026-0318",
+            issuer: "王工",
+            issueDate: "2026-03-03",
+            signUnit: "武汉轨道交通建设有限公司",
+            signPerson: "张建国",
+            signPhone: "13871560218",
+            fileName: "告知函-花山河口公园项目.pdf"
+          }
         ],
-        "运营发函": [
-          { name: "运营发函-20260304.docx", date: "2026-03-04", fileName: "运营发函-20260304.docx" }
+        "项目运营发函": [
+          {
+            letterName: "关于地勘施工窗口协调函",
+            primaryUnit: "武汉轨道交通建设有限公司",
+            primaryContact: "张建国",
+            primaryPhone: "13871560218",
+            ccUnit: "武汉市测绘研究院",
+            letterDate: "2026-03-04",
+            fileName: "运营发函-20260304.docx"
+          }
         ],
-        "外部来函": [
-          { name: "外部来函-建设单位回函.pdf", date: "2026-03-05", fileName: "外部来函-建设单位回函.pdf" }
+        "项目外部来函": [
+          {
+            letterName: "建设单位现场协调回函",
+            fromUnit: "武汉城建集团",
+            fromContact: "李敏",
+            fromPhone: "13986220088",
+            letterDate: "2026-03-05",
+            fileName: "外部来函-建设单位回函.pdf"
+          }
         ],
         "技术中心回函": [
-          { name: "技术中心回函-审查意见.pdf", date: "2026-03-06", fileName: "技术中心回函-审查意见.pdf" }
+          {
+            techReplyName: "花山河口公园地勘审查意见",
+            techReplyType: "书面回函",
+            techHandler: "李工",
+            techReplyDate: "2026-03-06",
+            fileName: "技术中心回函-审查意见.pdf"
+          }
         ],
-        "安全影响评估": [],
-        "初始状态报告": [],
-        "专项施工方案及专家意见": [],
-        "第三方监测方案及专家意见": [],
+        "项目安全影响评估": [],
+        "项目初始化状态报告": [],
+        "项目专项施工方案及专家意见": [],
+        "项目第三方监测方案及专家意见": [],
         "安全协议": [],
         "其他资料": []
       };
@@ -749,7 +882,8 @@
           unit: "武汉轨道交通建设有限公司",
           content: "就地勘施工时间窗、保护区报审流程进行现场交底。",
           procedure: "是",
-          image: "现场交底照片1.jpg",
+          photos: [{ name: "现场交底照片1.jpg", url: "" }],
+          videos: [{ name: "交底现场视频1.mp4", url: "" }],
           attachment: "交底记录表.pdf"
         },
         {
@@ -757,10 +891,75 @@
           unit: "中建三局集团有限公司",
           content: "针对夜间施工围挡范围及临近结构保护措施进行交涉。",
           procedure: "是",
-          image: "交涉现场照片2.jpg",
+          photos: [{ name: "交涉现场照片2.jpg", url: "" }],
+          videos: [],
           attachment: "交涉纪要.docx"
         }
       ];
+      var exchangeUploaders = null;
+      var monitorLedger = {
+        base: {
+          projectName: "花山河口公园湖心岛地勘施工项目",
+          range: "花山车辆段出入段线 / 花山河站",
+          benchmarkCount: "6",
+          benchmarkLocation: "DK0+120、DK0+185 等",
+          warningValue: "±8mm",
+          control1: "±12mm",
+          control2: "±10mm",
+          builderContact: "武汉轨道交通建设有限公司 / 张工 13800001111",
+          constructorContact: "中建三局 / 李工 13900002222",
+          thirdContact: "湖北地矿监测 / 王工 13700003333",
+          internalContact: "地铁集团监测中心 / 赵工 13600004444",
+          typeLevel: "基坑开挖 / 二级",
+          minDistance: "43m",
+          follower: "杨俊杰",
+          riskPeriod: "2026-03 ~ 2026-06",
+          startTime: "2026-03-01",
+          stopTime: ""
+        },
+        plan: {
+          expertTime: "2026-02-20",
+          equipment: "徕卡 TM50 + 自动化静力水准",
+          pointSpacing: "15m",
+          jointFrequency: "每周 1 次",
+          stageMethod: "开挖期加密至每日 1 次，结构施工期每周 2 次",
+          stageOne: "基坑开挖：每日人工巡查 + 自动化采集",
+          stageTwo: "结构回筑：每周 2 次人工联测",
+          benchmarkJointTime: "2026-03-01"
+        },
+        summary: {
+          text: "项目位于 19 号线花山河站保护区，地勘施工共 6 个勘测点位，与车站主体结构最小水平净距约 43 米，已编制专项监测方案并通过专家评审。"
+        }
+      };
+      var monitorLogs = [
+        {
+          date: "2026-03-05",
+          reportPeriod: "第1期",
+          monitorData: "基准点复测稳定，周边沉降累计 -1.2mm，未超预警。",
+          overWarning: "否"
+        },
+        {
+          date: "2026-03-12",
+          reportPeriod: "第2期",
+          monitorData: "开挖面附近测点沉降速率略增，已发预警短信。",
+          overWarning: "是"
+        }
+      ];
+      var currentMonitorLogEditIndex = -1;
+      var projectOperationLogs = {
+        "1318": [
+          { action: "新增项目", time: "2026-05-18 17:36:56", user: "王志颖" },
+          { action: "修改项目状态信息", time: "2026-05-18 17:36:42", user: "王志颖" },
+          { action: "修改项目参建单位信息", time: "2026-05-18 17:36:28", user: "王志颖" },
+          { action: "修改项目交涉信息", time: "2026-05-18 17:36:14", user: "王志颖" },
+          { action: "修改项目告知单", time: "2026-05-18 17:36:00", user: "王志颖" }
+        ],
+        "1317": [
+          { action: "新增项目", time: "2026-05-17 11:20:08", user: "刘晓岚" },
+          { action: "修改项目状态信息", time: "2026-05-17 11:18:44", user: "刘晓岚" },
+          { action: "修改项目相关资料", time: "2026-05-17 10:55:12", user: "杨俊杰" }
+        ]
+      };
 
       function renderRows() {
         tbody.innerHTML = projects.map(function (row, index) {
@@ -771,9 +970,9 @@
             }).join("") +
             '<td class="px-3 whitespace-nowrap">' +
               '<span class="project-action" data-action="edit-project"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
-              '<span class="project-action" data-action="patrol-project"><i class="fa-regular fa-clipboard"></i>巡查</span>' +
+              '<span class="project-action" data-action="patrol-project" data-row="' + index + '"><i class="fa-regular fa-clipboard"></i>巡查</span>' +
               '<span class="project-action project-action--danger" data-action="delete-project"><i class="fa-regular fa-trash-can"></i>删除</span>' +
-              '<span class="project-action" data-action="refresh-project"><i class="fa-solid fa-rotate-right"></i></span>' +
+              '<span class="project-action" data-action="view-project-records" data-row="' + index + '"><i class="fa-regular fa-clock"></i>操作记录</span>' +
             '</td>' +
           '</tr>';
         }).join("");
@@ -795,9 +994,101 @@
         '</div>';
       }
 
-      function docFieldLabel(category, suffix) {
-        return category + suffix;
+      function getDocUnitOptions() {
+        var opts = [];
+        Object.keys(unitCompanies).forEach(function (key) {
+          (unitCompanies[key] || []).forEach(function (name) {
+            if (opts.indexOf(name) < 0) opts.push(name);
+          });
+        });
+        return opts;
       }
+
+      var projectDoc = ProjectDocShared.createHandlers({
+        listId: "doc-list",
+        openDocAction: "open-doc-modal",
+        previewDocAction: "preview-doc",
+        editDocAction: "edit-doc",
+        deleteDocAction: "delete-doc",
+        escapeHtml: escapeHtml,
+        uploadField: uploadField,
+        showToast: showToast,
+        getDocUnitOptions: getDocUnitOptions,
+        getDocLibrary: function () {
+          return docLibrary;
+        },
+        getDocModalSelects: function () {
+          return docModalSelects;
+        },
+        setDocModalSelects: function (v) {
+          docModalSelects = v;
+        }
+      });
+
+      function docRows() {
+        projectDoc.docRows();
+      }
+
+      function buildDocFormHtml(category, docItem) {
+        return projectDoc.buildDocFormHtml(category, docItem);
+      }
+
+      function mountDocModalSelects(category, docItem) {
+        projectDoc.mountDocModalSelects(category, docItem);
+      }
+
+      function collectDocRecord(category, existingDoc) {
+        return projectDoc.collectDocRecord(category, existingDoc);
+      }
+
+      function validateDocRecord(category, record) {
+        return projectDoc.validateDocRecord(category, record);
+      }
+
+      var projectExchange = ProjectExchangeShared.createHandlers({
+        listId: "exchange-list",
+        editAction: "edit-exchange",
+        deleteAction: "delete-exchange",
+        previewPhotoAction: "preview-exchange-photo",
+        previewVideoAction: "preview-exchange-video",
+        previewFileAction: "preview-exchange-file",
+        escapeHtml: escapeHtml,
+        uploadField: uploadField,
+        showToast: showToast,
+        getRecords: function () {
+          return exchangeRecords;
+        },
+        getUploaders: function () {
+          return exchangeUploaders;
+        },
+        setUploaders: function (v) {
+          exchangeUploaders = v;
+        },
+        clearUploaders: function () {
+          if (exchangeUploaders) {
+            if (exchangeUploaders.photo) exchangeUploaders.photo.clear();
+            if (exchangeUploaders.video) exchangeUploaders.video.clear();
+          }
+          exchangeUploaders = null;
+        }
+      });
+
+      function renderExchangeRows() {
+        projectExchange.renderRows();
+      }
+
+      var projectMonitor = ProjectMonitorShared.createHandlers({
+        panelRootId: "monitor-tab-root",
+        listId: "monitor-log-list",
+        openLogAction: "open-monitor-log-modal",
+        editLogAction: "edit-monitor-log",
+        deleteLogAction: "delete-monitor-log",
+        escapeHtml: escapeHtml,
+        showToast: showToast,
+        getLogs: function () {
+          return monitorLogs;
+        }
+      });
 
       function previewMarkup() {
         var payload = previewPayload || {};
@@ -808,6 +1099,8 @@
         var body = '';
         if (payload.kind === "image" && payload.url) {
           body = '<img class="project-preview-image" src="' + payload.url + '" alt="' + escapeHtml(payload.name || '图片预览') + '">';
+        } else if (payload.kind === "video" && payload.url) {
+          body = '<video class="project-preview-video" src="' + payload.url + '" controls style="max-width:100%;max-height:70vh;border-radius:6px"></video>';
         } else if (payload.url && payload.mimeType === "application/pdf") {
           body = '<iframe class="project-preview-frame" src="' + payload.url + '"></iframe>';
         } else {
@@ -831,9 +1124,94 @@
         }, 1600);
       }
 
+      var patrolFrame = document.getElementById("project-patrol-frame");
+      var currentPatrolProject = "";
+      var currentPatrolTab = "";
+      var patrolPageByTab = { manual: "in-manual.html", uav: "in-uav-report.html" };
+
+      function buildPatrolEmbedUrl(page, projectName) {
+        var params = new URLSearchParams({ embed: "1" });
+        if (projectName) params.set("project", projectName);
+        return page + "?" + params.toString();
+      }
+
+      function clearPatrolFrame() {
+        if (!patrolFrame) return;
+        patrolFrame.removeAttribute("src");
+        patrolFrame.src = "about:blank";
+      }
+
+      function loadPatrolTab(tab) {
+        var page = patrolPageByTab[tab];
+        if (!patrolFrame || !page) return;
+        clearPatrolFrame();
+        var projectName = currentPatrolProject;
+        requestAnimationFrame(function () {
+          patrolFrame.src = buildPatrolEmbedUrl(page, projectName);
+        });
+      }
+
+      function switchPatrolTab(tab) {
+        if (!tab || tab === currentPatrolTab) return;
+        currentPatrolTab = tab;
+        document.querySelectorAll("#project-patrol-tabs [data-patrol-tab]").forEach(function (btn) {
+          btn.classList.toggle("active", btn.getAttribute("data-patrol-tab") === tab);
+        });
+        loadPatrolTab(tab);
+      }
+
+      function showPatrolView(rowIndex) {
+        var row = projects[rowIndex];
+        var projectName = row ? row[1] : "";
+        currentPatrolProject = projectName;
+        currentPatrolTab = "";
+        document.getElementById("project-list-view").classList.add("hidden");
+        document.getElementById("project-detail-view").classList.add("hidden");
+        document.getElementById("project-patrol-view").classList.remove("hidden");
+        var subtitle = document.getElementById("project-patrol-subtitle");
+        if (subtitle) subtitle.textContent = projectName ? "关联项目：" + projectName : "";
+        switchPatrolTab("manual");
+      }
+
       function showList() {
+        clearPatrolFrame();
+        currentPatrolProject = "";
+        currentPatrolTab = "";
+        document.getElementById("project-patrol-view").classList.add("hidden");
         document.getElementById("project-detail-view").classList.add("hidden");
         document.getElementById("project-list-view").classList.remove("hidden");
+      }
+
+      function mountProjectFieldSelects() {
+        if (projectFieldSelects.length) return;
+        var riskEl = document.getElementById("proj-risk-level");
+        projectFieldSelects = [
+          WHSearchSelect.create(
+            document.getElementById("proj-addr-type-select"),
+            PROJECT_ADDR_TYPE_OPTIONS,
+            "请搜索或选择地址类型"
+          ),
+          WHSearchSelect.createMulti(
+            document.getElementById("proj-category-select"),
+            PROJECT_CATEGORY_OPTIONS,
+            "请搜索或选择工程类别"
+          ),
+          WHSearchSelect.createMulti(
+            document.getElementById("proj-struct-type-select"),
+            PROJECT_STRUCT_TYPE_OPTIONS,
+            "请搜索或选择地铁结构类型"
+          ),
+          WHSearchSelect.createMulti(
+            document.getElementById("proj-struct-status-select"),
+            PROJECT_STRUCT_STATUS_OPTIONS,
+            "请搜索或选择地铁结构状态"
+          )
+        ];
+        projectFieldSelects[0].setValue("区间");
+        projectFieldSelects[1].setValues(["钻孔、地勘、打桩"]);
+        projectFieldSelects[2].setValues(["盾构结构"]);
+        projectFieldSelects[3].setValues(["良好"]);
+        if (riskEl) riskEl.value = "二级";
       }
 
       function applyProjectMode(mode) {
@@ -846,12 +1224,16 @@
         document.querySelectorAll('#project-detail-view input, #project-detail-view textarea, #project-detail-view select').forEach(function (el) {
           el.disabled = readonly;
         });
-        document.querySelectorAll('#project-detail-view [data-action="open-contact-modal"], #project-detail-view [data-action="open-doc-modal"], #project-detail-view [data-action="open-exchange-modal"]').forEach(function (el) {
+        projectFieldSelects.forEach(function (inst) {
+          if (inst && inst.setDisabled) inst.setDisabled(readonly);
+        });
+        document.querySelectorAll('#project-detail-view [data-action="open-contact-modal"], #project-detail-view [data-action="open-doc-modal"], #project-detail-view [data-action="open-exchange-modal"], #project-detail-view [data-action="open-monitor-log-modal"]').forEach(function (el) {
           el.disabled = readonly;
           el.classList.toggle("opacity-40", readonly);
           el.classList.toggle("cursor-not-allowed", readonly);
         });
         unitRows();
+        projectMonitor.renderLogRows();
       }
 
       function showProjectView(mode) {
@@ -862,7 +1244,7 @@
       }
 
       function switchTab(tab) {
-        document.querySelectorAll(".project-tab").forEach(function (btn) {
+        document.querySelectorAll("#project-tabs .project-tab").forEach(function (btn) {
           btn.classList.toggle("active", btn.getAttribute("data-tab") === tab);
         });
         document.querySelectorAll(".project-tab-panel").forEach(function (panel) {
@@ -900,14 +1282,13 @@
           '</div>' +
           '<div class="unit-contact-list"><div class="overflow-x-auto">' +
           '<table class="unit-contact-table">' +
-            '<thead><tr><th>姓名</th><th>联系电话</th><th>职务</th><th>备注</th><th>操作</th></tr></thead>' +
+            '<thead><tr><th>姓名</th><th>联系电话</th><th>其他联系方式</th><th>操作</th></tr></thead>' +
             '<tbody>' +
               contacts.map(function (contact, index) {
                 return '<tr>' +
                   '<td>' + (contact.name || '-') + '</td>' +
                   '<td>' + (contact.phone || '-') + '</td>' +
-                  '<td>' + (contact.role || '-') + '</td>' +
-                  '<td>' + (contact.remark || '-') + '</td>' +
+                  '<td>' + (contact.otherContact || '-') + '</td>' +
                   '<td><div class="unit-contact-actions"><span class="unit-inline-action" data-action="edit-contact" data-unit="' + unitName + '" data-index="' + index + '">编辑</span><span class="unit-inline-action unit-inline-action--danger" data-action="delete-contact" data-unit="' + unitName + '" data-index="' + index + '">删除</span></div></td>' +
                 '</tr>';
               }).join('') +
@@ -915,56 +1296,6 @@
           '</table>' +
           '</div></div>' +
         '</div>';
-      }
-
-      function docRows() {
-        var docs = ["告知函", "运营发函", "外部来函", "技术中心回函", "安全影响评估", "初始状态报告", "专项施工方案及专家意见", "第三方监测方案及专家意见", "安全协议", "其他资料"];
-        document.getElementById("doc-list").innerHTML = docs.map(function (name) {
-          var files = docLibrary[name] || [];
-          return '<section class="border-b border-cyan-400/10 pb-6">' +
-            '<div class="flex items-center mb-3">' +
-              '<h3 class="text-sm font-semibold text-cyan-50">' + name + '</h3>' +
-              '<button type="button" class="ml-auto px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="open-doc-modal" data-doc="' + name + '"><i class="fa-solid fa-plus mr-1"></i>新增</button>' +
-            '</div>' +
-            (
-              files.length
-                ? '<div class="overflow-x-auto"><table class="unit-contact-table">' +
-                    '<thead><tr><th>' + docFieldLabel(name, '名称') + '</th><th>' + docFieldLabel(name, '日期') + '</th><th>' + docFieldLabel(name, '文件') + '</th><th>操作</th></tr></thead><tbody>' +
-                    files.map(function (file, index) {
-                      return '<tr>' +
-                        '<td>' + file.name + '</td>' +
-                        '<td>' + file.date + '</td>' +
-                        '<td><span class="project-link-action" data-action="preview-doc" data-doc="' + name + '" data-index="' + index + '">' + (file.fileName || file.name) + '</span></td>' +
-                        '<td><div class="unit-contact-actions"><span class="unit-inline-action" data-action="edit-doc" data-doc="' + name + '" data-index="' + index + '">编辑</span><span class="unit-inline-action unit-inline-action--danger" data-action="delete-doc" data-doc="' + name + '" data-index="' + index + '">删除</span></div></td>' +
-                      '</tr>';
-                    }).join("") +
-                    '</tbody></table></div>'
-                : '<div class="project-empty"><i class="fa-regular fa-folder-open text-2xl mb-1"></i>暂无上传文件</div>'
-            ) +
-          '</section>';
-        }).join('');
-      }
-
-      function renderExchangeRows() {
-        var shell = document.getElementById("exchange-list");
-        if (!exchangeRecords.length) {
-          shell.innerHTML = '<div class="project-empty"><i class="fa-regular fa-folder-open text-2xl mb-1"></i>暂无数据</div>';
-          return;
-        }
-        shell.innerHTML = '<div class="overflow-x-auto"><table class="unit-contact-table">' +
-          '<thead><tr><th>项目交涉日期</th><th>项目交涉单位</th><th>项目交涉内容</th><th>是否履行保护区程序</th><th>交涉现场图片</th><th>交涉资料</th><th>操作</th></tr></thead><tbody>' +
-          exchangeRecords.map(function (record, index) {
-            return '<tr>' +
-              '<td>' + record.date + '</td>' +
-              '<td>' + record.unit + '</td>' +
-              '<td class="max-w-[320px] truncate" title="' + record.content + '">' + record.content + '</td>' +
-              '<td>' + record.procedure + '</td>' +
-              '<td><span class="project-link-action" data-action="preview-exchange-image" data-index="' + index + '">' + record.image + '</span></td>' +
-              '<td><span class="project-link-action" data-action="preview-exchange-file" data-index="' + index + '">' + record.attachment + '</span></td>' +
-              '<td><div class="unit-contact-actions"><span class="unit-inline-action" data-action="edit-exchange" data-index="' + index + '">编辑</span><span class="unit-inline-action unit-inline-action--danger" data-action="delete-exchange" data-index="' + index + '">删除</span></div></td>' +
-            '</tr>';
-          }).join("") +
-          '</tbody></table></div>';
       }
 
       function openModal(type, title) {
@@ -976,27 +1307,19 @@
             '<div class="text-xs text-cyan-200/75 bg-slate-950/35 border border-cyan-400/10 rounded px-3 py-2">当前单位：' + activeUnit + '</div>' +
             '<label class="flex items-center gap-3"><span class="project-form-label project-required">联系人姓名：</span><input id="contact-name" class="wh-input h-8 flex-1 px-2" placeholder="请输入联系人姓名" value="' + (editContact.name || '') + '" /></label>' +
             '<label class="flex items-center gap-3"><span class="project-form-label project-required">联系电话：</span><input id="contact-phone" class="wh-input h-8 flex-1 px-2" placeholder="请输入联系电话" value="' + (editContact.phone || '') + '" /></label>' +
-            '<label class="flex items-center gap-3"><span class="project-form-label">职务：</span><input id="contact-role" class="wh-input h-8 flex-1 px-2" placeholder="请输入职务" value="' + (editContact.role || '') + '" /></label>' +
-            '<label class="flex items-start gap-3"><span class="project-form-label">备注：</span><textarea id="contact-remark" class="wh-input min-h-[90px] flex-1 px-2 py-2" placeholder="请输入备注">' + (editContact.remark || '') + '</textarea></label>' +
+            '<label class="flex items-center gap-3"><span class="project-form-label">其他联系方式：</span><input id="contact-other" class="wh-input h-8 flex-1 px-2" placeholder="如邮箱、微信号、办公电话等" value="' + (editContact.otherContact || '') + '" /></label>' +
           '</div>';
         } else if (type === "doc") {
           var docItem = currentDocEditIndex > -1 ? ((docLibrary[currentDocCategory] || [])[currentDocEditIndex] || {}) : {};
-          modalBody.innerHTML = '<div class="space-y-4 max-w-[560px] mx-auto">' +
-            '<div class="text-xs text-cyan-200/75 bg-slate-950/35 border border-cyan-400/10 rounded px-3 py-2">资料类别：' + title + '</div>' +
-            '<label class="flex items-center gap-3"><span class="project-form-label project-required">' + docFieldLabel(title, '名称：') + '</span><input id="doc-name" class="wh-input h-8 flex-1 px-2" placeholder="请输入' + docFieldLabel(title, '名称') + '" value="' + escapeHtml(docItem.name || '') + '" /></label>' +
-            '<label class="flex items-center gap-3"><span class="project-form-label project-required">' + docFieldLabel(title, '日期：') + '</span><input id="doc-date" type="date" class="wh-input h-8 flex-1 px-2" value="' + escapeHtml(docItem.date || '') + '" /></label>' +
-            '<label class="flex items-start gap-3"><span class="project-form-label">' + docFieldLabel(title, '文件：') + '</span><div class="flex-1">' + uploadField('doc-file', docItem.fileName || '', '未上传文件') + '</div></label>' +
-          '</div>';
+          modalBody.innerHTML = buildDocFormHtml(title, docItem);
+          mountDocModalSelects(title, docItem);
         } else if (type === "exchange") {
           var exchangeItem = currentExchangeEditIndex > -1 ? (exchangeRecords[currentExchangeEditIndex] || {}) : {};
-          modalBody.innerHTML = '<div class="space-y-4 max-w-[620px] mx-auto">' +
-            '<label class="flex items-center gap-3"><span class="project-form-label project-required">项目交涉日期：</span><input id="exchange-date" type="date" class="wh-input h-8 flex-1 px-2" value="' + escapeHtml(exchangeItem.date || '') + '" /></label>' +
-            '<label class="flex items-center gap-3"><span class="project-form-label project-required">项目交涉单位：</span><input id="exchange-unit" class="wh-input h-8 flex-1 px-2" placeholder="请输入项目交涉单位" value="' + escapeHtml(exchangeItem.unit || '') + '" /></label>' +
-            '<label class="flex items-start gap-3"><span class="project-form-label">项目交涉内容：</span><textarea id="exchange-content" class="wh-input min-h-[96px] flex-1 px-2 py-2" placeholder="请输入项目交涉内容">' + escapeHtml(exchangeItem.content || '') + '</textarea></label>' +
-            '<label class="flex items-center gap-3"><span class="project-form-label project-required">是否履行保护区程序：</span><select id="exchange-procedure" class="wh-input h-8 flex-1 px-2"><option' + ((exchangeItem.procedure || '') === '否' ? ' selected' : '') + '>否</option><option' + ((exchangeItem.procedure || '') !== '否' ? ' selected' : '') + '>是</option></select></label>' +
-            '<label class="flex items-start gap-3"><span class="project-form-label">交涉现场图片：</span><div class="flex-1">' + uploadField('exchange-image', exchangeItem.image || '', '未上传图片') + '</div></label>' +
-            '<label class="flex items-start gap-3"><span class="project-form-label">交涉资料：</span><div class="flex-1">' + uploadField('exchange-file', exchangeItem.attachment || '', '未上传文件') + '</div></label>' +
-          '</div>';
+          modalBody.innerHTML = projectExchange.buildFormHtml(exchangeItem);
+          projectExchange.mountUploaders(exchangeItem);
+        } else if (type === "monitor-log") {
+          var logItem = currentMonitorLogEditIndex > -1 ? (monitorLogs[currentMonitorLogEditIndex] || {}) : {};
+          modalBody.innerHTML = projectMonitor.buildLogFormHtml(logItem);
         } else if (type === "preview") {
           modalBody.innerHTML = previewMarkup();
         }
@@ -1005,9 +1328,13 @@
 
       function closeModal() {
         modalMask.classList.remove("show");
+        if (typeof WHSearchSelect !== "undefined") WHSearchSelect.closeAll(null);
+        docModalSelects = [];
+        projectExchange.clearUploaders();
         contactEditIndex = -1;
         currentDocEditIndex = -1;
         currentExchangeEditIndex = -1;
+        currentMonitorLogEditIndex = -1;
         previewPayload = null;
       }
 
@@ -1015,6 +1342,8 @@
       unitRows();
       docRows();
       renderExchangeRows();
+      projectMonitor.mountPanel(monitorLedger);
+      ProjectOperationLog.bindClose("project-record-mask", "close-project-record");
 
       document.addEventListener("click", function (event) {
         var trigger = event.target.closest("[data-action]");
@@ -1025,6 +1354,7 @@
         if (action === "edit-project") showProjectView("edit");
         if (action === "back-list") showList();
         if (action === "save-project") {
+          monitorLedger = projectMonitor.collectLedger();
           showToast("项目已保存");
           showList();
         }
@@ -1033,8 +1363,16 @@
           if (row) row.remove();
           showToast("项目已删除");
         }
-        if (action === "refresh-project") showToast("已刷新当前项目");
-        if (action === "patrol-project") window.location.href = "in-project-patrol.html";
+        if (action === "view-project-records") {
+          ProjectOperationLog.open({
+            rowIndex: Number(trigger.getAttribute("data-row")),
+            projects: projects,
+            logsById: projectOperationLogs,
+            maskId: "project-record-mask",
+            bodyId: "project-record-body"
+          });
+        }
+        if (action === "patrol-project") showPatrolView(Number(trigger.getAttribute("data-row")));
         if (action === "search-project") showToast("已按当前条件筛选");
         if (action === "reset-filter") {
           document.querySelectorAll("[data-filter]").forEach(function (el) {
@@ -1044,7 +1382,7 @@
           showToast("筛选条件已重置");
         }
         if (action === "export-project") showToast("已生成导出任务");
-        if ((action === "open-contact-modal" || action === "open-doc-modal" || action === "open-exchange-modal") && currentProjectMode === "detail") return;
+        if ((action === "open-contact-modal" || action === "open-doc-modal" || action === "open-exchange-modal" || action === "open-monitor-log-modal") && currentProjectMode === "detail") return;
         if (action === "open-contact-modal") {
           activeUnit = trigger.getAttribute("data-unit") || activeUnit;
           contactEditIndex = -1;
@@ -1074,16 +1412,10 @@
           var previewDocCategory = trigger.getAttribute("data-doc") || "";
           var previewDocIndex = Number(trigger.getAttribute("data-index"));
           var previewDoc = ((docLibrary[previewDocCategory] || [])[previewDocIndex] || {});
-          previewPayload = {
-            kind: "file",
-            title: "文件预览",
-            category: previewDocCategory,
-            name: previewDoc.fileName || previewDoc.name,
-            date: previewDoc.date,
-            url: previewDoc.fileUrl || "",
-            mimeType: previewDoc.mimeType || "",
-            tip: previewDoc.name || "资料文件预览"
-          };
+          var previewFileKey = trigger.getAttribute("data-file-key");
+          previewPayload = previewFileKey
+            ? projectDoc.filePreviewPayload(previewDoc, previewFileKey)
+            : projectDoc.buildPreviewPayload(previewDocCategory, previewDoc);
           openModal("preview", "文件预览");
         }
         if (action === "open-exchange-modal") {
@@ -1102,35 +1434,43 @@
           renderExchangeRows();
           showToast("交涉记录已删除");
         }
-        if (action === "preview-exchange-image") {
-          var previewImageIndex = Number(trigger.getAttribute("data-index"));
-          var previewImageItem = exchangeRecords[previewImageIndex] || {};
-          previewPayload = {
-            kind: "image",
-            title: "图片预览",
-            name: previewImageItem.image || "现场图片",
-            unit: previewImageItem.unit,
-            date: previewImageItem.date,
-            url: previewImageItem.imageUrl || "",
-            mimeType: previewImageItem.imageMimeType || "",
-            tip: "交涉现场图片预览"
-          };
+        if (action === "preview-exchange-photo") {
+          var previewPhotoIndex = Number(trigger.getAttribute("data-index"));
+          var previewPhotoMediaIndex = Number(trigger.getAttribute("data-media-index"));
+          previewPayload = projectExchange.buildPhotoPreviewPayload(
+            exchangeRecords[previewPhotoIndex] || {},
+            previewPhotoMediaIndex
+          );
           openModal("preview", "图片预览");
+        }
+        if (action === "preview-exchange-video") {
+          var previewVideoIndex = Number(trigger.getAttribute("data-index"));
+          var previewVideoMediaIndex = Number(trigger.getAttribute("data-media-index"));
+          previewPayload = projectExchange.buildVideoPreviewPayload(
+            exchangeRecords[previewVideoIndex] || {},
+            previewVideoMediaIndex
+          );
+          openModal("preview", "视频预览");
         }
         if (action === "preview-exchange-file") {
           var previewFileIndex = Number(trigger.getAttribute("data-index"));
-          var previewFileItem = exchangeRecords[previewFileIndex] || {};
-          previewPayload = {
-            kind: "file",
-            title: "文件预览",
-            name: previewFileItem.attachment || "交涉资料",
-            unit: previewFileItem.unit,
-            date: previewFileItem.date,
-            url: previewFileItem.attachmentUrl || "",
-            mimeType: previewFileItem.attachmentMimeType || "",
-            tip: "交涉资料预览"
-          };
+          previewPayload = projectExchange.buildFilePreviewPayload(exchangeRecords[previewFileIndex] || {});
           openModal("preview", "文件预览");
+        }
+        if (action === "open-monitor-log-modal") {
+          currentMonitorLogEditIndex = -1;
+          openModal("monitor-log", "新增监测日志");
+        }
+        if (action === "edit-monitor-log") {
+          if (currentProjectMode === "detail") return;
+          currentMonitorLogEditIndex = Number(trigger.getAttribute("data-index"));
+          openModal("monitor-log", "编辑监测日志");
+        }
+        if (action === "delete-monitor-log") {
+          if (currentProjectMode === "detail") return;
+          monitorLogs.splice(Number(trigger.getAttribute("data-index")), 1);
+          projectMonitor.renderLogRows();
+          showToast("监测日志已删除");
         }
         if (action === "edit-contact") {
           if (currentProjectMode === "detail") return;
@@ -1152,13 +1492,11 @@
           if (modalType === "contact") {
             var nameInput = document.getElementById("contact-name");
             var phoneInput = document.getElementById("contact-phone");
-            var roleInput = document.getElementById("contact-role");
-            var remarkInput = document.getElementById("contact-remark");
+            var otherInput = document.getElementById("contact-other");
             var contact = {
               name: nameInput ? nameInput.value.trim() : "",
               phone: phoneInput ? phoneInput.value.trim() : "",
-              role: roleInput ? roleInput.value.trim() : "",
-              remark: remarkInput ? remarkInput.value.trim() : ""
+              otherContact: otherInput ? otherInput.value.trim() : ""
             };
             if (!contact.name || !contact.phone) {
               showToast("请先填写联系人和电话");
@@ -1169,65 +1507,44 @@
             else unitContacts[activeUnit].push(contact);
             unitRows();
           } else if (modalType === "doc") {
-            var docName = document.getElementById("doc-name");
-            var docDate = document.getElementById("doc-date");
-            var docFileInput = document.getElementById("doc-file-input");
             var existingDoc = currentDocEditIndex > -1 ? ((docLibrary[currentDocCategory] || [])[currentDocEditIndex] || {}) : {};
-            var docPickedFile = docFileInput && docFileInput.files && docFileInput.files[0] ? docFileInput.files[0] : null;
-            var docRecord = {
-              name: docName ? docName.value.trim() : "",
-              date: docDate ? docDate.value.trim() : "",
-              fileName: docPickedFile ? docPickedFile.name : (existingDoc.fileName || ""),
-              fileUrl: docPickedFile ? URL.createObjectURL(docPickedFile) : (existingDoc.fileUrl || ""),
-              mimeType: docPickedFile ? docPickedFile.type : (existingDoc.mimeType || "")
-            };
-            if (!docRecord.name || !docRecord.date) {
-              showToast("请先填写资料名称和日期");
-              return;
-            }
-            if (!docRecord.fileName) {
-              showToast("请先上传资料文件");
-              return;
-            }
+            var docRecord = projectDoc.collectDocRecord(currentDocCategory, existingDoc);
+            if (!projectDoc.validateDocRecord(currentDocCategory, docRecord)) return;
             if (!docLibrary[currentDocCategory]) docLibrary[currentDocCategory] = [];
             if (currentDocEditIndex > -1) docLibrary[currentDocCategory][currentDocEditIndex] = docRecord;
             else docLibrary[currentDocCategory].push(docRecord);
             docRows();
           } else if (modalType === "exchange") {
-            var exchangeImageInput = document.getElementById("exchange-image-input");
-            var exchangeFileInput = document.getElementById("exchange-file-input");
             var existingExchange = currentExchangeEditIndex > -1 ? (exchangeRecords[currentExchangeEditIndex] || {}) : {};
-            var pickedImage = exchangeImageInput && exchangeImageInput.files && exchangeImageInput.files[0] ? exchangeImageInput.files[0] : null;
-            var pickedAttachment = exchangeFileInput && exchangeFileInput.files && exchangeFileInput.files[0] ? exchangeFileInput.files[0] : null;
-            var exchangeRecord = {
-              date: document.getElementById("exchange-date") ? document.getElementById("exchange-date").value.trim() : "",
-              unit: document.getElementById("exchange-unit") ? document.getElementById("exchange-unit").value.trim() : "",
-              content: document.getElementById("exchange-content") ? document.getElementById("exchange-content").value.trim() : "",
-              procedure: document.getElementById("exchange-procedure") ? document.getElementById("exchange-procedure").value : "是",
-              image: pickedImage ? pickedImage.name : (existingExchange.image || ""),
-              imageUrl: pickedImage ? URL.createObjectURL(pickedImage) : (existingExchange.imageUrl || ""),
-              imageMimeType: pickedImage ? pickedImage.type : (existingExchange.imageMimeType || ""),
-              attachment: pickedAttachment ? pickedAttachment.name : (existingExchange.attachment || ""),
-              attachmentUrl: pickedAttachment ? URL.createObjectURL(pickedAttachment) : (existingExchange.attachmentUrl || ""),
-              attachmentMimeType: pickedAttachment ? pickedAttachment.type : (existingExchange.attachmentMimeType || "")
-            };
-            if (!exchangeRecord.date || !exchangeRecord.unit) {
-              showToast("请先填写交涉日期和交涉单位");
-              return;
-            }
+            var exchangeRecord = projectExchange.collectRecord(existingExchange);
+            if (!projectExchange.validateRecord(exchangeRecord)) return;
             if (currentExchangeEditIndex > -1) exchangeRecords[currentExchangeEditIndex] = exchangeRecord;
             else exchangeRecords.push(exchangeRecord);
             renderExchangeRows();
+          } else if (modalType === "monitor-log") {
+            var logRecord = projectMonitor.collectLogRecord();
+            if (!projectMonitor.validateLogRecord(logRecord)) return;
+            if (currentMonitorLogEditIndex > -1) monitorLogs[currentMonitorLogEditIndex] = logRecord;
+            else monitorLogs.push(logRecord);
+            projectMonitor.renderLogRows();
           }
           closeModal();
           showToast("已保存");
         }
       });
 
+      mountProjectFieldSelects();
+
       document.getElementById("project-tabs").addEventListener("click", function (event) {
         var btn = event.target.closest("[data-tab]");
         if (!btn) return;
         switchTab(btn.getAttribute("data-tab"));
+      });
+
+      document.getElementById("project-patrol-tabs").addEventListener("click", function (event) {
+        var btn = event.target.closest("[data-patrol-tab]");
+        if (!btn) return;
+        switchPatrolTab(btn.getAttribute("data-patrol-tab") || "manual");
       });
 
       document.addEventListener("change", function (event) {
