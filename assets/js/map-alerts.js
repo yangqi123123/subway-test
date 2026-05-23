@@ -810,7 +810,7 @@
       ["频谱图", "已生成"],
       [
         "频谱图操作",
-        '<span class="alert-detail-link">生成</span><a href="map-expert.html" class="alert-detail-link">查看</a><span class="alert-detail-link">典型事件标注</span>',
+        '<span class="alert-detail-link">生成</span><a href="map/map-expert.html" class="alert-detail-link">查看</a><span class="alert-detail-link">典型事件标注</span>',
       ],
       [
         "当前位置备注",

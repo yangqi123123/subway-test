@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>分析报告</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <style>
+    .dc-panel { border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.14); background: rgba(7, 20, 38, 0.9); }
+    .dc-chart-title { font-size: 14px; font-weight: 600; color: #f8fafc; }
+    .dc-chart-note { font-size: 12px; color: #94a3b8; }
+    .dc-chart-shell { padding: 18px 20px; min-height: 320px; }
+    .dc-filter-btn { min-width: 74px; height: 32px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .dc-table-op { color: #38bdf8; font-size: 12px; }
+    .dc-table-op:hover { color: #67e8f9; text-decoration: underline; }
+    .dc-canvas { width: 100%; height: 214px; display: block; }
+    .dc-legend { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-top: 12px; }
+    .dc-legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #cbd5e1; }
+    .dc-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
+    .dc-overview-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .dc-overview-head__title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+    .dc-line-select {
+      min-width: 148px;
+      height: 32px;
+      font-size: 12px;
+    }
+    .dc-chart-subtitle {
+      text-align: center;
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+    .dc-pie-chart-wrap {
+      height: 214px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dc-pie-canvas-main {
+      width: 168px;
+      height: 168px;
+      display: block;
+    }
+    .dc-legend--pie {
+      gap: 10px 14px;
+      font-size: 11px;
+    }
+    .dc-legend--pie .dc-legend-item {
+      max-width: 100%;
+    }
+    .dc-legend--pie .dc-legend-label {
+      max-width: 9.5rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body data-shell="default" data-top="wb" data-sidebar-key="dc-drone-stats" data-wb-view="page">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+      <span class="text-slate-600">&gt;&gt;</span>
+      <span>我的工作台</span>
+      <span class="text-slate-600">&gt;&gt;</span>
+      <span class="text-cyan-50 font-semibold tracking-wide">分析报告</span>
+    </nav>
+
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">资源调度与使用记录</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">分析报告</span>
+    </div>
+
+    <section class="mb-6">
+      <div class="dc-overview-head">
+        <div class="dc-overview-head__title">资源使用概览</div>
+        <label class="flex items-center gap-2 text-[11px] text-slate-400">
+          <span class="text-cyan-100/70">线路切换</span>
+          <select id="overview-line-select" class="wh-input dc-line-select px-2">
+            <option value="all">全部线路</option>
+            <option value="1">1号线</option>
+            <option value="2">2号线</option>
+            <option value="3">3号线</option>
+            <option value="4">4号线</option>
+            <option value="7">7号线</option>
+            <option value="8" selected>8号线</option>
+            <option value="11">11号线</option>
+            <option value="19">19号线</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="dc-panel dc-chart-shell">
+          <div class="flex items-center justify-between mb-2">
+            <div class="dc-chart-title">资源使用情况及效果概览</div>
+            <div class="dc-chart-note">单位：个</div>
+          </div>
+          <div class="dc-chart-subtitle">月度新增违规项目统计图</div>
+          <canvas id="violation-month-chart" class="dc-canvas" width="420" height="214"></canvas>
+          <div class="dc-legend">
+            <span class="dc-legend-item"><span class="dc-dot bg-[#22d3ee]"></span>基于无人机监测的月度新增违规项目数量</span>
+          </div>
+        </div>
+
+        <div class="dc-panel dc-chart-shell">
+          <div class="flex items-center justify-between mb-3">
+            <div class="dc-chart-title">新增违规项目分布图</div>
+            <div class="dc-chart-note">单位：个</div>
+          </div>
+          <div class="dc-pie-chart-wrap">
+            <canvas id="violation-pie-chart" class="dc-pie-canvas-main" width="168" height="168" aria-label="新增违规项目分布图"></canvas>
+          </div>
+          <div id="violation-pie-legend" class="dc-legend dc-legend--pie"></div>
+        </div>
+
+        <div class="dc-panel dc-chart-shell">
+          <div class="flex items-center justify-between mb-3">
+            <div class="dc-chart-title">设备使用率趋势图</div>
+            <div class="dc-chart-note">单位：百分比</div>
+          </div>
+          <canvas id="trend-chart" class="dc-canvas" width="420" height="214"></canvas>
+          <div class="dc-legend">
+            <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>无人机</span>
+            <span class="dc-legend-item"><span class="dc-dot bg-[#22d3ee]"></span>机场设备</span>
+          </div>
+        </div>
+
+        <div class="dc-panel dc-chart-shell">
+          <div class="flex items-center justify-between mb-3">
+            <div class="dc-chart-title">设备使用时长</div>
+            <div class="dc-chart-note">单位：月份 / 小时</div>
+          </div>
+          <canvas id="duration-chart" class="dc-canvas" width="420" height="214"></canvas>
+          <div class="dc-legend">
+            <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>无人机</span>
+            <span class="dc-legend-item"><span class="dc-dot bg-[#31c5e4]"></span>机场设备</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="neon-panel neon-panel--tight p-3 mb-3">
+      <div class="text-sm font-semibold text-white mb-3">筛选</div>
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div class="flex flex-wrap items-end gap-3">
+          <div class="min-w-[148px]">
+            <label class="wh-filter-label block mb-1">所属机场</label>
+            <select id="filter-airport" class="wh-input h-8 w-full px-2">
+              <option value="">全部机场</option>
+              <option value="车辆段机场">车辆段机场</option>
+              <option value="青山机场">青山机场</option>
+              <option value="光谷广场机场">光谷广场机场</option>
+              <option value="徐家棚机场">徐家棚机场</option>
+            </select>
+          </div>
+          <div class="min-w-[170px]">
+            <label class="wh-filter-label block mb-1">设备名称</label>
+            <select class="wh-input h-8 w-full px-2">
+              <option>XXXXXX</option>
+              <option>A区巡检机01</option>
+              <option>Airport-SH01</option>
+            </select>
+          </div>
+          <div class="min-w-[120px]">
+            <label class="wh-filter-label block mb-1">操作员</label>
+            <select class="wh-input h-8 w-full px-2">
+              <option>XXX</option>
+              <option>张三</option>
+              <option>李四</option>
+            </select>
+          </div>
+          <div class="min-w-[154px]">
+            <label class="wh-filter-label block mb-1">时间范围</label>
+            <input class="wh-input h-8 w-full px-3" value="2023/05/16 14:10:20" />
+          </div>
+          <div class="text-slate-400 pb-1">-</div>
+          <div class="min-w-[154px]">
+            <label class="wh-filter-label block mb-1 opacity-0">结束时间</label>
+            <input class="wh-input h-8 w-full px-3" value="2023/05/16 14:10:22" />
+          </div>
+          <div class="min-w-[120px]">
+            <label class="wh-filter-label block mb-1">任务状态</label>
+            <select class="wh-input h-8 w-full px-2">
+              <option>全部</option>
+              <option>已完成</option>
+              <option>进行中</option>
+              <option>失败</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" id="usage-filter-search" class="dc-filter-btn wh-btn-primary">查询</button>
+          <button type="button" id="usage-filter-reset" class="dc-filter-btn wh-btn-ghost">重置</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-sm font-semibold text-white">使用记录明细</div>
+        <button type="button" class="dc-filter-btn wh-btn-gold"><i class="fa-solid fa-download mr-1"></i>导出</button>
+      </div>
+      <div class="wh-table-shell bg-slate-950/35">
+        <div class="overflow-x-auto max-h-[min(520px,calc(100vh-300px))]">
+          <table class="w-full min-w-[1560px] text-left">
+            <thead>
+              <tr>
+                <th class="px-3">任务ID</th>
+                <th class="px-3">设备名称</th>
+                <th class="px-3">所属机场</th>
+                <th class="px-3">任务类型</th>
+                <th class="px-3">起飞时间</th>
+                <th class="px-3">降落时间</th>
+                <th class="px-3">使用时长</th>
+                <th class="px-3">最大飞行高度（单位：米）</th>
+                <th class="px-3">电池消耗</th>
+                <th class="px-3">操作员姓名</th>
+                <th class="px-3">操作</th>
+              </tr>
+            </thead>
+            <tbody id="usage-record-body"></tbody>
+          </table>
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+          <span>共 <b id="usage-record-total" class="text-cyan-200">4</b> 条</span>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-left"></i></button>
+            <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary" type="button">1</button>
+            <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-right"></i></button>
+            <select class="wh-input px-2 py-1 text-[11px]">
+              <option>10 条/页</option>
+            </select>
+            <span>跳至</span>
+            <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+            <span>页</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/shell.js"></script>
+  <script>
+    var usageRecords = [
+      {
+        id: "FL20251225001",
+        device: "A区巡检机01",
+        airport: "车辆段机场",
+        taskType: "自动执行计划",
+        takeoff: "2025-12-25 10:00",
+        landing: "2025-12-25 18:15",
+        duration: "6分15秒",
+        maxHeight: "128.6",
+        battery: "35%",
+        operator: "张三",
+      },
+      {
+        id: "FL20251224008",
+        device: "青山巡检无人机",
+        airport: "青山机场",
+        taskType: "临时任务",
+        takeoff: "2025-12-24 09:12",
+        landing: "2025-12-24 09:48",
+        duration: "36分02秒",
+        maxHeight: "96.2",
+        battery: "42%",
+        operator: "李四",
+      },
+      {
+        id: "FL20251223015",
+        device: "DJI-M300E-01",
+        airport: "光谷广场机场",
+        taskType: "自动执行计划",
+        takeoff: "2025-12-23 14:20",
+        landing: "2025-12-23 15:05",
+        duration: "45分18秒",
+        maxHeight: "110.0",
+        battery: "28%",
+        operator: "王五",
+      },
+      {
+        id: "FL20251222003",
+        device: "徐家棚巡检机02",
+        airport: "徐家棚机场",
+        taskType: "临时任务",
+        takeoff: "2025-12-22 08:30",
+        landing: "2025-12-22 09:02",
+        duration: "32分10秒",
+        maxHeight: "88.5",
+        battery: "51%",
+        operator: "赵六",
+      },
+    ];
+
+    function flightLogDetailUrl(logId) {
+      return "../wb/am-flight-log.html?detail=" + encodeURIComponent(logId);
+    }
+
+    function renderUsageRecords(list) {
+      var body = document.getElementById("usage-record-body");
+      var totalEl = document.getElementById("usage-record-total");
+      if (!body) return;
+      if (totalEl) totalEl.textContent = String(list.length);
+      body.innerHTML = list
+        .map(function (row, index) {
+          return (
+            '<tr style="background:' +
+            (index % 2 === 0 ? "rgba(12,24,48,0.45)" : "rgba(15,32,58,0.55)") +
+            '">' +
+            '<td class="px-3 text-slate-100/95 whitespace-nowrap">' +
+            row.id +
+            "</td>" +
+            '<td class="px-3 text-slate-100/95">' +
+            row.device +
+            "</td>" +
+            '<td class="px-3 text-slate-100/95">' +
+            row.airport +
+            "</td>" +
+            '<td class="px-3 text-slate-100/95">' +
+            row.taskType +
+            "</td>" +
+            '<td class="px-3 text-slate-100/95 whitespace-nowrap">' +
+            row.takeoff +
+            "</td>" +
+            '<td class="px-3 text-slate-100/95 whitespace-nowrap">' +
+            row.landing +
+            "</td>" +
+            '<td class="px-3 text-slate-100/95">' +
+            row.duration +
+            "</td>" +
+            '<td class="px-3 text-slate-100/95">' +
+            row.maxHeight +
+            "</td>" +
+            '<td class="px-3 text-slate-100/95">' +
+            row.battery +
+            "</td>" +
+            '<td class="px-3 text-slate-100/95">' +
+            row.operator +
+            "</td>" +
+            '<td class="px-3 whitespace-nowrap">' +
+            '<a href="' +
+            flightLogDetailUrl(row.id) +
+            '" class="dc-table-op">查看详情</a>' +
+            "</td>" +
+            "</tr>"
+          );
+        })
+        .join("");
+    }
+
+    function applyUsageFilter() {
+      var airport = (document.getElementById("filter-airport") || {}).value || "";
+      var list = usageRecords.filter(function (row) {
+        return !airport || row.airport === airport;
+      });
+      renderUsageRecords(list);
+    }
+
+    function drawTrendChart() {
+      const canvas = document.getElementById("trend-chart");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      const left = 42, right = 18, top = 18, bottom = 34;
+      const months = ["一月","二月","三月","四月","五月","六月"];
+      const drone = [10,20,10,15,30,20];
+      const airport = [20,25,50,45,30,30];
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = "rgba(148,163,184,.18)";
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "12px sans-serif";
+      for (let i = 0; i <= 5; i++) {
+        const y = top + ((h - top - bottom) / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(w - right, y);
+        ctx.stroke();
+        ctx.fillText(String(50 - i * 10), 12, y + 4);
+      }
+      months.forEach((m, i) => {
+        const x = left + ((w - left - right) / (months.length - 1)) * i;
+        ctx.fillText(m, x - 12, h - 10);
+      });
+      function drawSeries(list, color) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        list.forEach((v, i) => {
+          const x = left + ((w - left - right) / (months.length - 1)) * i;
+          const y = top + ((50 - v) / 50) * (h - top - bottom);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        list.forEach((v, i) => {
+          const x = left + ((w - left - right) / (months.length - 1)) * i;
+          const y = top + ((50 - v) / 50) * (h - top - bottom);
+          ctx.fillStyle = "#071426";
+          ctx.beginPath();
+          ctx.arc(x, y, 3.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        });
+      }
+      drawSeries(drone, "#1e90ff");
+      drawSeries(airport, "#22d3ee");
+    }
+
+    function drawDurationChart() {
+      const canvas = document.getElementById("duration-chart");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      const left = 54, right = 24, top = 16, bottom = 24;
+      const labels = ["一月","二月","三月","四月","五月","六月"];
+      const drone = [10,20,30,40,50,60];
+      const airport = [20,25,50,45,30,100];
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = "rgba(148,163,184,.18)";
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "12px sans-serif";
+      [0,20,40,60,80,100].forEach((v, i) => {
+        const x = left + ((w - left - right) / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, top);
+        ctx.lineTo(x, h - bottom);
+        ctx.stroke();
+        ctx.fillText(String(v), x - 8, h - 4);
+      });
+      labels.forEach((m, i) => {
+        const y = top + ((h - top - bottom) / labels.length) * i + 16;
+        ctx.fillText(m, 8, y + 4);
+        const y1 = y - 8;
+        const barH = 10;
+        ctx.fillStyle = "#1e90ff";
+        ctx.fillRect(left, y1, drone[i] * 2.9, barH);
+        ctx.fillStyle = "#31c5e4";
+        ctx.fillRect(left, y1 + 14, airport[i] * 2.9, barH);
+      });
+    }
+
+    var lineViolationData = {
+      all: {
+        monthly: [18, 22, 48, 42, 28, 86],
+        pie: [
+          { name: "徐家棚商业综合体项目", value: 24, color: "#38bdf8" },
+          { name: "小洪山地下商业项目", value: 19, color: "#22d3ee" },
+          { name: "八一路102号水表改迁", value: 16, color: "#2dd4bf" },
+          { name: "华中科技大学创新楼项目", value: 14, color: "#67e8f9" },
+          { name: "航空室内柜建设项目", value: 11, color: "#f0b93f" },
+          { name: "万源广场停车场充电桩项目", value: 8, color: "#a78bfa" },
+        ],
+      },
+      "8": {
+        monthly: [20, 25, 50, 45, 30, 100],
+        pie: [
+          { name: "徐家棚商业综合体项目", value: 32, color: "#38bdf8" },
+          { name: "小洪山地下商业项目", value: 26, color: "#22d3ee" },
+          { name: "八一路102号水表改迁", value: 18, color: "#2dd4bf" },
+          { name: "小洪山数据产业园外联工程", value: 12, color: "#67e8f9" },
+          { name: "武汉惠丽甲第", value: 8, color: "#f0b93f" },
+          { name: "其他项目", value: 4, color: "#94a3b8" },
+        ],
+      },
+      "7": {
+        monthly: [12, 18, 32, 28, 22, 58],
+        pie: [
+          { name: "航空室内柜建设项目", value: 22, color: "#38bdf8" },
+          { name: "洪山街板桥村农用地恢复项目", value: 15, color: "#22d3ee" },
+          { name: "经开2136G-Q12地块建设工程", value: 12, color: "#2dd4bf" },
+          { name: "水森活项目中心地勘", value: 6, color: "#67e8f9" },
+          { name: "其他项目", value: 3, color: "#94a3b8" },
+        ],
+      },
+      "19": {
+        monthly: [8, 14, 22, 18, 12, 36],
+        pie: [
+          { name: "花山河保护区外部管廊项目", value: 28, color: "#38bdf8" },
+          { name: "沿线市政迁改项目", value: 6, color: "#22d3ee" },
+          { name: "其他项目", value: 2, color: "#94a3b8" },
+        ],
+      },
+    };
+
+    function getLineData(lineKey) {
+      return lineViolationData[lineKey] || lineViolationData.all;
+    }
+
+    function drawViolationMonthChart(values) {
+      var canvas = document.getElementById("violation-month-chart");
+      if (!canvas) return;
+      var ctx = canvas.getContext("2d");
+      var w = canvas.width;
+      var h = canvas.height;
+      var left = 48;
+      var right = 20;
+      var top = 22;
+      var bottom = 36;
+      var months = ["一月", "二月", "三月", "四月", "五月", "六月"];
+      var max = 100;
+      var barColor = "#22d3ee";
+      var barGlow = "rgba(34, 211, 238, 0.35)";
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.font = "12px sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.strokeStyle = "rgba(148,163,184,.2)";
+
+      for (var i = 0; i <= 5; i++) {
+        var tick = i * 20;
+        var y = h - bottom - ((h - top - bottom) / 5) * i;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(w - right, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillText(String(tick), 14, y + 4);
+      }
+
+      var slot = (w - left - right) / months.length;
+      var barW = Math.min(42, slot * 0.5);
+
+      months.forEach(function (month, i) {
+        var value = values[i] || 0;
+        var x = left + slot * i + (slot - barW) / 2;
+        var barH = (value / max) * (h - top - bottom);
+        var y = h - bottom - barH;
+
+        ctx.fillStyle = barGlow;
+        ctx.fillRect(x - 2, y - 2, barW + 4, barH + 4);
+
+        var grad = ctx.createLinearGradient(0, y, 0, h - bottom);
+        grad.addColorStop(0, "#67e8f9");
+        grad.addColorStop(1, "#0891b2");
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, barW, barH);
+
+        if (barH > 16) {
+          ctx.fillStyle = "#f0fdfa";
+          ctx.font = "bold 11px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(String(value), x + barW / 2, y + 14);
+        }
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "12px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(month, x + barW / 2, h - 12);
+      });
+      ctx.textAlign = "left";
+    }
+
+    function drawViolationPieChart(segments) {
+      var canvas = document.getElementById("violation-pie-chart");
+      var legendEl = document.getElementById("violation-pie-legend");
+      if (!canvas || !segments.length) return;
+
+      var ctx = canvas.getContext("2d");
+      var w = canvas.width;
+      var h = canvas.height;
+      var cx = w / 2;
+      var cy = h / 2;
+      var radius = 68;
+      var inner = 36;
+      var total = segments.reduce(function (sum, s) {
+        return sum + s.value;
+      }, 0);
+      var start = -Math.PI / 2;
+
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius + 8, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(34, 211, 238, 0.08)";
+      ctx.fill();
+
+      segments.forEach(function (seg) {
+        var slice = (seg.value / total) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, start, start + slice);
+        ctx.closePath();
+        ctx.fillStyle = seg.color;
+        ctx.fill();
+        ctx.strokeStyle = "rgba(7, 20, 38, 0.88)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        start += slice;
+      });
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, inner, 0, Math.PI * 2);
+      ctx.fillStyle = "#071426";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(34, 211, 238, 0.28)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = "#e0f2fe";
+      ctx.font = "bold 15px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(String(total), cx, cy - 7);
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "10px sans-serif";
+      ctx.fillText("违规项", cx, cy + 11);
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+
+      if (legendEl) {
+        legendEl.innerHTML = segments
+          .map(function (seg) {
+            return (
+              '<span class="dc-legend-item" title="' +
+              seg.name +
+              '（' +
+              seg.value +
+              '个）"><span class="dc-dot" style="background:' +
+              seg.color +
+              '"></span><span class="dc-legend-label">' +
+              seg.name +
+              "</span> " +
+              seg.value +
+              "个</span>"
+            );
+          })
+          .join("");
+      }
+    }
+
+    function refreshOverviewByLine() {
+      var lineKey = document.getElementById("overview-line-select").value;
+      var data = getLineData(lineKey);
+      drawViolationMonthChart(data.monthly);
+      drawViolationPieChart(data.pie);
+    }
+
+    drawTrendChart();
+    drawDurationChart();
+    refreshOverviewByLine();
+
+    document.getElementById("overview-line-select").addEventListener("change", refreshOverviewByLine);
+
+    renderUsageRecords(usageRecords);
+    document.getElementById("usage-filter-search").addEventListener("click", applyUsageFilter);
+    document.getElementById("usage-filter-reset").addEventListener("click", function () {
+      var airportSel = document.getElementById("filter-airport");
+      if (airportSel) airportSel.value = "";
+      renderUsageRecords(usageRecords);
+    });
+  </script>
+</body>
+</html>

@@ -3,79 +3,91 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>登录 — 武汉地铁保护区管理平台</title>
+    <title>武汉地铁保护区管理平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="assets/css/theme.css" />
     <style>
-      .login-shell {
+      .entry-shell {
+        min-height: 100vh;
+        min-height: 100dvh;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 1.5rem;
       }
-      .login-card {
+      .entry-grid {
         width: 100%;
-        max-width: 400px;
+        max-width: 520px;
+        display: grid;
+        gap: 1rem;
+      }
+      @media (min-width: 480px) {
+        .entry-grid { grid-template-columns: 1fr 1fr; max-width: 640px; }
+      }
+      .entry-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 2rem 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(34, 211, 238, 0.25);
+        background: rgba(7, 27, 51, 0.85);
+        color: #e2f5ff;
+        text-decoration: none;
+        transition: border-color 0.15s, background 0.15s, transform 0.15s;
+      }
+      .entry-card:hover {
+        border-color: rgba(34, 211, 238, 0.55);
+        background: rgba(12, 40, 72, 0.95);
+        transform: translateY(-2px);
+      }
+      .entry-card__icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+      .entry-card--mobile .entry-card__icon {
+        color: #a5f3fc;
+        background: rgba(34, 211, 238, 0.12);
+        border: 1px solid rgba(34, 211, 238, 0.3);
+      }
+      .entry-card--desktop .entry-card__icon {
+        color: #a5f3fc;
+        background: rgba(34, 211, 238, 0.12);
+        border: 1px solid rgba(34, 211, 238, 0.35);
       }
     </style>
   </head>
   <body class="wh-main-canvas text-slate-100">
-    <div class="login-shell">
-      <div class="login-card neon-panel neon-panel--tight p-8 md:p-10">
-        <div class="text-center mb-8">
+    <div class="entry-shell">
+      <div class="w-full flex flex-col items-center">
+        <div class="text-center mb-10">
           <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl border border-cyan-400/35 bg-black/25 text-2xl text-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.25)] mb-4">
             <i class="fa-solid fa-train-subway" aria-hidden="true"></i>
           </div>
           <h1 class="text-xl font-semibold text-white tracking-tight" style="text-shadow: 0 0 24px rgba(34, 211, 238, 0.25)">武汉地铁保护区管理平台</h1>
-          <p class="text-xs text-slate-500 mt-2">深色运维后台 · 请登录后继续</p>
+          <p class="text-xs text-slate-500 mt-2">请选择访问端</p>
         </div>
-
-        <form id="login-form" class="space-y-5" novalidate>
-          <div>
-            <label for="login-account" class="block wh-filter-label mb-1.5">账号</label>
-            <input
-              id="login-account"
-              type="text"
-              autocomplete="username"
-              class="wh-input w-full px-3 py-2.5"
-              placeholder="请输入账号"
-              required
-            />
-          </div>
-          <div>
-            <label for="login-password" class="block wh-filter-label mb-1.5">密码</label>
-            <input
-              id="login-password"
-              type="password"
-              autocomplete="current-password"
-              class="wh-input w-full px-3 py-2.5"
-              placeholder="请输入密码"
-              required
-            />
-          </div>
-          <button type="submit" class="w-full py-2.5 text-sm font-semibold transition-ui wh-btn-primary cursor-pointer hover:opacity-95 active:scale-[0.99]">
-            <i class="fa-solid fa-right-to-bracket mr-2" aria-hidden="true"></i>登录
-          </button>
-        </form>
-
-        <p class="mt-6 text-center text-[11px] text-slate-600">原型演示 · 任意账号密码均可进入系统</p>
+        <div class="entry-grid">
+          <a href="app/index.html" class="entry-card entry-card--mobile">
+            <span class="entry-card__icon"><i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i></span>
+            <span class="text-base font-semibold text-white">移动端</span>
+            <span class="text-[11px] text-slate-500 mt-2">手机 / 平板原型</span>
+          </a>
+          <a href="web/web-login.html" class="entry-card entry-card--desktop">
+            <span class="entry-card__icon"><i class="fa-solid fa-desktop" aria-hidden="true"></i></span>
+            <span class="text-base font-semibold text-white">电脑端</span>
+            <span class="text-[11px] text-slate-500 mt-2">运维后台 · Web</span>
+          </a>
+        </div>
       </div>
     </div>
-
-    <script>
-      (function () {
-        var form = document.getElementById("login-form");
-        if (!form) return;
-        form.addEventListener("submit", function (e) {
-          e.preventDefault();
-          if (!form.checkValidity()) {
-            form.reportValidity();
-            return;
-          }
-          window.location.href = "map-gis.html";
-        });
-      })();
-    </script>
   </body>
 </html>

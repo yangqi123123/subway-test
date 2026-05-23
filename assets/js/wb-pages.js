@@ -157,6 +157,49 @@
     { configId: "3", configName: "日志保留天数", configKey: "system.log.keepDays", configValue: "180", configType: "否", remark: "操作日志保留周期", createTime: "2026-04-08 09:20" },
   ];
 
+  var wfCategoryRows = [
+    { categoryId: "1", categoryName: "飞行审批", categoryCode: "wf_fly", orderNum: "1", status: true, remark: "飞行计划、空域校验相关流程", createTime: "2026-04-02 11:05" },
+    { categoryId: "2", categoryName: "告警处置", categoryCode: "wf_alert", orderNum: "2", status: true, remark: "告警复核、审核闭环", createTime: "2026-04-03 09:20" },
+    { categoryId: "3", categoryName: "保护区项目", categoryCode: "wf_project", orderNum: "3", status: true, remark: "项目备案与巡查督办", createTime: "2026-04-05 14:00" },
+    { categoryId: "4", categoryName: "通用办公", categoryCode: "wf_general", orderNum: "9", status: false, remark: "历史流程归档", createTime: "2026-04-10 16:30" },
+  ];
+
+  var wfDesignRows = [
+    {
+      flowId: "1",
+      flowName: "飞行计划审批",
+      categoryName: "飞行审批",
+      version: "v2",
+      statusText: "已发布",
+      nodeCount: 6,
+      updateBy: "admin",
+      updateTime: "2026-05-12 10:20",
+      remark: "提交 → 工长 → 工务 → 物管 → 车间主任 → 部门领导",
+    },
+    {
+      flowId: "2",
+      flowName: "告警复核审核",
+      categoryName: "告警处置",
+      version: "v1",
+      statusText: "已发布",
+      nodeCount: 4,
+      updateBy: "zhangsan",
+      updateTime: "2026-05-10 15:40",
+      remark: "未复核 → 已复核 → 审核通过/驳回",
+    },
+    {
+      flowId: "3",
+      flowName: "保护区项目备案",
+      categoryName: "保护区项目",
+      version: "v3",
+      statusText: "草稿",
+      nodeCount: 5,
+      updateBy: "lisi",
+      updateTime: "2026-05-14 09:05",
+      remark: "草稿编辑中，未发布",
+    },
+  ];
+
   var noticeRows = [
     { noticeId: "1", noticeTitle: "五一期间巡检值班安排", noticeType: "通知", statusText: "已发布", createBy: "admin", createTime: "2026-04-28 09:00", noticeContent: "请各业务组按照排班执行。" },
     { noticeId: "2", noticeTitle: "系统升级维护公告", noticeType: "公告", statusText: "草稿", createBy: "system", createTime: "2026-05-02 14:20", noticeContent: "计划于周末进行升级维护。" },
@@ -773,6 +816,114 @@
       };
     }
 
+    if (key === "wb-wf-category") {
+      return {
+        pageType: "table",
+        title: "流程分类",
+        filters: [
+          { key: "categoryName", label: "分类名称" },
+          { key: "categoryCode", label: "分类编码" },
+          { key: "statusText", label: "状态", type: "select", options: ["启用", "停用"] },
+        ],
+        filterState: {},
+        primaryButtons: [
+          { label: "新增", action: "add", modalTitle: "新增流程分类" },
+          { label: "导出", variant: "ghost", tip: "流程分类已导出" },
+        ],
+        columns: [
+          { key: "categoryId", label: "分类编号" },
+          { key: "categoryName", label: "分类名称" },
+          { key: "categoryCode", label: "分类编码" },
+          { key: "orderNum", label: "排序" },
+          { key: "status", label: "状态", type: "switch" },
+          { key: "remark", label: "备注" },
+          { key: "createTime", label: "创建时间" },
+        ],
+        rows: wfCategoryRows,
+        pageState: { page: 1, pageSize: 10 },
+        formFields: [
+          { key: "categoryName", label: "分类名称", required: true },
+          { key: "categoryCode", label: "分类编码", required: true },
+          { key: "orderNum", label: "显示排序", required: true },
+          { key: "statusText", label: "状态", type: "select", options: ["启用", "停用"], required: true },
+          { key: "remark", label: "备注", type: "textarea", full: true },
+        ],
+        actions: [
+          { label: "编辑", cls: "gold", type: "edit" },
+          { label: "删除", cls: "warn", type: "delete" },
+        ],
+      };
+    }
+
+    if (key === "wb-wf-design") {
+      return {
+        pageType: "table",
+        title: "流程设计",
+        filters: [
+          { key: "flowName", label: "流程名称" },
+          { key: "categoryName", label: "流程分类", type: "select", options: ["", "飞行审批", "告警处置", "保护区项目", "通用办公"] },
+          { key: "statusText", label: "状态", type: "select", options: ["草稿", "已发布", "已停用"] },
+        ],
+        filterState: {},
+        primaryButtons: [
+          { label: "新增", action: "add", modalTitle: "新增流程" },
+          { label: "导出", variant: "ghost", tip: "流程设计列表已导出" },
+        ],
+        columns: [
+          { key: "flowId", label: "流程编号" },
+          { key: "flowName", label: "流程名称" },
+          { key: "categoryName", label: "流程分类" },
+          { key: "version", label: "版本" },
+          { key: "statusText", label: "状态" },
+          { key: "nodeCount", label: "节点数" },
+          { key: "updateBy", label: "更新人" },
+          { key: "updateTime", label: "更新时间" },
+        ],
+        rows: wfDesignRows,
+        pageState: { page: 1, pageSize: 10 },
+        formFields: [
+          { key: "flowName", label: "流程名称", required: true },
+          {
+            key: "categoryName",
+            label: "流程分类",
+            type: "select",
+            options: ["飞行审批", "告警处置", "保护区项目", "通用办公"],
+            required: true,
+          },
+          { key: "version", label: "版本号", required: true },
+          { key: "statusText", label: "状态", type: "select", options: ["草稿", "已发布", "已停用"], required: true },
+          { key: "remark", label: "流程说明", type: "textarea", full: true },
+        ],
+        actions: [
+          {
+            label: "设计",
+            cls: "gold",
+            handler: function (row) {
+              WBSystem.openModal(
+                "流程设计 · " + row.flowName,
+                '<div class="px-5 py-6 text-sm leading-7 text-slate-200">' +
+                  '<p class="mb-3 text-cyan-100">版本：<b>' +
+                  row.version +
+                  "</b>　状态：<b>" +
+                  row.statusText +
+                  "</b>　节点数：" +
+                  row.nodeCount +
+                  "</p>" +
+                  '<p class="text-slate-300">' +
+                  (row.remark || "—") +
+                  '</p><p class="mt-4 text-xs text-slate-500">原型阶段：可视化流程编排画布待对接，当前为流程元数据维护。</p></div>',
+                null,
+                null,
+                { hideSave: true, size: "lg" }
+              );
+            },
+          },
+          { label: "编辑", cls: "gold", type: "edit", modalTitle: "编辑流程" },
+          { label: "删除", cls: "warn", type: "delete" },
+        ],
+      };
+    }
+
     if (key === "wb-log") {
       return {
         pageType: "log",
@@ -846,14 +997,34 @@
 
   function boot() {
     var key = document.body.getAttribute("data-sidebar-key");
+    if (!key || key === "wb-hub") return false;
     var config = pageConfig(key);
-    if (!config || !window.WBSystem) return;
+    if (!config || !window.WBSystem) return false;
+    var root = document.getElementById("page-root");
+    if (!root) return false;
     WBSystem.createPage(config);
+    return true;
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot);
-  } else {
-    boot();
+  function tryBoot() {
+    if (boot()) return;
+    window.setTimeout(function () {
+      boot();
+    }, 50);
   }
+
+  window.__wbBootPage = tryBoot;
+
+  function scheduleBoot() {
+    document.addEventListener("wh-shell-ready", tryBoot, { once: true });
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function () {
+        window.setTimeout(tryBoot, 0);
+      });
+    } else {
+      window.setTimeout(tryBoot, 0);
+    }
+  }
+
+  scheduleBoot();
 })();

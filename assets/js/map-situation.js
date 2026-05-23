@@ -2,13 +2,14 @@
  * 态势感知：GIS 告警点 + 全线预警列表跳转专家工具
  */
 (function () {
-  var EXPERT_URL = "map-expert.html";
+  var EXPERT_URL = "map/map-expert.html";
 
   function goExpert(row) {
     var q = row
       ? "?from=situation&location=" + encodeURIComponent(row.location)
       : "?from=situation";
-    window.location.href = EXPERT_URL + q;
+    var base = typeof whPageHref === "function" ? whPageHref(EXPERT_URL) : EXPERT_URL;
+    window.location.href = base + q;
   }
 
   function renderTableBody() {

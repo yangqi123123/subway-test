@@ -240,7 +240,7 @@
       (options.hideCockpitNav
         ? ""
         : '<div class="gis-detail-action gis-alarm-panel__action">' +
-          '<button type="button" class="gis-detail-btn gis-detail-btn--block" data-cockpit-url="map-cockpit-prep.html">前往虚拟座舱</button>' +
+          '<button type="button" class="gis-detail-btn gis-detail-btn--block" data-cockpit-url="cockpit/map-cockpit-prep.html">前往虚拟座舱</button>' +
           "</div>") +
       "</div>"
     );
@@ -255,7 +255,9 @@
     });
     body.querySelectorAll("[data-cockpit-url]").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        window.location.href = btn.getAttribute("data-cockpit-url");
+        var cockpitUrl = btn.getAttribute("data-cockpit-url");
+        window.location.href =
+          typeof whPageHref === "function" ? whPageHref(cockpitUrl) : cockpitUrl;
       });
     });
     var carousel = body.querySelector("[data-alarm-carousel]");
@@ -336,7 +338,7 @@
               : "") +
             (options.hideCockpitNav
               ? ""
-              : '<div class="gis-detail-action"><button type="button" class="gis-detail-btn" data-cockpit-url="map-cockpit-prep.html">前往虚拟座舱</button></div>') +
+              : '<div class="gis-detail-action"><button type="button" class="gis-detail-btn" data-cockpit-url="cockpit/map-cockpit-prep.html">前往虚拟座舱</button></div>') +
             "</div>"
           );
         })
@@ -1142,7 +1144,7 @@
                 item.distance +
                 "</span></div>"
               : "") +
-            '<div class="gis-detail-action"><button type="button" class="gis-detail-btn" data-cockpit-url="map-cockpit-prep.html">前往虚拟座舱</button></div>' +
+            '<div class="gis-detail-action"><button type="button" class="gis-detail-btn" data-cockpit-url="cockpit/map-cockpit-prep.html">前往虚拟座舱</button></div>' +
             "</div>"
           );
         })
@@ -1158,7 +1160,13 @@
         "30.575,114.325": { src: "assets/img/map-gis-satellite.png", time: "2026/05/14 10:42", ll: [30.584, 114.302] },
         "30.565,114.300": { src: "assets/img/map-gis-road.png", time: "2026/05/14 14:08", ll: [30.590, 114.306] },
       };
-      return photoMap[key] || null;
+      var hit = photoMap[key];
+      if (!hit) return null;
+      return {
+        src: typeof whAsset === "function" ? whAsset(hit.src) : hit.src,
+        time: hit.time,
+        ll: hit.ll,
+      };
     }
 
     function jitter(seed, i) {

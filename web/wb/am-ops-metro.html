@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>资源监控</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/ops-topology-scene.css" />
+  <style>
+    .ops-page {
+      color: #e2f5ff;
+      --ops-border: rgba(34, 211, 238, 0.22);
+      --ops-panel: rgba(5, 10, 26, 0.92);
+    }
+    .ops-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .ops-toolbar h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #f8fafc;
+      text-shadow: 0 0 20px rgba(34, 211, 238, 0.25);
+    }
+    .ops-server-select {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #9cc6df;
+    }
+    .ops-server-select .wh-input {
+      min-width: 260px;
+      height: 34px;
+    }
+    .ops-board {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .ops-board-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+    @media (max-width: 1200px) {
+      .ops-board-top { grid-template-columns: 1fr; }
+    }
+    .ops-block {
+      border: 1px solid var(--ops-border);
+      border-radius: 4px;
+      background: var(--ops-panel);
+      padding: 14px 16px 16px;
+      min-width: 0;
+      box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.04);
+    }
+    .ops-sec-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #f0f9ff;
+      letter-spacing: 0.02em;
+    }
+    .ops-sec-title::before {
+      content: "";
+      width: 3px;
+      height: 14px;
+      border-radius: 1px;
+      background: #22d3ee;
+      box-shadow: 0 0 10px rgba(34, 211, 238, 0.55);
+      flex-shrink: 0;
+    }
+    /* —— 网管监控 —— */
+    .ops-nms-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .ops-nms-grid { grid-template-columns: 1fr; }
+    }
+    .ops-metrics-mini {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .ops-mini-card {
+      border: 1px solid rgba(34, 211, 238, 0.12);
+      border-radius: 4px;
+      background: rgba(2, 8, 23, 0.45);
+      padding: 12px 12px 10px;
+      min-height: 72px;
+    }
+    .ops-mini-card__label {
+      font-size: 11px;
+      color: #8fa8be;
+      margin-bottom: 8px;
+    }
+    .ops-mini-card__val {
+      font-size: 16px;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+    .ops-mini-card__val--green {
+      color: #84cc16;
+      font-size: 15px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .ops-metrics-extra {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ops-metrics-extra__row {
+      border: 1px solid rgba(34, 211, 238, 0.1);
+      border-radius: 4px;
+      background: rgba(2, 8, 23, 0.35);
+      padding: 10px 12px;
+    }
+    .ops-metrics-extra__label {
+      font-size: 11px;
+      color: #8fa8be;
+      margin-bottom: 4px;
+    }
+    .ops-metrics-extra__val {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+    .ops-store-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .ops-store-item {
+      border: 1px solid rgba(34, 211, 238, 0.12);
+      border-radius: 4px;
+      background: rgba(2, 8, 23, 0.4);
+      padding: 10px 12px;
+    }
+    .ops-store-item__title {
+      font-size: 11px;
+      color: #8fa8be;
+      margin-bottom: 8px;
+    }
+    .ops-store-item__nums {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      text-align: center;
+    }
+    .ops-store-item__num {
+      font-size: 16px;
+      font-weight: 700;
+      color: #f8fafc;
+      line-height: 1.2;
+    }
+    .ops-store-item__sub {
+      font-size: 10px;
+      color: #7d94a8;
+      margin-top: 3px;
+    }
+    /* —— 存储占用 —— */
+    .ops-cap-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .ops-cap-summary__item {
+      text-align: center;
+      padding: 8px 4px;
+    }
+    .ops-cap-summary__label {
+      font-size: 12px;
+      color: #8fa8be;
+      margin-bottom: 8px;
+    }
+    .ops-cap-summary__val {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: 0.02em;
+    }
+    .ops-cap-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .ops-cap-bar-row {
+      display: grid;
+      grid-template-columns: 72px 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+    .ops-cap-bar-row__label {
+      font-size: 12px;
+      color: #cbd5e1;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ops-cap-bar-row__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .ops-cap-bar-track {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(30, 41, 59, 0.8);
+      overflow: hidden;
+    }
+    .ops-cap-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+    }
+    .ops-cap-bar-row__end {
+      font-size: 12px;
+      color: #94a3b8;
+      min-width: 64px;
+      text-align: right;
+    }
+    .ops-cap-total {
+      padding-top: 4px;
+    }
+    .ops-cap-total__label {
+      font-size: 12px;
+      color: #8fa8be;
+      margin-bottom: 8px;
+    }
+    .ops-cap-total__track {
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(30, 41, 59, 0.85);
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .ops-cap-total__fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #22d3ee, #38bdf8);
+    }
+    .ops-cap-total__foot {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .ops-footer {
+      text-align: center;
+      font-size: 11px;
+      color: #64748b;
+      padding: 8px 0 0;
+    }
+  </style>
+</head>
+<body data-shell="default" data-top="wb" data-sidebar-key="am-ops-metro" data-wb-view="page">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full ops-page px-1 pb-4">
+    <nav class="neon-panel neon-panel--tight mb-3 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+      <span class="text-slate-600">/</span>
+      <span>我的工作台</span>
+      <span class="text-slate-600">/</span>
+      <span class="text-cyan-50 font-semibold tracking-wide">资源监控</span>
+    </nav>
+
+    <div class="ops-toolbar">
+      <h1>资源监控</h1>
+      <div class="ops-server-select">
+        <label for="ops-server-select">选择服务器</label>
+        <select id="ops-server-select" class="wh-input px-3 text-sm">
+          <option value="metro">地铁信息系统</option>
+          <option value="fulltime">全时全域系统</option>
+          <option value="uav">无人机系统</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="ops-board">
+      <div class="ops-board-top">
+        <!-- 左上：服务器的拓扑图 -->
+        <section class="ops-block ops-block--topology">
+          <h2 class="ops-sec-title">服务器的拓扑图</h2>
+          <div class="topo-scene" id="topo-scene">
+            <div class="topo-scene__bg"></div>
+            <div class="topo-scene__stars"></div>
+            <div class="topo-scene__grid"></div>
+            <svg class="topo-scene__links" viewBox="0 0 640 420" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="topoLineGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.2" />
+                  <stop offset="50%" stop-color="#67e8f9" stop-opacity="1" />
+                  <stop offset="100%" stop-color="#22d3ee" stop-opacity="0.2" />
+                </linearGradient>
+              </defs>
+              <g data-link="app">
+                <line class="topo-link-base" x1="320" y1="215" x2="320" y2="58" />
+                <line class="topo-link-glow" x1="320" y1="215" x2="320" y2="58" />
+                <circle class="topo-pulse-dot" r="2.5"><animateMotion dur="2.4s" repeatCount="indefinite" path="M 320 215 L 320 58" /></circle>
+                <circle class="topo-pulse-dot" r="2" opacity="0.85"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M 320 215 L 320 58" /></circle>
+              </g>
+              <g data-link="db">
+                <line class="topo-link-base" x1="320" y1="215" x2="72" y2="205" />
+                <line class="topo-link-glow" x1="320" y1="215" x2="72" y2="205" />
+                <circle class="topo-pulse-dot" r="2.5"><animateMotion dur="2.8s" repeatCount="indefinite" path="M 320 215 L 72 205" /></circle>
+                <circle class="topo-pulse-dot" r="2" opacity="0.85"><animateMotion dur="2.8s" begin="1.4s" repeatCount="indefinite" path="M 320 215 L 72 205" /></circle>
+              </g>
+              <g data-link="gateway">
+                <line class="topo-link-base" x1="320" y1="215" x2="158" y2="332" />
+                <line class="topo-link-glow" x1="320" y1="215" x2="158" y2="332" />
+                <circle class="topo-pulse-dot" r="2.5"><animateMotion dur="3s" repeatCount="indefinite" path="M 320 215 L 158 332" /></circle>
+                <circle class="topo-pulse-dot" r="2" opacity="0.85"><animateMotion dur="3s" begin="1.5s" repeatCount="indefinite" path="M 320 215 L 158 332" /></circle>
+              </g>
+              <g data-link="backup">
+                <line class="topo-link-base" x1="320" y1="215" x2="320" y2="362" />
+                <line class="topo-link-glow" x1="320" y1="215" x2="320" y2="362" />
+                <circle class="topo-pulse-dot" r="2.5"><animateMotion dur="2.2s" repeatCount="indefinite" path="M 320 215 L 320 362" /></circle>
+                <circle class="topo-pulse-dot" r="2" opacity="0.85"><animateMotion dur="2.2s" begin="1.1s" repeatCount="indefinite" path="M 320 215 L 320 362" /></circle>
+              </g>
+              <g data-link="storage">
+                <line class="topo-link-base" x1="320" y1="215" x2="568" y2="205" />
+                <line class="topo-link-glow" x1="320" y1="215" x2="568" y2="205" />
+                <circle class="topo-pulse-dot" r="2.5"><animateMotion dur="2.6s" repeatCount="indefinite" path="M 320 215 L 568 205" /></circle>
+                <circle class="topo-pulse-dot" r="2" opacity="0.85"><animateMotion dur="2.6s" begin="1.3s" repeatCount="indefinite" path="M 320 215 L 568 205" /></circle>
+              </g>
+              <circle cx="320" cy="215" r="4" fill="#38bdf8" opacity="0.9"><animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" /></circle>
+            </svg>
+
+            <div class="topo-node" style="left:50%;top:51%">
+              <div class="topo-node__halo">
+                <div class="topo-node__device">
+                  <div class="topo-dev topo-dev--switch">
+                    <div class="topo-dev__box"><span class="topo-dev__symbol">⇄</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="topo-node__name">核心交换机</div>
+              <div class="topo-node__status" data-node="core"><span class="topo-dot topo-dot--ok"></span><span>在线</span></div>
+            </div>
+            <div class="topo-node topo-node--north" style="left:50%;top:17%">
+              <div class="topo-node__halo">
+                <div class="topo-node__device">
+                  <div class="topo-dev topo-dev--cluster">
+                    <div class="topo-rack"></div><div class="topo-rack"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="topo-node__name">应用服务器集群</div>
+              <div class="topo-node__status" data-node="app"><span class="topo-dot topo-dot--ok"></span><span>在线</span></div>
+            </div>
+            <div class="topo-node" style="left:11%;top:49%">
+              <div class="topo-node__halo">
+                <div class="topo-node__device">
+                  <div class="topo-dev topo-dev--db">
+                    <div class="topo-cylinder"></div>
+                    <div class="topo-cylinder"></div>
+                    <div class="topo-cylinder"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="topo-node__name">数据库服务器</div>
+              <div class="topo-node__status" data-node="db"><span class="topo-dot topo-dot--ok"></span><span>在线</span></div>
+            </div>
+            <div class="topo-node" style="left:25%;top:79%">
+              <div class="topo-node__halo">
+                <div class="topo-node__device">
+                  <div class="topo-dev topo-dev--gateway">
+                    <div class="topo-dev__antenna"></div>
+                    <div class="topo-dev__box"><span class="topo-dev__shield"><i class="fa-solid fa-shield-halved"></i></span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="topo-node__name">管理网关</div>
+              <div class="topo-node__status" data-node="gateway"><span class="topo-dot topo-dot--warn"></span><span>在线</span></div>
+            </div>
+            <div class="topo-node" style="left:50%;top:86%">
+              <div class="topo-node__halo">
+                <div class="topo-node__device">
+                  <div class="topo-dev topo-dev--backup"><div class="topo-rack"></div></div>
+                </div>
+              </div>
+              <div class="topo-node__name">备份服务器</div>
+              <div class="topo-node__status" data-node="backup"><span class="topo-dot topo-dot--warn"></span><span>告警</span></div>
+            </div>
+            <div class="topo-node" style="left:89%;top:49%">
+              <div class="topo-node__halo">
+                <div class="topo-node__device">
+                  <div class="topo-dev topo-dev--storage">
+                    <div class="topo-storage-body">
+                      <span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span>
+                      <span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span>
+                      <span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span>
+                      <span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="topo-node__name">存储阵列</div>
+              <div class="topo-node__status" data-node="storage"><span class="topo-dot topo-dot--ok"></span><span>在线</span></div>
+            </div>
+
+            <div class="topo-legend">
+              <span><span class="topo-dot topo-dot--ok"></span>正常</span>
+              <span><span class="topo-dot topo-dot--warn"></span>告警</span>
+              <span><span class="topo-dot topo-dot--danger"></span>严重</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 右上：网管监控 -->
+        <section class="ops-block">
+          <h2 class="ops-sec-title">网管监控</h2>
+          <div class="ops-nms-grid">
+            <div class="ops-nms-metrics">
+              <div class="ops-metrics-mini">
+                <div class="ops-mini-card">
+                  <div class="ops-mini-card__label">CPU使用率</div>
+                  <div class="ops-mini-card__val ops-mini-card__val--green" data-metric="cpu"><i class="fa-solid fa-arrow-down text-[11px]"></i> 3%</div>
+                </div>
+                <div class="ops-mini-card">
+                  <div class="ops-mini-card__label">CPU核心数</div>
+                  <div class="ops-mini-card__val" data-metric="cores">8</div>
+                </div>
+                <div class="ops-mini-card">
+                  <div class="ops-mini-card__label">内存使用率</div>
+                  <div class="ops-mini-card__val ops-mini-card__val--green" data-metric="mem"><i class="fa-solid fa-arrow-down text-[11px]"></i> 16.88%</div>
+                </div>
+                <div class="ops-mini-card">
+                  <div class="ops-mini-card__label">磁盘使用率</div>
+                  <div class="ops-mini-card__val ops-mini-card__val--green" data-metric="disk"><i class="fa-solid fa-arrow-down text-[11px]"></i> 9%</div>
+                </div>
+              </div>
+              <div class="ops-metrics-extra">
+                <div class="ops-metrics-extra__row">
+                  <div class="ops-metrics-extra__label">剩余内存情况</div>
+                  <div class="ops-metrics-extra__val" data-metric="memFree">26.1 GiB / 31.4 GiB</div>
+                </div>
+                <div class="ops-metrics-extra__row">
+                  <div class="ops-metrics-extra__label">剩余磁盘情况</div>
+                  <div class="ops-metrics-extra__val" data-metric="diskFree">1.0T / 45.0T</div>
+                </div>
+              </div>
+            </div>
+            <div class="ops-store-list">
+              <div class="ops-store-item">
+                <div class="ops-store-item__title">照片视频存储信息</div>
+                <div class="ops-store-item__nums">
+                  <div>
+                    <div class="ops-store-item__num" data-store="photoCount">182</div>
+                    <div class="ops-store-item__sub">照片视频数量</div>
+                  </div>
+                  <div>
+                    <div class="ops-store-item__num" data-store="photoSize">3.82 TB</div>
+                    <div class="ops-store-item__sub">照片视频大小</div>
+                  </div>
+                </div>
+              </div>
+              <div class="ops-store-item">
+                <div class="ops-store-item__title">项目文件存储信息</div>
+                <div class="ops-store-item__nums">
+                  <div>
+                    <div class="ops-store-item__num" data-store="projectCount">96</div>
+                    <div class="ops-store-item__sub">项目文件数量</div>
+                  </div>
+                  <div>
+                    <div class="ops-store-item__num" data-store="projectSize">1.26 TB</div>
+                    <div class="ops-store-item__sub">项目文件大小</div>
+                  </div>
+                </div>
+              </div>
+              <div class="ops-store-item">
+                <div class="ops-store-item__title">资料库存储信息</div>
+                <div class="ops-store-item__nums">
+                  <div>
+                    <div class="ops-store-item__num" data-store="libCount">268</div>
+                    <div class="ops-store-item__sub">资料库数量</div>
+                  </div>
+                  <div>
+                    <div class="ops-store-item__num" data-store="libSize">860 GB</div>
+                    <div class="ops-store-item__sub">资料库大小</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 底部：存储占用 -->
+      <section class="ops-block">
+        <h2 class="ops-sec-title">存储占用</h2>
+        <div class="ops-cap-summary">
+          <div class="ops-cap-summary__item">
+            <div class="ops-cap-summary__label">总容量</div>
+            <div class="ops-cap-summary__val" data-chart="total">45.0 TB</div>
+          </div>
+          <div class="ops-cap-summary__item">
+            <div class="ops-cap-summary__label">已用容量</div>
+            <div class="ops-cap-summary__val" data-chart="used">5.94 TB</div>
+          </div>
+          <div class="ops-cap-summary__item">
+            <div class="ops-cap-summary__label">可用容量</div>
+            <div class="ops-cap-summary__val" data-chart="free">39.06 TB</div>
+          </div>
+        </div>
+        <div class="ops-cap-bars">
+          <div class="ops-cap-bar-row">
+            <span class="ops-cap-bar-row__label"><span class="ops-cap-bar-row__dot" style="background:#1e90ff"></span>照片视频</span>
+            <div class="ops-cap-bar-track"><div class="ops-cap-bar-fill" data-bar="photo" style="width:64%;background:#1e90ff"></div></div>
+            <span class="ops-cap-bar-row__end" data-bar-label="photo">3.82 TB</span>
+          </div>
+          <div class="ops-cap-bar-row">
+            <span class="ops-cap-bar-row__label"><span class="ops-cap-bar-row__dot" style="background:#17bebb"></span>项目文件</span>
+            <div class="ops-cap-bar-track"><div class="ops-cap-bar-fill" data-bar="project" style="width:21%;background:#17bebb"></div></div>
+            <span class="ops-cap-bar-row__end" data-bar-label="project">1.26 TB</span>
+          </div>
+          <div class="ops-cap-bar-row">
+            <span class="ops-cap-bar-row__label"><span class="ops-cap-bar-row__dot" style="background:#52c41a"></span>资料库</span>
+            <div class="ops-cap-bar-track"><div class="ops-cap-bar-fill" data-bar="lib" style="width:15%;background:#52c41a"></div></div>
+            <span class="ops-cap-bar-row__end" data-bar-label="lib">860 GB</span>
+          </div>
+        </div>
+        <div class="ops-cap-total">
+          <div class="ops-cap-total__label">总存储占用</div>
+          <div class="ops-cap-total__track">
+            <div class="ops-cap-total__fill" data-chart="pctBar" style="width:13.2%"></div>
+          </div>
+          <div class="ops-cap-total__foot">
+            <span data-chart="pctText">已用 13.2%</span>
+            <span data-chart="pctDetail">5.94 TB / 45.0 TB</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="ops-footer">© 2020-2026 All Rights Reserved Wuhan</div>
+  </div>
+  <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/workbench-mega.js"></script>
+  <script src="../../assets/js/shell.js"></script>
+  <script>
+    (function () {
+      var SERVER_DATA = {
+        metro: {
+          metrics: { cpu: "3%", cores: "8", mem: "16.88%", disk: "9%", memFree: "26.1 GiB / 31.4 GiB", diskFree: "1.0T / 45.0T" },
+          store: { photoCount: "182", photoSize: "3.82 TB", projectCount: "96", projectSize: "1.26 TB", libCount: "268", libSize: "860 GB" },
+          chart: { total: "45.0 TB", used: "5.94 TB", free: "39.06 TB", pct: 13.2, pctDetail: "5.94 TB / 45.0 TB", bars: { photo: "64%", project: "21%", lib: "15%" }, labels: { photo: "3.82 TB", project: "1.26 TB", lib: "860 GB" } },
+          nodes: { core: ["ok", "在线"], app: ["ok", "在线"], db: ["ok", "在线"], gateway: ["warn", "在线"], backup: ["warn", "告警"], storage: ["ok", "在线"] }
+        },
+        fulltime: {
+          metrics: { cpu: "12%", cores: "16", mem: "42.5%", disk: "18%", memFree: "18.2 GiB / 31.4 GiB", diskFree: "2.1T / 12.0T" },
+          store: { photoCount: "256", photoSize: "4.12 TB", projectCount: "112", projectSize: "1.58 TB", libCount: "302", libSize: "920 GB" },
+          chart: { total: "12.0 TB", used: "6.62 TB", free: "5.38 TB", pct: 55.2, pctDetail: "6.62 TB / 12.0 TB", bars: { photo: "62%", project: "24%", lib: "14%" }, labels: { photo: "4.12 TB", project: "1.58 TB", lib: "920 GB" } },
+          nodes: { core: ["ok", "在线"], app: ["warn", "告警"], db: ["ok", "在线"], gateway: ["ok", "在线"], backup: ["ok", "在线"], storage: ["ok", "在线"] }
+        },
+        uav: {
+          metrics: { cpu: "8%", cores: "12", mem: "58.2%", disk: "34%", memFree: "13.1 GiB / 31.4 GiB", diskFree: "6.6T / 10.0T" },
+          store: { photoCount: "98", photoSize: "1.82 TB", projectCount: "64", projectSize: "860 GB", libCount: "188", libSize: "520 GB" },
+          chart: { total: "10.0 TB", used: "3.18 TB", free: "6.82 TB", pct: 31.8, pctDetail: "3.18 TB / 10.0 TB", bars: { photo: "57%", project: "27%", lib: "16%" }, labels: { photo: "1.82 TB", project: "860 GB", lib: "520 GB" } },
+          nodes: { core: ["ok", "在线"], app: ["ok", "在线"], db: ["warn", "告警"], gateway: ["ok", "在线"], backup: ["ok", "在线"], storage: ["ok", "在线"] }
+        }
+      };
+
+      function metricHtml(val, isRate) {
+        if (!isRate) return val;
+        return '<i class="fa-solid fa-arrow-down text-[11px]"></i> ' + val;
+      }
+
+      function setNodeStatus(key, level, text) {
+        var el = document.querySelector('[data-node="' + key + '"]');
+        if (!el) return;
+        var dot = el.querySelector(".topo-dot");
+        if (!dot) return;
+        dot.className = "topo-dot topo-dot--" + level;
+        el.querySelector("span:last-child").textContent = text;
+      }
+
+      function applyServer(id) {
+        var data = SERVER_DATA[id] || SERVER_DATA.metro;
+        ["cpu", "mem", "disk"].forEach(function (k) {
+          var el = document.querySelector('[data-metric="' + k + '"]');
+          if (el) el.innerHTML = metricHtml(data.metrics[k], true);
+        });
+        ["cores", "memFree", "diskFree"].forEach(function (k) {
+          var el = document.querySelector('[data-metric="' + k + '"]');
+          if (el) el.textContent = data.metrics[k];
+        });
+        Object.keys(data.store).forEach(function (k) {
+          var el = document.querySelector('[data-store="' + k + '"]');
+          if (el) el.textContent = data.store[k];
+        });
+        document.querySelector('[data-chart="total"]').textContent = data.chart.total;
+        document.querySelector('[data-chart="used"]').textContent = data.chart.used;
+        document.querySelector('[data-chart="free"]').textContent = data.chart.free;
+        document.querySelector('[data-chart="pctBar"]').style.width = data.chart.pct + "%";
+        document.querySelector('[data-chart="pctText"]').textContent = "已用 " + data.chart.pct + "%";
+        document.querySelector('[data-chart="pctDetail"]').textContent = data.chart.pctDetail;
+        ["photo", "project", "lib"].forEach(function (k) {
+          document.querySelector('[data-bar="' + k + '"]').style.width = data.chart.bars[k];
+          var labelEl = document.querySelector('[data-bar-label="' + k + '"]');
+          if (labelEl && data.chart.labels) labelEl.textContent = data.chart.labels[k];
+        });
+        Object.keys(data.nodes).forEach(function (k) {
+          setNodeStatus(k, data.nodes[k][0], data.nodes[k][1]);
+        });
+      }
+
+      document.getElementById("ops-server-select").addEventListener("change", function (e) {
+        applyServer(e.target.value);
+      });
+      applyServer("metro");
+    })();
+  </script>
+</body>
+</html>

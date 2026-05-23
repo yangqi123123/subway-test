@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>全景地图 · 告警信息</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="../../assets/css/theme.css" />
+    <link rel="stylesheet" href="../../assets/css/map-gis.css" />
+    <link rel="stylesheet" href="../../assets/css/map-alerts.css" />
+    <link rel="stylesheet" href="../../assets/css/alert-disposal-timeline.css" />
+    <link rel="stylesheet" href="../../assets/css/expert-review-modal.css" />
+    <style>
+      .map-breadcrumb {
+        margin: 16px 16px 0;
+        padding: 10px 16px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        color: #94a3b8;
+      }
+      .map-breadcrumb__icon { color: #22d3ee; }
+      .map-breadcrumb__sep { color: #475569; }
+      .map-breadcrumb__current {
+        color: #f8fafc;
+        font-weight: 600;
+        letter-spacing: .02em;
+      }
+      .alert-shell {
+        background:
+          radial-gradient(circle at 18% 0%, rgba(34, 211, 238, 0.08), transparent 28%),
+          radial-gradient(circle at 100% 8%, rgba(59, 130, 246, 0.08), transparent 26%),
+          linear-gradient(180deg, #040914 0%, #091426 100%);
+        color: #dce8f8;
+      }
+      .alert-tab {
+        height: 34px;
+        padding: 0 14px;
+        border: 1px solid rgba(34, 211, 238, 0.2);
+        border-bottom: none;
+        background: rgba(8, 47, 73, 0.65);
+        color: #9edfff;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .alert-tab.active {
+        background: linear-gradient(180deg, #0f87d9 0%, #0967b8 100%);
+        color: #fffefc;
+        box-shadow: 0 0 20px rgba(34, 211, 238, 0.16);
+      }
+      .alert-panel {
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: linear-gradient(180deg, rgba(9, 18, 36, 0.96) 0%, rgba(7, 14, 29, 0.96) 100%);
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.08), 0 10px 28px rgba(0, 0, 0, 0.4);
+      }
+      .alert-section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #ecfeff;
+      }
+      .alert-field {
+        min-width: 0;
+      }
+      .alert-label {
+        margin-bottom: 8px;
+        font-size: 12px;
+        color: #9cc6df;
+      }
+      .alert-input,
+      .alert-select {
+        width: 100%;
+        height: 34px;
+        padding: 0 10px;
+        border: 1px solid rgba(34, 211, 238, 0.22);
+        border-radius: 6px;
+        background: rgba(15, 23, 42, 0.75);
+        font-size: 12px;
+        color: #e2f5ff;
+      }
+      .alert-btn {
+        height: 34px;
+        padding: 0 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .alert-btn.primary {
+        background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+        color: #042f2e;
+        box-shadow: 0 0 18px rgba(14, 165, 233, 0.45);
+      }
+      .alert-btn.ghost {
+        border: 1px solid rgba(34, 211, 238, 0.25);
+        background: rgba(15, 23, 42, 0.65);
+        color: #e2f5ff;
+      }
+      .alert-map {
+        height: 330px;
+      }
+      .alert-table thead th {
+        height: 46px;
+        padding: 0 12px;
+        background: rgba(8, 47, 73, 0.95);
+        font-size: 12px;
+        font-weight: 700;
+        color: #e2f5ff;
+        text-align: left;
+        border-bottom: 1px solid rgba(34, 211, 238, 0.14);
+        white-space: nowrap;
+      }
+      .alert-table tbody td {
+        padding: 12px;
+        font-size: 12px;
+        color: #dce8f8;
+        border-bottom: 1px solid rgba(34, 211, 238, 0.08);
+        vertical-align: middle;
+      }
+      .alert-table tbody tr {
+        background: rgba(12, 24, 48, 0.65);
+      }
+      .alert-table tbody tr:nth-child(even) {
+        background: rgba(15, 32, 58, 0.72);
+      }
+      .alert-table tbody tr:hover {
+        background: rgba(14, 165, 233, 0.08);
+      }
+      .alert-status-done {
+        color: #34d399;
+      }
+      .alert-status-pending {
+        color: #fb7185;
+      }
+      .alert-link {
+        color: #67e8f9;
+        cursor: pointer;
+      }
+      .alert-pager {
+        font-size: 12px;
+        color: #94a3b8;
+      }
+      #view-detail {
+        min-height: calc(100vh - 118px);
+        background:
+          radial-gradient(circle at 18% 0%, rgba(34, 211, 238, 0.08), transparent 28%),
+          radial-gradient(circle at 100% 8%, rgba(59, 130, 246, 0.08), transparent 26%),
+          linear-gradient(180deg, #040914 0%, #091426 100%);
+        color: #dce8f8;
+      }
+      .alert-detail-shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 16px;
+      }
+      .alert-detail-map-wrap {
+        position: relative;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: linear-gradient(180deg, rgba(9, 18, 36, 0.96) 0%, rgba(7, 14, 29, 0.96) 100%);
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.08), 0 10px 28px rgba(0, 0, 0, 0.4);
+      }
+      .alert-detail-map {
+        height: 380px;
+      }
+      .alert-flag {
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        z-index: 500;
+        width: 64px;
+        padding: 10px 8px 14px;
+        background: #e14c3b;
+        color: #fff;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.3;
+        clip-path: polygon(0 0, 100% 0, 100% 82%, 58% 82%, 50% 100%, 42% 82%, 0 82%);
+        box-shadow: 0 8px 18px rgba(225, 76, 59, 0.28);
+      }
+      .alert-side-card {
+        min-height: 120px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: linear-gradient(180deg, rgba(9, 18, 36, 0.96) 0%, rgba(7, 14, 29, 0.96) 100%);
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.08), 0 10px 28px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+      }
+      .alert-side-title {
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(34, 211, 238, 0.08);
+        font-size: 14px;
+        font-weight: 700;
+        color: #ecfeff;
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .alert-side-title::before {
+        content: "";
+        display: inline-block;
+        width: 4px;
+        height: 16px;
+        margin-right: 8px;
+        border-radius: 999px;
+        background: #2d8cf0;
+        vertical-align: -3px;
+      }
+      .alert-detail-block {
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: linear-gradient(180deg, rgba(9, 18, 36, 0.96) 0%, rgba(7, 14, 29, 0.96) 100%);
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.08), 0 10px 28px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+      }
+      .alert-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px 24px;
+        padding: 18px 18px 22px;
+      }
+      .alert-detail-item {
+        min-width: 0;
+      }
+      .alert-detail-key {
+        font-size: 12px;
+        color: #9cc6df;
+      }
+      .alert-detail-val {
+        margin-top: 8px;
+        font-size: 13px;
+        color: #ecfeff;
+        word-break: break-all;
+      }
+      .alert-code-tag {
+        display: inline-flex;
+        height: 28px;
+        align-items: center;
+        padding: 0 10px;
+        border-radius: 4px;
+        background: #cfe9ff;
+        color: #2d8cf0;
+        font-weight: 700;
+      }
+      .alert-detail-link {
+        margin-right: 12px;
+        color: #2d8cf0;
+        font-weight: 600;
+      }
+      .alert-record-pill {
+        display: inline-flex;
+        height: 26px;
+        align-items: center;
+        padding: 0 10px;
+        border-radius: 4px;
+        background: #e6f3ff;
+        color: #409eff;
+        font-weight: 700;
+      }
+      .alert-duration-pill {
+        display: inline-flex;
+        height: 26px;
+        align-items: center;
+        margin-left: 10px;
+        padding: 0 10px;
+        border: 1px solid #ffd99b;
+        border-radius: 4px;
+        background: #fff7e8;
+        color: #f59e0b;
+      }
+      .alert-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        margin-right: 6px;
+        border-radius: 999px;
+        background: #fbbe00;
+        vertical-align: -1px;
+      }
+      .alert-uav-shot {
+        max-height: 218px;
+        overflow-y: auto;
+      }
+      .alert-uav-shot__time {
+        color: #94a3b8;
+        font-weight: 600;
+      }
+      .alert-uav-shot__text {
+        margin: 10px 0 6px;
+        font-size: 14px;
+        color: #dce8f8;
+        line-height: 1.7;
+      }
+      .alert-uav-shot img {
+        width: 220px;
+        max-width: 100%;
+        height: 160px;
+        object-fit: cover;
+        display: block;
+      }
+      .hidden-view {
+        display: none !important;
+      }
+      @media (max-width: 1180px) {
+        .alert-detail-shell {
+          grid-template-columns: 1fr;
+        }
+        .alert-detail-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      #map-container,
+      #alert-detail-map,
+      #map-container .leaflet-container,
+      #alert-detail-map .leaflet-container {
+        background: #0b1526;
+        font-family: inherit;
+      }
+      #map-container .leaflet-control-zoom a,
+      #alert-detail-map .leaflet-control-zoom a {
+        background: rgba(9, 18, 36, 0.82);
+        color: #ffffff;
+        border-bottom-color: rgba(255, 255, 255, 0.12);
+      }
+      #map-container .leaflet-control-zoom,
+      #alert-detail-map .leaflet-control-zoom {
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
+      }
+      #map-container .leaflet-control-attribution,
+      #alert-detail-map .leaflet-control-attribution {
+        display: none;
+      }
+    </style>
+  </head>
+  <body data-shell="fullscreen" data-top="map">
+    <div id="page-root" class="h-[calc(100vh-64px)] overflow-auto alert-shell">
+      <nav class="neon-panel neon-panel--tight map-breadcrumb">
+        <span class="map-breadcrumb__icon"><i class="fa-solid fa-location-crosshairs"></i></span>
+        <span>全景地图</span>
+        <span class="map-breadcrumb__sep">&gt;&gt;</span>
+        <span class="map-breadcrumb__current">告警信息</span>
+      </nav>
+      <section id="view-list" class="px-4 pb-4 pt-3">
+        <div class="alert-panel overflow-hidden">
+          <div class="alert-sit-map-wrap">
+            <div class="px-3 pt-2 text-[12px] font-semibold text-cyan-100">GIS地图</div>
+            <div id="alerts-situation-map" class="alert-sit-map"></div>
+          </div>
+        </div>
+
+        <div class="alert-panel mt-4">
+          <div class="px-4 pt-4 pb-2 alert-section-title">告警列表</div>
+          <div class="alert-filter-bar px-4 pb-3">
+            <div class="alert-filter-grid">
+              <div class="alert-filter-field">
+                <label class="wh-filter-label" for="alert-filter-handle-mode">告警处理状态</label>
+                <select id="alert-filter-handle-mode" class="wh-input w-full h-8 px-2 text-xs">
+                  <option value="">全部</option>
+                  <option value="AI">AI</option>
+                  <option value="传统">传统</option>
+                  <option value="AI+传统">AI+传统</option>
+                </select>
+              </div>
+              <div class="alert-filter-field alert-filter-field--range">
+                <label class="wh-filter-label">时间范围</label>
+                <div class="alert-filter-range">
+                  <input id="alert-filter-time-start" type="datetime-local" class="wh-input h-8 px-2 text-xs flex-1 min-w-0" />
+                  <span class="alert-filter-range-sep">至</span>
+                  <input id="alert-filter-time-end" type="datetime-local" class="wh-input h-8 px-2 text-xs flex-1 min-w-0" />
+                </div>
+              </div>
+              <div class="alert-filter-field">
+                <label class="wh-filter-label" for="alert-filter-source">告警来源</label>
+                <select id="alert-filter-source" class="wh-input w-full h-8 px-2 text-xs">
+                  <option value="">全部</option>
+                  <option value="AI">AI</option>
+                  <option value="传统">传统</option>
+                  <option value="AI+传统">AI+传统</option>
+                </select>
+              </div>
+              <div class="alert-filter-field alert-filter-field--range">
+                <label class="wh-filter-label">区间</label>
+                <div class="alert-filter-range">
+                  <select id="alert-filter-interval-start" class="wh-input h-8 px-2 text-xs flex-1 min-w-0">
+                    <option value="">起始区间</option>
+                  </select>
+                  <span class="alert-filter-range-sep">至</span>
+                  <select id="alert-filter-interval-end" class="wh-input h-8 px-2 text-xs flex-1 min-w-0">
+                    <option value="">终止区间</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="alert-filter-actions">
+              <button id="alert-filter-search" type="button" class="px-5 h-8 rounded text-xs wh-btn-primary">查询</button>
+              <button id="alert-filter-reset" type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">重置</button>
+              <button id="alert-filter-export" type="button" class="px-5 h-8 rounded text-xs wh-btn-gold">导出</button>
+            </div>
+          </div>
+          <div class="overflow-auto px-2 pb-3">
+            <table class="alert-tree-table">
+              <thead>
+                <tr>
+                  <th style="width:32px"></th>
+                  <th>项目名称</th>
+                  <th>报警位置</th>
+                  <th>报警区间</th>
+                  <th>开始时间</th>
+                  <th>最新时间</th>
+                  <th>告警来源</th>
+                  <th>处理状态</th>
+                  <th>是否误报</th>
+                  <th>复核情况</th>
+                  <th>照片</th>
+                  <th>告警条数</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="alert-tree-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-detail" class="px-4 pb-4 pt-3 hidden-view">
+        <button id="alert-back-list" type="button" class="alert-back-list mb-3">
+          <i class="fa-solid fa-arrow-left"></i> 返回告警列表
+        </button>
+        <div class="alert-detail-shell">
+          <div class="min-w-0">
+            <div class="alert-detail-map-wrap">
+              <div class="alert-flag"><i class="fa-solid fa-trophy block mb-2 text-[18px]"></i>疑似钻探<br />施工</div>
+              <div id="alert-detail-map" class="alert-detail-map"></div>
+            </div>
+
+            <div class="alert-detail-block mt-4">
+              <div class="alert-side-title">告警详情</div>
+              <div class="alert-detail-grid" id="alert-detail-grid"></div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-4">
+            <div class="alert-side-card">
+              <div class="alert-side-title">告警记录</div>
+              <div class="alert-side-body" id="record-alarm"></div>
+            </div>
+            <div class="alert-side-card">
+              <div class="alert-side-title">无人机实拍记录</div>
+              <div class="alert-side-body" id="record-uav"></div>
+            </div>
+            <div class="alert-side-card">
+              <div class="alert-side-title">处警记录</div>
+              <div class="alert-side-body" id="record-disposal"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    
+    <div id="expert-review-modal-mask" class="expert-modal-mask" role="dialog" aria-modal="true">
+      <div class="expert-modal">
+        <div class="expert-modal__head">
+          <h3 class="expert-modal__title">编辑复核情况</h3>
+          <button type="button" class="wh-modal-close expert-modal__close" data-action="close-review-modal" aria-label="关闭">×</button>
+        </div>
+        <form id="expert-review-form" class="expert-modal__body">
+          <div class="expert-form-row">
+            <label class="expert-form-label">是否误报</label>
+            <div class="expert-radio-group">
+              <label><input type="radio" name="review-false-alarm" value="非误报" checked /> 非误报</label>
+              <label><input type="radio" name="review-false-alarm" value="误报" /> 误报</label>
+            </div>
+          </div>
+          <div class="expert-form-row" data-review-field-group="detail">
+            <label class="expert-form-label" for="review-level-adjust">报警级别调整</label>
+            <select id="review-level-adjust" class="expert-select">
+              <option value="一级告警">一级告警</option>
+              <option value="二级告警">二级告警</option>
+              <option value="三级告警">三级告警</option>
+            </select>
+          </div>
+          <div class="expert-form-row" data-review-field-group="detail">
+            <label class="expert-form-label" for="review-scene">现场情况</label>
+            <textarea id="review-scene" class="expert-textarea" placeholder="请填写现场复核情况"></textarea>
+          </div>
+          <div class="expert-form-row" data-review-field-group="detail">
+            <label class="expert-form-label">现场照片</label>
+            <div id="review-modal-photos" class="expert-photo-grid"></div>
+            <p class="expert-photo-upload"><input id="review-photo-input" type="file" accept="image/*" multiple /> 支持多图上传</p>
+          </div>
+        </form>
+        <div class="expert-modal__foot">
+          <button type="button" class="px-4 h-8 rounded text-[12px] wh-btn-ghost" data-action="close-review-modal">取消</button>
+          <button type="button" class="px-4 h-8 rounded bg-[#178df2] text-white text-[12px]" data-action="save-review-modal">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="alert-audit-modal-mask" class="expert-modal-mask" role="dialog" aria-modal="true">
+      <div class="expert-modal">
+        <div class="expert-modal__head">
+          <h3 class="expert-modal__title">告警审核</h3>
+          <button type="button" class="wh-modal-close expert-modal__close" data-action="close-audit-modal" aria-label="关闭">×</button>
+        </div>
+        <div class="expert-modal__body">
+          <div class="expert-form-row">
+            <label class="expert-form-label" for="audit-opinion">审批意见</label>
+            <textarea id="audit-opinion" class="expert-textarea" placeholder="请填写审批意见"></textarea>
+          </div>
+        </div>
+        <div class="expert-modal__foot">
+          <button type="button" class="px-4 h-8 rounded text-[12px] border border-rose-400/50 text-rose-200" data-action="audit-reject">驳回</button>
+          <button type="button" class="px-4 h-8 rounded bg-[#178df2] text-white text-[12px]" data-action="audit-pass">审批通过</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="expert-toast" class="expert-toast" role="status"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="../../assets/js/menu-config.js"></script>
+    <script src="../../assets/js/shell.js"></script>
+    <script src="../../assets/js/map-gis.js"></script>
+    <script src="../../assets/js/map-situation-gis.js"></script>
+    <script src="../../assets/js/alert-disposal-timeline.js"></script>
+    <script src="../../assets/js/expert-review-modal.js"></script>
+    <script src="../../assets/js/map-alerts.js"></script>
+  </body>
+</html>

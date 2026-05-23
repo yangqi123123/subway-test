@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登录 — 武汉地铁保护区管理平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="../assets/css/theme.css" />
+    <style>
+      .login-shell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+      .login-card {
+        width: 100%;
+        max-width: 400px;
+      }
+    </style>
+  </head>
+  <body class="wh-main-canvas text-slate-100">
+    <div class="login-shell">
+      <div class="login-card neon-panel neon-panel--tight p-8 md:p-10">
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl border border-cyan-400/35 bg-black/25 text-2xl text-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.25)] mb-4">
+            <i class="fa-solid fa-train-subway" aria-hidden="true"></i>
+          </div>
+          <h1 class="text-xl font-semibold text-white tracking-tight" style="text-shadow: 0 0 24px rgba(34, 211, 238, 0.25)">武汉地铁保护区管理平台</h1>
+          <p class="text-xs text-slate-500 mt-2">深色运维后台 · 请登录后继续</p>
+        </div>
+
+        <form id="login-form" class="space-y-5" novalidate>
+          <div>
+            <label for="login-account" class="block wh-filter-label mb-1.5">账号</label>
+            <input
+              id="login-account"
+              type="text"
+              autocomplete="username"
+              class="wh-input w-full px-3 py-2.5"
+              placeholder="请输入账号"
+              required
+            />
+          </div>
+          <div>
+            <label for="login-password" class="block wh-filter-label mb-1.5">密码</label>
+            <input
+              id="login-password"
+              type="password"
+              autocomplete="current-password"
+              class="wh-input w-full px-3 py-2.5"
+              placeholder="请输入密码"
+              required
+            />
+          </div>
+          <button type="submit" class="w-full py-2.5 text-sm font-semibold transition-ui wh-btn-primary cursor-pointer hover:opacity-95 active:scale-[0.99]">
+            <i class="fa-solid fa-right-to-bracket mr-2" aria-hidden="true"></i>登录
+          </button>
+        </form>
+
+        <p class="mt-6 text-center text-[11px] text-slate-600">原型演示 · 任意账号密码均可进入系统</p>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var form = document.getElementById("login-form");
+        if (!form) return;
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+          }
+          window.location.href = "map/map-gis.html";
+        });
+      })();
+    </script>
+  </body>
+</html>

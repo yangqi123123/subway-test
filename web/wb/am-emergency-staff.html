@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>应急人员管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <style>
+    .staff-table th,
+    .staff-table td {
+      height: 52px;
+      border-right: 1px solid rgba(34,211,238,.08);
+      border-bottom: 1px solid rgba(34,211,238,.08);
+      vertical-align: middle;
+    }
+    .staff-table th:last-child,
+    .staff-table td:last-child { border-right: 0; }
+    .staff-table thead th {
+      color: rgba(240,249,255,.96);
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(2,8,23,.66);
+      white-space: nowrap;
+    }
+    .staff-table tbody td {
+      color: rgba(226,245,255,.88);
+      font-size: 12px;
+    }
+    .staff-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+    .staff-modal-mask,
+    .confirm-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15,23,42,.56);
+      padding: 24px;
+    }
+    .staff-modal-mask.show,
+    .confirm-mask.show { display: flex; }
+    .staff-modal {
+      width: min(980px, 94vw);
+      border-radius: 8px;
+      border: 1px solid rgba(34,211,238,.16);
+      background: #071426;
+      box-shadow: 0 24px 80px rgba(0,0,0,.48);
+      overflow: visible;
+    }
+    .staff-modal .p-6 { overflow: visible; }
+    .staff-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 28px;
+    }
+    .staff-form-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .staff-form-label {
+      width: 108px;
+      flex: 0 0 108px;
+      text-align: right;
+      color: rgba(226,245,255,.78);
+      font-size: 12px;
+    }
+    .staff-form-label.is-required::before {
+      content: "*";
+      color: #fb7185;
+      margin-right: 4px;
+    }
+    .confirm-card {
+      width: 320px;
+      border-radius: 8px;
+      border: 1px solid rgba(34,211,238,.14);
+      background: #071426;
+      box-shadow: 0 24px 80px rgba(0,0,0,.48);
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body data-shell="default" data-top="wb" data-sidebar-key="am-emergency-staff" data-wb-view="page">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+      <span>我的工作台</span>
+      <span class="text-slate-600">&gt;&gt;</span>
+      <span class="text-cyan-50 font-semibold tracking-wide">应急人员管理</span>
+    </nav>
+
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">应急人员管理</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">应急人员基础信息维护</span>
+    </div>
+
+    <section class="neon-panel neon-panel--tight p-4 mb-4">
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="min-w-[180px]">
+          <label class="wh-filter-label block mb-1.5">姓名</label>
+          <input class="wh-input h-8 w-full px-3" placeholder="请输入姓名" />
+        </div>
+        <div class="min-w-[180px]">
+          <label class="wh-filter-label block mb-1.5">部门</label>
+          <select class="wh-input h-8 w-full px-2">
+            <option>全部</option>
+            <option>应急中心</option>
+            <option>巡检部</option>
+            <option>调度部</option>
+          </select>
+        </div>
+        <div class="min-w-[180px]">
+          <label class="wh-filter-label block mb-1.5">工号</label>
+          <input class="wh-input h-8 w-full px-3" placeholder="请输入工号" />
+        </div>
+        <div class="min-w-[180px]">
+          <label class="wh-filter-label block mb-1.5">所属线路</label>
+          <select class="wh-input h-8 w-full px-2">
+            <option>全部</option>
+            <option>2号线</option>
+            <option>5号线</option>
+            <option>7号线</option>
+            <option>11号线</option>
+          </select>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary">搜索</button>
+          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">重置</button>
+          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">模板导出</button>
+          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">导入人员</button>
+          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary" data-action="new-staff">新建</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="wh-table-shell bg-slate-950/35">
+      <div class="overflow-x-auto">
+        <table class="staff-table min-w-[2100px] w-full text-left">
+          <thead>
+            <tr>
+              <th class="px-4">姓名</th>
+              <th class="px-4">部门</th>
+              <th class="px-4">工号</th>
+              <th class="px-4">岗位</th>
+              <th class="px-4">所属线路</th>
+              <th class="px-4">联系方式</th>
+              <th class="px-4">常驻地址</th>
+              <th class="px-4">常驻地址经度</th>
+              <th class="px-4">常驻地址纬度</th>
+              <th class="px-4">备注</th>
+              <th class="px-4">操作</th>
+            </tr>
+          </thead>
+          <tbody id="staff-table-body"></tbody>
+        </table>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+        <span>共 <b class="text-cyan-200">5</b> 条</span>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button>
+          <select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select>
+          <span>跳至</span>
+          <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+          <span>页</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="staff-modal-mask" class="staff-modal-mask">
+    <div class="staff-modal">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
+        <h3 id="staff-modal-title" class="text-white text-[16px] font-semibold">新增应急人员</h3>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-staff-modal">×</button>
+      </div>
+      <div class="p-6">
+        <div class="staff-form-grid">
+          <label class="staff-form-item"><span class="staff-form-label is-required">姓名：</span><input id="staff-name" class="wh-input h-8 flex-1 px-3" placeholder="请输入姓名" /></label>
+          <label class="staff-form-item wh-form-item--select"><span class="staff-form-label is-required">部门：</span><div id="staff-dept-select" class="wh-search-select flex-1 min-w-0" data-input-id="staff-dept"></div></label>
+          <label class="staff-form-item"><span class="staff-form-label is-required">工号：</span><input id="staff-no" class="wh-input h-8 flex-1 px-3" placeholder="请输入工号" /></label>
+          <label class="staff-form-item"><span class="staff-form-label">岗位：</span><input id="staff-post" class="wh-input h-8 flex-1 px-3" placeholder="请输入岗位" /></label>
+          <label class="staff-form-item"><span class="staff-form-label">所属线路：</span><select id="staff-line" class="wh-input h-8 flex-1 px-2"><option>2号线</option><option>5号线</option><option>7号线</option><option>11号线</option></select></label>
+          <label class="staff-form-item"><span class="staff-form-label is-required">联系方式：</span><input id="staff-phone" class="wh-input h-8 flex-1 px-3" placeholder="请输入联系方式" /></label>
+          <label class="staff-form-item"><span class="staff-form-label">常驻地址：</span><input id="staff-address" class="wh-input h-8 flex-1 px-3" placeholder="请输入常驻地址" /></label>
+          <label class="staff-form-item"><span class="staff-form-label">地址经度：</span><input id="staff-lng" class="wh-input h-8 flex-1 px-3" placeholder="请输入常驻地址经度" /></label>
+          <label class="staff-form-item"><span class="staff-form-label">地址纬度：</span><input id="staff-lat" class="wh-input h-8 flex-1 px-3" placeholder="请输入常驻地址纬度" /></label>
+          <label class="staff-form-item"><span class="staff-form-label">备注：</span><input id="staff-remark" class="wh-input h-8 flex-1 px-3" placeholder="请输入备注" /></label>
+        </div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-staff-modal">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="save-staff">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirm-mask" class="confirm-mask">
+    <div class="confirm-card">
+      <div class="px-6 py-5 border-b border-cyan-400/15 text-white text-[16px] font-semibold">删除确认</div>
+      <div class="px-6 py-6 text-sm text-cyan-100/80">确认删除当前应急人员记录吗？</div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="cancel-delete">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="confirm-delete">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/search-select.js"></script>
+  <script>
+    (function () {
+      var deptSelect = WHSearchSelect.mountById("staff-dept-select", "请搜索或选择部门", WHSearchSelect.DEPT_OPTIONS);
+
+      var rows = [
+        { name:"王强", dept:"应急中心", no:"E1029", post:"应急主管", line:"7号线", phone:"13800001001", address:"洪山区民族大道 188 号", lng:"114.4035", lat:"30.5112", remark:"夜间值守" },
+        { name:"李倩", dept:"巡检部", no:"E1038", post:"巡检专员", line:"2号线", phone:"13800001002", address:"江汉区常青一路 56 号", lng:"114.2418", lat:"30.6492", remark:"常备无人机证照" },
+        { name:"刘凯", dept:"调度部", no:"E1046", post:"调度员", line:"5号线", phone:"13800001003", address:"武昌区白沙洲大道 78 号", lng:"114.3141", lat:"30.5078", remark:"白班" },
+        { name:"赵敏", dept:"应急中心", no:"E1052", post:"联络员", line:"11号线", phone:"13800001004", address:"东湖高新区高新大道 99 号", lng:"114.4498", lat:"30.4853", remark:"节假日待命" },
+        { name:"陈涛", dept:"巡检部", no:"E1059", post:"设备员", line:"7号线", phone:"13800001005", address:"洪山区雄楚大道 120 号", lng:"114.3782", lat:"30.5071", remark:"设备维护" }
+      ];
+
+      var editIndex = -1;
+      var deleteIndex = -1;
+      var tableBody = document.getElementById("staff-table-body");
+      var modalMask = document.getElementById("staff-modal-mask");
+      var confirmMask = document.getElementById("confirm-mask");
+      var modalTitle = document.getElementById("staff-modal-title");
+
+      function renderRows() {
+        tableBody.innerHTML = rows.map(function (row, index) {
+          return '<tr class="' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '">' +
+            '<td class="px-4">' + row.name + '</td>' +
+            '<td class="px-4">' + row.dept + '</td>' +
+            '<td class="px-4">' + row.no + '</td>' +
+            '<td class="px-4">' + row.post + '</td>' +
+            '<td class="px-4">' + row.line + '</td>' +
+            '<td class="px-4">' + row.phone + '</td>' +
+            '<td class="px-4">' + row.address + '</td>' +
+            '<td class="px-4">' + row.lng + '</td>' +
+            '<td class="px-4">' + row.lat + '</td>' +
+            '<td class="px-4">' + row.remark + '</td>' +
+            '<td class="px-4">' +
+              '<span class="staff-action text-amber-300" data-action="edit-staff" data-index="' + index + '"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
+              '<span class="staff-action text-rose-300" data-action="delete-staff" data-index="' + index + '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
+            '</td>' +
+          '</tr>';
+        }).join("");
+      }
+
+      function openModal(mode, index) {
+        WHSearchSelect.closeAll(null);
+        editIndex = mode === "edit" ? index : -1;
+        modalTitle.textContent = mode === "edit" ? "编辑应急人员" : "新增应急人员";
+        var row = index > -1 ? rows[index] : null;
+        document.getElementById("staff-name").value = row ? row.name : "";
+        if (deptSelect) deptSelect.setValue(row ? row.dept : "");
+        document.getElementById("staff-no").value = row ? row.no : "";
+        document.getElementById("staff-post").value = row ? row.post : "";
+        document.getElementById("staff-line").value = row ? row.line : "2号线";
+        document.getElementById("staff-phone").value = row ? row.phone : "";
+        document.getElementById("staff-address").value = row ? row.address : "";
+        document.getElementById("staff-lng").value = row ? row.lng : "";
+        document.getElementById("staff-lat").value = row ? row.lat : "";
+        document.getElementById("staff-remark").value = row ? row.remark : "";
+        modalMask.classList.add("show");
+      }
+
+      function closeModal() {
+        modalMask.classList.remove("show");
+      }
+
+      function saveStaff() {
+        var name = document.getElementById("staff-name").value.trim();
+        var no = document.getElementById("staff-no").value.trim();
+        var phone = document.getElementById("staff-phone").value.trim();
+        var dept = deptSelect ? deptSelect.getValue() : "";
+        if (!name || !no || !phone) {
+          alert("请完善必填项：姓名、工号、联系方式");
+          return;
+        }
+        if (!dept) {
+          alert("请选择部门");
+          return;
+        }
+        var row = {
+          name: name,
+          dept: dept,
+          no: no,
+          post: document.getElementById("staff-post").value.trim() || "-",
+          line: document.getElementById("staff-line").value,
+          phone: phone,
+          address: document.getElementById("staff-address").value.trim() || "-",
+          lng: document.getElementById("staff-lng").value.trim() || "-",
+          lat: document.getElementById("staff-lat").value.trim() || "-",
+          remark: document.getElementById("staff-remark").value.trim() || "-"
+        };
+        if (editIndex > -1) rows[editIndex] = row;
+        else rows.unshift(row);
+        closeModal();
+        renderRows();
+      }
+
+      renderRows();
+
+      document.addEventListener("click", function (event) {
+        var trigger = event.target.closest("[data-action]");
+        if (!trigger) return;
+        var action = trigger.getAttribute("data-action");
+        var index = Number(trigger.getAttribute("data-index"));
+        if (action === "new-staff") openModal("new");
+        if (action === "edit-staff") openModal("edit", index);
+        if (action === "delete-staff") {
+          deleteIndex = index;
+          confirmMask.classList.add("show");
+        }
+        if (action === "close-staff-modal") closeModal();
+        if (action === "save-staff") saveStaff();
+        if (action === "cancel-delete") {
+          deleteIndex = -1;
+          confirmMask.classList.remove("show");
+        }
+        if (action === "confirm-delete") {
+          if (deleteIndex > -1) rows.splice(deleteIndex, 1);
+          deleteIndex = -1;
+          confirmMask.classList.remove("show");
+          renderRows();
+        }
+      });
+    })();
+  </script>
+  <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/workbench-mega.js"></script>
+  <script src="../../assets/js/shell.js"></script>
+</body>
+</html>

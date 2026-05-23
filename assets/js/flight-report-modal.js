@@ -1,12 +1,23 @@
 /**
- * 飞行计划 · 飞行报告弹窗（复用飞行日志详情布局）
+ * 飞行计划 · 飞行报告弹窗（文档式：时间-项目名称标题 + 飞行信息 + 事件分析）
  */
 (function (global) {
-  var WUHAN = [30.5928, 114.3055];
-  var trackPlayback = null;
+  function assetUrl(rel) {
+    return typeof whAsset === "function" ? whAsset(rel) : rel;
+  }
+  var TRACK_IMG = "assets/images/flight-report-track.png";
+  var EVENT_IMG = "assets/images/flight-report-event.png";
+
   var mounted = false;
   var currentPlan = null;
   var currentReport = null;
+  var html2pdfLoadPromise = null;
+  var pdfExporting = false;
+
+  var FLIGHT_LOG_PLAN_ID = {
+    FL20251225001: 1,
+    FL20251224008: 4,
+  };
 
   function esc(value) {
     return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
@@ -14,206 +25,195 @@
     });
   }
 
-  function flightStatusMeta(status) {
-    var label = String(status || "成功").trim();
-    if (label === "异常中止" || label === "手动取消") {
-      return { label: label, text: "text-amber-200", dot: "bg-amber-400" };
-    }
-    if (label === "失败") {
-      return { label: "失败", text: "text-rose-200", dot: "bg-rose-500" };
-    }
-    return { label: "成功", text: "text-emerald-200", dot: "bg-emerald-400" };
+  function pad2(n) {
+    return String(n).padStart(2, "0");
   }
 
-  function statusHtml(status) {
-    var meta = flightStatusMeta(status);
-    return (
-      '<span class="fr-status-pill ' +
-      meta.text +
-      '"><span class="fr-status-dot ' +
-      meta.dot +
-      '"></span>' +
-      esc(meta.label) +
-      "</span>"
-    );
+  function parseDatePart(str) {
+    if (!str || str === "-" || str === "—") return "";
+    var m = String(str).match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return m[1] + m[2] + m[3];
+    return "";
   }
 
-  function levelClass(level) {
-    if (/特别严重|严重|高/.test(level)) return "fr-level--high";
-    if (/较重|中/.test(level)) return "fr-level--mid";
-    return "fr-level--low";
+  function formatReportTitle(plan) {
+    var datePart =
+      parseDatePart(plan.actualEnd) ||
+      parseDatePart(plan.actualStart) ||
+      parseDatePart(plan.submit) ||
+      "00000000";
+    return datePart + "-" + (plan.name || "飞行任务") + "的飞行报告";
+  }
+
+  function formatPublishTime(plan) {
+    var base = plan.actualEnd && plan.actualEnd !== "-" ? plan.actualEnd : plan.submit;
+    if (!base || base === "-") {
+      var d = new Date();
+      return (
+        d.getFullYear() +
+        "-" +
+        pad2(d.getMonth() + 1) +
+        "-" +
+        pad2(d.getDate()) +
+        " " +
+        pad2(d.getHours()) +
+        ":" +
+        pad2(d.getMinutes()) +
+        ":" +
+        pad2(d.getSeconds())
+      );
+    }
+    if (/:\d{2}$/.test(base)) return base;
+    return base + " 14:31:52";
+  }
+
+  function droneCodeFromName(name) {
+    var s = String(name || "");
+    if (/M350/i.test(s)) return "UAV-M350-001";
+    if (/M30T/i.test(s)) return "UAV-M30T-002";
+    if (/M300/i.test(s)) return "UAV-M300-003";
+    return "UAV-" + String(Math.abs(planIdFallback(s))).slice(-6);
+  }
+
+  function planIdFallback(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
+    return Math.abs(h);
   }
 
   var REPORT_BY_PLAN = {
     1: {
       taskId: "FL20260512001",
+      droneCode: "UAV-M350-001",
       flightStatus: "成功",
       duration: "36分02秒",
+      durationSec: 2162,
       maxHeight: "96.2 m",
-      distance: "4.2 km",
-      batteryUsed: "42%",
-      track: [
-        [30.6318, 114.4021],
-        [30.6312, 114.4035],
-        [30.6305, 114.4052],
-        [30.6298, 114.4068],
-      ],
-      events: [
-        { time: "2026-05-12 09:02:08", type: "系统", detail: "按计划自动起飞，开始执行车辆段常规巡检。" },
-        { time: "2026-05-12 09:18:22", type: "系统", detail: "到达巡检点 #2，开始环境拍摄任务。" },
-        { time: "2026-05-12 09:36:40", type: "系统", detail: "任务完成，自动返航降落。" },
-      ],
-      media: [
-        { kind: "image", title: "围挡巡查-1", url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80" },
-        { kind: "image", title: "堆土复核-2", url: "https://images.unsplash.com/photo-1465447142348-e9952c393450?auto=format&fit=crop&w=800&q=80" },
-        { kind: "image", title: "保护区边界", url: "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=800&q=80" },
-        {
-          kind: "video",
-          title: "航线回放片段",
-          url: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-          poster: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?auto=format&fit=crop&w=800&q=80",
-        },
-      ],
-      supplement: "本次巡查未发现新增大型机械，现场围挡完整。建议下周对涉铁施工点复核。",
-      alerts: [
-        {
-          projectName: "8号线车辆段涉铁施工",
-          section: "武昌站—中南路",
-          location: "车辆段北侧 120m",
-          startTime: "2026-05-12 09:12",
-          type: "堆土",
-          level: "较重",
-          warnMode: "无人机巡线",
-        },
-        {
-          projectName: "保护区例行监测",
-          section: "中南路—宝通寺",
-          location: "友谊大道南侧",
-          startTime: "2026-05-12 09:25",
-          type: "围挡",
-          level: "一般",
-          warnMode: "全时全域",
-        },
-      ],
-      aiSummary: "发现施工围挡 2 处，疑似堆土 1 处，均已纳入复核清单。",
+      distance: "6771.32米",
+      takeoffBattery: "98%",
+      landingBattery: "56%",
+      takeoffPos: "车辆段北侧起飞点（114.4021, 30.6318）",
+      landingPos: "车辆段南侧降落点（114.4068, 30.6298）",
+      weather: "晴，微风，能见度良好",
+      publisher: "张三",
+      event: {
+        project: "8号线车辆段涉铁施工",
+        alertTime: "2026-05-12 09:12:08",
+        coordinates: "114.4052, 30.6305",
+        location: "湖北省武汉市武昌区友谊大道南侧车辆段北侧 120m",
+        type: "全部 > 堆土",
+        level: "较重",
+        warnMode: "无人机巡线",
+        eventImage: assetUrl(EVENT_IMG),
+        unit: "武汉地保",
+        person: "张三",
+        processTime: "2026-05-12 10:20:15",
+        falseAlarm: "否",
+        illegalConstruction: "否",
+        riskLevel: "中风险",
+        approvalContent:
+          "经现场复核，堆土位于保护区控制线外，已督促施工单位限期清运；同意归档本次飞行报告。",
+      },
     },
     4: {
       taskId: "FL20260512004",
+      droneCode: "UAV-M350-004",
       flightStatus: "成功",
       duration: "36分00秒",
+      durationSec: 2160,
       maxHeight: "88.5 m",
-      distance: "3.6 km",
-      batteryUsed: "51%",
-      track: [
-        [30.5389, 114.3446],
-        [30.5382, 114.346],
-        [30.5375, 114.3475],
-        [30.5368, 114.349],
-      ],
-      events: [
-        { time: "2026-05-12 09:02:05", type: "系统", detail: "青山站周期巡检任务起飞。" },
-        { time: "2026-05-12 09:20:18", type: "飞手操作", detail: "操作员手动调整高度避让高压线（操作员：赵六）。" },
-        { time: "2026-05-12 09:38:12", type: "系统", detail: "任务结束，正常降落。" },
-      ],
-      media: [
-        { kind: "image", title: "青山段巡检", url: "https://images.unsplash.com/photo-1496307653780-42ee777d4833?auto=format&fit=crop&w=800&q=80" },
-        { kind: "image", title: "站厅出入口", url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80" },
-        {
-          kind: "video",
-          title: "热成像录像",
-          url: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-          poster: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?auto=format&fit=crop&w=800&q=80",
-        },
-      ],
-      supplement: "周期巡检完成，沿线未发现违规占道施工。",
-      alerts: [
-        {
-          projectName: "青山站保护区巡查",
-          section: "青山站—工业四路",
-          location: "工业四路东侧 80m",
-          startTime: "2026-05-12 09:15",
-          type: "挖机",
-          level: "特别严重",
-          warnMode: "无人机巡线",
-        },
-      ],
-      aiSummary: "识别临时堆料 1 处，已推送专家工具复核。",
+      distance: "6771.32米",
+      takeoffBattery: "100%",
+      landingBattery: "49%",
+      takeoffPos: "青山机场起飞坪（114.3446, 30.5389）",
+      landingPos: "工业四路巡检终点（114.3490, 30.5368）",
+      weather: "多云，东北风 2 级",
+      publisher: "赵六",
+      event: {
+        project: "青山站保护区巡查",
+        alertTime: "2026-05-12 09:15:22",
+        coordinates: "114.3475, 30.5375",
+        location: "湖北省武汉市青山区工业四路东侧 80m",
+        type: "全部 > 挖掘机",
+        level: "特别严重",
+        warnMode: "无人机巡线",
+        eventImage: assetUrl(EVENT_IMG),
+        unit: "武汉地保",
+        person: "赵六",
+        processTime: "2026-05-12 10:05:40",
+        falseAlarm: "否",
+        illegalConstruction: "是",
+        riskLevel: "高风险",
+        approvalContent:
+          "识别到挖掘机作业，已派发人工现场核查并启动专家工具复核；审批通过，纳入本周督办清单。",
+      },
     },
   };
+
+  function defaultEvent(plan) {
+    return {
+      project: plan.name,
+      alertTime: (plan.actualStart && plan.actualStart !== "-" ? plan.actualStart : plan.submit) + "",
+      coordinates: "114.3055, 30.5928",
+      location: (plan.route || "武汉市") + " 巡查航线覆盖区域",
+      type: "全部 > 施工围挡",
+      level: "一般",
+      warnMode: "无人机巡线",
+      eventImage: assetUrl(EVENT_IMG),
+      unit: "武汉地保",
+      person: (plan.execMeta && plan.execMeta.pilot) || plan.applicant || "值班员",
+      processTime: formatPublishTime(plan),
+      falseAlarm: "否",
+      illegalConstruction: "否",
+      riskLevel: "低风险",
+      approvalContent: "本次飞行巡查未发现新增违规施工，同意结案。",
+    };
+  }
 
   function defaultReport(plan) {
     return {
       taskId: "FL-" + plan.id,
-      flightStatus: "成功",
+      droneCode: droneCodeFromName(plan.drone),
+      flightStatus: plan.exec === "已执行" ? "成功" : "待执行",
       duration: "—",
+      durationSec: 808,
       maxHeight: "—",
-      distance: "6.8 km",
-      batteryUsed: "—",
-      track: [
-        [30.5969, 114.3005],
-        [30.5953, 114.3048],
-        [30.5935, 114.3093],
-        [30.5918, 114.3131],
-      ],
-      events: [
-        { time: (plan.actualStart || "—") + " 00:05", type: "系统", detail: "飞行任务开始执行。" },
-        { time: (plan.actualEnd || "—") + " 00:01", type: "系统", detail: "飞行任务结束，日志已自动生成。" },
-      ],
-      media: [
-        { kind: "image", title: "巡查实拍", url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80" },
-        { kind: "image", title: "现场复核", url: "https://images.unsplash.com/photo-1465447142348-e9952c393450?auto=format&fit=crop&w=800&q=80" },
-      ],
-      supplement: "",
-      alerts: [
-        {
-          projectName: plan.name,
-          section: plan.line + "区间",
-          location: plan.route,
-          startTime: plan.actualStart || "—",
-          type: "施工围挡",
-          level: "一般",
-          warnMode: "无人机巡线",
-        },
-      ],
-      aiSummary: "AI 识别结果已关联至本次飞行报告。",
+      distance: "6771.32米",
+      takeoffBattery: "—",
+      landingBattery: "—",
+      takeoffPos: plan.route || "—",
+      landingPos: plan.route || "—",
+      weather: "—",
+      publisher: plan.applicant || "系统自动",
+      event: defaultEvent(plan),
     };
   }
 
   function getReportData(plan) {
     var base = REPORT_BY_PLAN[plan.id] || defaultReport(plan);
-    return Object.assign({}, base, {
-      takeoff: plan.actualStart || "—",
-      landing: plan.actualEnd || "—",
-      operator: (plan.execMeta && plan.pilot) || plan.applicant || "—",
+    var operator = (plan.execMeta && plan.execMeta.pilot) || plan.applicant || "—";
+    var report = Object.assign({}, base, {
+      takeoff: plan.actualStart && plan.actualStart !== "-" ? plan.actualStart : "—",
+      landing: plan.actualEnd && plan.actualEnd !== "-" ? plan.actualEnd : "—",
+      operator: operator,
       taskId: plan.taskId || base.taskId,
+      droneName: plan.drone || "—",
+      airport: plan.airport || "—",
+      taskType: plan.type || "—",
+      relatedPlan: plan.name || "—",
+      trackImage: assetUrl(TRACK_IMG),
+      eventImage: (base.event && base.event.eventImage) || assetUrl(EVENT_IMG),
     });
-  }
-
-  function defaultApprovalRecords(plan) {
-    var base = [
-      { person: "张工", time: "2026-05-13 09:24", status: "审批通过", opinion: "申请资料完整，航线与空域许可匹配。" },
-      { person: "李工", time: "2026-05-13 09:42", status: "审批通过", opinion: "施工保护区范围核对无误，同意执行。" },
-      { person: "陈工", time: "2026-05-13 10:05", status: "审批通过", opinion: "无人机巡查任务已按计划执行。" },
-      { person: "王主任", time: "2026-05-13 10:20", status: "审批通过", opinion: "同意归档飞行报告。" },
-      { person: "赵经理", time: "2026-05-13 10:36", status: "审批通过", opinion: "—" },
-    ];
-    if (plan && plan.audit === "已驳回") {
-      return base.map(function (r, i) {
-        return i === 2
-          ? { person: r.person, time: "2026-05-13 10:12", status: "已驳回", opinion: "空域许可临期，请补充续期材料。" }
-          : r;
-      });
+    if (plan.reportOverrides) {
+      var overrides = Object.assign({}, plan.reportOverrides);
+      var eventPatch = overrides.event;
+      delete overrides.event;
+      Object.assign(report, overrides);
+      if (eventPatch) {
+        report.event = Object.assign({}, report.event || defaultEvent(plan), eventPatch);
+      }
     }
-    if (plan && plan.audit === "审核中") {
-      return [
-        { person: "张工", time: "2026-05-13 09:24", status: "审批通过", opinion: "申请资料完整。" },
-        { person: "李工", time: "2026-05-13 09:42", status: "审批通过", opinion: "同意继续审批。" },
-        { person: "陈工", time: "-", status: "待审批", opinion: "-" },
-        { person: "王主任", time: "-", status: "待审批", opinion: "-" },
-        { person: "赵经理", time: "-", status: "待审批", opinion: "-" },
-      ];
-    }
-    return base;
+    return report;
   }
 
   function ensureStylesheet() {
@@ -221,7 +221,7 @@
     var link = document.createElement("link");
     link.id = "flight-report-modal-css";
     link.rel = "stylesheet";
-    link.href = "assets/css/flight-report-modal.css";
+    link.href = assetUrl("assets/css/flight-report-modal.css");
     document.head.appendChild(link);
   }
 
@@ -232,17 +232,15 @@
       "beforeend",
       '<div id="report-modal" class="modal-mask" role="dialog" aria-modal="true" aria-labelledby="fr-report-modal-title">' +
         '<div class="modal-card modal-card--report">' +
-        '<div class="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">' +
-        '<div><h3 id="fr-report-modal-title" class="text-base font-semibold text-white">飞行报告</h3>' +
-        '<p id="report-modal-subtitle" class="text-xs text-slate-400 mt-1"></p></div>' +
+        '<div class="fr-report-toolbar">' +
+        '<h3 id="fr-report-modal-title" class="fr-report-toolbar__title">飞行报告</h3>' +
         '<button type="button" class="wh-modal-close fr-report-modal-close" data-fr-report-close aria-label="关闭">×</button>' +
         "</div>" +
         '<div id="report-box" class="fr-report-body"></div>' +
         "</div></div>"
     );
     modal = document.getElementById("report-modal");
-    var closeBtn = modal.querySelector("[data-fr-report-close]");
-    if (closeBtn) closeBtn.addEventListener("click", close);
+    modal.querySelector("[data-fr-report-close]").addEventListener("click", close);
     modal.addEventListener("click", function (e) {
       if (e.target === modal) close();
     });
@@ -278,22 +276,13 @@
     ensureDom();
     var mask = document.getElementById("wh-media-preview-mask");
     var body = document.getElementById("wh-media-preview-body");
-    document.getElementById("wh-media-preview-title").textContent = payload.title || "媒体预览";
-    if (payload.kind === "video" && payload.url) {
-      body.innerHTML =
-        '<video class="wh-media-preview-video" src="' +
-        esc(payload.url) +
-        '" controls autoplay poster="' +
-        esc(payload.poster || "") +
-        '"></video>';
-    } else {
-      body.innerHTML =
-        '<img class="wh-media-preview-image" src="' +
-        esc(payload.url) +
-        '" alt="' +
-        esc(payload.title || "图片") +
-        '">';
-    }
+    document.getElementById("wh-media-preview-title").textContent = payload.title || "图片预览";
+    body.innerHTML =
+      '<img class="wh-media-preview-image" src="' +
+      esc(payload.url) +
+      '" alt="' +
+      esc(payload.title || "图片") +
+      '">';
     mask.classList.add("show");
   }
 
@@ -305,212 +294,293 @@
     if (body) body.innerHTML = "";
   }
 
-  function basicRow(label, value) {
+  function docRow2(l1, v1, l2, v2) {
     return (
-      '<div class="fr-basic-row"><div class="fr-basic-row__label">' +
+      "<tr><th>" +
+      esc(l1) +
+      '</th><td class="fr-doc-table__val">' +
+      esc(v1) +
+      "</td><th>" +
+      esc(l2) +
+      '</th><td class="fr-doc-table__val">' +
+      esc(v2) +
+      "</td></tr>"
+    );
+  }
+
+  function docRowFull(label, value, extraClass) {
+    return (
+      '<tr class="' +
+      (extraClass || "") +
+      '"><th>' +
       esc(label) +
-      '</div><div class="fr-basic-row__value">' +
-      value +
+      '</th><td class="fr-doc-table__val fr-doc-table__val--wide" colspan="3">' +
+      esc(value) +
+      "</td></tr>"
+    );
+  }
+
+  function renderTrackBlock(plan, report) {
+    var aircraft = report.droneName || plan.drone || "—";
+    return (
+      '<div class="fr-doc-track">' +
+      '<img class="fr-doc-track__img" src="' +
+      esc(report.trackImage || assetUrl(TRACK_IMG)) +
+      '" alt="飞行轨迹" />' +
+      '<div class="fr-doc-track__bar">' +
+      '<div class="fr-doc-track__cell"><span class="fr-doc-track__label">飞行器</span><span class="fr-doc-track__value">' +
+      esc(aircraft) +
+      "</span></div>" +
+      '<div class="fr-doc-track__cell"><span class="fr-doc-track__label">实际执行时间</span><span class="fr-doc-track__value">' +
+      esc(report.takeoff) +
+      "</span></div>" +
+      '<div class="fr-doc-track__cell"><span class="fr-doc-track__label">实际结束时间</span><span class="fr-doc-track__value">' +
+      esc(report.landing) +
+      "</span></div>" +
+      '<div class="fr-doc-track__cell"><span class="fr-doc-track__label">实际飞行距离</span><span class="fr-doc-track__value">' +
+      esc(report.distance) +
+      "</span></div>" +
+      '<div class="fr-doc-track__cell"><span class="fr-doc-track__label">实际飞行时长</span><span class="fr-doc-track__value">' +
+      esc(String(report.durationSec != null ? report.durationSec + "秒" : report.duration)) +
+      "</span></div>" +
       "</div></div>"
     );
   }
 
-  function renderBasicInfo(plan, report) {
+  function renderFlightTable(plan, report) {
     return (
-      '<div class="fr-basic-grid">' +
-      basicRow("关联计划", '<a href="#">' + esc(plan.name) + "</a>") +
-      basicRow("飞行任务ID", esc(report.taskId)) +
-      basicRow("飞行航线", esc(plan.route)) +
-      basicRow("适用机场", esc(plan.airport)) +
-      basicRow("适用航空器", esc(plan.drone)) +
-      basicRow("操作员", esc(report.operator)) +
-      basicRow("任务类型", esc(plan.type)) +
-      basicRow("起飞时间", esc(report.takeoff)) +
-      basicRow("降落时间", esc(report.landing)) +
-      basicRow("飞行时长", esc(report.duration)) +
-      basicRow("飞行状态", statusHtml(report.flightStatus)) +
-      basicRow("最大高度", esc(report.maxHeight)) +
-      basicRow("航程", esc(report.distance)) +
-      basicRow("电池消耗", esc(report.batteryUsed)) +
-      basicRow("AI识别摘要", esc(report.aiSummary)) +
-      "</div>"
+      '<table class="fr-doc-table" aria-label="飞行信息">' +
+      docRow2("任务 ID", report.taskId, "无人机编号", report.droneCode) +
+      docRow2("无人机名称", report.droneName, "所属机场", report.airport) +
+      docRow2("操作员", report.operator, "任务类型", report.taskType) +
+      docRow2("关联计划", report.relatedPlan, "起飞时间", report.takeoff) +
+      docRow2("降落时间", report.landing, "飞行时长", report.duration) +
+      docRow2("起飞位置", report.takeoffPos, "降落位置", report.landingPos) +
+      docRow2("最大飞行高度", report.maxHeight, "总飞行距离", report.distance) +
+      docRow2("起飞电量", report.takeoffBattery, "降落电量", report.landingBattery) +
+      docRow2("飞行状态", report.flightStatus, "天气情况", report.weather) +
+      "</table>"
     );
   }
 
-  function renderEvents(events) {
-    if (!events || !events.length) {
-      return '<div class="text-xs text-slate-400 py-2">暂无操作与事件记录</div>';
-    }
-    return events
-      .map(function (evt) {
-        return (
-          '<div class="fr-event-item">' +
-          '<div class="text-xs text-slate-300">' +
-          esc(evt.time) +
-          '</div><div class="text-xs text-slate-400 mt-1">事件类型：<span class="text-cyan-200">' +
-          esc(evt.type) +
-          '</span></div><div class="fr-event-detail text-sm text-sky-300 mt-1 leading-6">' +
-          esc(evt.detail) +
-          "</div></div>"
-        );
-      })
-      .join("");
-  }
+  function renderEventSection(report) {
+    var ev = report.event || defaultEvent(currentPlan || {});
+    var imgUrl = ev.eventImage || assetUrl(EVENT_IMG);
+    var imgCell =
+      '<img class="fr-doc-event-img" src="' +
+      esc(imgUrl) +
+      '" alt="事件图片" data-fr-event-preview role="button" tabindex="0" title="点击放大" />';
 
-  function renderMedia(media) {
-    if (!media || !media.length) {
-      return '<div class="text-xs text-slate-400">暂无巡查图片或视频</div>';
-    }
     return (
-      '<div class="fr-media-grid">' +
-      media
-        .map(function (item, index) {
-          var isVideo = item.kind === "video";
-          var src = isVideo ? item.poster || item.url : item.url;
-          return (
-            '<button type="button" class="fr-media-thumb" data-fr-media="' +
-            index +
-            '" title="' +
-            esc(item.title) +
-            '">' +
-            (isVideo
-              ? '<img src="' + esc(src) + '" alt="">'
-              : '<img src="' + esc(src) + '" alt="' + esc(item.title) + '">') +
-            '<span class="fr-media-thumb__badge' +
-            (isVideo ? " fr-media-thumb__badge--video" : "") +
-            '">' +
-            (isVideo ? '<i class="fa-solid fa-play"></i> 视频' : "图片") +
-            "</span></button>"
-          );
-        })
-        .join("") +
-      "</div>"
+      '<h4 class="fr-doc__section-hd">事件分析</h4>' +
+      '<div class="fr-doc__section-body">' +
+      '<table class="fr-doc-table" aria-label="事件信息">' +
+      docRow2("对应项目", ev.project, "预警时间", ev.alertTime) +
+      docRow2("地理坐标", ev.coordinates, "类型", ev.type) +
+      docRowFull("位置", ev.location) +
+      docRow2("等级", ev.level, "预警方式", ev.warnMode) +
+      '<tr class="fr-doc-table__img-row"><th>事件图片</th><td colspan="3">' +
+      imgCell +
+      "</td></tr>" +
+      "</table>" +
+      '<table class="fr-doc-table" aria-label="处理信息">' +
+      docRow2("处理单位", ev.unit, "处理人员", ev.person) +
+      docRow2("处理时间", ev.processTime, "是否误报", ev.falseAlarm) +
+      docRow2("是否违规施工", ev.illegalConstruction, "风险等级", ev.riskLevel) +
+      '<tr class="fr-doc-table__approval-row"><th>审批内容</th><td class="fr-doc-table__val fr-doc-table__val--wide" colspan="3">' +
+      esc(ev.approvalContent) +
+      "</td></tr>" +
+      "</table></div>"
     );
   }
 
-  function renderAlerts(alerts) {
-    if (!alerts || !alerts.length) {
-      return '<div class="text-xs text-slate-400 py-3 px-2">本次飞行未关联预警信息</div>';
-    }
-    var rows = alerts
-      .map(function (a) {
-        return (
-          "<tr>" +
-          "<td>" +
-          esc(a.projectName) +
-          "</td><td>" +
-          esc(a.section) +
-          "</td><td>" +
-          esc(a.location) +
-          "</td><td>" +
-          esc(a.startTime) +
-          "</td><td>" +
-          esc(a.type) +
-          '</td><td><span class="' +
-          levelClass(a.level) +
-          '">' +
-          esc(a.level) +
-          "</span></td><td>" +
-          esc(a.warnMode) +
-          "</td></tr>"
-        );
-      })
-      .join("");
+  function renderDocContent(plan, report) {
+    var title = formatReportTitle(plan);
+    var publishTime = formatPublishTime(plan);
+    var publisher = report.publisher || plan.applicant || "系统自动";
+
     return (
-      '<div class="fr-alert-table-wrap"><table class="fr-alert-table">' +
-      "<colgroup>" +
-      '<col class="col-project" /><col class="col-section" /><col class="col-location" /><col class="col-time" /><col class="col-type" /><col class="col-level" /><col class="col-mode" />' +
-      "</colgroup><thead><tr>" +
-      "<th>项目名称</th><th>报警区间</th><th>报警位置</th><th>开始时间</th><th>类型</th><th>等级</th><th>预警方式</th>" +
-      "</tr></thead><tbody>" +
-      rows +
-      "</tbody></table></div>"
+      '<article class="fr-doc">' +
+      '<header class="fr-doc__head">' +
+      '<h2 class="fr-doc__title">' +
+      esc(title) +
+      "</h2>" +
+      '<div class="fr-doc__meta">' +
+      "<span><strong>发布人员：</strong>" +
+      esc(publisher) +
+      "</span>" +
+      "<span><strong>发布时间：</strong>" +
+      esc(publishTime) +
+      "</span>" +
+      "</div></header>" +
+      '<h4 class="fr-doc__section-hd">飞行报告</h4>' +
+      '<div class="fr-doc__section-body">' +
+      renderTrackBlock(plan, report) +
+      renderFlightTable(plan, report) +
+      "</div>" +
+      renderEventSection(report) +
+      "</article>"
     );
   }
 
-  function destroyTrack() {
-    if (trackPlayback) {
-      trackPlayback.destroy();
-      trackPlayback = null;
-    }
+  function renderHtml(plan, report) {
+    return (
+      '<div class="fr-doc-wrap">' +
+      renderDocContent(plan, report) +
+      '<footer class="fr-doc__foot">' +
+      '<button type="button" id="fr-report-export-btn" class="wh-btn-gold px-5 py-2"><i class="fa-solid fa-file-pdf mr-1.5"></i>导出报告</button>' +
+      "</footer></div>"
+    );
   }
 
-  function initTrack(report) {
-    destroyTrack();
-    if (!global.WHTrackPlayback) return;
-    trackPlayback = global.WHTrackPlayback.create({
-      preset: "drone",
-      mapContainerId: "fr-report-map",
-      center: WUHAN,
-      zoom: 12,
-      statusEl: document.getElementById("fr-map-status-text"),
-      nameEl: document.getElementById("fr-map-current-name"),
-      timeEl: document.getElementById("fr-map-current-time"),
-      fitPadding: [28, 28],
+  function planFromFlightLog(item) {
+    if (!item) return null;
+    var planId = item.planId || FLIGHT_LOG_PLAN_ID[item.id] || 1;
+    var executed = item.status === "成功" || item.status === "异常中止" || item.status === "手动取消" || item.status === "失败";
+    return {
+      id: planId,
+      taskId: item.id,
+      name: item.planName || item.planCode || "飞行任务",
+      route: item.planCode || item.planName || "—",
+      airport: item.airport || "—",
+      drone: item.deviceName || item.deviceCode || "—",
+      type: item.taskType || "—",
+      line: item.line || "—",
+      applicant: item.operator || "—",
+      actualStart: item.takeoff || "—",
+      actualEnd: item.landing || "—",
+      submit: item.takeoff || "—",
+      audit: "审核通过",
+      exec: executed ? "已执行" : "未执行",
+      reportOverrides: {
+        taskId: item.id,
+        droneCode: item.droneNo,
+        droneName: item.deviceName || item.deviceCode,
+        operator: item.operator,
+        duration: item.duration,
+        takeoffPos: item.takeoffPos,
+        landingPos: item.landingPos,
+        maxHeight: item.maxHeight ? item.maxHeight + " m" : "—",
+        distance: item.totalDistance ? item.totalDistance + " km" : reportDistanceFallback(item),
+        takeoffBattery: item.takeoffPower,
+        landingBattery: item.landingPower,
+        flightStatus: item.status,
+        weather: item.weather,
+        publisher: item.operator,
+      },
+    };
+  }
+
+  function reportDistanceFallback(item) {
+    if (item && item.totalDistance && !/单位|保留/.test(String(item.totalDistance))) {
+      return item.totalDistance + " km";
+    }
+    return "6771.32米";
+  }
+
+  function loadHtml2Pdf() {
+    if (global.html2pdf && global.html2pdf().set) return Promise.resolve(global.html2pdf);
+    if (html2pdfLoadPromise) return html2pdfLoadPromise;
+    html2pdfLoadPromise = new Promise(function (resolve, reject) {
+      var existing = document.getElementById("html2pdf-bundle");
+      if (existing) {
+        existing.addEventListener("load", function () {
+          resolve(global.html2pdf);
+        });
+        existing.addEventListener("error", reject);
+        return;
+      }
+      var script = document.createElement("script");
+      script.id = "html2pdf-bundle";
+      script.src =
+        "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js";
+      script.crossOrigin = "anonymous";
+      script.onload = function () {
+        resolve(global.html2pdf);
+      };
+      script.onerror = function () {
+        reject(new Error("html2pdf load failed"));
+      };
+      document.head.appendChild(script);
     });
-    trackPlayback.draw(report.track || []);
-    setTimeout(function () {
-      var map = trackPlayback.getMap();
-      if (map) map.invalidateSize();
-    }, 120);
+    return html2pdfLoadPromise;
   }
 
-  function csvEscape(val) {
-    var s = String(val == null ? "" : val).replace(/"/g, '""');
-    if (/[",\n\r]/.test(s)) return '"' + s + '"';
-    return s;
+  function pdfFilename(plan) {
+    var part = parseDatePart(plan.actualEnd) || parseDatePart(plan.actualStart) || String(plan.id || "report");
+    return "飞行报告_" + part + ".pdf";
+  }
+
+  function preparePdfElement(plan, report) {
+    var box = document.getElementById("report-box");
+    var liveDoc = box && box.querySelector(".fr-doc");
+    if (liveDoc && currentPlan && plan && currentPlan.id === plan.id && currentPlan.taskId === plan.taskId) {
+      var clone = liveDoc.cloneNode(true);
+      return { element: clone, cleanup: function () {} };
+    }
+    var wrapper = document.createElement("div");
+    wrapper.className = "fr-pdf-export-root";
+    wrapper.setAttribute("aria-hidden", "true");
+    wrapper.style.cssText =
+      "position:fixed;left:-12000px;top:0;width:860px;z-index:-1;pointer-events:none;background:#fff;";
+    wrapper.innerHTML = renderDocContent(plan, report);
+    document.body.appendChild(wrapper);
+    var element = wrapper.querySelector(".fr-doc");
+    return {
+      element: element,
+      cleanup: function () {
+        if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+      },
+    };
+  }
+
+  function exportReportPdf(plan, report) {
+    if (!plan) return Promise.reject(new Error("no plan"));
+    if (!report) report = getReportData(plan);
+    if (pdfExporting) return Promise.resolve();
+    pdfExporting = true;
+
+    var prep = preparePdfElement(plan, report);
+    if (!prep.element) {
+      pdfExporting = false;
+      return Promise.reject(new Error("no element"));
+    }
+
+    return loadHtml2Pdf()
+      .then(function (html2pdf) {
+        return html2pdf()
+          .set({
+            margin: [8, 8, 10, 8],
+            filename: pdfFilename(plan),
+            image: { type: "jpeg", quality: 0.94 },
+            html2canvas: {
+              scale: 2,
+              useCORS: true,
+              allowTaint: true,
+              logging: false,
+              backgroundColor: "#ffffff",
+            },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+            pagebreak: { mode: ["css", "legacy"] },
+          })
+          .from(prep.element)
+          .save();
+      })
+      .finally(function () {
+        prep.cleanup();
+        pdfExporting = false;
+      });
   }
 
   function exportReport(plan, report) {
-    if (!plan) return;
-    if (!report) report = getReportData(plan);
-    var noteEl = document.getElementById("fr-report-supplement");
-    var supplement = noteEl ? noteEl.value.trim() : report.supplement || "";
-    var lines = [["字段", "内容"].map(csvEscape).join(",")];
-    function pushRow(label, value) {
-      lines.push([label, value].map(csvEscape).join(","));
-    }
-    pushRow("关联计划", plan.name);
-    pushRow("飞行任务ID", report.taskId);
-    pushRow("飞行航线", plan.route);
-    pushRow("适用机场", plan.airport);
-    pushRow("适用航空器", plan.drone);
-    pushRow("操作员", report.operator);
-    pushRow("任务类型", plan.type);
-    pushRow("起飞时间", report.takeoff);
-    pushRow("降落时间", report.landing);
-    pushRow("飞行时长", report.duration);
-    pushRow("飞行状态", report.flightStatus);
-    pushRow("最大高度", report.maxHeight);
-    pushRow("航程", report.distance);
-    pushRow("电池消耗", report.batteryUsed);
-    pushRow("AI识别摘要", report.aiSummary);
-    pushRow("报告补充说明", supplement);
-    lines.push("");
-    lines.push(["操作与事件", "", ""].map(csvEscape).join(","));
-    lines.push(["时间", "事件类型", "详情"].map(csvEscape).join(","));
-    (report.events || []).forEach(function (evt) {
-      lines.push([evt.time, evt.type, evt.detail].map(csvEscape).join(","));
-    });
-    lines.push("");
-    lines.push(["预警信息", "", "", "", "", "", ""].map(csvEscape).join(","));
-    lines.push(
-      ["项目名称", "报警区间", "报警位置", "开始时间", "类型", "等级", "预警方式"].map(csvEscape).join(",")
-    );
-    (report.alerts || []).forEach(function (a) {
-      lines.push(
-        [a.projectName, a.section, a.location, a.startTime, a.type, a.level, a.warnMode].map(csvEscape).join(",")
-      );
-    });
-    var blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    a.href = url;
-    a.download = "飞行报告_" + (report.taskId || "plan-" + plan.id) + ".csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    showToast("正在生成 PDF…");
+    return exportReportPdf(plan, report)
+      .then(function () {
+        showToast("飞行报告 PDF 已导出");
+      })
+      .catch(function () {
+        showToast("PDF 导出失败，请稍后重试");
+      });
   }
 
   function showToast(text) {
@@ -527,51 +597,25 @@
     }, 1800);
   }
 
-  function bindReportEvents(report, editable, options) {
+  function bindReportEvents(report, options) {
     var box = document.getElementById("report-box");
     if (!box) return;
 
-    box.querySelectorAll("[data-fr-media]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var idx = Number(btn.getAttribute("data-fr-media"));
-        var item = report.media[idx];
-        if (item) openMediaPreview(item);
-      });
-    });
-
-    var playBtn = document.getElementById("fr-report-play-track");
-    if (playBtn) {
-      playBtn.onclick = function () {
-        if (trackPlayback) trackPlayback.play();
+    var previewImg = box.querySelector("[data-fr-event-preview]");
+    if (previewImg) {
+      var openPreview = function () {
+        openMediaPreview({
+          title: "事件图片",
+          url: (report.event && report.event.eventImage) || assetUrl(EVENT_IMG),
+        });
       };
-    }
-    var resetBtn = document.getElementById("fr-report-reset-map");
-    if (resetBtn) {
-      resetBtn.onclick = function () {
-        if (trackPlayback) trackPlayback.fitBounds();
-      };
-    }
-
-    var note = document.getElementById("fr-report-supplement");
-    if (note) {
-      note.readOnly = !editable;
-      note.value = report.supplement || "";
-      if (!editable) note.setAttribute("title", "查看模式下不可编辑，可点击保存归档当前说明");
-    }
-
-    var saveBtn = document.getElementById("fr-report-save-btn");
-    if (saveBtn) {
-      saveBtn.disabled = false;
-      saveBtn.onclick = function () {
-        var text = note ? note.value.trim() : "";
-        report.supplement = text;
-        if (currentReport) currentReport.supplement = text;
-        if (options && typeof options.onSave === "function") {
-          options.onSave(text, currentPlan, report);
-        } else {
-          showToast("报告补充说明已保存");
+      previewImg.addEventListener("click", openPreview);
+      previewImg.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openPreview();
         }
-      };
+      });
     }
 
     var exportBtn = document.getElementById("fr-report-export-btn");
@@ -580,66 +624,13 @@
         var plan = currentPlan;
         var data = currentReport || report;
         if (!plan || !data) return;
-        exportReport(plan, data);
-        if (options && typeof options.onExport === "function") {
-          options.onExport(plan, data);
-        } else {
-          showToast("飞行报告已导出");
-        }
+        exportReport(plan, data).then(function () {
+          if (options && typeof options.onExport === "function") {
+            options.onExport(plan, data);
+          }
+        });
       };
     }
-  }
-
-  function renderHtml(plan, report, approvalHtml, editable) {
-    return (
-      '<div class="fr-report-layout">' +
-      '<div class="fr-report-main-row">' +
-      '<section class="fr-report-col fr-report-col--left fr-report-panel fr-report-panel--align">' +
-      '<h4 class="fr-report-panel__title">基本信息</h4>' +
-      renderBasicInfo(plan, report) +
-      "</section>" +
-      '<section class="fr-report-col fr-report-col--center fr-report-panel fr-report-panel--align">' +
-      '<div class="fr-track-toolbar">' +
-      '<h4 class="fr-report-panel__title fr-report-panel__title--inline">飞行轨迹</h4>' +
-      '<div class="fr-track-actions">' +
-      '<button type="button" id="fr-report-play-track" class="wh-btn-primary px-3 py-1.5 text-xs"><i class="fa-solid fa-play mr-1"></i>播放轨迹</button>' +
-      '<button type="button" id="fr-report-reset-map" class="wh-btn-ghost px-3 py-1.5 text-xs"><i class="fa-solid fa-location-crosshairs mr-1"></i>重置视角</button>' +
-      "</div></div>" +
-      '<div class="fl-map-shell track-map-shell">' +
-      '<div id="fr-report-map" class="fr-map"></div>' +
-      '<div class="track-map-panel">' +
-      '<div class="track-map-panel__row"><span class="track-map-panel__label">轨迹状态</span><span id="fr-map-status-text">待播放</span></div>' +
-      '<div class="track-map-panel__row"><span class="track-map-panel__label">当前位置</span><span id="fr-map-current-name">--</span></div>' +
-      '<div class="track-map-panel__row"><span class="track-map-panel__label">定位时间</span><span id="fr-map-current-time">--</span></div>' +
-      "</div></div>" +
-      '<div class="fr-media-section">' +
-      '<h4 class="fr-report-panel__title fr-report-panel__title--sub">巡查图片和视频</h4>' +
-      renderMedia(report.media) +
-      "</div></section>" +
-      '<section class="fr-report-col fr-report-col--right fr-report-panel fr-report-panel--approval fr-report-panel--align">' +
-      '<h4 class="fr-report-panel__title">审批记录</h4>' +
-      '<div class="fr-approval-scroll">' +
-      (approvalHtml || '<div class="text-xs text-slate-400">暂无审批记录</div>') +
-      "</div></section></div>" +
-      '<section class="fr-report-panel fr-report-events-bar">' +
-      '<h4 class="fr-report-panel__title">操作与事件</h4>' +
-      '<div class="fr-events-scroll">' +
-      renderEvents(report.events) +
-      "</div></section>" +
-      '<section class="fr-report-panel fr-report-alerts-bar">' +
-      '<h4 class="fr-report-panel__title">预警信息</h4>' +
-      renderAlerts(report.alerts) +
-      "</section>" +
-      '<section class="fr-report-panel fr-report-supplement-bar">' +
-      '<h4 class="fr-report-panel__title">报告补充说明</h4>' +
-      '<textarea id="fr-report-supplement" class="wh-input fr-report-note px-3 py-2" placeholder="' +
-      (editable ? "请填写本次飞行报告补充说明…" : "可填写补充说明后点击保存归档") +
-      '"></textarea>' +
-      '<div class="fr-report-supplement-actions">' +
-      '<button type="button" id="fr-report-export-btn" class="wh-btn-gold px-5 py-2 text-sm"><i class="fa-solid fa-download mr-1.5"></i>导出</button>' +
-      '<button type="button" id="fr-report-save-btn" class="wh-btn-primary px-5 py-2 text-sm"><i class="fa-solid fa-floppy-disk mr-1.5"></i>保存</button>' +
-      "</div></section></div>"
-    );
   }
 
   function open(plan, options) {
@@ -648,46 +639,23 @@
     ensureDom();
 
     var report = getReportData(plan);
-    var approvalHtml = "";
-    if (options.approvalHtml) {
-      approvalHtml = options.approvalHtml;
-    } else if (global.ApprovalTimeline) {
-      var records = options.renderApprovalRecords
-        ? options.renderApprovalRecords(plan)
-        : defaultApprovalRecords(plan);
-      approvalHtml = ApprovalTimeline.renderApprovalRecords(records);
-    }
-
-    var editable = options.editable !== false;
     currentPlan = plan;
     currentReport = report;
+
     var box = document.getElementById("report-box");
     if (!box) return;
 
-    var subtitle = document.getElementById("report-modal-subtitle");
-    if (subtitle) {
-      subtitle.textContent = plan.name + " · " + (plan.route || "");
-    }
-
-    box.innerHTML = renderHtml(plan, report, approvalHtml, editable);
-    bindReportEvents(report, editable, options);
+    box.innerHTML = renderHtml(plan, report);
+    bindReportEvents(report, options);
 
     var modal = document.getElementById("report-modal");
     if (modal) modal.classList.add("show");
 
-    setTimeout(function () {
-      initTrack(report);
-      setTimeout(function () {
-        if (trackPlayback) {
-          var map = trackPlayback.getMap();
-          if (map) map.invalidateSize();
-        }
-      }, 200);
-    }, 80);
+    var toolbarTitle = document.getElementById("fr-report-modal-title");
+    if (toolbarTitle) toolbarTitle.textContent = formatReportTitle(plan);
   }
 
   function close() {
-    destroyTrack();
     closeMediaPreview();
     var modal = document.getElementById("report-modal");
     if (modal) modal.classList.remove("show");
@@ -697,8 +665,11 @@
     open: open,
     close: close,
     exportReport: exportReport,
+    exportReportPdf: exportReportPdf,
     getReportData: getReportData,
+    planFromFlightLog: planFromFlightLog,
     openMediaPreview: openMediaPreview,
     closeMediaPreview: closeMediaPreview,
+    formatReportTitle: formatReportTitle,
   };
 })(window);

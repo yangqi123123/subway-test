@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>全景地图 - 专家工具</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="../../assets/css/theme.css" />
+    <style>
+      body {
+        overflow: hidden;
+      }
+      .map-breadcrumb {
+        margin: 12px 12px 0;
+        padding: 10px 16px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        color: #94a3b8;
+      }
+      .map-breadcrumb__icon { color: #22d3ee; }
+      .map-breadcrumb__sep { color: #475569; }
+      .map-breadcrumb__current {
+        color: #f8fafc;
+        font-weight: 600;
+        letter-spacing: .02em;
+      }
+
+
+      .expert-page {
+        background:
+          radial-gradient(circle at 18% 0%, rgba(34, 211, 238, 0.08), transparent 30%),
+          radial-gradient(circle at 100% 8%, rgba(59, 130, 246, 0.08), transparent 28%),
+          linear-gradient(180deg, #040914 0%, #091426 100%);
+      }
+
+      .expert-panel {
+        position: relative;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: linear-gradient(180deg, rgba(9, 18, 36, 0.96) 0%, rgba(7, 14, 29, 0.96) 100%);
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.08), 0 10px 28px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+      }
+
+      .expert-panel::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 16%, transparent 84%, rgba(34, 211, 238, 0.02));
+      }
+
+      .panel-title {
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, #0f87d9 0%, #0967b8 100%);
+        color: #eaf6ff;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .card-title {
+        height: 34px;
+        padding: 0 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 700;
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .card-body {
+        flex: 1;
+        padding: 8px 10px;
+        font-size: 12px;
+        line-height: 1.55;
+        color: #dce8f8;
+        overflow: auto;
+      }
+
+      .map-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+        background-size: 44px 44px;
+        opacity: 0.08;
+        mix-blend-mode: soft-light;
+      }
+
+      .waterfall-legend {
+        position: absolute;
+        right: 12px;
+        top: 8px;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 11px;
+        color: #4b5563;
+      }
+      .waterfall-legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .waterfall-legend i {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        flex-shrink: 0;
+      }
+      .waterfall-legend i.is-normal {
+        background: #47a6ff;
+        box-shadow: 0 0 8px rgba(71, 166, 255, 0.55);
+      }
+      .waterfall-legend i.is-warn {
+        background: #ffbf33;
+        box-shadow: 0 0 8px rgba(255, 191, 51, 0.5);
+      }
+      .waterfall-legend i.is-danger {
+        background: #ff4d4f;
+        box-shadow: 0 0 8px rgba(255, 77, 79, 0.55);
+      }
+      .waterfall-dot {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        border-radius: 999px;
+      }
+      .waterfall-dot--normal {
+        background: #47a6ff;
+        box-shadow: 0 0 9px rgba(71, 166, 255, 0.6);
+      }
+      .waterfall-dot--warn {
+        background: #ffbf33;
+        box-shadow: 0 0 9px rgba(255, 191, 51, 0.55);
+      }
+      .waterfall-dot--danger {
+        background: #ff4d4f;
+        box-shadow: 0 0 9px rgba(255, 77, 79, 0.6);
+      }
+
+      .spec-view {
+        background: linear-gradient(180deg, #0a1222 0%, #0d1830 100%);
+      }
+      .spec-legend {
+        position: absolute;
+        right: 10px;
+        top: 8px;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 10px;
+        color: #94a3b8;
+      }
+      .spec-legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .spec-legend i {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+      }
+      .spec-legend i.is-normal {
+        background: #47a6ff;
+        box-shadow: 0 0 6px rgba(71, 166, 255, 0.5);
+      }
+      .spec-legend i.is-warn {
+        background: #ffbf33;
+        box-shadow: 0 0 6px rgba(255, 191, 51, 0.45);
+      }
+      .spec-legend i.is-danger {
+        background: #ff4d4f;
+        box-shadow: 0 0 6px rgba(255, 77, 79, 0.5);
+      }
+      .spec-chart-area {
+        position: absolute;
+        left: 38px;
+        right: 10px;
+        top: 10px;
+        bottom: 26px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 2px;
+        overflow: hidden;
+        background: #060d1a;
+      }
+      #expert-spectrum-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .spec-axis-y {
+        position: absolute;
+        left: 4px;
+        top: 10px;
+        bottom: 26px;
+        width: 32px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding-right: 4px;
+        font-size: 9px;
+        color: #94a3b8;
+        pointer-events: none;
+      }
+      .spec-axis-x {
+        position: absolute;
+        left: 38px;
+        right: 10px;
+        bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 9px;
+        color: #94a3b8;
+        pointer-events: none;
+      }
+      .spec-axis-unit {
+        position: absolute;
+        font-size: 9px;
+        color: #64748b;
+        pointer-events: none;
+      }
+      .spec-axis-unit--x {
+        right: 10px;
+        bottom: 2px;
+      }
+      .spec-axis-unit--y {
+        left: 4px;
+        top: 2px;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+      }
+
+      .map-chip {
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        background: rgba(9, 18, 36, 0.62);
+        backdrop-filter: blur(6px);
+      }
+
+      #expert-gis-map,
+      #expert-gis-map .leaflet-container {
+        width: 100%;
+        height: 100%;
+        background: #f0f3f6;
+        font-family: inherit;
+      }
+
+      .sit-alarm-tooltip {
+        border: 1px solid rgba(34, 211, 238, 0.35);
+        background: rgba(6, 33, 50, 0.95);
+        color: #f8fafc;
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      }
+
+      #expert-gis-map .leaflet-control-zoom {
+        margin-top: 46px;
+        margin-left: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
+      }
+
+      #expert-gis-map .leaflet-control-zoom a {
+        width: 28px;
+        height: 28px;
+        line-height: 27px;
+        color: #ffffff;
+        background: rgba(9, 18, 36, 0.78);
+        border-bottom-color: rgba(255, 255, 255, 0.16);
+      }
+
+      #expert-gis-map .leaflet-control-attribution {
+        display: none;
+      }
+
+      .expert-map-vignette {
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 34% 22%, rgba(255, 255, 255, 0.16), transparent 28%),
+          linear-gradient(180deg, rgba(8, 15, 28, 0.08), rgba(8, 15, 28, 0.22)),
+          linear-gradient(90deg, rgba(4, 12, 24, 0.2), transparent 18%, transparent 82%, rgba(4, 12, 24, 0.2));
+      }
+
+      .expert-map-label {
+        color: #ffffff;
+        background: rgba(10, 24, 44, 0.74);
+        border: 1px solid rgba(125, 211, 252, 0.42);
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 10px;
+        line-height: 1;
+        box-shadow: 0 0 14px rgba(14, 165, 233, 0.3);
+        white-space: nowrap;
+      }
+
+      .expert-alarm-marker {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 3px solid #ff664d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ff664d;
+        box-shadow: 0 0 18px rgba(255, 102, 77, 0.72);
+      }
+
+      .axis-text {
+        position: absolute;
+        font-size: 10px;
+        color: #6b7280;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .thumb-strip {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 4px;
+      }
+
+      .thumb-strip img {
+        width: 100%;
+        height: 42px;
+        object-fit: cover;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+      }
+
+      .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+
+      .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: rgba(59, 130, 246, 0.35);
+        border-radius: 999px;
+      }
+
+      .scrollbar-thin::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.55);
+      }
+
+      .expert-modal-mask {
+        position: fixed;
+        inset: 0;
+        z-index: 1200;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(2, 8, 20, 0.72);
+        backdrop-filter: blur(4px);
+      }
+
+      .expert-modal-mask.show {
+        display: flex;
+      }
+
+      .expert-modal {
+        width: min(520px, 96vw);
+        max-height: 90vh;
+        overflow: auto;
+        border-radius: 10px;
+        border: 1px solid rgba(34, 211, 238, 0.22);
+        background: linear-gradient(180deg, rgba(9, 18, 36, 0.98) 0%, rgba(7, 14, 29, 0.98) 100%);
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+      }
+
+      .expert-modal__head {
+        display: flex;
+        align-items: center;
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .expert-modal__title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #f8fafc;
+      }
+
+      .expert-modal__close {
+        margin-left: auto;
+      }
+
+      .expert-modal__body {
+        padding: 16px;
+      }
+
+      .expert-form-label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #cbd5e1;
+      }
+
+      .expert-form-row {
+        margin-bottom: 14px;
+      }
+
+      .expert-form-row.is-hidden {
+        display: none;
+      }
+
+      .expert-radio-group {
+        display: flex;
+        gap: 20px;
+        font-size: 12px;
+        color: #e2e8f0;
+      }
+
+      .expert-radio-group label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+      }
+
+      .expert-select,
+      .expert-textarea {
+        width: 100%;
+        border-radius: 6px;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        background: rgba(15, 23, 42, 0.65);
+        color: #f1f5f9;
+        font-size: 12px;
+      }
+
+      .expert-select {
+        height: 34px;
+        padding: 0 10px;
+      }
+
+      .expert-textarea {
+        min-height: 88px;
+        padding: 8px 10px;
+        resize: vertical;
+      }
+
+      .expert-photo-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .expert-photo-item {
+        position: relative;
+        height: 72px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .expert-photo-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .expert-photo-upload {
+        margin-top: 8px;
+        font-size: 11px;
+        color: #94a3b8;
+      }
+
+      .expert-modal__foot {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 12px 16px 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      #expert-review-card.is-active {
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.35), 0 10px 28px rgba(0, 0, 0, 0.4);
+      }
+
+      .expert-toast {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 1300;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid rgba(34, 211, 238, 0.25);
+        background: rgba(7, 26, 43, 0.95);
+        color: #e2e8f0;
+        font-size: 13px;
+        opacity: 0;
+        transform: translateY(8px);
+        pointer-events: none;
+        transition: all 0.2s ease;
+      }
+
+      .expert-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .expert-location-note-text {
+        flex: 1;
+        min-height: 72px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .expert-location-note-text.is-empty {
+        color: #64748b;
+        font-style: italic;
+      }
+
+      .expert-location-note-input {
+        flex: 1;
+        min-height: 88px;
+        margin-bottom: 8px;
+      }
+
+      .expert-location-note-actions.is-editing .expert-location-note-actions__view {
+        display: none;
+      }
+
+      .expert-location-note-actions:not(.is-editing) .expert-location-note-actions__edit {
+        display: none;
+      }
+    </style>
+  </head>
+  <body data-shell="fullscreen" data-top="map">
+    <div id="page-root" class="expert-page h-[calc(100vh-64px)] flex flex-col text-[#DCE8F8]">
+      <nav class="neon-panel neon-panel--tight map-breadcrumb">
+        <span class="map-breadcrumb__icon"><i class="fa-solid fa-location-crosshairs"></i></span>
+        <span>全景地图</span>
+        <span class="map-breadcrumb__sep">&gt;&gt;</span>
+        <span class="map-breadcrumb__current">专家工具</span>
+        <a href="map-situation.html" class="ml-auto text-[#58AEFF] hover:text-white transition-ui">返回态势感知</a>
+      </nav>
+
+      <div class="flex-1 min-h-0 p-3">
+        <div class="h-full flex flex-col gap-3 min-h-0">
+          <section class="grid grid-cols-[30%_50%_20%] gap-2.5 h-[66%] min-h-0">
+            <div class="expert-panel min-h-0">
+              <div class="panel-title">GIS地图</div>
+              <div class="relative h-[calc(100%-28px)] overflow-hidden bg-[#f0f3f6]">
+                <div id="expert-gis-map" class="absolute inset-0" aria-label="GIS地图"></div>
+                <div id="expert-map-caption" class="absolute bottom-3 left-3 right-3 z-[410] rounded border border-cyan-400/20 bg-[rgba(6,33,50,0.88)] text-[11px] text-slate-100 px-2.5 py-1.5 pointer-events-none">告警区间：中南医院站-湖北日报站</div>
+              </div>
+            </div>
+            <div class="expert-panel min-h-0">
+              <div class="panel-title">瀑布图</div>
+              <div class="relative h-[calc(100%-28px)] bg-[#f7f8fb] overflow-hidden">
+                <div class="waterfall-legend">
+                  <span><i class="is-normal"></i>正常</span>
+                  <span><i class="is-warn"></i>预警</span>
+                  <span><i class="is-danger"></i>告警</span>
+                </div>
+                <div class="absolute inset-x-6 top-7 h-px bg-[#9ca3af]"></div>
+                <div class="absolute left-7 top-7 bottom-5 w-px bg-[#6b7280]"></div>
+                <div class="absolute inset-0">
+                  <span class="axis-text" style="left: 26px; top: 34px;">8:32:49</span>
+                  <span class="axis-text" style="left: 26px; top: 69px;">8:32:39</span>
+                  <span class="axis-text" style="left: 26px; top: 104px;">8:32:29</span>
+                  <span class="axis-text" style="left: 26px; top: 139px;">8:32:19</span>
+                  <span class="axis-text" style="left: 26px; top: 174px;">8:32:09</span>
+                  <span class="axis-text" style="left: 26px; top: 209px;">8:31:59</span>
+                  <span class="axis-text" style="left: 26px; top: 244px;">8:31:49</span>
+                  <span class="axis-text" style="left: 26px; top: 279px;">8:31:39</span>
+                  <span class="axis-text" style="left: 26px; top: 314px;">8:31:29</span>
+
+                  <span class="axis-text text-[#374151]" style="left: 52px; top: 10px;">19770</span>
+                  <span class="axis-text text-[#374151]" style="left: 108px; top: 10px;">19820</span>
+                  <span class="axis-text text-[#374151]" style="left: 168px; top: 10px;">19870</span>
+                  <span class="axis-text text-[#374151]" style="left: 228px; top: 10px;">19920</span>
+                  <span class="axis-text text-[#374151]" style="left: 290px; top: 10px;">19970</span>
+                  <span class="axis-text text-[#374151]" style="left: 350px; top: 10px;">20020</span>
+                  <span class="axis-text text-[#374151]" style="left: 410px; top: 10px;">20070</span>
+                  <span class="axis-text text-[#374151]" style="left: 470px; top: 10px;">20120</span>
+                  <span class="axis-text text-[#374151]" style="left: 530px; top: 10px;">20220</span>
+                  <span class="axis-text text-[#374151]" style="left: 592px; top: 10px;">20270</span>
+                  <span class="axis-text text-[#374151]" style="left: 650px; top: 10px;">20320</span>
+                </div>
+
+                <div class="waterfall-dot left-[246px] top-[54px] waterfall-dot--normal"></div>
+                <div class="waterfall-dot left-[275px] top-[42px] waterfall-dot--normal"></div>
+                <div class="waterfall-dot left-[285px] top-[44px] waterfall-dot--normal"></div>
+                <div class="waterfall-dot left-[296px] top-[39px] waterfall-dot--normal"></div>
+                <div class="waterfall-dot left-[315px] top-[32px] waterfall-dot--normal"></div>
+                <div class="waterfall-dot left-[328px] top-[36px] waterfall-dot--normal"></div>
+                <div class="waterfall-dot left-[340px] top-[41px] waterfall-dot--normal"></div>
+
+                <div class="waterfall-dot left-[286px] top-[118px] waterfall-dot--warn"></div>
+                <div class="waterfall-dot left-[297px] top-[124px] waterfall-dot--warn"></div>
+
+                <div class="waterfall-dot left-[287px] top-[166px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[298px] top-[170px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[304px] top-[177px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[311px] top-[184px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[321px] top-[190px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[333px] top-[194px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[344px] top-[189px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[301px] top-[198px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[312px] top-[205px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[321px] top-[214px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[328px] top-[224px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[333px] top-[235px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[330px] top-[244px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[322px] top-[253px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[319px] top-[263px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[324px] top-[274px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[330px] top-[282px] waterfall-dot--danger"></div>
+                <div class="waterfall-dot left-[338px] top-[291px] waterfall-dot--danger"></div>
+
+                <div class="waterfall-dot left-[270px] top-[312px] waterfall-dot--normal"></div>
+                <div class="waterfall-dot left-[278px] top-[318px] waterfall-dot--normal"></div>
+                <div class="waterfall-dot left-[286px] top-[305px] waterfall-dot--normal"></div>
+                <div class="waterfall-dot left-[294px] top-[324px] waterfall-dot--warn"></div>
+                <div class="waterfall-dot left-[305px] top-[331px] waterfall-dot--warn"></div>
+
+                <div class="absolute left-[36px] right-[18px] top-[58px] h-px bg-[linear-gradient(90deg,rgba(59,130,246,0.05),rgba(0,0,0,0.06),rgba(59,130,246,0.05))]"></div>
+                <div class="absolute left-[36px] right-[18px] top-[148px] h-px bg-[linear-gradient(90deg,rgba(59,130,246,0.05),rgba(0,0,0,0.06),rgba(59,130,246,0.05))]"></div>
+                <div class="absolute left-[36px] right-[18px] top-[238px] h-px bg-[linear-gradient(90deg,rgba(59,130,246,0.05),rgba(0,0,0,0.06),rgba(59,130,246,0.05))]"></div>
+              </div>
+            </div>
+
+            <div class="expert-panel min-h-0">
+              <div class="panel-title">频谱图</div>
+              <div class="spec-view relative h-[calc(100%-28px)] overflow-hidden">
+                <div class="spec-legend">
+                  <span><i class="is-normal"></i>正常</span>
+                  <span><i class="is-warn"></i>预警</span>
+                  <span><i class="is-danger"></i>告警</span>
+                </div>
+                <div class="spec-chart-area">
+                  <canvas id="expert-spectrum-canvas" aria-label="频谱图"></canvas>
+                </div>
+                <div class="spec-axis-y" id="expert-spec-axis-y"></div>
+                <div class="spec-axis-x" id="expert-spec-axis-x"></div>
+                <div class="spec-axis-unit spec-axis-unit--x">频率（Hz）</div>
+                <div class="spec-axis-unit spec-axis-unit--y">时间</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid grid-cols-[1.08fr_1.08fr_1.18fr_1.18fr_1.18fr_0.92fr] gap-2.5 flex-1 min-h-0">
+            <article class="expert-panel min-h-0 flex flex-col">
+              <div class="card-title">最新告警详情</div>
+              <div class="card-body scrollbar-thin">
+                <div>告警区间：中南医院站-湖北日报站</div>
+                <div>告警开始时间：2026-03-05 08:14:49</div>
+                <div>最新告警时间：2026-03-05 18:30:46</div>
+                <div>告警来源：AI</div>
+                <div>工地：金融街六中北项目</div>
+                <button id="btn-go-alert-detail" type="button" class="mt-4 w-full h-8 rounded bg-[#178df2] hover:bg-[#2999ff] text-white text-[12px] font-medium transition-ui shadow-[0_0_14px_rgba(23,141,242,0.3)]">前往告警详情</button>
+              </div>
+            </article>
+
+            <article id="expert-review-card" class="expert-panel min-h-0 flex flex-col is-active">
+              <div class="card-title">最新告警复核情况</div>
+              <div id="expert-review-body" class="card-body scrollbar-thin">
+                <div data-review-line="falseAlarm">是否误报：<span data-review-val>非误报</span></div>
+                <div data-review-line="levelAdjust">报警级别调整：<span data-review-val>一级告警</span></div>
+                <div data-review-line="scene">现场情况：<span data-review-val>现场工地有破拆机械作业</span></div>
+                <div>现场照片：</div>
+                <div id="expert-review-photos" class="mt-1.5 grid grid-cols-3 gap-1">
+                  <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=300&q=80" class="h-12 w-full object-cover border border-white/10" alt="现场图" />
+                  <img src="https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=300&q=80" class="h-12 w-full object-cover border border-white/10" alt="现场图" />
+                  <img src="https://images.unsplash.com/photo-1599707254554-027aeb4deacd?auto=format&fit=crop&w=300&q=80" class="h-12 w-full object-cover border border-white/10" alt="现场图" />
+                </div>
+                <button id="btn-review-edit" type="button" class="mt-4 ml-auto block px-4 h-8 rounded bg-[#178df2] hover:bg-[#2999ff] text-white text-[12px] transition-ui">编辑</button>
+              </div>
+            </article>
+
+            <article class="expert-panel min-h-0 flex flex-col">
+              <div class="card-title">历史告警信息1</div>
+              <div class="card-body scrollbar-thin">
+                <div>告警开始时间：2026-03-02 11:46:38</div>
+                <div>最新告警时间：2026-03-02 11:46:38</div>
+                <div>告警来源：AI</div>
+                <div>是否误报：非误报</div>
+                <div>复核情况：金融街项目现场挖土，大型机械施工中，现场动静较大，需持续关注。</div>
+                <div class="mt-1">现场照片：</div>
+                <div class="thumb-strip mt-1.5">
+                  <img src="https://images.unsplash.com/photo-1541976590-713941681591?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                  <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                  <img src="https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                  <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                  <img src="https://images.unsplash.com/photo-1599707254554-027aeb4deacd?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                </div>
+              </div>
+            </article>
+
+            <article class="expert-panel min-h-0 flex flex-col">
+              <div class="card-title">历史告警信息2</div>
+              <div class="card-body scrollbar-thin">
+                <div>告警开始时间：2026-03-04 11:52:14</div>
+                <div>最新告警时间：2026-03-04 18:22:07</div>
+                <div>告警来源：AI</div>
+                <div>是否误报：非误报</div>
+                <div>复核情况：现场有破拆机械挖掘施工，动静比较大。</div>
+                <div class="mt-1">现场照片：</div>
+                <div class="thumb-strip mt-1.5">
+                  <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                  <img src="https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                  <img src="https://images.unsplash.com/photo-1599707254554-027aeb4deacd?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                  <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                  <img src="https://images.unsplash.com/photo-1541976590-713941681591?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                </div>
+              </div>
+            </article>
+
+            <article class="expert-panel min-h-0 flex flex-col">
+              <div class="card-title">历史告警信息3</div>
+              <div class="card-body scrollbar-thin">
+                <div>告警开始时间：2026-03-04 11:55:14</div>
+                <div>最新告警时间：2026-03-04 11:55:29</div>
+                <div>告警来源：AI</div>
+                <div>是否误报：非误报</div>
+                <div>复核情况：现场工地有挖机吊装施工。</div>
+                <div class="mt-1">现场照片：</div>
+                <div class="thumb-strip mt-1.5">
+                  <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                  <img src="https://images.unsplash.com/photo-1541976590-713941681591?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                  <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                  <img src="https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                  <img src="https://images.unsplash.com/photo-1599707254554-027aeb4deacd?auto=format&fit=crop&w=200&q=80" alt="历史图" />
+                </div>
+              </div>
+            </article>
+
+            <article id="expert-location-note-card" class="expert-panel min-h-0 flex flex-col">
+              <div class="card-title">当前位置备注</div>
+              <div class="card-body scrollbar-thin flex flex-col min-h-0">
+                <div id="expert-location-note-readonly" class="expert-location-note-text is-empty" aria-live="polite">暂无备注</div>
+                <textarea id="expert-location-note-input" class="expert-textarea expert-location-note-input hidden" placeholder="请输入当前位置备注" rows="4"></textarea>
+                <div id="expert-location-note-actions" class="expert-location-note-actions mt-auto flex justify-end gap-2 pt-2">
+                  <div class="expert-location-note-actions__view">
+                    <button id="btn-location-note-edit" type="button" class="px-4 h-8 rounded bg-[#178df2] hover:bg-[#2999ff] text-white text-[12px] transition-ui">编辑</button>
+                  </div>
+                  <div class="expert-location-note-actions__edit flex gap-2">
+                    <button id="btn-location-note-cancel" type="button" class="px-4 h-8 rounded text-[12px] wh-btn-ghost">取消</button>
+                    <button id="btn-location-note-save" type="button" class="px-4 h-8 rounded bg-[#178df2] hover:bg-[#2999ff] text-white text-[12px] transition-ui">保存</button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div id="expert-review-modal-mask" class="expert-modal-mask" role="dialog" aria-modal="true" aria-labelledby="expert-review-modal-title">
+      <div class="expert-modal">
+        <div class="expert-modal__head">
+          <h3 id="expert-review-modal-title" class="expert-modal__title">编辑复核情况</h3>
+          <button type="button" class="wh-modal-close expert-modal__close" data-action="close-review-modal" aria-label="关闭">×</button>
+        </div>
+        <form id="expert-review-form" class="expert-modal__body">
+          <div class="expert-form-row">
+            <label class="expert-form-label">是否误报</label>
+            <div class="expert-radio-group">
+              <label><input type="radio" name="review-false-alarm" value="非误报" checked /> 非误报</label>
+              <label><input type="radio" name="review-false-alarm" value="误报" /> 误报</label>
+            </div>
+          </div>
+          <div class="expert-form-row" data-review-field-group="detail">
+            <label class="expert-form-label" for="review-level-adjust">报警级别调整</label>
+            <select id="review-level-adjust" class="expert-select">
+              <option value="一级告警">一级告警</option>
+              <option value="二级告警">二级告警</option>
+              <option value="三级告警">三级告警</option>
+            </select>
+          </div>
+          <div class="expert-form-row" data-review-field-group="detail">
+            <label class="expert-form-label" for="review-scene">现场情况</label>
+            <textarea id="review-scene" class="expert-textarea" placeholder="请填写现场复核情况"></textarea>
+          </div>
+          <div class="expert-form-row" data-review-field-group="detail">
+            <label class="expert-form-label">现场照片</label>
+            <div id="review-modal-photos" class="expert-photo-grid"></div>
+            <p class="expert-photo-upload"><input id="review-photo-input" type="file" accept="image/*" multiple /> 支持多图上传（原型本地预览）</p>
+          </div>
+        </form>
+        <div class="expert-modal__foot">
+          <button type="button" class="px-4 h-8 rounded text-[12px] wh-btn-ghost" data-action="close-review-modal">取消</button>
+          <button type="button" class="px-4 h-8 rounded bg-[#178df2] hover:bg-[#2999ff] text-white text-[12px] transition-ui" data-action="save-review-modal">保存</button>
+        </div>
+      </div>
+    </div>
+    <div id="expert-toast" class="expert-toast" role="status"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="../../assets/js/map-gis.js"></script>
+    <script src="../../assets/js/map-situation-gis.js"></script>
+    <script src="../../assets/js/menu-config.js"></script>
+    <script src="../../assets/js/shell.js"></script>
+    <script src="../../assets/js/map-expert.js"></script>
+  </body>
+</html>

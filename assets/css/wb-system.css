@@ -134,6 +134,11 @@
   gap: 10px;
 }
 
+/* 系统管理：新增 / 导入 / 导出与线路管理新增一致（青蓝主按钮） */
+.wb-toolbar-right .wh-btn-primary {
+  min-height: 32px;
+}
+
 .wb-search-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

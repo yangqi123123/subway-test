@@ -153,7 +153,9 @@
                 return '<div class="dr-photo"><img src="' + src + '" alt="无人机照片' + (n + 1) + '" loading="lazy" /></div>';
               })
               .join("") +
-            '</div><h4 class="dr-sec-title">存放位置</h4><div class="dr-map"><img src="assets/img/map-gis-satellite.png" alt="GIS地图" onerror="this.style.display=\'none\'" /><span class="dr-marker"></span><span class="absolute left-2 bottom-2 z-10 dr-map-badge text-cyan-50 bg-slate-950/70 border border-cyan-400/20 rounded">停放点 ' +
+            '</div><h4 class="dr-sec-title">存放位置</h4><div class="dr-map"><img src="' +
+            (typeof whAsset === "function" ? whAsset("assets/img/map-gis-satellite.png") : "assets/img/map-gis-satellite.png") +
+            '" alt="GIS地图" onerror="this.style.display=\'none\'" /><span class="dr-marker"></span><span class="absolute left-2 bottom-2 z-10 dr-map-badge text-cyan-50 bg-slate-950/70 border border-cyan-400/20 rounded">停放点 ' +
             row.lng +
             " / " +
             row.lat +

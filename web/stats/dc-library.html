@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>资料库</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <style>
+    .lib-layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; min-height: calc(100vh - 220px); }
+    @media (max-width: 960px) { .lib-layout { grid-template-columns: 1fr; } }
+    .lib-tree-panel { display: flex; flex-direction: column; min-height: 480px; }
+    .lib-tree-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+    .lib-tree-scroll { flex: 1; overflow-y: auto; max-height: calc(100vh - 280px); padding-right: 4px; }
+    .lib-tree-row {
+      display: flex; align-items: center; gap: 6px; width: 100%;
+      padding: 8px 10px 8px 0; border: none; border-radius: 6px;
+      background: transparent; color: #cdeeff; font-size: 13px;
+      cursor: pointer; text-align: left; transition: background 0.15s;
+    }
+    .lib-tree-row:hover { background: rgba(34, 211, 238, 0.08); }
+    .lib-tree-row.is-selected { background: rgba(34, 211, 238, 0.16); color: #f0fdff; box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.28); }
+    .lib-tree-toggle { width: 20px; height: 20px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border: none; background: transparent; color: #67e8f9; cursor: pointer; font-size: 10px; padding: 0; }
+    .lib-tree-toggle--spacer { visibility: hidden; pointer-events: none; }
+    .lib-tree-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lib-tree-actions { display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; }
+    .lib-tree-row:hover .lib-tree-actions, .lib-tree-row.is-selected .lib-tree-actions { opacity: 1; }
+    .lib-tree-btn { width: 24px; height: 24px; border: none; border-radius: 4px; background: rgba(8, 47, 73, 0.6); color: #67e8f9; cursor: pointer; font-size: 11px; }
+    .lib-tree-btn:hover { background: rgba(34, 211, 238, 0.2); }
+    .lib-tree-btn--danger:hover { color: #fda4af; }
+    .lib-main { min-width: 0; }
+    .lib-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .lib-card {
+      position: relative; border-radius: 10px; overflow: hidden;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      background: linear-gradient(180deg, rgba(8, 33, 61, 0.85), rgba(6, 22, 42, 0.95));
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    .lib-card:hover { transform: translateY(-2px); border-color: rgba(34, 211, 238, 0.4); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35); }
+    .lib-card__cover { aspect-ratio: 16/10; overflow: hidden; background: rgba(2, 8, 23, 0.8); }
+    .lib-card__cover img { width: 100%; height: 100%; object-fit: cover; }
+    .lib-card__body { padding: 12px 14px 14px; }
+    .lib-card__title { font-size: 14px; font-weight: 600; color: #f0fdff; margin: 0 0 6px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .lib-card__desc { font-size: 12px; color: #94a3b8; margin: 0 0 8px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .lib-card__time { font-size: 11px; color: #67e8f9; }
+    .lib-card__overlay {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: rgba(3, 10, 24, 0.72); opacity: 0; transition: opacity 0.2s; backdrop-filter: blur(2px);
+    }
+    .lib-card:hover .lib-card__overlay { opacity: 1; }
+    .lib-card__op { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid rgba(34, 211, 238, 0.35); background: rgba(8, 47, 73, 0.9); color: #e0f7ff; cursor: pointer; }
+    .lib-card__op:hover { background: rgba(34, 211, 238, 0.22); }
+    .lib-card__op--danger { border-color: rgba(251, 113, 133, 0.4); color: #fecdd3; }
+    .lib-empty { text-align: center; padding: 48px 16px; color: #64748b; font-size: 13px; }
+    .library-modal-mask { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.56); padding: 24px; }
+    .library-modal-mask.show { display: flex; }
+    .library-modal { width: min(520px, 94vw); border-radius: 8px; border: 1px solid rgba(34, 211, 238, 0.16); background: #071426; box-shadow: 0 24px 80px rgba(0, 0, 0, 0.48); overflow: hidden; }
+    .library-modal--wide { width: min(720px, 96vw); }
+    .library-modal--view { width: min(880px, 96vw); }
+    .library-form-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    .library-form-item { display: flex; flex-direction: column; gap: 6px; }
+    .library-form-item--row { flex-direction: row; align-items: flex-start; gap: 10px; }
+    .library-form-label { color: rgba(226, 245, 255, 0.78); font-size: 12px; flex-shrink: 0; }
+    .library-form-label.req::before { content: "*"; color: #fb7185; margin-right: 3px; }
+    .lib-dropzone {
+      border: 1px dashed rgba(34, 211, 238, 0.28); border-radius: 8px; padding: 16px;
+      background: rgba(2, 8, 23, 0.38); text-align: center; transition: border-color 0.15s, background 0.15s;
+    }
+    .lib-dropzone.is-dragover { border-color: #22d3ee; background: rgba(34, 211, 238, 0.08); }
+    .lib-file-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; text-align: left; }
+    .lib-file-chip { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; border-radius: 6px; background: rgba(8, 47, 73, 0.55); font-size: 12px; color: #cdeeff; }
+    .lib-file-chip button { border: none; background: transparent; color: #fda4af; cursor: pointer; font-size: 16px; line-height: 1; }
+    .lib-cover-preview { width: 120px; height: 80px; border-radius: 6px; overflow: hidden; border: 1px solid rgba(34, 211, 238, 0.2); display: flex; align-items: center; justify-content: center; background: rgba(2, 8, 23, 0.6); }
+    .lib-cover-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .lib-upload-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; color: #cffafe; background: rgba(14, 116, 144, 0.3); border: 1px solid rgba(34, 211, 238, 0.2); cursor: pointer; font-size: 12px; }
+    .lib-view-grid { display: grid; grid-template-columns: 200px 1fr; gap: 20px; }
+    @media (max-width: 640px) { .lib-view-grid { grid-template-columns: 1fr; } }
+    .lib-view-cover { border-radius: 8px; overflow: hidden; border: 1px solid rgba(34, 211, 238, 0.2); aspect-ratio: 4/3; background: rgba(2, 8, 23, 0.6); }
+    .lib-view-cover img { width: 100%; height: 100%; object-fit: cover; }
+    .lib-view-cover-placeholder { height: 100%; min-height: 120px; display: flex; align-items: center; justify-content: center; color: #475569; font-size: 32px; }
+    .lib-view-meta { display: grid; gap: 10px; font-size: 13px; }
+    .lib-view-meta dt { color: #9cc6df; font-size: 12px; }
+    .lib-view-meta dd { color: #e2f5ff; margin: 0; }
+    .lib-view-file { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(34, 211, 238, 0.12); background: rgba(2, 8, 23, 0.45); margin-bottom: 8px; }
+    .lib-view-file__name { flex: 1; min-width: 0; font-size: 13px; }
+    .lib-view-file__ops { display: flex; gap: 8px; flex-shrink: 0; }
+    .library-preview-box { min-height: 240px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(34, 211, 238, 0.14); border-radius: 8px; background: linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(2, 8, 23, 0.94)); padding: 24px; text-align: center; }
+    .library-preview-box img { max-width: 100%; max-height: 52vh; border-radius: 8px; object-fit: contain; }
+    #lib-toast { position: fixed; right: 20px; bottom: 20px; z-index: 200; padding: 10px 16px; border-radius: 8px; background: #22d3ee; color: #0f172a; font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+  </style>
+</head>
+<body data-shell="default" data-top="wb" data-sidebar-key="dc-library" data-wb-view="page">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
+      <span>我的工作台</span>
+      <span class="text-slate-600">&gt;&gt;</span>
+      <span class="text-cyan-50 font-semibold tracking-wide">资料库</span>
+    </nav>
+
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">资料库</h1>
+      <button type="button" class="wh-btn-primary px-4 py-2 text-sm" data-action="upload-material">
+        <i class="fa-solid fa-cloud-arrow-up mr-1"></i>上传资料
+      </button>
+    </div>
+
+    <section class="lib-layout">
+      <aside class="neon-panel neon-panel--tight p-4 lib-tree-panel">
+        <div class="lib-tree-head">
+          <span class="text-sm font-semibold text-cyan-100">资料分类</span>
+          <button type="button" class="lib-tree-btn" data-action="add-root-cat" title="新增一级分类">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+        <div id="lib-tree-root" class="lib-tree-scroll"></div>
+      </aside>
+
+      <div class="lib-main">
+        <section class="neon-panel neon-panel--tight p-4 mb-4">
+          <div class="flex flex-wrap items-end gap-4">
+            <div class="min-w-[200px] flex-1">
+              <label class="wh-filter-label block mb-1.5">标题名称</label>
+              <input id="lib-search-title" class="wh-input h-8 w-full px-3" placeholder="请输入资料标题" />
+            </div>
+            <div class="min-w-[280px]">
+              <label class="wh-filter-label block mb-1.5">修改时间</label>
+              <div class="flex items-center gap-2 flex-wrap">
+                <input id="lib-search-start" type="datetime-local" class="wh-input h-8 px-3 text-xs" />
+                <span class="text-slate-500 text-xs">至</span>
+                <input id="lib-search-end" type="datetime-local" class="wh-input h-8 px-3 text-xs" />
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary" data-action="search-lib">搜索</button>
+              <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost" data-action="reset-lib-search">重置</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="neon-panel neon-panel--tight p-4">
+          <div class="flex items-center justify-between mb-4 text-xs text-slate-400">
+            <span>共 <b id="lib-result-count" class="text-cyan-200">0</b> 条资料</span>
+          </div>
+          <div id="lib-card-grid" class="lib-card-grid"></div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <!-- 新增/编辑分类（一级与子分类复用） -->
+  <div id="cat-modal-mask" class="library-modal-mask">
+    <div class="library-modal">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
+        <h3 id="cat-modal-title" class="text-white text-[16px] font-semibold">新增分类</h3>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-cat-modal">×</button>
+      </div>
+      <div class="p-6">
+        <p id="cat-parent-hint" class="hidden text-xs text-cyan-200/70 mb-3"></p>
+        <div class="library-form-grid">
+          <label class="library-form-item">
+            <span class="library-form-label req">分类名称</span>
+            <input id="cat-name" class="wh-input h-8 w-full px-3" placeholder="请输入分类名称" />
+          </label>
+          <label class="library-form-item">
+            <span class="library-form-label">排序</span>
+            <input id="cat-sort" type="number" class="wh-input h-8 w-full px-3" placeholder="数字越小越靠前" />
+          </label>
+        </div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-cat-modal">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="save-cat">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 上传/编辑资料 -->
+  <div id="mat-modal-mask" class="library-modal-mask">
+    <div class="library-modal library-modal--wide">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
+        <h3 id="mat-modal-title" class="text-white text-[16px] font-semibold">上传资料</h3>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-mat-modal">×</button>
+      </div>
+      <div class="p-6 max-h-[70vh] overflow-y-auto">
+        <div class="library-form-grid">
+          <label class="library-form-item">
+            <span class="library-form-label req">资料标题</span>
+            <input id="mat-title" class="wh-input h-8 w-full px-3" placeholder="请输入资料标题" />
+          </label>
+          <label class="library-form-item">
+            <span class="library-form-label req">资料分类</span>
+            <select id="mat-category" class="wh-input h-8 w-full px-2"></select>
+          </label>
+          <label class="library-form-item">
+            <span class="library-form-label req">资料描述</span>
+            <textarea id="mat-desc" class="wh-input min-h-[88px] w-full px-3 py-2" placeholder="请输入资料描述"></textarea>
+          </label>
+          <div class="library-form-item">
+            <span class="library-form-label">封面图片</span>
+            <div class="flex flex-wrap items-start gap-4">
+              <div id="mat-cover-preview" class="lib-cover-preview"><span class="text-xs text-slate-500">封面预览</span></div>
+              <div>
+                <label class="lib-upload-btn"><i class="fa-solid fa-image"></i>选择封面<input id="mat-cover-input" type="file" accept=".jpg,.jpeg,.png" class="hidden" /></label>
+                <p id="mat-cover-name" class="text-xs text-slate-500 mt-2">未选择封面（JPG/PNG，≤50MB）</p>
+              </div>
+            </div>
+          </div>
+          <div class="library-form-item">
+            <span class="library-form-label req">文件上传</span>
+            <div id="mat-dropzone" class="lib-dropzone">
+              <label class="lib-upload-btn"><i class="fa-solid fa-upload"></i>选择文件<input id="mat-file-input" type="file" multiple class="hidden" accept=".jpg,.jpeg,.png,.mp4,.pdf,.docx,.xlsx" /></label>
+              <p class="text-xs text-slate-500 mt-2">支持拖拽上传 · JPG / PNG / MP4 / PDF / DOCX / XLSX</p>
+              <p class="text-xs text-slate-500">MP4 ≤300MB，其他 ≤50MB</p>
+              <div id="mat-file-list" class="lib-file-list"><span class="text-xs text-slate-500">拖拽文件到此处，或点击选择</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-mat-modal">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="save-mat">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 查看资料 -->
+  <div id="view-modal-mask" class="library-modal-mask">
+    <div class="library-modal library-modal--view">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
+        <h3 id="view-title" class="text-white text-[16px] font-semibold">查看资料</h3>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-view-modal">×</button>
+      </div>
+      <div class="p-6 max-h-[75vh] overflow-y-auto">
+        <div class="lib-view-grid">
+          <div id="view-cover" class="lib-view-cover"></div>
+          <div>
+            <dl class="lib-view-meta">
+              <div><dt>资料标题</dt><dd id="view-mat-title">—</dd></div>
+              <div><dt>资料描述</dt><dd id="view-desc">—</dd></div>
+              <div><dt>资料分类</dt><dd id="view-category">—</dd></div>
+              <div><dt>修改时间</dt><dd id="view-time">—</dd></div>
+              <div><dt>修改人</dt><dd id="view-user">—</dd></div>
+            </dl>
+          </div>
+        </div>
+        <div class="mt-6">
+          <h4 class="text-sm font-semibold text-cyan-100 mb-3">资料文件</h4>
+          <div id="view-file-list"></div>
+        </div>
+      </div>
+      <div class="px-6 py-4 flex justify-end border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="close-view-modal">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 文件预览 -->
+  <div id="preview-modal-mask" class="library-modal-mask">
+    <div class="library-modal" style="width:min(980px,94vw)">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
+        <h3 id="preview-title" class="text-white text-[16px] font-semibold">文件预览</h3>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-preview-modal">×</button>
+      </div>
+      <div class="p-6"><div id="preview-body" class="library-preview-box"></div></div>
+    </div>
+  </div>
+
+  <div id="lib-toast" class="hidden"></div>
+
+  <script src="../../assets/js/dc-library.js"></script>
+  <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/workbench-mega.js"></script>
+  <script src="../../assets/js/shell.js"></script>
+</body>
+</html>

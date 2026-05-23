@@ -5,6 +5,12 @@
 (function () {
   var STORAGE_SIDEBAR = "whmetro-sidebar-collapsed";
 
+  function pageHref(href) {
+    if (typeof whPageHref === "function") return whPageHref(href);
+    if (typeof WHMetroMenu !== "undefined" && WHMetroMenu.pageHref) return WHMetroMenu.pageHref(href);
+    return href;
+  }
+
   function el(tag, attrs, inner) {
     var e = document.createElement(tag);
     if (attrs) {
@@ -98,12 +104,16 @@
       "</nav>" +
       '<div class="flex items-center gap-2 md:gap-3 text-cyan-50 shrink-0">' +
       '<button type="button" data-shell-action="search" class="p-2 rounded-lg transition-ui border border-transparent hover:border-cyan-400/30 hover:bg-cyan-500/10 hover:shadow-[0_0_16px_rgba(34,211,238,0.2)]" title="搜索菜单"><i class="fa-solid fa-magnifying-glass text-lg text-cyan-200"></i></button>' +
-      '<a href="wb-todo.html" data-shell-action="todo" class="wh-shell-tool-btn p-2 rounded-lg transition-ui border border-transparent hover:border-cyan-400/30 hover:bg-cyan-500/10" title="待办"><i class="fa-solid fa-list-check text-lg text-cyan-200"></i><span data-shell-badge="todo" class="wh-shell-badge-wrap' +
+      '<a href="' +
+      pageHref("wb-todo.html") +
+      '" data-shell-action="todo" class="wh-shell-tool-btn p-2 rounded-lg transition-ui border border-transparent hover:border-cyan-400/30 hover:bg-cyan-500/10" title="待办"><i class="fa-solid fa-list-check text-lg text-cyan-200"></i><span data-shell-badge="todo" class="wh-shell-badge-wrap' +
       (badges.todo ? "" : " wh-shell-badge-wrap--hidden") +
       '">' +
       badges.todo +
       "</span></a>" +
-      '<a href="wb-sys-notify.html" data-shell-action="notify" class="wh-shell-tool-btn p-2 rounded-lg transition-ui border border-transparent hover:border-cyan-400/30 hover:bg-cyan-500/10" title="系统通知">' +
+      '<a href="' +
+      pageHref("wb-sys-notify.html") +
+      '" data-shell-action="notify" class="wh-shell-tool-btn p-2 rounded-lg transition-ui border border-transparent hover:border-cyan-400/30 hover:bg-cyan-500/10" title="系统通知">' +
       '<i class="fa-regular fa-bell text-lg text-cyan-200"></i>' +
       '<span data-shell-badge="notify" class="wh-shell-badge-wrap' +
       (badges.notify ? "" : " wh-shell-badge-wrap--hidden") +
@@ -134,7 +144,7 @@
         var panel = el("div", { className: "wh-top-drop__panel", role: "menu" });
         var inner = el("div", { className: "wh-top-drop__panel-inner" });
         item.items.forEach(function (sub) {
-          var a = el("a", { href: sub.href, role: "menuitem" });
+          var a = el("a", { href: pageHref(sub.href), role: "menuitem" });
           a.textContent = sub.label;
           inner.appendChild(a);
         });
@@ -150,7 +160,7 @@
         nav.appendChild(wrap);
       } else {
         var a = el("a", {
-          href: item.href || "#",
+          href: pageHref(item.href || "#"),
         className:
           "wh-top-nav relative whitespace-nowrap transition-ui flex items-center px-3 " +
             (item.id === highlight ? "wh-top-nav--active" : ""),
@@ -256,7 +266,12 @@
       }
       if (action === "logout") {
         event.preventDefault();
-        window.location.href = "index.html";
+        var prefix = typeof whAssetPrefix === "function" ? whAssetPrefix() : "";
+        window.location.href = prefix
+          ? typeof whPageHref === "function"
+            ? whPageHref("web-login.html")
+            : "web-login.html"
+          : "index.html";
         return;
       }
     });
@@ -318,7 +333,7 @@
   function sidebarLeaf(item, activeKey, collapsed, indent) {
     var isActive = item.key === activeKey;
     var a = el("a", {
-      href: item.href,
+      href: pageHref(item.href),
       title: item.label,
       className:
         "flex items-center gap-2 py-2.5 pr-3 rounded-r-full mr-2 text-sm transition-ui " +
@@ -551,6 +566,8 @@
         pageRoot.classList.add("hidden");
         mainWb.appendChild(pageRoot);
       } else {
+        pageRoot.classList.remove("hidden");
+        pageRoot.removeAttribute("aria-hidden");
         mainWb.appendChild(pageRoot);
       }
       row.appendChild(mainWb);
@@ -568,6 +585,20 @@
 
     layout.appendChild(row);
     body.insertBefore(layout, body.firstChild);
+
+    try {
+      document.dispatchEvent(
+        new CustomEvent("wh-shell-ready", {
+          detail: { topId: topId, activeKey: activeKey, wbView: body.getAttribute("data-wb-view") || "page" },
+        })
+      );
+    } catch (e) {
+      /* IE 等环境忽略 */
+    }
+    window.__whShellReady = true;
+    if (typeof window.__wbBootPage === "function") {
+      window.__wbBootPage();
+    }
   }
 
   if (document.readyState === "loading") {

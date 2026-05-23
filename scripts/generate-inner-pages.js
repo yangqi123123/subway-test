@@ -14,7 +14,7 @@ const head = (title) => `<!DOCTYPE html>
   <title>${title}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
-  <link rel="stylesheet" href="assets/css/theme.css" />
+  <link rel="stylesheet" href="../assets/css/theme.css" />
 </head>`;
 
 function moduleName(top) {
@@ -73,8 +73,8 @@ function wrapPage(title, top, key, inner) {
     </div>
     ${inner}
   </div>
-  <script src="assets/js/menu-config.js"></script>
-  ${top === "wb" ? '<script src="assets/js/workbench-mega.js"></script>\n  ' : ""}<script src="assets/js/shell.js"></script>
+  <script src="../assets/js/menu-config.js"></script>
+  ${top === "wb" ? '<script src="../assets/js/workbench-mega.js"></script>\n  ' : ""}<script src="../assets/js/shell.js"></script>
 </body>
 </html>`;
 }
@@ -574,7 +574,7 @@ add({
 pages.forEach((p) => {
   const inner = typeof p.inner === "function" ? p.inner() : p.inner;
   const html = wrapPage(p.title, p.top, p.key, inner);
-  fs.writeFileSync(path.join(root, p.file), html, "utf8");
+  fs.writeFileSync(path.join(root, "web", p.file), html, "utf8");
   console.log("Wrote", p.file);
 });
 

@@ -150,7 +150,7 @@
       drop.name +
       "</div>" +
       '<img class="gis-photo-tooltip__image" src="' +
-      drop.src +
+      (typeof whAsset === "function" ? whAsset(drop.src) : drop.src) +
       '" alt="' +
       drop.name +
       ' 最新照片" />' +

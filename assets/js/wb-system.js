@@ -238,7 +238,7 @@
     (page.primaryButtons || []).forEach(function (btn) {
       var button = el(
         "button",
-        btn.variant === "ghost" ? "wh-btn-ghost px-4 py-2 text-sm" : "wh-btn-gold px-4 py-2 text-sm",
+        "wh-btn-primary px-4 py-2 rounded-md text-xs font-semibold transition-ui",
         btn.label
       );
       button.onclick = function () {

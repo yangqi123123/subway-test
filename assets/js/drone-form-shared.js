@@ -1,15 +1,26 @@
 (function (global) {
   var saveCallback = null;
+  var formMode = "drone";
+  var LINE_OPTIONS = ["8号线", "7号线", "11号线"];
   var airports = [
     { name: "车辆段机场", line: "8号线" },
     { name: "青山机场", line: "8号线" },
     { name: "黄家湖机场", line: "7号线" },
-    { name: "长江新区机场", line: "11号线" }
+    { name: "长江新区机场", line: "11号线" },
   ];
 
   function airportOptions() {
-    return airports.map(function (item) {
-      return '<option value="' + item.name + '">' + item.name + '</option>';
+    return airports
+      .map(function (item) {
+        return '<option value="' + item.name + '">' + item.name + "</option>";
+      })
+      .join("");
+  }
+
+  function lineOptionsHtml(selected) {
+    return LINE_OPTIONS.map(function (line) {
+      var sel = line === selected ? ' selected="selected"' : "";
+      return "<option" + sel + ">" + line + "</option>";
     }).join("");
   }
 
@@ -24,7 +35,9 @@
     if (!row) return airports[0].name;
     if (row.airport) return row.airport;
     for (var i = 0; i < airports.length; i++) {
-      if (airports[i].line === row.line && row.name && row.name.indexOf(airports[i].name.replace("机场", "")) > -1) return airports[i].name;
+      if (airports[i].line === row.line && row.name && row.name.indexOf(airports[i].name.replace("机场", "")) > -1) {
+        return airports[i].name;
+      }
     }
     for (var j = 0; j < airports.length; j++) {
       if (airports[j].line === row.line) return airports[j].name;
@@ -33,77 +46,148 @@
   }
 
   function syncLineByAirport() {
+    if (formMode !== "drone") return;
     var airport = findAirport(getValue("airport")) || airports[0];
     setValue("line", airport.line);
   }
 
+  function applyMode(mode) {
+    formMode = mode === "airport" ? "airport" : "drone";
+    var airportRow = document.getElementById("df-field-airport");
+    var pilotRow = document.getElementById("df-field-pilot");
+    var lineInput = document.getElementById("df-line");
+    var lineSelect = document.getElementById("df-line-select");
+    var lineLabel = document.getElementById("df-line-label");
+    if (!airportRow || !lineInput || !lineSelect) return;
+
+    if (formMode === "airport") {
+      airportRow.style.display = "none";
+      pilotRow.style.display = "none";
+      lineInput.style.display = "none";
+      lineSelect.style.display = "";
+      lineSelect.className = "wh-input h-8 flex-1 px-2";
+      if (lineLabel) lineLabel.innerHTML = '<b class="req">*</b>所属线路：';
+    } else {
+      airportRow.style.display = "";
+      pilotRow.style.display = "";
+      lineInput.style.display = "";
+      lineSelect.style.display = "none";
+      lineInput.className = "wh-input h-8 flex-1 px-3 opacity-80";
+      lineInput.readOnly = true;
+      if (lineLabel) lineLabel.innerHTML = "所属线路：";
+    }
+  }
+
   function ensureForm() {
     if (document.getElementById("drone-form-mask")) return;
-    document.body.insertAdjacentHTML("beforeend",
+    document.body.insertAdjacentHTML(
+      "beforeend",
       '<div id="drone-form-mask" class="dr-modal-mask">' +
         '<div class="dr-modal">' +
-          '<div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15"><h3 id="drone-form-title" class="text-white text-[16px] font-semibold">新增无人机设备</h3><button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-drone-form">×</button></div>' +
-          '<div class="p-6"><div class="dr-form-grid">' +
-            '<label class="dr-form-item"><span class="dr-form-label"><b class="req">*</b>设备型号：</span><input id="df-model" class="wh-input h-8 flex-1 px-3" /></label>' +
-            '<label class="dr-form-item"><span class="dr-form-label"><b class="req">*</b>设备SN：</span><input id="df-sn" class="wh-input h-8 flex-1 px-3" /></label>' +
-            '<label class="dr-form-item"><span class="dr-form-label"><b class="req">*</b>设备名称：</span><input id="df-name" class="wh-input h-8 flex-1 px-3" /></label>' +
-            '<label class="dr-form-item"><span class="dr-form-label"><b class="req">*</b>所属机场：</span><select id="df-airport" class="wh-input h-8 flex-1 px-2">' + airportOptions() + '</select></label>' +
-            '<label class="dr-form-item"><span class="dr-form-label">所属线路：</span><input id="df-line" class="wh-input h-8 flex-1 px-3 opacity-80" readonly /></label>' +
-            '<label class="dr-form-item"><span class="dr-form-label"><b class="req">*</b>当前状态：</span><select id="df-status" class="wh-input h-8 flex-1 px-2"><option>在线</option><option>离线</option><option>故障</option><option>维护中</option></select></label>' +
-            '<label class="dr-form-item"><span class="dr-form-label">飞手姓名：</span><input id="df-pilot" class="wh-input h-8 flex-1 px-3" /></label>' +
-            '<label class="dr-form-item"><span class="dr-form-label">经度：</span><input id="df-lng" class="wh-input h-8 flex-1 px-3" /></label>' +
-            '<label class="dr-form-item"><span class="dr-form-label">纬度：</span><input id="df-lat" class="wh-input h-8 flex-1 px-3" /></label>' +
-            '<label class="dr-form-item"><span class="dr-form-label">购买日期：</span><input id="df-buy" type="date" class="wh-input h-8 flex-1 px-3" /></label>' +
-            '<label class="dr-form-item"><span class="dr-form-label">质保结束日期：</span><input id="df-warranty" type="date" class="wh-input h-8 flex-1 px-3" /></label>' +
-            '<label class="dr-form-item"><span class="dr-form-label">厂家：</span><input id="df-maker" class="wh-input h-8 flex-1 px-3" /></label>' +
-            '<label class="dr-form-item"><span class="dr-form-label">重量：</span><input id="df-weight" class="wh-input h-8 flex-1 px-3" /></label>' +
-            '<label class="dr-form-item"><span class="dr-form-label">上传照片：</span><input id="df-photo" type="file" accept="image/*" class="wh-input h-8 flex-1 px-2 py-1" /></label>' +
-            '<label class="dr-form-item" style="grid-column:1/-1"><span class="dr-form-label">配件信息：</span><input id="df-parts" class="wh-input h-8 flex-1 px-3" /></label>' +
-          '</div></div>' +
-          '<div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15"><button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-drone-form">取消</button><button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="save-drone-form">确定</button></div>' +
-        '</div>' +
-      '</div>');
+        '<div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15"><h3 id="drone-form-title" class="text-white text-[16px] font-semibold">新增无人机设备</h3><button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-drone-form">×</button></div>' +
+        '<div class="p-6"><div class="dr-form-grid">' +
+        '<label class="dr-form-item"><span class="dr-form-label"><b class="req">*</b>设备型号：</span><input id="df-model" class="wh-input h-8 flex-1 px-3" /></label>' +
+        '<label class="dr-form-item"><span class="dr-form-label"><b class="req">*</b>设备SN：</span><input id="df-sn" class="wh-input h-8 flex-1 px-3" /></label>' +
+        '<label class="dr-form-item"><span class="dr-form-label"><b class="req">*</b>设备名称：</span><input id="df-name" class="wh-input h-8 flex-1 px-3" /></label>' +
+        '<label id="df-field-airport" class="dr-form-item"><span class="dr-form-label"><b class="req">*</b>所属机场：</span><select id="df-airport" class="wh-input h-8 flex-1 px-2">' +
+        airportOptions() +
+        "</select></label>" +
+        '<label id="df-field-line" class="dr-form-item"><span id="df-line-label" class="dr-form-label">所属线路：</span>' +
+        '<input id="df-line" class="wh-input h-8 flex-1 px-3 opacity-80" readonly tabindex="-1" />' +
+        '<select id="df-line-select" class="wh-input h-8 flex-1 px-2" style="display:none">' +
+        lineOptionsHtml("8号线") +
+        "</select></label>" +
+        '<label id="df-field-pilot" class="dr-form-item"><span class="dr-form-label">飞手姓名：</span><input id="df-pilot" class="wh-input h-8 flex-1 px-3" /></label>' +
+        '<label class="dr-form-item"><span class="dr-form-label">经度：</span><input id="df-lng" class="wh-input h-8 flex-1 px-3" /></label>' +
+        '<label class="dr-form-item"><span class="dr-form-label">纬度：</span><input id="df-lat" class="wh-input h-8 flex-1 px-3" /></label>' +
+        '<label class="dr-form-item"><span class="dr-form-label">购买日期：</span><input id="df-buy" type="date" class="wh-input h-8 flex-1 px-3" /></label>' +
+        '<label class="dr-form-item"><span class="dr-form-label">质保结束日期：</span><input id="df-warranty" type="date" class="wh-input h-8 flex-1 px-3" /></label>' +
+        '<label class="dr-form-item"><span class="dr-form-label">厂家：</span><input id="df-maker" class="wh-input h-8 flex-1 px-3" /></label>' +
+        '<label class="dr-form-item"><span class="dr-form-label">重量：</span><input id="df-weight" class="wh-input h-8 flex-1 px-3" /></label>' +
+        '<label class="dr-form-item"><span class="dr-form-label">上传照片：</span><input id="df-photo" type="file" accept="image/*" class="wh-input h-8 flex-1 px-2 py-1" /></label>' +
+        '<label class="dr-form-item" style="grid-column:1/-1"><span class="dr-form-label">配件信息：</span><input id="df-parts" class="wh-input h-8 flex-1 px-3" /></label>' +
+        "</div></div>" +
+        '<div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15"><button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-drone-form">取消</button><button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="save-drone-form">确定</button></div>' +
+        "</div>" +
+        "</div>"
+    );
   }
 
   function setValue(key, value) {
+    if (key === "line") {
+      var lineInput = document.getElementById("df-line");
+      var lineSelect = document.getElementById("df-line-select");
+      if (lineInput) lineInput.value = value || "";
+      if (lineSelect) lineSelect.value = value || LINE_OPTIONS[0] || "";
+      return;
+    }
     var el = document.getElementById("df-" + key);
     if (el) el.value = value || "";
   }
 
   function getValue(key) {
+    if (key === "line") {
+      if (formMode === "airport") {
+        var lineSelect = document.getElementById("df-line-select");
+        return lineSelect ? lineSelect.value.trim() : "";
+      }
+      var lineInput = document.getElementById("df-line");
+      return lineInput ? lineInput.value.trim() : "";
+    }
     var el = document.getElementById("df-" + key);
     return el ? el.value.trim() : "";
   }
 
-  function open(row, callback) {
+  function open(row, callback, options) {
     ensureForm();
+    options = options || {};
+    applyMode(options.mode);
     saveCallback = callback;
-    document.getElementById("drone-form-title").textContent = row ? "编辑无人机设备" : "新增无人机设备";
-    ["model","sn","name","status","pilot","lng","lat","buy","warranty","maker","weight","parts"].forEach(function (key) {
+    document.getElementById("drone-form-title").textContent = row
+      ? formMode === "airport"
+        ? "编辑机场设备"
+        : "编辑无人机设备"
+      : formMode === "airport"
+        ? "新增机场设备"
+        : "新增无人机设备";
+
+    ["model", "sn", "name", "pilot", "lng", "lat", "buy", "warranty", "maker", "weight", "parts"].forEach(function (key) {
       setValue(key, row ? row[key] : "");
     });
-    setValue("airport", inferAirport(row));
-    syncLineByAirport();
-    if (!row) {
-      setValue("status", "在线");
+    setValue("line", row && row.line ? row.line : LINE_OPTIONS[0]);
+
+    if (formMode === "drone") {
+      setValue("airport", inferAirport(row));
+      syncLineByAirport();
     }
+
     document.getElementById("drone-form-mask").classList.add("show");
   }
 
   function save() {
-    syncLineByAirport();
-    var required = ["model", "sn", "name", "airport", "status"];
+    if (formMode === "drone") syncLineByAirport();
+
+    var required =
+      formMode === "airport" ? ["model", "sn", "name", "line"] : ["model", "sn", "name", "airport"];
+
     for (var i = 0; i < required.length; i++) {
       if (!getValue(required[i])) {
         alert("请完善必填项");
         return;
       }
     }
+
     var data = {};
-    ["model","sn","name","airport","line","status","pilot","lng","lat","buy","warranty","maker","weight","parts"].forEach(function (key) {
+    var keys =
+      formMode === "airport"
+        ? ["model", "sn", "name", "line", "lng", "lat", "buy", "warranty", "maker", "weight", "parts"]
+        : ["model", "sn", "name", "airport", "line", "pilot", "lng", "lat", "buy", "warranty", "maker", "weight", "parts"];
+
+    keys.forEach(function (key) {
       data[key] = getValue(key);
     });
     data.last = data.last || "2026-05-13 10:00";
+
     document.getElementById("drone-form-mask").classList.remove("show");
     if (typeof saveCallback === "function") saveCallback(data);
   }
@@ -121,6 +205,6 @@
 
   global.WHDroneForm = {
     open: open,
-    ensure: ensureForm
+    ensure: ensureForm,
   };
 })(window);

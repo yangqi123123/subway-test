@@ -94,7 +94,7 @@
         toast("飞行报告补充说明已保存");
       },
       onExport: function () {
-        toast("飞行报告已导出");
+        toast("飞行报告 PDF 已导出");
       },
     });
   }
@@ -107,7 +107,6 @@
       return;
     }
     WHFlightReportModal.exportReport(plan);
-    toast("飞行报告已下载");
   }
 
   function renderTable() {
@@ -130,7 +129,9 @@
         '<td class="px-3 text-slate-100/95">' +
         esc(row.projectName) +
         "</td>" +
-        '<td class="px-3 leading-relaxed"><a class="uav-link" href="am-drone.html">' +
+        '<td class="px-3 leading-relaxed"><a class="uav-link" href="' +
+        (typeof whPageHref === "function" ? whPageHref("wb/am-drone.html") : "../wb/am-drone.html") +
+        '">' +
         esc(row.deviceName) +
         "</a></td>" +
         '<td class="px-3 text-slate-100/95">' +
@@ -156,7 +157,9 @@
             })
           : "") +
         "</td>" +
-        '<td class="px-3 leading-relaxed"><a class="uav-link" href="map-flight-plan.html">' +
+        '<td class="px-3 leading-relaxed"><a class="uav-link" href="' +
+        (typeof whPageHref === "function" ? whPageHref("map/map-flight-plan.html") : "../map/map-flight-plan.html") +
+        '">' +
         esc(row.planName) +
         "</a></td>" +
         '<td class="px-3 text-slate-100/95 whitespace-nowrap">' +

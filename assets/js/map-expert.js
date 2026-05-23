@@ -223,7 +223,7 @@
     }
   }
 
-  var ALERT_DETAIL_URL = "map-alerts.html?view=detail&id=2&from=expert";
+  var ALERT_DETAIL_URL = "map/map-alerts.html?view=detail&id=2&from=expert";
 
   var locationNoteText = "";
 
@@ -265,7 +265,8 @@
     var btn = document.getElementById("btn-go-alert-detail");
     if (!btn) return;
     btn.addEventListener("click", function () {
-      window.location.href = ALERT_DETAIL_URL;
+      window.location.href =
+        typeof whPageHref === "function" ? whPageHref(ALERT_DETAIL_URL) : ALERT_DETAIL_URL;
     });
   }
 

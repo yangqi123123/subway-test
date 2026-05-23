@@ -16,8 +16,13 @@
     var link = document.createElement("link");
     link.id = "wb-mega-css";
     link.rel = "stylesheet";
-    link.href = "assets/css/wb-mega.css";
+    link.href = typeof whAsset === "function" ? whAsset("assets/css/wb-mega.css") : "assets/css/wb-mega.css";
     document.head.appendChild(link);
+  }
+
+  function wbPageHref(href) {
+    if (typeof whPageHref === "function") return whPageHref(href);
+    return href;
   }
 
   function wbLeafHtml(item, activeKey, sub) {
@@ -30,7 +35,7 @@
       '<a class="' +
       cls +
       '" href="' +
-      item.href +
+      wbPageHref(item.href) +
       '" data-wb-key="' +
       item.key +
       '" data-wb-label="' +

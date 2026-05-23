@@ -78,12 +78,32 @@
     return list.slice(n).concat(list.slice(0, n));
   }
 
+  function resolveAsset(rel) {
+    if (typeof global.whAsset === "function") return global.whAsset(rel);
+    if (global.WHMetroMenu && typeof global.WHMetroMenu.asset === "function") {
+      return global.WHMetroMenu.asset(rel);
+    }
+    var path =
+      typeof location !== "undefined" && location.pathname
+        ? String(location.pathname).replace(/\\/g, "/")
+        : "";
+    if (/\/web(\/|$)/i.test(path) || /\/app(\/|$)/i.test(path)) {
+      return "../" + String(rel).replace(/^\//, "");
+    }
+    return rel;
+  }
+
   function ensureStyles() {
-    if (document.getElementById("patrol-media-gallery-css")) return;
+    var href = resolveAsset("assets/css/patrol-media-gallery.css");
+    var existing = document.getElementById("patrol-media-gallery-css");
+    if (existing) {
+      if (existing.getAttribute("href") !== href) existing.setAttribute("href", href);
+      return;
+    }
     var link = document.createElement("link");
     link.id = "patrol-media-gallery-css";
     link.rel = "stylesheet";
-    link.href = "assets/css/patrol-media-gallery.css";
+    link.href = href;
     document.head.appendChild(link);
   }
 

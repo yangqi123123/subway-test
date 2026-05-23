@@ -3,32 +3,159 @@
  * 新增页面：补 TOP_NAV 下拉项或 WB_MEGA 叶子，并在 HTML 的 data-top / data-sidebar-key 与之一致。
  */
 (function (global) {
+  /** web 子目录深度：web-login=0，web/map/xxx=1 */
+  function whWebPageDepth() {
+    if (typeof location === "undefined" || !location.pathname) return 0;
+    var path = String(location.pathname).replace(/\\/g, "/");
+    var m = path.match(/\/web\/([^?#]*)/i);
+    if (!m) return 0;
+    var parts = m[1].split("/").filter(Boolean);
+    if (parts.length <= 1) return 0;
+    return parts.length - 1;
+  }
+
+  function whWebPageDir() {
+    if (typeof location === "undefined" || !location.pathname) return "";
+    var path = String(location.pathname).replace(/\\/g, "/");
+    var m = path.match(/\/web\/([^?#]*)/i);
+    if (!m) return "";
+    var parts = m[1].split("/").filter(Boolean);
+    parts.pop();
+    return parts.join("/");
+  }
+
+  function relPageHref(fromDir, toCanonical) {
+    var toDir = toCanonical.indexOf("/") >= 0 ? toCanonical.replace(/\/[^/]+$/, "") : "";
+    if (fromDir === toDir) return toCanonical.split("/").pop();
+    var depth = fromDir ? fromDir.split("/").filter(Boolean).length : 0;
+    return (depth ? "../".repeat(depth) : "") + toCanonical;
+  }
+
+  /** 页面在 web/ 或 app/ 下时，静态资源需加 ../ 前缀 */
+  function whAssetPrefix() {
+    if (typeof location === "undefined" || !location.pathname) return "";
+    var path = String(location.pathname).replace(/\\/g, "/");
+    if (/\/web\//i.test(path)) {
+      var d = whWebPageDepth();
+      return d === 0 ? "../" : "../".repeat(d + 1);
+    }
+    if (/\/app(\/|$)/i.test(path)) return "../";
+    return "";
+  }
+
+  function whAsset(rel) {
+    if (!rel) return whAssetPrefix();
+    var s = String(rel);
+    if (/^(https?:)?\/\//i.test(s) || s.indexOf("data:") === 0) return s;
+    return whAssetPrefix() + s.replace(/^\//, "");
+  }
+
+  function hrefFileName(href) {
+    if (!href) return "";
+    return href.split("?")[0].split("/").pop() || href;
+  }
+
+  function whPageHref(href) {
+    if (!href || /^(https?:|#|mailto:)/i.test(href)) return href;
+    var q = "";
+    var i = href.indexOf("?");
+    var pathPart = i >= 0 ? href.slice(0, i) : href;
+    if (i >= 0) q = href.slice(i);
+    var file = pathPart.split("/").pop();
+    var routes = global.WH_PAGE_ROUTES || {};
+    var canon = routes[file] || routes[pathPart] || pathPart;
+    return relPageHref(whWebPageDir(), canon) + q;
+  }
+
+  global.whWebPageDepth = whWebPageDepth;
+  global.whWebPageDir = whWebPageDir;
+  global.whAssetPrefix = whAssetPrefix;
+  global.whAsset = whAsset;
+  global.whPageHref = whPageHref;
+  global.WH_PAGE_ROUTES = {
+  "ai.html": "ai/ai.html",
+  "map-cockpit-fly.html": "cockpit/map-cockpit-fly.html",
+  "map-cockpit-prep.html": "cockpit/map-cockpit-prep.html",
+  "map-alerts.html": "map/map-alerts.html",
+  "map-expert.html": "map/map-expert.html",
+  "map-flight-plan.html": "map/map-flight-plan.html",
+  "map-gis.html": "map/map-gis.html",
+  "map-routes.html": "map/map-routes.html",
+  "map-situation.html": "map/map-situation.html",
+  "in-disease.html": "patrol/in-disease.html",
+  "in-manual.html": "patrol/in-manual.html",
+  "in-night.html": "patrol/in-night.html",
+  "in-uav-report.html": "patrol/in-uav-report.html",
+  "dc-drone-stats.html": "stats/dc-drone-stats.html",
+  "dc-library.html": "stats/dc-library.html",
+  "dc-line-stats.html": "stats/dc-line-stats.html",
+  "dc-system-stats.html": "stats/dc-system-stats.html",
+  "am-airport.html": "wb/am-airport.html",
+  "am-drone.html": "wb/am-drone.html",
+  "am-emergency-material.html": "wb/am-emergency-material.html",
+  "am-emergency-plan.html": "wb/am-emergency-plan.html",
+  "am-emergency-staff.html": "wb/am-emergency-staff.html",
+  "am-emergency-warehouse.html": "wb/am-emergency-warehouse.html",
+  "am-flight-log.html": "wb/am-flight-log.html",
+  "am-line.html": "wb/am-line.html",
+  "am-maintenance.html": "wb/am-maintenance.html",
+  "am-ops-metro.html": "wb/am-ops-metro.html",
+  "am-section.html": "wb/am-section.html",
+  "am-station.html": "wb/am-station.html",
+  "in-project-done.html": "wb/in-project-done.html",
+  "in-project-patrol.html": "wb/in-project-patrol.html",
+  "in-project.html": "wb/in-project.html",
+  "in-quality-stats.html": "wb/in-quality-stats.html",
+  "in-score.html": "wb/in-score.html",
+  "in-track-drone.html": "wb/in-track-drone.html",
+  "in-track-person.html": "wb/in-track-person.html",
+  "wb-dept.html": "wb/wb-dept.html",
+  "wb-dict.html": "wb/wb-dict.html",
+  "wb-done.html": "wb/wb-done.html",
+  "wb-hub.html": "wb/wb-hub.html",
+  "wb-log.html": "wb/wb-log.html",
+  "wb-menu.html": "wb/wb-menu.html",
+  "wb-msg-template.html": "wb/wb-msg-template.html",
+  "wb-notice.html": "wb/wb-notice.html",
+  "wb-param.html": "wb/wb-param.html",
+  "wb-permission.html": "wb/wb-permission.html",
+  "wb-post.html": "wb/wb-post.html",
+  "wb-role.html": "wb/wb-role.html",
+  "wb-sys-notify.html": "wb/wb-sys-notify.html",
+  "wb-todo.html": "wb/wb-todo.html",
+  "wb-user.html": "wb/wb-user.html",
+  "wb-wf-category.html": "wb/wb-wf-category.html",
+  "wb-wf-design.html": "wb/wb-wf-design.html",
+  "web-login.html": "web-login.html"
+};
+  global.hrefFileName = hrefFileName;
+
   /** @type {Array<{id:string,label:string,href?:string,kind?:string,items?:Array<{label:string,href:string}>}>} */
   var TOP_NAV = [
-    { id: "map", label: "全景地图", kind: "link", href: "map-gis.html" },
-    { id: "cockpit", label: "虚拟座舱", kind: "link", href: "map-cockpit-prep.html" },
+    { id: "map", label: "全景地图", kind: "link", href: "map/map-gis.html" },
+    { id: "cockpit", label: "虚拟座舱", kind: "link", href: "cockpit/map-cockpit-prep.html" },
     {
       id: "patrol",
       label: "巡查记录",
       kind: "dropdown",
       items: [
-        { label: "病害巡查", href: "in-disease.html" },
-        { label: "夜班作业", href: "in-night.html" },
-        { label: "无人机巡查记录", href: "in-uav-report.html" },
-        { label: "人工巡查记录", href: "in-manual.html" },
+        { label: "病害巡查", href: "patrol/in-disease.html" },
+        { label: "夜班作业", href: "patrol/in-night.html" },
+        { label: "无人机巡查记录", href: "patrol/in-uav-report.html" },
+        { label: "人工巡查记录", href: "patrol/in-manual.html" },
       ],
     },
-    { id: "ai", label: "AI识别", kind: "link", href: "ai.html" },
+    { id: "ai", label: "AI识别", kind: "link", href: "ai/ai.html" },
     {
       id: "st",
       label: "数据统计",
       kind: "dropdown",
       items: [
-        { label: "线路项目统计", href: "dc-line-stats.html" },
-        { label: "全时全域数据统计报表", href: "dc-system-stats.html" },
+        { label: "线路项目统计", href: "stats/dc-line-stats.html" },
+        { label: "全时全域数据统计报表", href: "stats/dc-system-stats.html" },
       ],
     },
-    { id: "wb", label: "我的工作台", kind: "link", href: "wb-hub.html" },
+    { id: "wb", label: "我的工作台", kind: "link", href: "wb/wb-hub.html" },
   ];
 
   /**
@@ -37,25 +164,25 @@
    */
   var SIDEBAR = {
     patrol: [
-      { type: "item", key: "in-disease", label: "病害巡查", href: "in-disease.html" },
-      { type: "item", key: "in-night", label: "夜班作业", href: "in-night.html" },
+      { type: "item", key: "in-disease", label: "病害巡查", href: "patrol/in-disease.html" },
+      { type: "item", key: "in-night", label: "夜班作业", href: "patrol/in-night.html" },
       {
         type: "group",
         key: "patrol-reports",
         label: "巡查记录",
         children: [
-          { key: "in-uav-report", label: "无人机巡查记录", href: "in-uav-report.html" },
-          { key: "in-manual", label: "人工巡查记录", href: "in-manual.html" },
+          { key: "in-uav-report", label: "无人机巡查记录", href: "patrol/in-uav-report.html" },
+          { key: "in-manual", label: "人工巡查记录", href: "patrol/in-manual.html" },
         ],
       },
     ],
     st: [
-      { type: "item", key: "dc-line-stats", label: "线路项目统计", href: "dc-line-stats.html" },
+      { type: "item", key: "dc-line-stats", label: "线路项目统计", href: "stats/dc-line-stats.html" },
       {
         type: "item",
         key: "dc-system-stats",
         label: "全时全域数据统计报表",
-        href: "dc-system-stats.html",
+        href: "stats/dc-system-stats.html",
       },
     ],
   };
@@ -72,13 +199,13 @@
       blocks: [
         {
           items: [
-            { key: "wb-todo", label: "待办", href: "wb-todo.html" },
-            { key: "wb-sys-notify", label: "系统通知", href: "wb-sys-notify.html" },
-            { key: "wb-done", label: "已处理事项", href: "wb-done.html" },
+            { key: "wb-todo", label: "待办", href: "wb/wb-todo.html" },
+            { key: "wb-sys-notify", label: "系统通知", href: "wb/wb-sys-notify.html" },
+            { key: "wb-done", label: "已处理事项", href: "wb/wb-done.html" },
           ],
         },
         {
-          items: [{ key: "map-routes", label: "航线管理", href: "map-routes.html" }],
+          items: [{ key: "map-routes", label: "航线管理", href: "map/map-routes.html" }],
         },
       ],
     },
@@ -91,16 +218,16 @@
         {
           subtitle: "保护区项目",
           items: [
-            { key: "in-project", label: "项目管理", href: "in-project.html" },
-            { key: "in-project-done", label: "完工项目", href: "in-project-done.html" },
+            { key: "in-project", label: "项目管理", href: "wb/in-project.html" },
+            { key: "in-project-done", label: "完工项目", href: "wb/in-project-done.html" },
           ],
         },
         {
           subtitle: "巡查质量",
           items: [
-            { key: "in-track-person", label: "人员轨迹", href: "in-track-person.html" },
-            { key: "in-quality-stats", label: "统计分析", href: "in-quality-stats.html" },
-            { key: "in-score", label: "巡查打分", href: "in-score.html" },
+            { key: "in-track-person", label: "人员轨迹", href: "wb/in-track-person.html" },
+            { key: "in-quality-stats", label: "统计分析", href: "wb/in-quality-stats.html" },
+            { key: "in-score", label: "巡查打分", href: "wb/in-score.html" },
           ],
         },
       ],
@@ -114,24 +241,24 @@
         {
           subtitle: "地铁路网管理",
           items: [
-            { key: "am-line", label: "线路管理", href: "am-line.html" },
-            { key: "am-station", label: "站点管理", href: "am-station.html" },
-            { key: "am-section", label: "区间管理", href: "am-section.html" },
+            { key: "am-line", label: "线路管理", href: "wb/am-line.html" },
+            { key: "am-station", label: "站点管理", href: "wb/am-station.html" },
+            { key: "am-section", label: "区间管理", href: "wb/am-section.html" },
           ],
         },
         {
           subtitle: "应急管理",
           items: [
-            { key: "am-emergency-staff", label: "应急人员", href: "am-emergency-staff.html" },
-            { key: "am-emergency-warehouse", label: "应急仓库", href: "am-emergency-warehouse.html" },
-            { key: "am-emergency-plan", label: "应急预案", href: "am-emergency-plan.html" },
+            { key: "am-emergency-staff", label: "应急人员", href: "wb/am-emergency-staff.html" },
+            { key: "am-emergency-warehouse", label: "应急仓库", href: "wb/am-emergency-warehouse.html" },
+            { key: "am-emergency-plan", label: "应急预案", href: "wb/am-emergency-plan.html" },
           ],
         },
         {
           subtitle: "无人机设备管理",
           items: [
-            { key: "am-airport", label: "机场设备管理", href: "am-airport.html" },
-            { key: "am-drone", label: "无人机设备管理", href: "am-drone.html" },
+            { key: "am-airport", label: "机场设备管理", href: "wb/am-airport.html" },
+            { key: "am-drone", label: "无人机设备管理", href: "wb/am-drone.html" },
           ],
         },
       ],
@@ -144,10 +271,10 @@
       blocks: [
         {
           items: [
-            { key: "dc-drone-stats", label: "分析报告", href: "dc-drone-stats.html" },
-            { key: "am-flight-log", label: "飞行日志记录", href: "am-flight-log.html" },
-            { key: "am-maintenance", label: "维修与检修记录", href: "am-maintenance.html" },
-            { key: "dc-library", label: "资料库", href: "dc-library.html" },
+            { key: "dc-drone-stats", label: "分析报告", href: "stats/dc-drone-stats.html" },
+            { key: "am-flight-log", label: "飞行日志记录", href: "wb/am-flight-log.html" },
+            { key: "am-maintenance", label: "维修与检修记录", href: "wb/am-maintenance.html" },
+            { key: "dc-library", label: "资料库", href: "stats/dc-library.html" },
             /* 入口隐藏，页面保留：am-ops-fulltime.html、am-ops-uav.html */
           ],
         },
@@ -161,24 +288,24 @@
       blocks: [
         {
           items: [
-            { key: "wb-user", label: "用户管理", href: "wb-user.html" },
-            { key: "wb-role", label: "角色管理", href: "wb-role.html" },
-            { key: "wb-dept", label: "部门管理", href: "wb-dept.html" },
-            { key: "wb-post", label: "岗位管理", href: "wb-post.html" },
-            { key: "wb-menu", label: "菜单管理", href: "wb-menu.html" },
-            { key: "wb-dict", label: "字典管理", href: "wb-dict.html" },
-            { key: "wb-log", label: "日志管理", href: "wb-log.html" },
-            { key: "wb-param", label: "参数设置", href: "wb-param.html" },
-            { key: "wb-notice", label: "通知公告", href: "wb-notice.html" },
-            { key: "wb-msg-template", label: "消息模板", href: "wb-msg-template.html" },
-            { key: "am-ops-metro", label: "资源监控", href: "am-ops-metro.html" },
+            { key: "wb-user", label: "用户管理", href: "wb/wb-user.html" },
+            { key: "wb-role", label: "角色管理", href: "wb/wb-role.html" },
+            { key: "wb-dept", label: "部门管理", href: "wb/wb-dept.html" },
+            { key: "wb-post", label: "岗位管理", href: "wb/wb-post.html" },
+            { key: "wb-menu", label: "菜单管理", href: "wb/wb-menu.html" },
+            { key: "wb-dict", label: "字典管理", href: "wb/wb-dict.html" },
+            { key: "wb-log", label: "日志管理", href: "wb/wb-log.html" },
+            { key: "wb-param", label: "参数设置", href: "wb/wb-param.html" },
+            { key: "wb-notice", label: "通知公告", href: "wb/wb-notice.html" },
+            { key: "wb-msg-template", label: "消息模板", href: "wb/wb-msg-template.html" },
+            { key: "am-ops-metro", label: "资源监控", href: "wb/am-ops-metro.html" },
           ],
         },
         {
           subtitle: "工作流",
           items: [
-            { key: "wb-wf-category", label: "流程分类", href: "wb-wf-category.html" },
-            { key: "wb-wf-design", label: "流程设计", href: "wb-wf-design.html" },
+            { key: "wb-wf-category", label: "流程分类", href: "wb/wb-wf-category.html" },
+            { key: "wb-wf-design", label: "流程设计", href: "wb/wb-wf-design.html" },
           ],
         },
       ],
@@ -194,7 +321,7 @@
   function dropdownContainsPage(item, file) {
     if (!item.items) return false;
     for (var i = 0; i < item.items.length; i++) {
-      if (item.items[i].href === file) return true;
+      if (hrefFileName(item.items[i].href) === file) return true;
     }
     return false;
   }
@@ -204,7 +331,7 @@
       var it = TOP_NAV[i];
       if (it.kind === "dropdown") {
         if (dropdownContainsPage(it, file)) return it.id;
-      } else if (it.href === file) return it.id;
+      } else if (hrefFileName(it.href) === file) return it.id;
     }
     return bodyTopId;
   }
@@ -228,9 +355,11 @@
     var list = [];
     var seen = {};
     function add(label, href, group) {
-      if (!href || !label || seen[href]) return;
-      seen[href] = true;
-      list.push({ label: label, href: href, group: group || "" });
+      if (!href || !label) return;
+      var resolved = typeof whPageHref === "function" ? whPageHref(href) : href;
+      if (seen[resolved]) return;
+      seen[resolved] = true;
+      list.push({ label: label, href: resolved, group: group || "" });
     }
     TOP_NAV.forEach(function (item) {
       if (item.href) add(item.label, item.href, "顶部导航");
@@ -290,6 +419,9 @@
     pageFile: pageFile,
     topNavMatchId: topNavMatchId,
     dropdownContainsPage: dropdownContainsPage,
+    assetPrefix: whAssetPrefix,
+    asset: whAsset,
+    pageHref: whPageHref,
   };
 })(typeof window !== "undefined" ? window : this);
 

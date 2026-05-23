@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>全景地图 · 虚拟座舱（飞行中）</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="../../assets/css/theme.css" />
+    <link rel="stylesheet" href="../../assets/css/map-gis.css" />
+    <link rel="stylesheet" href="../../assets/css/map-cockpit.css" />
+    <style>
+      body { overflow: hidden; }
+      .cockpit-video__tools,
+      .cockpit-video__time { display: none !important; }
+      #fly-mini-map.cockpit-leaflet .leaflet-control-zoom { display: none !important; }
+    </style>
+  </head>
+  <body data-shell="fullscreen" data-top="cockpit">
+    <div id="page-root" class="cockpit-screen h-[calc(100vh-64px)] px-5 py-4">
+      <div class="h-full cockpit-layout cockpit-layout--fly">
+        <section id="fly-main-section" class="flex min-h-0 flex-col gap-3 min-w-0">
+          <div class="cockpit-panel cockpit-video flex-1 min-h-0">
+            <img class="cockpit-video__img" src="../../assets/img/虚拟座舱飞行中.png" alt="飞行画面" />
+            <div class="cockpit-video__tools">
+              <button type="button" class="cockpit-video__tool"><i class="fa-regular fa-square"></i></button>
+              <button type="button" class="cockpit-video__tool"><i class="fa-solid fa-face-smile"></i></button>
+            </div>
+            <div class="cockpit-video__time">2025-04-07 11:08:23</div>
+          </div>
+          <div class="cockpit-actions cockpit-actions--fly-left">
+            <button id="btn-unlock" type="button" class="cockpit-btn cockpit-btn--ghost"><i class="fa-solid fa-lock-open mr-1"></i>点击解锁人工操控</button>
+          </div>
+          <div id="cockpit-manual-panel" class="cockpit-manual-inline cockpit-manual-inline--left">
+            <div class="cockpit-manual-inline__head">无人机操控台</div>
+            <div class="cockpit-manual-inline__actions">
+              <button id="btn-takeoff" type="button" class="cockpit-btn">一键起飞</button>
+              <button id="btn-stop" type="button" class="cockpit-btn cockpit-btn--warn">急停</button>
+              <button id="btn-return" type="button" class="cockpit-btn">智能返航</button>
+            </div>
+            <div class="cockpit-manual-layout cockpit-manual-layout--inline">
+              <div class="cockpit-manual-layout__col">
+                <div class="cockpit-manual-layout__label">平移</div>
+                <div class="cockpit-pad">
+                  <span class="up">前进<br />W</span>
+                  <span class="down">后退<br />S</span>
+                  <span class="left">左<br />A</span>
+                  <span class="right">右<br />D</span>
+                  <span class="mid">↕</span>
+                </div>
+              </div>
+              <div class="cockpit-manual-layout__col">
+                <div class="cockpit-manual-layout__label">镜头</div>
+                <div class="cockpit-manual-center cockpit-manual-center--stack">
+                  <button type="button" class="cockpit-manual-op" data-console="camera-down">镜头向下</button>
+                  <button type="button" class="cockpit-manual-op" data-console="camera-up">镜头向上</button>
+                </div>
+              </div>
+              <div class="cockpit-manual-layout__col">
+                <div class="cockpit-manual-layout__label">机身方向</div>
+                <div class="cockpit-pad cockpit-pad--body">
+                  <span class="up">上升</span>
+                  <span class="down">下降</span>
+                  <span class="left">左转</span>
+                  <span class="right">右转</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="flex min-h-0 flex-col gap-4">
+          <div class="cockpit-side-top grid grid-cols-2 gap-4 min-w-0">
+            <section class="cockpit-panel min-w-0">
+              <div class="cockpit-title">无人机基本信息</div>
+              <div class="p-4">
+                <dl class="cockpit-grid-pairs">
+                  <dt>无人机设备编号</dt><dd>001</dd>
+                  <dt>剩余电量</dt><dd>53%</dd>
+                  <dt>预计剩余飞行时间</dt><dd>15分钟</dd>
+                  <dt>信号强度</dt><dd>正常</dd>
+                  <dt>飞行水平速度</dt><dd>0.00m/s</dd>
+                  <dt>飞行垂直速度</dt><dd>3.45m/s</dd>
+                  <dt>飞行净高</dt><dd>64.23m</dd>
+                  <dt>无人机运行时间</dt><dd>3分45秒</dd>
+                </dl>
+              </div>
+            </section>
+            <section class="cockpit-panel min-w-0">
+              <div class="cockpit-title">机场信息</div>
+              <div class="p-4">
+                <dl class="cockpit-grid-pairs">
+                  <dt>机场名称</dt><dd id="airport-name">黄家湖机场</dd>
+                  <dt>飞行计划</dt><dd id="flight-plan-name">8号线车辆段常规巡检</dd>
+                  <dt>状态</dt><dd>工作中</dd>
+                  <dt>风速</dt><dd>3m/s</dd>
+                  <dt>天气</dt><dd>晴天</dd>
+                  <dt>湿度</dt><dd>53.5%</dd>
+                  <dt>舱外温度</dt><dd>35.6°C</dd>
+                  <dt>舱内温度</dt><dd>19.6°C</dd>
+                  <dt>网速</dt><dd>708KB/s</dd>
+                </dl>
+              </div>
+            </section>
+          </div>
+
+          <section id="map-section" class="cockpit-panel cockpit-map-section flex-1 min-h-0 flex flex-col">
+            <div class="cockpit-title">
+              <span>地图信息</span>
+              <span class="cockpit-title__sub"><i class="fa-solid fa-expand mr-1"></i>放大</span>
+            </div>
+            <div class="cockpit-map-wrap flex-1 min-h-0">
+              <div class="cockpit-map-inner cockpit-map-inner--flight">
+                <div id="fly-mini-map" class="cockpit-leaflet h-full w-full"></div>
+</div>
+            </div>
+            
+          </section>
+        </aside>
+      </div>
+    </div>
+
+    <div id="toast" class="fixed right-5 bottom-5 z-[1400] hidden rounded bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="../../assets/js/menu-config.js"></script>
+    <script src="../../assets/js/shell.js"></script>
+    <script src="../../assets/js/map-metro-data.js"></script>
+    <script src="../../assets/js/map-patrol-overlay.js"></script>
+    <script src="../../assets/js/map-gis.js"></script>
+    <script>
+      const airportMeta = {
+        a1: { name: "黄家湖机场", flightPlan: "8号线车辆段常规巡检" },
+        a2: { name: "XX机场", flightPlan: "涉铁施工复核航线" },
+        a3: { name: "梨园机场", flightPlan: "梨园站告警复核" },
+        a4: { name: "XX机场", flightPlan: "涉铁施工复核航线" },
+      };
+      const params = new URLSearchParams(location.search);
+      const airportId = params.get("airport") || "a1";
+      const airport = airportMeta[airportId] || airportMeta.a1;
+      document.getElementById("airport-name").textContent = airport.name;
+      document.getElementById("flight-plan-name").textContent = airport.flightPlan;
+
+      const toast = (msg) => {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.classList.remove("hidden");
+        clearTimeout(toast.timer);
+        toast.timer = setTimeout(() => el.classList.add("hidden"), 1600);
+      };
+
+      const manualPanel = document.getElementById("cockpit-manual-panel");
+      const flyMainSection = document.getElementById("fly-main-section");
+      const btnUnlock = document.getElementById("btn-unlock");
+      let flyMapApi = null;
+      let manualOpen = false;
+
+      function setManualOpen(open) {
+        manualOpen = open;
+        manualPanel.classList.toggle("is-open", open);
+        flyMainSection.classList.toggle("has-manual", open);
+        btnUnlock.innerHTML = open
+          ? '<i class="fa-solid fa-lock mr-1"></i>收起人工操控'
+          : '<i class="fa-solid fa-lock-open mr-1"></i>点击解锁人工操控';
+        if (flyMapApi && flyMapApi.map) {
+          setTimeout(function () {
+            flyMapApi.map.invalidateSize();
+          }, 280);
+        }
+      }
+
+      btnUnlock.addEventListener("click", () => setManualOpen(!manualOpen));
+      document.getElementById("btn-stop").addEventListener("click", () => toast("急停指令已发送"));
+      document.getElementById("btn-return").addEventListener("click", () => toast("智能返航指令已发送"));
+      document.getElementById("btn-takeoff").addEventListener("click", () => toast("无人机已处于飞行状态"));
+      manualPanel.querySelectorAll("[data-console]").forEach((btn) => {
+        btn.addEventListener("click", () => toast("已执行：" + btn.textContent));
+      });
+
+      if (false && window.WuhanGIS && window.WuhanGIS.createSharedMap) {
+        window.WuhanGIS.createSharedMap("fly-mini-map", {
+          center: [30.585, 114.365],
+          zoom: 14,
+          zoomControl: true,
+          markers: [
+            {
+              latlng: [30.6042, 114.3728],
+              iconHtml: '<div style="width:26px;height:26px;border-radius:999px;background:#f59e0b;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px"><i class="fa-solid fa-house"></i></div>',
+              iconSize: [26, 26],
+              iconAnchor: [13, 13],
+              popup: "机场"
+            },
+            {
+              latlng: [30.5686, 114.3346],
+              iconHtml: '<div style="width:26px;height:26px;border-radius:999px;background:#ef4444;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px"><i class="fa-solid fa-location-dot"></i></div>',
+              iconSize: [26, 26],
+              iconAnchor: [13, 13],
+              popup: "目标点"
+            }
+          ],
+          polylines: [
+            { points: [[30.6042,114.3728],[30.5968,114.3659],[30.5882,114.3543],[30.5784,114.3442],[30.5686,114.3346]], color: "#3b82f6", weight: 5 }
+          ]
+        });
+      }
+      const flyTrackPath = [
+        [30.6042, 114.3728],
+        [30.5968, 114.3659],
+        [30.5882, 114.3543],
+        [30.5784, 114.3442],
+        [30.5686, 114.3346],
+      ];
+
+      if (window.WuhanGIS && window.WuhanGIS.mountCockpitFlightTrackMap) {
+        flyMapApi = window.WuhanGIS.mountCockpitFlightTrackMap("fly-mini-map", {
+          center: [30.588, 114.358],
+          zoom: 14,
+          zoomControl: false,
+          flightTrack: {
+            path: flyTrackPath,
+            airport: flyTrackPath[0],
+            target: flyTrackPath[flyTrackPath.length - 1],
+            progress: 0.45,
+            animate: true,
+            maxZoom: 15,
+          },
+        });
+      }
+
+      window.addEventListener("beforeunload", () => {
+        if (flyMapApi && flyMapApi.stopAnimation) flyMapApi.stopAnimation();
+      });
+    </script>
+  </body>
+</html>

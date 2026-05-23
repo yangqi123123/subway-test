@@ -65,23 +65,33 @@
     var root = document.getElementById(containerId);
     var filtered = rows.slice();
     var trackPlayback = null;
+    var currentDetailId = null;
     root.innerHTML =
       '<nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400"><span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span><span>' + (opts.parentName || "资产管理") + '</span><span class="text-slate-600">&gt;&gt;</span><span class="text-cyan-50 font-semibold tracking-wide">' + (opts.breadcrumb || "飞行日志管理") + '</span></nav>' +
       '<div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3"><h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,.25)">' + (opts.heading || "飞行日志记录列表") + '</h1><span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">' + (opts.badge || "飞行任务执行记录原型") + '</span></div>' +
       '<section class="neon-panel neon-panel--tight p-3 mb-3"><div class="flex flex-wrap items-end justify-between gap-3"><div class="min-w-[320px] flex-1 max-w-[780px]"><label class="wh-filter-label block mb-1">飞行任务ID / 无人机编号 / 操作员姓名</label><input id="search-keyword" class="wh-input fl-search w-full px-3" placeholder="请输入任务ID、无人机编号、操作员姓名关键词"></div><div class="flex gap-2"><button id="search-btn" type="button" class="fl-toolbar-btn wh-btn-primary">搜索</button><button id="reset-btn" type="button" class="fl-toolbar-btn wh-btn-ghost">重置</button><button id="export-btn" type="button" class="fl-toolbar-btn wh-btn-ghost">导出</button></div></div></section>' +
       '<section class="wh-table-shell bg-slate-950/35"><div class="overflow-x-auto"><table class="w-full min-w-[1560px] text-left"><thead><tr><th class="px-3">飞行任务ID</th><th class="px-3">设备名称</th><th class="px-3">任务类型</th><th class="px-3">关联计划</th><th class="px-3">起飞时间</th><th class="px-3">降落时间</th><th class="px-3">飞行状态</th><th class="px-3">最大飞行高度（单位：米）</th><th class="px-3">电池消耗</th><th class="px-3">操作员姓名</th><th class="px-3">操作</th></tr></thead><tbody id="table-body"></tbody></table></div><div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400"><span>共 <b id="total-count" class="text-cyan-200">0</b> 条</span><button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button></div></section>' +
-      '<div id="detail-modal" class="fl-modal-mask"><div class="fl-modal"><div class="flex items-center justify-between gap-3 px-6 py-4 border-b border-white/10"><h3 class="text-base font-semibold text-white">' + (opts.detailTitle || "飞行日志详情") + '</h3><button type="button" class="wh-modal-close" data-close="detail-modal" aria-label="关闭">×</button></div><div class="p-6"><div class="flex justify-end mb-4"><button id="detail-export-btn" type="button" class="fl-toolbar-btn wh-btn-gold"><i class="fa-solid fa-download mr-1"></i>导出</button></div><div class="fl-detail-grid"><section><h4 class="text-sm font-semibold text-white mb-4">基本信息</h4><div id="detail-info" class="space-y-3 text-sm"></div></section><section><div class="flex flex-wrap items-center justify-between gap-3 mb-4"><h4 class="text-sm font-semibold text-white">飞行轨迹</h4><div class="flex flex-wrap gap-2"><button id="detail-play-track-btn" type="button" class="wh-btn-primary px-4 py-2 text-sm"><i class="fa-solid fa-play mr-1"></i>播放轨迹</button><button id="detail-map-reset-btn" type="button" class="wh-btn-ghost px-4 py-2 text-sm"><i class="fa-solid fa-location-crosshairs mr-1"></i>重置视角</button></div></div><div class="fl-map-shell track-map-shell"><div id="detail-map" class="fl-map"></div><div class="track-map-panel"><div class="track-map-panel__row"><span class="track-map-panel__label">轨迹状态</span><span id="fl-map-status-text">待播放</span></div><div class="track-map-panel__row"><span class="track-map-panel__label">当前位置</span><span id="fl-map-current-name">--</span></div><div class="track-map-panel__row"><span class="track-map-panel__label">定位时间</span><span id="fl-map-current-time">--</span></div></div></div></section><section><h4 class="text-sm font-semibold text-white mb-4">操作与事件</h4><div id="detail-events" class="space-y-0"></div></section></div><div class="mt-6 pt-4 border-t border-white/10 flex justify-center"><button type="button" class="wh-btn-ghost px-6 py-2 text-sm" data-close="detail-modal">返回</button></div></div></div></div>';
+      '<div id="detail-modal" class="fl-modal-mask"><div class="fl-modal"><div class="flex items-center justify-between gap-3 px-6 py-4 border-b border-white/10"><h3 class="text-base font-semibold text-white">' + (opts.detailTitle || "飞行日志详情") + '</h3><button type="button" class="wh-modal-close" data-close="detail-modal" aria-label="关闭">×</button></div><div class="p-6"><div class="flex justify-end mb-4"><button id="detail-export-btn" type="button" class="fl-toolbar-btn wh-btn-gold"><i class="fa-solid fa-file-pdf mr-1"></i>导出报告</button></div><div class="fl-detail-grid"><section><h4 class="text-sm font-semibold text-white mb-4">基本信息</h4><div id="detail-info" class="space-y-3 text-sm"></div></section><section><div class="flex flex-wrap items-center justify-between gap-3 mb-4"><h4 class="text-sm font-semibold text-white">飞行轨迹</h4><div class="flex flex-wrap gap-2"><button id="detail-play-track-btn" type="button" class="wh-btn-primary px-4 py-2 text-sm"><i class="fa-solid fa-play mr-1"></i>播放轨迹</button><button id="detail-map-reset-btn" type="button" class="wh-btn-ghost px-4 py-2 text-sm"><i class="fa-solid fa-location-crosshairs mr-1"></i>重置视角</button></div></div><div class="fl-map-shell track-map-shell"><div id="detail-map" class="fl-map"></div><div class="track-map-panel"><div class="track-map-panel__row"><span class="track-map-panel__label">轨迹状态</span><span id="fl-map-status-text">待播放</span></div><div class="track-map-panel__row"><span class="track-map-panel__label">当前位置</span><span id="fl-map-current-name">--</span></div><div class="track-map-panel__row"><span class="track-map-panel__label">定位时间</span><span id="fl-map-current-time">--</span></div></div></div></section><section><h4 class="text-sm font-semibold text-white mb-4">操作与事件</h4><div id="detail-events" class="space-y-0"></div></section></div><div class="mt-6 pt-4 border-t border-white/10 flex justify-center"><button type="button" class="wh-btn-ghost px-6 py-2 text-sm" data-close="detail-modal">返回</button></div></div></div></div>';
 
     function $(id) { return root.querySelector("#" + id) || document.getElementById(id); }
     function table() {
       $("total-count").textContent = String(filtered.length);
       $("table-body").innerHTML = filtered.map(function (item, index) {
-        return '<tr style="background:' + (index % 2 === 0 ? "rgba(12,24,48,.45)" : "rgba(15,32,58,.55)") + '"><td class="px-3 text-slate-100/95 leading-6"><div>' + item.id + '</div><div class="text-slate-400 text-[11px]">唯一标识（如 FL20251225001）</div></td><td class="px-3 text-cyan-300 leading-6"><button type="button" class="fl-detail-link" data-detail="' + item.id + '">显示设备名称（可点击跳转设备详情页面）</button></td><td class="px-3 text-slate-100/95">' + item.taskType + '</td><td class="px-3 text-cyan-300 leading-6"><button type="button" class="fl-detail-link" data-detail="' + item.id + '">显示关联计划名称（可点击跳转对应计划详情页面）</button></td><td class="px-3 text-slate-100/95 whitespace-nowrap">' + item.takeoff + '</td><td class="px-3 text-slate-100/95 whitespace-nowrap">' + item.landing + '</td><td class="px-3">' + statusHtml(item.status) + '</td><td class="px-3 text-slate-100/95">' + item.maxHeight + '</td><td class="px-3 text-slate-100/95 leading-6">' + item.battery + '</td><td class="px-3 text-slate-100/95">' + item.operator + '</td><td class="px-3 whitespace-nowrap"><button type="button" class="fl-op-btn" data-detail="' + item.id + '">查看详情</button></td></tr>';
+        return '<tr style="background:' + (index % 2 === 0 ? "rgba(12,24,48,.45)" : "rgba(15,32,58,.55)") + '"><td class="px-3 text-slate-100/95 leading-6"><div>' + item.id + '</div><div class="text-slate-400 text-[11px]">唯一标识（如 FL20251225001）</div></td><td class="px-3 text-cyan-300 leading-6"><button type="button" class="fl-detail-link" data-detail="' + item.id + '">显示设备名称（可点击跳转设备详情页面）</button></td><td class="px-3 text-slate-100/95">' + item.taskType + '</td><td class="px-3 text-cyan-300 leading-6"><button type="button" class="fl-detail-link" data-detail="' + item.id + '">显示关联计划名称（可点击跳转对应计划详情页面）</button></td><td class="px-3 text-slate-100/95 whitespace-nowrap">' + item.takeoff + '</td><td class="px-3 text-slate-100/95 whitespace-nowrap">' + item.landing + '</td><td class="px-3">' + statusHtml(item.status) + '</td><td class="px-3 text-slate-100/95">' + item.maxHeight + '</td><td class="px-3 text-slate-100/95 leading-6">' + item.battery + '</td><td class="px-3 text-slate-100/95">' + item.operator + '</td><td class="px-3 whitespace-nowrap"><button type="button" class="fl-op-btn" data-detail="' + item.id + '">查看详情</button> <button type="button" class="fl-op-btn" data-export-report="' + item.id + '">导出报告</button></td></tr>';
       }).join("");
+    }
+    function exportFlightReport(id) {
+      var item = rows.find(function (row) { return row.id === id; });
+      if (!item || !global.WHFlightReportModal) {
+        toast("暂无飞行报告数据");
+        return;
+      }
+      global.WHFlightReportModal.exportReport(global.WHFlightReportModal.planFromFlightLog(item));
     }
     function openDetail(id) {
       var item = rows.find(function (row) { return row.id === id; });
       if (!item) return;
+      currentDetailId = id;
       $("detail-info").innerHTML = [detailItem("任务ID", item.id), detailItem("无人机编号", item.droneNo), detailItem("无人机名称", '<span class="fl-detail-link">A区巡检机01（可点击跳转设备详情页面）</span>'), detailItem("所属机场", '<span class="fl-detail-link">' + item.airport + '（可点击跳转设备详情页面）</span>'), detailItem("操作员", item.operator), detailItem("任务类型", item.taskType), detailItem("关联计划", '<span class="fl-detail-link">显示关联计划名称（可点击跳转对应计划详情页面）</span>'), detailItem("起飞时间", item.takeoff), detailItem("降落时间", item.landing), detailItem("飞行时长", item.duration), detailItem("起飞位置", item.takeoffPos), detailItem("降落位置", item.landingPos), detailItem("最大飞行高度", "单位：米，保留1位小数"), detailItem("总飞行距离", item.totalDistance), detailItem("起飞电量", item.takeoffPower), detailItem("降落电量", item.landingPower), detailItem("飞行状态", statusHtml(item.status)), detailItem("天气情况", item.weather)].join("");
       $("detail-events").innerHTML = item.events.map(function (evt) { return '<div class="fl-event-item"><div class="text-xs text-slate-300">' + evt.time + '</div><div class="text-xs text-slate-400 mt-1">事件类型：<span class="text-cyan-200">' + evt.type + '</span></div><div class="text-sm text-sky-300 mt-1 leading-6">' + evt.detail + '</div></div>'; }).join("");
       $("detail-modal").classList.add("show");
@@ -116,6 +126,11 @@
       setTimeout(function () { node.remove(); }, 1800);
     }
     root.addEventListener("click", function (event) {
+      var exportBtn = event.target.closest("[data-export-report]");
+      if (exportBtn) {
+        exportFlightReport(exportBtn.getAttribute("data-export-report"));
+        return;
+      }
       var detailBtn = event.target.closest("[data-detail]");
       if (detailBtn) openDetail(detailBtn.dataset.detail);
       var closeBtn = event.target.closest("[data-close]");
@@ -136,7 +151,13 @@
     });
     $("reset-btn").addEventListener("click", function () { $("search-keyword").value = ""; filtered = rows.slice(); table(); });
     $("export-btn").addEventListener("click", function () { toast("已按当前列表导出"); });
-    $("detail-export-btn").addEventListener("click", function () { toast("已导出当前详情"); });
+    $("detail-export-btn").addEventListener("click", function () {
+      if (!currentDetailId) {
+        toast("请先打开一条飞行记录");
+        return;
+      }
+      exportFlightReport(currentDetailId);
+    });
     table();
   }
 
