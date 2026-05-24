@@ -40,6 +40,187 @@
     .upload-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .upload-preview { width: 72px; height: 72px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(34,211,238,.24); }
     .wh-input--readonly { background: rgba(8, 47, 73, 0.55); color: #b8d4e8; cursor: not-allowed; }
+    .disease-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+      align-items: start;
+    }
+    .disease-layout__right {
+      position: sticky;
+      top: 72px;
+      align-self: start;
+      width: 300px;
+      max-height: calc(100dvh - 88px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: flex-start;
+    }
+    .disease-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .disease-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88));
+      box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.06), inset 0 1px 0 rgba(148, 163, 184, 0.06);
+    }
+    .disease-stat-card__icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+    .disease-stat-card--green .disease-stat-card__trend--up { color: #4ade80; }
+    .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .disease-stat-card__trend { font-size: 10px; margin-top: 4px; }
+    .disease-stat-card__trend--up { color: #4ade80; }
+    .disease-stat-card__trend--down { color: #fb7185; }
+    .disease-filter-panel,
+    .disease-quick-panel {
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(8, 15, 35, 0.78);
+      overflow: visible;
+    }
+    .disease-filter-panel,
+    .disease-quick-panel { flex: 0 0 auto; }
+    .disease-panel-title {
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2f5ff;
+      margin: 0;
+      padding: 8px 10px 7px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.92);
+    }
+    .disease-panel-body {
+      flex: 0 0 auto;
+      overflow: visible;
+      padding: 8px 10px 10px;
+    }
+    .disease-filter-panel .disease-panel-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 8px;
+      row-gap: 6px;
+      align-content: start;
+    }
+    .disease-filter-panel label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 0;
+      font-size: 10px;
+      min-width: 0;
+    }
+    .disease-filter-panel label.disease-filter-span-2 { grid-column: 1 / -1; }
+    .disease-filter-panel label > span:first-child { color: #94a3b8; line-height: 1.2; }
+    .disease-filter-panel .wh-input,
+    .disease-filter-panel select.wh-input {
+      height: 26px !important;
+      min-height: 26px;
+      font-size: 11px;
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+    .disease-filter-dates {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .disease-filter-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 6px;
+      margin: 0;
+      padding-top: 6px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .disease-filter-actions button {
+      padding-top: 4px;
+      padding-bottom: 4px;
+      font-size: 11px;
+    }
+    .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+    .disease-list-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .disease-quick-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.14);
+      background: rgba(15, 23, 42, 0.45);
+      color: #e2f5ff;
+      font-size: 11px;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.08);
+      color: #fff;
+    }
+    .disease-quick-link.is-active {
+      border-color: rgba(34, 211, 238, 0.55);
+      background: rgba(34, 211, 238, 0.12);
+      color: #a5f3fc;
+    }
+    .disease-quick-link i {
+      width: 16px;
+      text-align: center;
+      color: #67e8f9;
+      font-size: 12px;
+    }
+    @media (max-width: 1400px) {
+      .disease-layout { grid-template-columns: 1fr; }
+      .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .disease-layout__right {
+        position: static;
+        width: 100%;
+        height: auto;
+        max-height: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+      }
+    }
+    @media (max-width: 768px) {
+      .disease-stats { grid-template-columns: 1fr; }
+      .disease-layout__right { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body data-shell="default" data-top="patrol" data-sidebar-key="in-manual">
@@ -50,28 +231,96 @@
         <span class="text-cyan-400"><i class="fa-solid fa-user-check"></i></span>
         <span>巡查记录</span><span class="text-slate-600">&gt;&gt;</span><span class="text-cyan-50 font-semibold tracking-wide">人工巡查记录</span>
       </nav>
-      <div data-embed-hide class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
-        <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,.25)">人工巡查记录</h1>
-        <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new-item"><i class="fa-solid fa-plus mr-1"></i>新增</button>
-      </div>
-      <div class="neon-panel neon-panel--tight p-4 mb-4">
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-x-12 gap-y-3 text-xs">
-          <label class="flex items-center gap-2"><span class="w-20 text-right text-cyan-100/75">所属线路：</span><select class="wh-input h-8 flex-1 px-2"><option>8号线</option><option>2号线</option><option>7号线</option></select></label>
-          <label class="flex items-center gap-2"><span class="w-20 text-right text-cyan-100/75">上下行：</span><select class="wh-input h-8 flex-1 px-2"><option>全部</option><option>上行</option><option>下行</option></select></label>
-          <label class="flex items-center gap-2"><span class="w-20 text-right text-cyan-100/75">所属区间：</span><select class="wh-input h-8 flex-1 px-2"><option>请选择区间</option><option>水果湖-洪山路</option><option>洪山路-小洪山</option></select></label>
-          <label class="flex items-center gap-2"><span class="w-20 text-right text-cyan-100/75">所在站点：</span><select class="wh-input h-8 flex-1 px-2"><option>请选择站点</option><option>洪山路</option><option>小洪山</option></select></label>
-          <label class="flex items-center gap-2"><span class="w-20 text-right text-cyan-100/75">项目名称：</span><select class="wh-input h-8 flex-1 px-2"><option>请选择项目</option><option>新建商业文化设施项目</option><option>碧水大道</option></select></label>
-          <label class="flex items-center gap-2"><span class="w-20 text-right text-cyan-100/75">时间范围：</span><input class="wh-input h-8 flex-1 px-2" value="2026-02-03 15:38:31 至 2026-03-05 15:38:31" /></label>
-          <div class="flex items-center gap-2 pl-[88px]"><button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary">搜索</button><button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">重置</button><button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">导出</button></div>
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="人工巡查统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-list-check"></i></div>
+              <div>
+                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">巡查总数</div>
+                <div class="disease-stat-card__trend disease-stat-card__trend--up">较昨日 +2 ↑</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-calendar-plus"></i></div>
+              <div>
+                <div id="stat-month" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">本月新增</div>
+                <div class="disease-stat-card__trend disease-stat-card__trend--up">较上月 +3 ↑</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-hourglass-half"></i></div>
+              <div>
+                <div id="stat-pending" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">待确认</div>
+                <div class="disease-stat-card__trend disease-stat-card__trend--down">较昨日 -1 ↓</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-circle-check"></i></div>
+              <div>
+                <div id="stat-completed" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">已完成巡查</div>
+                <div class="disease-stat-card__trend disease-stat-card__trend--up">较昨日 +1 ↑</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="disease-list-area">
+            <div class="disease-list-toolbar">
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new-item"><i class="fa-solid fa-plus mr-1"></i>新增</button>
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost"><i class="fa-solid fa-file-export mr-1"></i>导出</button>
+            </div>
+            <div class="wh-table-shell bg-slate-950/35">
+              <div class="overflow-x-auto">
+                <table class="page-table min-w-[1540px] w-full text-left text-[11px]">
+                  <thead><tr class="bg-slate-950/75"><th class="px-3 text-cyan-50/95">编号</th><th class="px-3 text-cyan-50/95">所属线路</th><th class="px-3 text-cyan-50/95">所在区间/站点</th><th class="px-3 text-cyan-50/95">项目名称</th><th class="px-3 text-cyan-50/95">项目进展</th><th class="px-3 text-cyan-50/95">巡查照片</th><th class="px-3 text-cyan-50/95">巡查视频</th><th class="px-3 text-cyan-50/95">巡查日期</th><th class="px-3 text-cyan-50/95">巡查人</th><th class="px-3 text-cyan-50/95">更新时间</th><th class="px-3 text-cyan-50/95">操作</th></tr></thead>
+                  <tbody id="table-body"></tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-end gap-2 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+                <span>共 <b id="table-total" class="text-cyan-200">0</b> 条</span>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost text-slate-500">&lt;</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-primary">1</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">&gt;</button>
+                <select class="wh-input h-7 px-2"><option>10 条/页</option><option>20 条/页</option></select>
+                <span>跳至</span>
+                <input class="wh-input h-7 w-12 px-2 text-center" />
+                <span>页</span>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="wh-table-shell bg-slate-950/35">
-        <div class="overflow-x-auto">
-          <table class="page-table min-w-[1540px] w-full text-left text-[11px]">
-            <thead><tr class="bg-slate-950/75"><th class="px-3 text-cyan-50/95">编号</th><th class="px-3 text-cyan-50/95">所属线路</th><th class="px-3 text-cyan-50/95">所在区间/站点</th><th class="px-3 text-cyan-50/95">项目名称</th><th class="px-3 text-cyan-50/95">项目进展</th><th class="px-3 text-cyan-50/95">巡查照片</th><th class="px-3 text-cyan-50/95">巡查视频</th><th class="px-3 text-cyan-50/95">巡查日期</th><th class="px-3 text-cyan-50/95">巡查人</th><th class="px-3 text-cyan-50/95">更新时间</th><th class="px-3 text-cyan-50/95">操作</th></tr></thead>
-            <tbody id="table-body"></tbody>
-          </table>
-        </div>
+
+        <aside data-embed-hide class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label><span>所属线路</span><select class="wh-input w-full px-2"><option>8号线</option><option>2号线</option><option>7号线</option></select></label>
+              <label><span>上下行</span><select class="wh-input w-full px-2"><option>全部</option><option>上行</option><option>下行</option></select></label>
+              <label><span>所属区间</span><select class="wh-input w-full px-2"><option>请选择区间</option><option>水果湖-洪山路</option><option>洪山路-小洪山</option></select></label>
+              <label><span>所在站点</span><select class="wh-input w-full px-2"><option>请选择站点</option><option>洪山路</option><option>小洪山</option></select></label>
+              <label class="disease-filter-span-2"><span>项目名称</span><select class="wh-input w-full px-2"><option>请选择项目</option><option>新建商业文化设施项目</option><option>碧水大道</option></select></label>
+              <label class="disease-filter-span-2"><span>时间范围</span><div class="disease-filter-dates"><input class="wh-input w-full px-2" value="2026-02-03 15:38:31" /><input class="wh-input w-full px-2" value="2026-03-05 15:38:31" /></div></label>
+              <div class="disease-filter-actions">
+                <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary flex-1">搜索</button>
+                <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost flex-1">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body">
+              <a class="disease-quick-link" data-quick-href="patrol/in-disease.html" href="in-disease.html"><i class="fa-solid fa-stethoscope"></i><span>病害巡查</span></a>
+              <a class="disease-quick-link" data-quick-href="patrol/in-night.html" href="in-night.html"><i class="fa-solid fa-moon"></i><span>夜班作业</span></a>
+              <a class="disease-quick-link" data-quick-href="patrol/in-uav-report.html" href="in-uav-report.html"><i class="fa-solid fa-helicopter"></i><span>无人机巡检记录</span></a>
+              <a class="disease-quick-link is-active" data-quick-href="patrol/in-manual.html" href="in-manual.html"><i class="fa-solid fa-person-walking"></i><span>人工巡查记录</span></a>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
 
@@ -253,7 +502,47 @@
         el.readOnly = true;
         el.setAttribute("readonly", "readonly");
       }
+      function hasLogAction(row, actionName) {
+        return (row.logs || []).some(function (log) {
+          return log.action === actionName;
+        });
+      }
+      function updateDashboardStats() {
+        var setText = function (id, val) {
+          var el = $(id);
+          if (el) el.textContent = String(val);
+        };
+        setText("stat-total", rows.length);
+        setText(
+          "stat-month",
+          rows.filter(function (r) {
+            return r.patrolDate && String(r.patrolDate).indexOf("2026-03") === 0;
+          }).length
+        );
+        setText(
+          "stat-pending",
+          rows.filter(function (r) {
+            return !hasLogAction(r, "工班确认") && !hasLogAction(r, "拒绝");
+          }).length
+        );
+        setText(
+          "stat-completed",
+          rows.filter(function (r) {
+            return hasLogAction(r, "工班确认");
+          }).length
+        );
+        setText("table-total", rows.length);
+      }
+      function initQuickLinks() {
+        document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
+          var target = anchor.getAttribute("data-quick-href");
+          if (target && typeof whPageHref === "function") {
+            anchor.setAttribute("href", whPageHref(target));
+          }
+        });
+      }
       function renderRows() {
+        updateDashboardStats();
         tbody.innerHTML = rows.map(function (row, index) {
           var photoCell = window.WHPatrolMediaGallery
             ? WHPatrolMediaGallery.renderCell({
@@ -309,8 +598,78 @@
           );
         }).join("");
       }
-      function showForm(){ document.getElementById("list-view").classList.add("hidden"); document.getElementById("form-view").classList.remove("hidden"); }
-      function showList(){ document.getElementById("form-view").classList.add("hidden"); document.getElementById("list-view").classList.remove("hidden"); }
+      function resetForm() {
+        lockIdField();
+        $("f-id").value = genId();
+        $("f-line").value = "";
+        $("f-direction").value = "";
+        $("f-section").value = "";
+        $("f-station").value = "";
+        $("f-project").value = "";
+        $("f-patrol-date").value = "";
+        $("f-progress").value = "";
+        $("f-remark").value = "";
+        clearUploads();
+        $("form-page-title").textContent = "新建人工巡查记录";
+      }
+      function loadForm(row) {
+        lockIdField();
+        $("f-id").value = row.id;
+        $("f-line").value = row.line || "";
+        $("f-direction").value = row.direction || "";
+        $("f-section").value = row.section || "";
+        $("f-station").value = row.station || "";
+        $("f-project").value = row.projectName || "";
+        $("f-patrol-date").value = row.patrolDate || "";
+        $("f-progress").value = row.progress || "";
+        $("f-remark").value = row.remark || "";
+        clearUploads();
+        $("form-page-title").textContent = "编辑人工巡查记录";
+      }
+      function showForm(mode, index) {
+        editingIndex = mode === "edit" ? index : null;
+        if (mode === "edit" && rows[index]) loadForm(rows[index]);
+        else resetForm();
+        document.getElementById("list-view").classList.add("hidden");
+        document.getElementById("form-view").classList.remove("hidden");
+      }
+      function showList() {
+        document.getElementById("form-view").classList.add("hidden");
+        document.getElementById("list-view").classList.remove("hidden");
+      }
+      function saveItem() {
+        if (!$("f-line").value) return alert("请选择所属线路");
+        if (!$("f-direction").value) return alert("请选择上下行");
+        if (!$("f-project").value) return alert("请选择所在项目");
+        if (!$("f-patrol-date").value.trim()) return alert("请填写巡查日期");
+        if (!$("f-progress").value.trim()) return alert("请填写项目进展");
+        var now = "2026-05-12 18:30";
+        var section = $("f-section").value;
+        var station = $("f-station").value;
+        var place = (section || "—") + " / " + (station || "—");
+        var row = {
+          id: $("f-id").value,
+          line: $("f-line").value,
+          direction: $("f-direction").value,
+          section: section,
+          station: station,
+          place: place,
+          projectName: $("f-project").value,
+          progress: $("f-progress").value.trim(),
+          remark: $("f-remark").value.trim(),
+          user: "当前用户",
+          patrolDate: $("f-patrol-date").value.trim(),
+          updatedAt: now,
+          logs:
+            editingIndex != null
+              ? rows[editingIndex].logs
+              : [{ action: "新增人工巡查", user: "当前用户", time: now }],
+        };
+        if (editingIndex != null) rows[editingIndex] = row;
+        else rows.unshift(row);
+        renderRows();
+        showList();
+      }
       function openConfirm(kind, index, trigger){
         pendingConfirm = { kind: kind, index: index };
         confirmText.textContent = kind === "confirm" ? "确定通过？" : "确定拒绝？";
@@ -325,6 +684,9 @@
         recordBody.innerHTML = rows[index].logs.map(function(log){ return '<div class="record-item"><div class="mb-3">' + log.action + '</div><div class="text-[13px] text-slate-400 mb-3">日期：' + log.time + '</div><div class="text-[13px] text-slate-400">操作者：' + log.user + '</div></div>'; }).join("");
         recordMask.classList.add("show");
       }
+      bindUploader("photo", "f-photo-input");
+      bindUploader("video", "f-video-input");
+      initQuickLinks();
       renderRows();
       if (window.WHPatrolMediaGallery) {
         WHPatrolMediaGallery.bind(document.getElementById("page-root") || document);
@@ -351,16 +713,17 @@
         if (action === "submit-confirm" && pendingConfirm) {
           rows[pendingConfirm.index].logs.push({ action: pendingConfirm.kind === "confirm" ? "工班确认" : "拒绝", user: "鲍雄澎", time: "2026-05-12 14:40:31" });
           closeConfirm();
+          renderRows();
         }
         if (action === "view-records") openRecords(Number(target.getAttribute("data-index")));
         if (action === "close-record") recordMask.classList.remove("show");
       });
     })();
   </script>
+  <script src="../../assets/js/menu-config.js"></script>
   <script src="../../assets/js/expert-review-modal.js"></script>
   <script src="../../assets/js/flight-report-modal.js"></script>
   <script src="../../assets/js/patrol-media-gallery.js"></script>
-  <script src="../../assets/js/menu-config.js"></script>
   <script src="../../assets/js/shell.js"></script>
 </body>
 </html>

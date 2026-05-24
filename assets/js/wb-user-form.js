@@ -324,6 +324,50 @@
     }
   }
 
+  function buildResetPasswordFormHtml(row) {
+    row = row || {};
+    return (
+      '<div class="px-1 py-1">' +
+      '<p class="text-sm text-slate-300 mb-4 leading-relaxed">为用户 <b class="text-cyan-300">' +
+      escapeHtml(row.userName || row.nickName || "—") +
+      "</b> 设置新登录密码。</p>" +
+      '<div class="wb-form-grid" style="grid-template-columns:1fr">' +
+      '<div class="wb-form-item">' +
+      formLabel("新的密码", true) +
+      '<input class="wh-input" type="password" id="wb-reset-pwd-new" data-form="newPassword" ' +
+      'minlength="5" maxlength="20" placeholder="请输入 5-20 位新密码" autocomplete="new-password" />' +
+      '<p class="text-[11px] text-slate-500 mt-1.5">密码长度为 5-20 位</p>' +
+      "</div></div></div>"
+    );
+  }
+
+  function openResetPasswordModal(row) {
+    if (!global.WBSystem || !global.WBSystem.openModal) return;
+    row = row || {};
+    global.WBSystem.openModal(
+      "重置密码",
+      buildResetPasswordFormHtml(row),
+      function () {
+        var input = document.getElementById("wb-reset-pwd-new");
+        var pwd = input ? String(input.value || "").trim() : "";
+        if (!pwd) {
+          global.WBSystem.toast("请输入新的密码");
+          return false;
+        }
+        if (pwd.length < 5 || pwd.length > 20) {
+          global.WBSystem.toast("密码长度为 5-20 位");
+          return false;
+        }
+        global.WBSystem.toast("已重置 " + (row.userName || "") + " 的密码");
+      },
+      function () {
+        var input = document.getElementById("wb-reset-pwd-new");
+        if (input) input.value = "";
+      },
+      { saveLabel: "确定", keepOpen: false }
+    );
+  }
+
   function openUserImportModal() {
     if (!global.WBSystem || !global.WBSystem.openModal) return;
     var html =
@@ -361,6 +405,7 @@
     buildUserFormHtml: buildUserFormHtml,
     mountUserFormUploads: mountUserFormUploads,
     openUserImportModal: openUserImportModal,
+    openResetPasswordModal: openResetPasswordModal,
     LINE_OPTIONS: LINE_OPTIONS,
     SECTION_BY_LINE: SECTION_BY_LINE,
   };

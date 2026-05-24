@@ -204,9 +204,6 @@
             { key: "wb-done", label: "已处理事项", href: "wb/wb-done.html" },
           ],
         },
-        {
-          items: [{ key: "map-routes", label: "航线管理", href: "map/map-routes.html" }],
-        },
       ],
     },
     {
@@ -228,6 +225,22 @@
             { key: "in-track-person", label: "人员轨迹", href: "wb/in-track-person.html" },
             { key: "in-quality-stats", label: "统计分析", href: "wb/in-quality-stats.html" },
             { key: "in-score", label: "巡查打分", href: "wb/in-score.html" },
+          ],
+        },
+        {
+          subtitle: "巡检记录",
+          items: [
+            { key: "in-disease", label: "病害巡查", href: "patrol/in-disease.html" },
+            { key: "in-night", label: "夜班作业", href: "patrol/in-night.html" },
+            { key: "in-manual", label: "人工巡检记录", href: "patrol/in-manual.html" },
+            { key: "in-uav-report", label: "无人机巡检记录", href: "patrol/in-uav-report.html" },
+          ],
+        },
+        {
+          subtitle: "全时全域感知",
+          items: [
+            { key: "map-situation", label: "态势感知", href: "map/map-situation.html" },
+            { key: "map-alerts", label: "告警信息", href: "map/map-alerts.html" },
           ],
         },
       ],
@@ -270,8 +283,19 @@
       tone: "violet",
       blocks: [
         {
+          subtitle: "数据统计",
           items: [
-            { key: "dc-drone-stats", label: "分析报告", href: "stats/dc-drone-stats.html" },
+            { key: "dc-line-stats", label: "线路项目统计", href: "stats/dc-line-stats.html" },
+            { key: "dc-drone-stats", label: "无人机数据统计", href: "stats/dc-drone-stats.html" },
+            {
+              key: "dc-system-stats",
+              label: "全时全域数据统计报表",
+              href: "stats/dc-system-stats.html",
+            },
+          ],
+        },
+        {
+          items: [
             { key: "am-flight-log", label: "飞行日志记录", href: "wb/am-flight-log.html" },
             { key: "am-maintenance", label: "维修与检修记录", href: "wb/am-maintenance.html" },
             { key: "dc-library", label: "资料库", href: "stats/dc-library.html" },
@@ -282,11 +306,12 @@
     },
     {
       key: "wb-card-sys",
-      title: "系统管理",
+      title: "配置中心",
       icon: "fa-solid fa-gears",
       tone: "orange",
       blocks: [
         {
+          subtitle: "系统管理",
           items: [
             { key: "wb-user", label: "用户管理", href: "wb/wb-user.html" },
             { key: "wb-role", label: "角色管理", href: "wb/wb-role.html" },
@@ -299,6 +324,12 @@
             { key: "wb-notice", label: "通知公告", href: "wb/wb-notice.html" },
             { key: "wb-msg-template", label: "消息模板", href: "wb/wb-msg-template.html" },
             { key: "am-ops-metro", label: "资源监控", href: "wb/am-ops-metro.html" },
+          ],
+        },
+        {
+          items: [
+            { key: "map-flight-plan", label: "飞行计划", href: "map/map-flight-plan.html" },
+            { key: "map-routes", label: "航线管理", href: "map/map-routes.html" },
           ],
         },
         {

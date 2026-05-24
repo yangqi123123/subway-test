@@ -15,21 +15,197 @@
       border-bottom: 1px solid rgba(34, 211, 238, 0.1);
       vertical-align: middle;
     }
-
     .uav-table th:last-child,
-    .uav-table td:last-child {
-      border-right: 0;
-    }
-
+    .uav-table td:last-child { border-right: 0; }
     .uav-link {
       color: #38bdf8;
       text-decoration: none;
       cursor: pointer;
     }
-
     .uav-link:hover {
       color: #67e8f9;
       text-decoration: underline;
+    }
+    .disease-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+      align-items: start;
+    }
+    .disease-layout__right {
+      position: sticky;
+      top: 72px;
+      align-self: start;
+      width: 300px;
+      max-height: calc(100dvh - 88px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: flex-start;
+    }
+    .disease-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .disease-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88));
+      box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.06), inset 0 1px 0 rgba(148, 163, 184, 0.06);
+    }
+    .disease-stat-card__icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+    .disease-stat-card--green .disease-stat-card__trend--up { color: #4ade80; }
+    .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .disease-stat-card__trend { font-size: 10px; margin-top: 4px; }
+    .disease-stat-card__trend--up { color: #4ade80; }
+    .disease-stat-card__trend--down { color: #fb7185; }
+    .disease-filter-panel,
+    .disease-quick-panel {
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(8, 15, 35, 0.78);
+      overflow: visible;
+    }
+    .disease-filter-panel,
+    .disease-quick-panel { flex: 0 0 auto; }
+    .disease-panel-title {
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2f5ff;
+      margin: 0;
+      padding: 8px 10px 7px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.92);
+    }
+    .disease-panel-body {
+      flex: 0 0 auto;
+      overflow: visible;
+      padding: 8px 10px 10px;
+    }
+    .disease-filter-panel .disease-panel-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 8px;
+      row-gap: 6px;
+      align-content: start;
+    }
+    .disease-filter-panel label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 0;
+      font-size: 10px;
+      min-width: 0;
+    }
+    .disease-filter-panel label.disease-filter-span-2 { grid-column: 1 / -1; }
+    .disease-filter-panel label > span:first-child { color: #94a3b8; line-height: 1.2; }
+    .disease-filter-panel .wh-input,
+    .disease-filter-panel select.wh-input {
+      height: 26px !important;
+      min-height: 26px;
+      font-size: 11px;
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+    .disease-filter-dates {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .disease-filter-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 6px;
+      margin: 0;
+      padding-top: 6px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .disease-filter-actions button {
+      padding-top: 4px;
+      padding-bottom: 4px;
+      font-size: 11px;
+    }
+    .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+    .disease-list-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .disease-quick-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.14);
+      background: rgba(15, 23, 42, 0.45);
+      color: #e2f5ff;
+      font-size: 11px;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.08);
+      color: #fff;
+    }
+    .disease-quick-link.is-active {
+      border-color: rgba(34, 211, 238, 0.55);
+      background: rgba(34, 211, 238, 0.12);
+      color: #a5f3fc;
+    }
+    .disease-quick-link i {
+      width: 16px;
+      text-align: center;
+      color: #67e8f9;
+      font-size: 12px;
+    }
+    @media (max-width: 1400px) {
+      .disease-layout { grid-template-columns: 1fr; }
+      .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .disease-layout__right {
+        position: static;
+        width: 100%;
+        height: auto;
+        max-height: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+      }
+    }
+    @media (max-width: 768px) {
+      .disease-stats { grid-template-columns: 1fr; }
+      .disease-layout__right { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -43,75 +219,116 @@
       <span class="text-cyan-50 font-semibold tracking-wide">无人机巡检报告</span>
     </nav>
 
-    <div data-embed-hide class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
-      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">无人机巡查记录</h1>
-    </div>
+    <div class="disease-layout">
+      <div class="disease-layout__left">
+        <div class="disease-stats" aria-label="无人机巡查统计">
+          <div class="disease-stat-card disease-stat-card--blue">
+            <div class="disease-stat-card__icon"><i class="fa-solid fa-list-check"></i></div>
+            <div>
+              <div id="stat-total" class="disease-stat-card__value">0</div>
+              <div class="disease-stat-card__label">巡查总数</div>
+              <div class="disease-stat-card__trend disease-stat-card__trend--up">较昨日 +12 ↑</div>
+            </div>
+          </div>
+          <div class="disease-stat-card disease-stat-card--cyan">
+            <div class="disease-stat-card__icon"><i class="fa-solid fa-calendar-plus"></i></div>
+            <div>
+              <div id="stat-month" class="disease-stat-card__value">0</div>
+              <div class="disease-stat-card__label">本月新增</div>
+              <div class="disease-stat-card__trend disease-stat-card__trend--up">较上月 +28 ↑</div>
+            </div>
+          </div>
+          <div class="disease-stat-card disease-stat-card--amber">
+            <div class="disease-stat-card__icon"><i class="fa-solid fa-bell"></i></div>
+            <div>
+              <div id="stat-alarm" class="disease-stat-card__value">0</div>
+              <div class="disease-stat-card__label">报警任务</div>
+              <div class="disease-stat-card__trend disease-stat-card__trend--down">较昨日 -1 ↓</div>
+            </div>
+          </div>
+          <div class="disease-stat-card disease-stat-card--green">
+            <div class="disease-stat-card__icon"><i class="fa-solid fa-circle-check"></i></div>
+            <div>
+              <div id="stat-normal" class="disease-stat-card__value">0</div>
+              <div class="disease-stat-card__label">正常完成</div>
+              <div class="disease-stat-card__trend disease-stat-card__trend--up">较昨日 +3 ↑</div>
+            </div>
+          </div>
+        </div>
 
-    <div class="neon-panel neon-panel--tight p-4 mb-5">
-      <div class="grid grid-cols-1 xl:grid-cols-4 gap-x-10 gap-y-3 text-xs">
-        <label class="flex items-center gap-2">
-          <span class="w-20 text-right text-cyan-100/75">所属线路：</span>
-          <select class="wh-input h-8 flex-1 px-2"><option>8号线</option><option>2号线</option><option>7号线</option></select>
-        </label>
-        <label class="flex items-center gap-2">
-          <span class="w-20 text-right text-cyan-100/75">巡查区间：</span>
-          <select class="wh-input h-8 flex-1 px-2"><option>请选择区间</option><option>徐东~梨园</option></select>
-        </label>
-        <label class="flex items-center gap-2">
-          <span class="w-20 text-right text-cyan-100/75">项目名称：</span>
-          <select class="wh-input h-8 flex-1 px-2"><option>请选择项目</option><option>项目1、项目2、项目3</option></select>
-        </label>
-        <label class="flex items-center gap-2">
-          <span class="w-20 text-right text-cyan-100/75">时间范围：</span>
-          <input class="wh-input h-8 flex-1 px-2" placeholder="请选择时间  -  请选择时间" />
-        </label>
-        <div class="xl:col-span-4 flex items-center gap-2 pl-[88px]">
-          <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary">搜索</button>
-          <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">重置</button>
+        <div class="disease-list-area">
+          <div data-embed-hide class="disease-list-toolbar">
+            <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost"><i class="fa-solid fa-file-export mr-1"></i>导出</button>
+          </div>
+          <div class="wh-table-shell bg-slate-950/35">
+            <div class="overflow-x-auto">
+              <table class="uav-table min-w-[1500px] w-full text-center text-[12px]">
+                <thead>
+                  <tr class="bg-slate-950/75">
+                    <th class="px-3 text-cyan-50/95">飞行任务ID</th>
+                    <th class="px-3 text-cyan-50/95">所属线路</th>
+                    <th class="px-3 text-cyan-50/95">巡查区间范围</th>
+                    <th class="px-3 text-cyan-50/95">巡查项目名称</th>
+                    <th class="px-3 text-cyan-50/95">设备名称</th>
+                    <th class="px-3 text-cyan-50/95">任务类型</th>
+                    <th class="px-3 text-cyan-50/95">巡查照片</th>
+                    <th class="px-3 text-cyan-50/95">巡查视频</th>
+                    <th class="px-3 text-cyan-50/95">关联计划</th>
+                    <th class="px-3 text-cyan-50/95">起飞时间</th>
+                    <th class="px-3 text-cyan-50/95">降落时间</th>
+                    <th class="px-3 text-cyan-50/95">操作员姓名</th>
+                    <th class="px-3 text-cyan-50/95">报警数量</th>
+                    <th class="px-3 text-cyan-50/95">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="uav-report-tbody"></tbody>
+              </table>
+            </div>
+            <div class="flex flex-wrap items-center justify-end gap-2 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+              <span>共 <b id="table-total" class="text-cyan-200">0</b> 条</span>
+              <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost text-slate-500">&lt;</button>
+              <button type="button" class="min-w-[28px] h-7 rounded wh-btn-primary">1</button>
+              <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">2</button>
+              <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">3</button>
+              <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">4</button>
+              <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">5</button>
+              <span>...</span>
+              <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">32</button>
+              <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">&gt;</button>
+              <select class="wh-input h-7 px-2"><option>10 条/页</option><option>20 条/页</option></select>
+              <span>跳至</span>
+              <input class="wh-input h-7 w-12 px-2 text-center" />
+              <span>页</span>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="wh-table-shell bg-slate-950/35">
-      <div class="overflow-x-auto">
-        <table class="uav-table min-w-[1500px] w-full text-center text-[12px]">
-          <thead>
-            <tr class="bg-slate-950/75">
-              <th class="px-3 text-cyan-50/95">飞行任务ID</th>
-              <th class="px-3 text-cyan-50/95">所属线路</th>
-              <th class="px-3 text-cyan-50/95">巡查区间范围</th>
-              <th class="px-3 text-cyan-50/95">巡查项目名称</th>
-              <th class="px-3 text-cyan-50/95">设备名称</th>
-              <th class="px-3 text-cyan-50/95">任务类型</th>
-              <th class="px-3 text-cyan-50/95">巡查照片</th>
-              <th class="px-3 text-cyan-50/95">巡查视频</th>
-              <th class="px-3 text-cyan-50/95">关联计划</th>
-              <th class="px-3 text-cyan-50/95">起飞时间</th>
-              <th class="px-3 text-cyan-50/95">降落时间</th>
-              <th class="px-3 text-cyan-50/95">操作员姓名</th>
-              <th class="px-3 text-cyan-50/95">报警数量</th>
-              <th class="px-3 text-cyan-50/95">操作</th>
-            </tr>
-          </thead>
-          <tbody id="uav-report-tbody"></tbody>
-        </table>
-      </div>
-      <div class="flex flex-wrap items-center justify-end gap-2 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
-        <span>共 <b class="text-cyan-200">315</b> 条</span>
-        <button class="min-w-[28px] h-7 rounded wh-btn-ghost text-slate-500">&lt;</button>
-        <button class="min-w-[28px] h-7 rounded wh-btn-primary">1</button>
-        <button class="min-w-[28px] h-7 rounded wh-btn-ghost">2</button>
-        <button class="min-w-[28px] h-7 rounded wh-btn-ghost">3</button>
-        <button class="min-w-[28px] h-7 rounded wh-btn-ghost">4</button>
-        <button class="min-w-[28px] h-7 rounded wh-btn-ghost">5</button>
-        <span>...</span>
-        <button class="min-w-[28px] h-7 rounded wh-btn-ghost">32</button>
-        <button class="min-w-[28px] h-7 rounded wh-btn-ghost">&gt;</button>
-        <select class="wh-input h-7 px-2"><option>10 条/页</option><option>20 条/页</option></select>
-        <span>跳至</span>
-        <input class="wh-input h-7 w-12 px-2 text-center" />
-        <span>页</span>
-      </div>
+      <aside data-embed-hide class="disease-layout__right" aria-label="筛选与快捷操作">
+        <div class="disease-filter-panel">
+          <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+          <div class="disease-panel-body">
+            <label class="disease-filter-span-2"><span>所属线路</span><select class="wh-input w-full px-2"><option>8号线</option><option>2号线</option><option>7号线</option></select></label>
+            <label class="disease-filter-span-2"><span>巡查区间</span><select class="wh-input w-full px-2"><option>请选择区间</option><option>徐东~梨园</option></select></label>
+            <label class="disease-filter-span-2"><span>项目名称</span><select class="wh-input w-full px-2"><option>请选择项目</option><option>项目1、项目2、项目3</option></select></label>
+            <label class="disease-filter-span-2"><span>时间范围</span><div class="disease-filter-dates"><input class="wh-input w-full px-2" placeholder="请选择时间" /><input class="wh-input w-full px-2" placeholder="请选择时间" /></div></label>
+            <div class="disease-filter-actions">
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary flex-1">搜索</button>
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost flex-1">重置</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="disease-quick-panel">
+          <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+          <div class="disease-panel-body">
+            <a class="disease-quick-link" data-quick-href="patrol/in-disease.html" href="in-disease.html"><i class="fa-solid fa-stethoscope"></i><span>病害巡查</span></a>
+            <a class="disease-quick-link" data-quick-href="patrol/in-night.html" href="in-night.html"><i class="fa-solid fa-moon"></i><span>夜班作业</span></a>
+            <a class="disease-quick-link is-active" data-quick-href="patrol/in-uav-report.html" href="in-uav-report.html"><i class="fa-solid fa-helicopter"></i><span>无人机巡检记录</span></a>
+            <a class="disease-quick-link" data-quick-href="patrol/in-manual.html" href="in-manual.html"><i class="fa-solid fa-person-walking"></i><span>人工巡查记录</span></a>
+          </div>
+        </div>
+      </aside>
     </div>
   </div>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />

@@ -310,7 +310,9 @@
       {
         label: "重置密码",
         handler: function (row) {
-          WBSystem.toast("已重置 " + row.userName + " 的密码");
+          if (window.WBUserForm && WBUserForm.openResetPasswordModal) {
+            WBUserForm.openResetPasswordModal(row);
+          }
         },
       },
     ];

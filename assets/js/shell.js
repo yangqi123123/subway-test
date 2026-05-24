@@ -51,6 +51,8 @@
       ".wh-shell-user-drop.wh-shell-user-drop--open .wh-shell-user-panel{display:block;}" +
       ".wh-shell-user-panel button{display:block;width:100%;padding:8px 12px;border:none;border-radius:6px;background:transparent;color:rgba(226,245,255,.9);font-size:12px;text-align:left;cursor:pointer;}" +
       ".wh-shell-user-panel button:hover{background:rgba(251,113,133,.12);color:#fecdd3;}" +
+      ".wh-shell-user-panel button.wh-shell-user-panel__profile:hover{background:rgba(34,211,238,.1)!important;color:#fff!important;}" +
+      ".wh-shell-user-panel__divider{height:1px;margin:4px 6px;background:rgba(255,255,255,.08);}" +
       ".wh-shell-search-mask{position:fixed;inset:0;z-index:300;display:none;align-items:flex-start;justify-content:center;padding:88px 16px 16px;background:rgba(2,8,23,.72);}" +
       ".wh-shell-search-mask.show{display:flex;}" +
       ".wh-shell-search-box{width:min(560px,100%);border:1px solid rgba(34,211,238,.25);border-radius:10px;background:#071b33;box-shadow:0 24px 64px rgba(0,0,0,.55);overflow:hidden;}" +
@@ -122,9 +124,11 @@
       "</span></a>" +
       '<div class="wh-shell-user-drop">' +
       '<button type="button" data-shell-action="user-menu" class="flex items-center gap-2 rounded-lg transition-ui border border-cyan-400/20 hover:bg-cyan-500/10 pl-1 pr-2 py-1" aria-haspopup="true" aria-expanded="false">' +
-      '<img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover ring-2 ring-cyan-400/40" alt=""/>' +
-      '<span class="text-xs hidden lg:inline text-cyan-50/90">管理员</span><i class="fa-solid fa-chevron-down text-[10px] text-cyan-300/60"></i></button>' +
+      '<img id="wh-shell-user-avatar" data-wh-user-avatar src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&q=80" class="w-8 h-8 rounded-full object-cover ring-2 ring-cyan-400/40" alt=""/>' +
+      '<span class="text-xs hidden lg:inline text-cyan-50/90" data-wh-user-nickname>管理员</span><i class="fa-solid fa-chevron-down text-[10px] text-cyan-300/60"></i></button>' +
       '<div class="wh-shell-user-panel" role="menu">' +
+      '<button type="button" data-shell-action="profile-center" class="wh-shell-user-panel__profile" role="menuitem"><i class="fa-regular fa-user mr-2 opacity-80"></i>个人中心</button>' +
+      '<div class="wh-shell-user-panel__divider" role="separator"></div>' +
       '<button type="button" data-shell-action="logout" role="menuitem">退出登录</button></div></div>' +
       "</div>";
 
@@ -262,6 +266,19 @@
         if (!drop) return;
         var open = drop.classList.toggle("wh-shell-user-drop--open");
         actionBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        return;
+      }
+      if (action === "profile-center") {
+        event.preventDefault();
+        var dropPc = actionBtn.closest(".wh-shell-user-drop");
+        if (dropPc) {
+          dropPc.classList.remove("wh-shell-user-drop--open");
+          var menuBtn = dropPc.querySelector("[data-shell-action='user-menu']");
+          if (menuBtn) menuBtn.setAttribute("aria-expanded", "false");
+        }
+        if (typeof WHUserProfileCenter !== "undefined") {
+          WHUserProfileCenter.open();
+        }
         return;
       }
       if (action === "logout") {
@@ -599,6 +616,25 @@
     if (typeof window.__wbBootPage === "function") {
       window.__wbBootPage();
     }
+    ensureUserProfileCenter();
+  }
+
+  function ensureUserProfileCenter() {
+    if (typeof WHUserProfileCenter !== "undefined") {
+      WHUserProfileCenter.init();
+      return;
+    }
+    if (document.getElementById("wh-user-profile-js")) return;
+    var script = document.createElement("script");
+    script.id = "wh-user-profile-js";
+    script.src =
+      typeof whAsset === "function"
+        ? whAsset("assets/js/user-profile-center.js")
+        : "assets/js/user-profile-center.js";
+    script.onload = function () {
+      if (typeof WHUserProfileCenter !== "undefined") WHUserProfileCenter.init();
+    };
+    document.body.appendChild(script);
   }
 
   if (document.readyState === "loading") {

@@ -60,7 +60,9 @@
     saveBtn.textContent = options.saveLabel || "确定";
     saveBtn.style.display = options.hideSave ? "none" : "";
     saveBtn.onclick = function () {
-      if (typeof onSave === "function") onSave();
+      var result;
+      if (typeof onSave === "function") result = onSave();
+      if (result === false) return;
       if (!options.keepOpen) closeModal();
     };
     if (typeof onOpen === "function") onOpen();

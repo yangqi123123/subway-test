@@ -109,9 +109,51 @@
     WHFlightReportModal.exportReport(plan);
   }
 
+  function updateDashboardStats() {
+    var setText = function (id, val) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = String(val);
+    };
+    var now = new Date();
+    var monthKey =
+      now.getFullYear() +
+      "-" +
+      String(now.getMonth() + 1).padStart(2, "0");
+    setText("stat-total", PATROL_ROWS.length);
+    setText(
+      "stat-month",
+      PATROL_ROWS.filter(function (r) {
+        return r.takeoff && String(r.takeoff).indexOf(monthKey) === 0;
+      }).length
+    );
+    setText(
+      "stat-alarm",
+      PATROL_ROWS.filter(function (r) {
+        return (r.alarmCount || 0) > 0;
+      }).length
+    );
+    setText(
+      "stat-normal",
+      PATROL_ROWS.filter(function (r) {
+        return (r.alarmCount || 0) === 0;
+      }).length
+    );
+    setText("table-total", PATROL_ROWS.length);
+  }
+
+  function initQuickLinks() {
+    document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
+      var target = anchor.getAttribute("data-quick-href");
+      if (target && typeof whPageHref === "function") {
+        anchor.setAttribute("href", whPageHref(target));
+      }
+    });
+  }
+
   function renderTable() {
     var tbody = document.getElementById("uav-report-tbody");
     if (!tbody) return;
+    updateDashboardStats();
     tbody.innerHTML = PATROL_ROWS.map(function (row, index) {
       return (
         '<tr class="' +
@@ -205,6 +247,7 @@
   }
 
   function init() {
+    initQuickLinks();
     renderTable();
     bindTable();
     if (global.WHPatrolMediaGallery) {
