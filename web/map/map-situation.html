@@ -48,13 +48,31 @@
         background: linear-gradient(135deg, #0c8de5, #117cd0);
         clip-path: polygon(0 0, 86% 0, 100% 100%, 0 100%);
       }
+      .sit-tag--rect {
+        clip-path: none;
+        border-radius: 2px;
+      }
+      .sit-aside {
+        min-width: 0;
+      }
+      .sit-panel--map {
+        flex: 1.15;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .sit-panel--map .sit-map-wrap {
+        flex: 1;
+        min-height: 0;
+      }
       .sit-map-wrap {
         position: relative;
-        min-height: 318px;
+        min-height: 280px;
       }
       #situation-map {
         width: 100%;
-        height: 318px;
+        height: 100%;
+        min-height: 280px;
       }
       .sit-alarm-tooltip {
         border: 1px solid rgba(34, 211, 238, 0.35);
@@ -129,6 +147,32 @@
         overflow: hidden;
         min-height: 210px;
         width: 100%;
+      }
+      .sit-waterfall-main {
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .sit-waterfall-combined {
+        flex: 1;
+        min-height: 0;
+        margin: 0;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+        padding: 0 12px 8px 8px;
+        background: rgba(6, 33, 50, 0.88);
+        border: 1px solid rgba(34, 211, 238, 0.15);
+        overflow: hidden;
+      }
+      .sit-waterfall-dual-img {
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        object-position: right top;
       }
       .sit-interval-grid {
         width: calc(100% * 25 / 26);
@@ -262,30 +306,30 @@
       }
       @media (max-width: 1280px) {
         .sit-main {
-          grid-template-columns: 1fr;
+          grid-template-columns: 1fr !important;
+        }
+        .sit-waterfall-combined {
+          justify-content: center;
+        }
+        .sit-waterfall-dual-img {
+          object-position: center;
         }
       }
     </style>
   </head>
   <body data-shell="fullscreen" data-top="map">
     <div id="page-root" class="h-[calc(100vh-64px)] sit-shell px-3 py-3 flex flex-col">
-      <nav class="neon-panel neon-panel--tight map-breadcrumb">
-        <span class="map-breadcrumb__icon"><i class="fa-solid fa-location-crosshairs"></i></span>
-        <span>全景地图</span>
-        <span class="map-breadcrumb__sep">&gt;&gt;</span>
-        <span class="map-breadcrumb__current">态势感知</span>
-      </nav>
-      <div class="sit-main flex-1 min-h-0 grid grid-cols-[370px_1fr] gap-3">
-        <aside class="min-h-0 flex flex-col gap-3">
-          <section class="sit-panel">
-            <div class="px-2 pt-2"><span class="sit-tag">GIS地图</span></div>
-            <div class="sit-map-wrap mt-1">
+      <div class="sit-main flex-1 min-h-0 grid gap-3" style="grid-template-columns: minmax(480px, 52%) minmax(0, 1fr);">
+        <aside class="sit-aside min-h-0 flex flex-col gap-3">
+          <section class="sit-panel sit-panel--map min-h-0">
+            <div class="px-2 pt-2 shrink-0"><span class="sit-tag sit-tag--rect">GIS地图</span></div>
+            <div class="sit-map-wrap mt-1 min-h-0">
               <div id="situation-map"></div>
             </div>
           </section>
 
           <section class="sit-panel min-h-0 flex-1 flex flex-col">
-            <div class="px-2 pt-2"><span class="sit-tag">全线预警列表</span></div>
+            <div class="px-2 pt-2 shrink-0"><span class="sit-tag sit-tag--rect">全线预警列表</span></div>
             <div class="flex-1 min-h-0 overflow-auto mt-1">
               <table class="w-full text-xs">
                 <thead class="sit-list-head sticky top-0 z-10">
@@ -311,41 +355,16 @@
           </section>
         </aside>
 
-        <main class="min-h-0 flex flex-col gap-4">
-          <section class="sit-track-card flex-1 min-h-0">
-            <div class="px-2 pt-2 flex items-start justify-between">
-              <span class="sit-tag">左线瀑布图</span>
-              <div class="sit-note">如有险情，对应区间的颜色会变成橙色/红色</div>
-            </div>
-            <div class="sit-track-body mt-2">
-              <div class="sit-track-grid">
-                <div class="sit-track-y" id="left-y"></div>
-                <div class="sit-track-plot" id="left-plot"></div>
-              </div>
-            </div>
-            <div class="sit-stations">
-              <div></div>
-              <div class="sit-station-line">
-                <div class="sit-station-grid" id="left-stations"></div>
-              </div>
-            </div>
-          </section>
-
-          <section class="sit-track-card flex-1 min-h-0">
-            <div class="px-2 pt-2"><span class="sit-tag">右线瀑布图</span></div>
-            <div class="sit-track-body mt-2">
-              <div class="sit-track-grid">
-                <div class="sit-track-y" id="right-y"></div>
-                <div class="sit-track-plot" id="right-plot"></div>
-              </div>
-            </div>
-            <div class="sit-stations">
-              <div></div>
-              <div class="sit-station-line">
-                <div class="sit-station-grid" id="right-stations"></div>
-              </div>
-            </div>
-          </section>
+        <main class="sit-waterfall-main min-h-0 pt-2">
+          <figure class="sit-waterfall-combined flex-1 min-h-0">
+            <img
+              class="sit-waterfall-dual-img"
+              src="../../assets/images/sit-waterfall-dual.png"
+              width="898"
+              height="698"
+              alt="左线瀑布图、中间站点轴、右线瀑布图"
+            />
+          </figure>
         </main>
       </div>
     </div>
@@ -355,130 +374,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="../../assets/js/menu-config.js"></script>
     <script src="../../assets/js/shell.js"></script>
-    <script>
-      const stations = ["香港路", "赵家条", "三阳路", "黄浦路", "徐州新村", "二七路", "头道街", "罗家庄", "岳家嘴", "梨园", "东湖路", "省博站", "中南站", "楚河汉街", "洪山广场", "街道口", "广埠屯", "虎泉", "杨家湾", "光谷广场", "金融港", "流芳", "高新二路", "佛祖岭", "左岭", "葛店"]
-
-      /** seg：相邻站点区间索引，0 表示第 1 站与第 2 站之间，共 stations.length - 1 段 */
-      const leftSegments = [
-        { seg: 1, y: 12, c: "bar" },
-        { seg: 4, y: 10, c: "bar" },
-        { seg: 5, y: 10, c: "bar" },
-        { seg: 4, y: 16, c: "bar" },
-        { seg: 5, y: 16, c: "bar" },
-        { seg: 11, y: 8, c: "bar" },
-        { seg: 11, y: 13, c: "bar" },
-        { seg: 11, y: 18, c: "bar" },
-        { seg: 16, y: 6, c: "bar" },
-        { seg: 17, y: 6, c: "bar" },
-        { seg: 16, y: 14, c: "bar" },
-        { seg: 17, y: 14, c: "bar" },
-        { seg: 22, y: 4, c: "bar warn" },
-        { seg: 23, y: 4, c: "bar warn" },
-        { seg: 22, y: 12, c: "bar warn" },
-        { seg: 23, y: 12, c: "bar warn" },
-        { seg: 24, y: 2, c: "bar danger" },
-        { seg: 24, y: 16, c: "bar danger" },
-      ];
-      /** 右线展示顺序为葛店→香港路，seg 与站名轴同向 */
-      const rightSegments = [
-        { seg: 0, y: 2, c: "bar" },
-        { seg: 1, y: 2, c: "bar" },
-        { seg: 2, y: 6, c: "bar" },
-        { seg: 3, y: 4, c: "bar" },
-        { seg: 4, y: 4, c: "bar" },
-        { seg: 11, y: 1, c: "bar" },
-        { seg: 12, y: 1, c: "bar" },
-        { seg: 11, y: 10, c: "bar warn" },
-        { seg: 12, y: 10, c: "bar danger" },
-        { seg: 16, y: 4, c: "bar" },
-        { seg: 17, y: 4, c: "bar" },
-        { seg: 16, y: 14, c: "bar" },
-        { seg: 17, y: 14, c: "bar" },
-        { seg: 22, y: 3, c: "bar warn" },
-        { seg: 23, y: 3, c: "bar warn" },
-        { seg: 23, y: 15, c: "bar danger" },
-      ];
-      function buildYAxis(id) {
-        const wrap = document.getElementById(id);
-        const times = [];
-        for (let i = 0; i < 10; i++) {
-          times.push("11:" + String(18 - i).padStart(2, "0") + ":15");
-        }
-        wrap.innerHTML = times.map((t) => "<div>" + t + "</div>").join("");
-      }
-
-      function buildStations(id, reversed) {
-        const wrap = document.getElementById(id);
-        wrap.style.setProperty("--sit-station-count", String(stations.length));
-        const list = reversed ? stations.slice().reverse() : stations;
-        wrap.innerHTML = list.map((name) => {
-          const verticalName = Array.from(name).map((char) => `<i>${char}</i>`).join("");
-          return `<div class="sit-station"><span>${verticalName}</span></div>`;
-        }).join("");
-      }
-
-      function barClass(tone) {
-        if (tone === "warn") return "sit-bar warn";
-        if (tone === "danger") return "sit-bar danger";
-        return "sit-bar";
-      }
-
-      function buildBars(id, segments) {
-        const wrap = document.getElementById(id);
-        if (!wrap) return;
-        const plotHeight = 210;
-        const plotRows = 20;
-        const row = plotHeight / plotRows;
-        const barHeight = 4;
-        const segCount = stations.length - 1;
-        const buckets = Array.from({ length: segCount }, function () {
-          return [];
-        });
-        segments.forEach(function (bar) {
-          if (bar.seg >= 0 && bar.seg < segCount) buckets[bar.seg].push(bar);
-        });
-        wrap.innerHTML =
-          '<div class="sit-interval-grid">' +
-          buckets
-            .map(function (bars, segIndex) {
-              const barsHtml = bars
-                .map(function (bar) {
-                  const top = Math.max(6, Math.min(bar.y * row + 6, plotHeight - barHeight - 6));
-                  const tone = String(bar.c || "bar")
-                    .replace(/^bar\s*/, "")
-                    .trim();
-                  return (
-                    '<span class="' +
-                    barClass(tone) +
-                    '" style="top:' +
-                    top +
-                    'px" title="区间 ' +
-                    (segIndex + 1) +
-                    '"></span>'
-                  );
-                })
-                .join("");
-              return '<div class="sit-interval-cell">' + barsHtml + "</div>";
-            })
-            .join("") +
-          "</div>";
-      }
-
-      function initWaterfallCharts() {
-        buildYAxis("left-y");
-        buildYAxis("right-y");
-        buildStations("left-stations", false);
-        buildStations("right-stations", true);
-        buildBars("left-plot", leftSegments);
-        buildBars("right-plot", rightSegments);
-      }
-
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initWaterfallCharts);
-      } else {
-        initWaterfallCharts();
-      }
-    </script>
     <script src="../../assets/js/map-gis.js"></script>
     <script src="../../assets/js/map-situation-gis.js"></script>
     <script src="../../assets/js/map-situation.js"></script>

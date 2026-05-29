@@ -4,27 +4,55 @@
 (function () {
   var EXPERT_LABEL = "中南医院站-湖北日报站";
 
+  function getExpertLabelFromQuery() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      return params.get("location") || EXPERT_LABEL;
+    } catch (e) {
+      return EXPERT_LABEL;
+    }
+  }
+
   var DEFAULT_PHOTOS = [
     "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=300&q=80",
     "https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=300&q=80",
     "https://images.unsplash.com/photo-1599707254554-027aeb4deacd?auto=format&fit=crop&w=300&q=80",
   ];
 
+  var PROJECT_OPTIONS = [
+    "金融街六中北项目",
+    "武铁投二期基坑工程",
+    "梨园站保护区无人机巡线",
+    "新建商业文化设施项目",
+    "洪山路至小洪山商业公寓项目",
+    "三金潭车辆段上盖物业综合开发项目",
+    "碧水大道",
+  ];
+
   var reviewState = {
+    projectName: "金融街六中北项目",
     falseAlarm: "非误报",
     levelAdjust: "一级告警",
     scene: "现场工地有破拆机械作业",
     photos: DEFAULT_PHOTOS.slice(),
   };
 
+  var reviewProjectSelectInst = null;
   var objectUrls = [];
 
+  function getExpertLabel() {
+    return getExpertLabelFromQuery();
+  }
+
   function getExpertRow() {
+    var label = getExpertLabel();
     if (window.WuhanSituationGIS && window.WuhanSituationGIS.EXPERT_ALARM_ROW) {
-      return window.WuhanSituationGIS.EXPERT_ALARM_ROW;
+      var row = Object.assign({}, window.WuhanSituationGIS.EXPERT_ALARM_ROW);
+      row.location = label;
+      return row;
     }
     return {
-      location: EXPERT_LABEL,
+      location: label,
       lat: 30.5859,
       lng: 114.3122,
     };
@@ -33,7 +61,7 @@
   function updateMapCaption() {
     var caption = document.getElementById("expert-map-caption");
     if (!caption) return;
-    caption.textContent = "告警区间：" + EXPERT_LABEL;
+    caption.textContent = "告警区间：" + getExpertLabel();
   }
 
   function initExpertMap() {
@@ -58,6 +86,18 @@
     showToast.timer = setTimeout(function () {
       el.classList.remove("show");
     }, 1800);
+  }
+
+  function getReviewProjectSelect() {
+    if (!window.WHSearchSelect) return null;
+    if (!reviewProjectSelectInst) {
+      reviewProjectSelectInst = WHSearchSelect.mountById(
+        "review-project-name-select",
+        "请搜索或选择项目名称",
+        PROJECT_OPTIONS
+      );
+    }
+    return reviewProjectSelectInst;
   }
 
   function setReviewLine(key, text) {
@@ -96,6 +136,7 @@
   }
 
   function syncReviewCard() {
+    setReviewLine("projectName", reviewState.projectName);
     setReviewLine("falseAlarm", reviewState.falseAlarm);
     setReviewLine("levelAdjust", reviewState.levelAdjust);
     setReviewLine("scene", reviewState.scene);
@@ -111,6 +152,9 @@
     if (photosLabel && photosLabel.previousElementSibling) {
       photosLabel.previousElementSibling.style.display = isMisreport ? "none" : "";
     }
+
+    var siteProject = document.getElementById("expert-site-project");
+    if (siteProject) siteProject.textContent = "工地：" + reviewState.projectName;
   }
 
   function readFalseAlarmFromForm() {
@@ -126,6 +170,9 @@
   }
 
   function fillReviewForm() {
+    var projectSelect = getReviewProjectSelect();
+    if (projectSelect) projectSelect.setValue(reviewState.projectName || "");
+
     document.querySelectorAll('input[name="review-false-alarm"]').forEach(function (input) {
       input.checked = input.value === reviewState.falseAlarm;
     });
@@ -161,6 +208,10 @@
   }
 
   function saveReviewModal() {
+    var projectSelect = getReviewProjectSelect();
+    var picked = projectSelect ? projectSelect.getValue() : "";
+    if (picked) reviewState.projectName = picked;
+
     reviewState.falseAlarm = readFalseAlarmFromForm();
     if (reviewState.falseAlarm !== "误报") {
       var level = document.getElementById("review-level-adjust");
@@ -179,6 +230,7 @@
     var mask = document.getElementById("expert-review-modal-mask");
     if (!card || !btnEdit || !mask) return;
 
+    getReviewProjectSelect();
     syncReviewCard();
 
     card.addEventListener("click", function (e) {
@@ -397,6 +449,7 @@
   }
 
   function initExpertSpectrum() {
+    if (!document.getElementById("expert-spectrum-canvas")) return;
     renderSpecAxes();
     drawExpertSpectrum();
     window.addEventListener("resize", drawExpertSpectrum);

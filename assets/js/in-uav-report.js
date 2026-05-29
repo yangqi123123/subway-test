@@ -9,6 +9,7 @@
       line: "8号线",
       section: "徐东~梨园",
       projectName: "项目1、项目2、项目3",
+      projectNames: ["项目1", "项目2", "项目3"],
       deviceName: "车辆段无人机 M350",
       taskType: "自动执行计划/临时任务",
       planName: "8号线车辆段常规巡检",
@@ -156,8 +157,10 @@
     updateDashboardStats();
     tbody.innerHTML = PATROL_ROWS.map(function (row, index) {
       return (
-        '<tr class="' +
+        '<tr class="wh-row-open ' +
         (index % 2 === 0 ? "bg-slate-950/25" : "bg-slate-950/40") +
+        '" data-task-id="' +
+        esc(row.taskId) +
         '">' +
         '<td class="px-3 text-slate-100/95 leading-relaxed">' +
         esc(row.taskId) +
@@ -184,6 +187,7 @@
           ? WHPatrolMediaGallery.renderCell({
               kind: "photo",
               projectName: row.projectName,
+              projectNames: row.projectNames,
               rowKey: row.taskId,
               previewCount: 2,
             })
@@ -194,6 +198,7 @@
           ? WHPatrolMediaGallery.renderCell({
               kind: "video",
               projectName: row.projectName,
+              projectNames: row.projectNames,
               rowKey: row.taskId,
               previewCount: 2,
             })
@@ -216,21 +221,25 @@
         '<td class="px-3 text-slate-100/95">' +
         esc(row.alarmCount) +
         "</td>" +
-        '<td class="px-3 whitespace-nowrap">' +
-        '<button type="button" class="uav-link mr-3 bg-transparent border-0 p-0" data-uav-report="' +
+        '<td class="px-3 disease-col-actions">' +
+        '<div class="disease-op-actions">' +
+        '<button type="button" class="uav-link bg-transparent border-0 p-0" data-uav-report="' +
         esc(row.taskId) +
         '">查看报告</button>' +
         '<button type="button" class="uav-link bg-transparent border-0 p-0" data-uav-download="' +
         esc(row.taskId) +
         '">下载报告</button>' +
-        "</td></tr>"
+        "</div></td></tr>"
       );
     }).join("");
   }
 
   function bindTable() {
     var tbody = document.getElementById("uav-report-tbody");
-    if (!tbody) return;
+    if (!tbody || tbody.dataset.whRowClickBound) return;
+    tbody.dataset.whRowClickBound = "1";
+    tbody.classList.add("wh-row-open-tbody");
+    if (window.WHTableRowClick) WHTableRowClick.injectStyles();
     tbody.addEventListener("click", function (e) {
       var reportBtn = e.target.closest("[data-uav-report]");
       if (reportBtn) {
@@ -242,7 +251,11 @@
       if (dlBtn) {
         e.preventDefault();
         downloadPatrolReport(dlBtn.getAttribute("data-uav-download"));
+        return;
       }
+      if (e.target.closest("a, button, input, .disease-col-actions")) return;
+      var tr = e.target.closest("tr[data-task-id]");
+      if (tr) showPatrolReport(tr.getAttribute("data-task-id"));
     });
   }
 

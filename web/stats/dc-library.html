@@ -88,63 +88,148 @@
     .library-preview-box { min-height: 240px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(34, 211, 238, 0.14); border-radius: 8px; background: linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(2, 8, 23, 0.94)); padding: 24px; text-align: center; }
     .library-preview-box img { max-width: 100%; max-height: 52vh; border-radius: 8px; object-fit: contain; }
     #lib-toast { position: fixed; right: 20px; bottom: 20px; z-index: 200; padding: 10px 16px; border-radius: 8px; background: #22d3ee; color: #0f172a; font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+    .disease-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+    .disease-layout__right { position: sticky; top: 72px; align-self: start; width: 300px; max-height: calc(100dvh - 88px); display: flex; flex-direction: column; gap: 10px; }
+    .disease-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .disease-stat-card { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.22); background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88)); }
+    .disease-stat-card__icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+    .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
+    .disease-filter-panel, .disease-quick-panel { display: flex; flex-direction: column; border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.2); background: rgba(8, 15, 35, 0.78); }
+    .disease-panel-title { font-size: 12px; font-weight: 600; color: #e2f5ff; margin: 0; padding: 8px 10px 7px; border-bottom: 1px solid rgba(34, 211, 238, 0.12); background: rgba(8, 15, 35, 0.92); }
+    .disease-panel-body { padding: 8px 10px 10px; }
+    .disease-filter-panel .disease-panel-body { display: flex; flex-direction: column; gap: 6px; }
+    .disease-filter-panel label { display: flex; flex-direction: column; gap: 3px; margin: 0; font-size: 10px; }
+    .disease-filter-panel label > span:first-child { color: #94a3b8; }
+    .disease-filter-panel .wh-input { height: 26px !important; min-height: 26px; font-size: 11px; padding: 0 6px; }
+    .disease-filter-panel input[type="datetime-local"].wh-input { height: auto !important; min-height: 26px; padding: 4px 6px; }
+    .disease-filter-actions { display: flex; gap: 6px; margin-top: 4px; padding-top: 6px; border-top: 1px solid rgba(34, 211, 238, 0.1); }
+    .disease-filter-actions button { flex: 1; padding-top: 4px; padding-bottom: 4px; font-size: 11px; }
+    .disease-list-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+    .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+    .disease-quick-link { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px; margin-bottom: 5px; border-radius: 6px; border: 1px solid rgba(34, 211, 238, 0.14); background: rgba(15, 23, 42, 0.45); color: #e2f5ff; font-size: 11px; text-decoration: none; }
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover { border-color: rgba(34, 211, 238, 0.4); background: rgba(34, 211, 238, 0.08); color: #fff; }
+    .disease-quick-link.is-active { border-color: rgba(34, 211, 238, 0.55); background: rgba(34, 211, 238, 0.12); color: #a5f3fc; }
+    .disease-quick-link i { width: 16px; text-align: center; color: #67e8f9; font-size: 12px; }
+    .lib-layout--nested { min-height: 420px; }
+    @media (max-width: 1400px) { .disease-layout { grid-template-columns: 1fr; } .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .disease-layout__right { position: static; width: 100%; max-height: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } }
+    @media (max-width: 960px) { .lib-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .disease-stats { grid-template-columns: 1fr; } .disease-layout__right { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="dc-library" data-wb-view="page">
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
-    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
-      <span>我的工作台</span>
-      <span class="text-slate-600">&gt;&gt;</span>
-      <span class="text-cyan-50 font-semibold tracking-wide">资料库</span>
-    </nav>
-
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
       <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">资料库</h1>
-      <button type="button" class="wh-btn-primary px-4 py-2 text-sm" data-action="upload-material">
-        <i class="fa-solid fa-cloud-arrow-up mr-1"></i>上传资料
-      </button>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">资料库面板</span>
     </div>
 
-    <section class="lib-layout">
-      <aside class="neon-panel neon-panel--tight p-4 lib-tree-panel">
-        <div class="lib-tree-head">
-          <span class="text-sm font-semibold text-cyan-100">资料分类</span>
-          <button type="button" class="lib-tree-btn" data-action="add-root-cat" title="新增一级分类">
-            <i class="fa-solid fa-plus"></i>
-          </button>
-        </div>
-        <div id="lib-tree-root" class="lib-tree-scroll"></div>
-      </aside>
-
-      <div class="lib-main">
-        <section class="neon-panel neon-panel--tight p-4 mb-4">
-          <div class="flex flex-wrap items-end gap-4">
-            <div class="min-w-[200px] flex-1">
-              <label class="wh-filter-label block mb-1.5">标题名称</label>
-              <input id="lib-search-title" class="wh-input h-8 w-full px-3" placeholder="请输入资料标题" />
-            </div>
-            <div class="min-w-[280px]">
-              <label class="wh-filter-label block mb-1.5">修改时间</label>
-              <div class="flex items-center gap-2 flex-wrap">
-                <input id="lib-search-start" type="datetime-local" class="wh-input h-8 px-3 text-xs" />
-                <span class="text-slate-500 text-xs">至</span>
-                <input id="lib-search-end" type="datetime-local" class="wh-input h-8 px-3 text-xs" />
+    <section id="library-list-view">
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="资料库统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-folder-open"></i></div>
+              <div>
+                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">资料总数</div>
+                <div class="disease-stat-card__trend">全库</div>
               </div>
             </div>
-            <div class="flex gap-2">
-              <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary" data-action="search-lib">搜索</button>
-              <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost" data-action="reset-lib-search">重置</button>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-list"></i></div>
+              <div>
+                <div id="stat-filtered" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">当前列表</div>
+                <div class="disease-stat-card__trend">筛选结果</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-sitemap"></i></div>
+              <div>
+                <div id="stat-categories" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">分类数量</div>
+                <div class="disease-stat-card__trend">资料分类树</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-paperclip"></i></div>
+              <div>
+                <div id="stat-files" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">附件文件</div>
+                <div class="disease-stat-card__trend">当前列表</div>
+              </div>
             </div>
           </div>
-        </section>
 
-        <section class="neon-panel neon-panel--tight p-4">
-          <div class="flex items-center justify-between mb-4 text-xs text-slate-400">
-            <span>共 <b id="lib-result-count" class="text-cyan-200">0</b> 条资料</span>
+          <div class="disease-list-area">
+            <div class="disease-list-toolbar">
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="upload-material">
+                <i class="fa-solid fa-cloud-arrow-up mr-1"></i>上传资料
+              </button>
+            </div>
+
+            <section class="lib-layout lib-layout--nested">
+              <aside class="neon-panel neon-panel--tight p-4 lib-tree-panel">
+                <div class="lib-tree-head">
+                  <span class="text-sm font-semibold text-cyan-100">资料分类</span>
+                  <button type="button" class="lib-tree-btn" data-action="add-root-cat" title="新增一级分类">
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
+                <div id="lib-tree-root" class="lib-tree-scroll"></div>
+              </aside>
+
+              <div class="lib-main">
+                <section class="neon-panel neon-panel--tight p-4">
+                  <div class="flex items-center justify-between mb-4 text-xs text-slate-400">
+                    <span>共 <b id="lib-result-count" class="text-cyan-200">0</b> 条资料</span>
+                  </div>
+                  <div id="lib-card-grid" class="lib-card-grid"></div>
+                </section>
+              </div>
+            </section>
           </div>
-          <div id="lib-card-grid" class="lib-card-grid"></div>
-        </section>
+        </div>
+
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label>
+                <span>标题名称</span>
+                <input id="lib-search-title" class="wh-input w-full" placeholder="请输入资料标题" />
+              </label>
+              <label>
+                <span>修改时间（起）</span>
+                <input id="lib-search-start" type="datetime-local" class="wh-input w-full" />
+              </label>
+              <label>
+                <span>修改时间（止）</span>
+                <input id="lib-search-end" type="datetime-local" class="wh-input w-full" />
+              </label>
+              <div class="disease-filter-actions">
+                <button type="button" class="wh-btn-primary" data-action="search-lib">搜索</button>
+                <button type="button" class="wh-btn-ghost" data-action="reset-lib-search">重置</button>
+              </div>
+            </div>
+          </div>
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body">
+              <a class="disease-quick-link" data-quick-href="stats/dc-line-stats.html" href="dc-line-stats.html"><i class="fa-solid fa-chart-line"></i><span>线路项目统计</span></a>
+              <a class="disease-quick-link" data-quick-href="stats/dc-drone-stats.html" href="dc-drone-stats.html"><i class="fa-solid fa-chart-pie"></i><span>无人机数据统计</span></a>
+              <a class="disease-quick-link" data-quick-href="stats/dc-system-stats.html" href="dc-system-stats.html"><i class="fa-solid fa-table"></i><span>全时全域数据统计报表</span></a>
+              <a class="disease-quick-link is-active" data-quick-href="stats/dc-library.html" href="dc-library.html"><i class="fa-solid fa-database"></i><span>资料库</span></a>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
   </div>

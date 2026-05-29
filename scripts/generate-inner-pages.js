@@ -382,6 +382,7 @@ add({
 
 [
   ["am-ops-metro.html", "am-ops-metro", "地铁信息系统运行管理"],
+  ["am-ops-settings.html", "am-ops-settings", "资源监控设置"],
   ["am-ops-fulltime.html", "am-ops-fulltime", "全时全域运行管理"],
   ["am-ops-uav.html", "am-ops-uav", "无人机系统运行管理"],
 ].forEach(([file, key, title]) => {

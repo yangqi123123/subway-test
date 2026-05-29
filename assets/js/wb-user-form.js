@@ -12,6 +12,44 @@
     "19号线": ["花山河-光谷五路", "光谷五路-新月溪公园"],
   };
   var DEFAULT_SECTIONS = ["洪山路-小洪山", "松槐路-天阳大道", "花山河", "武昌火车站-小东门"];
+  var STATION_PLACEHOLDER = "请选择站点";
+
+  function stationsFromSections(sections) {
+    var map = {};
+    (sections || []).forEach(function (section) {
+      String(section)
+        .split("-")
+        .forEach(function (part) {
+          part = part.trim();
+          if (part) map[part] = true;
+        });
+    });
+    return Object.keys(map);
+  }
+
+  var STATION_BY_LINE = {};
+  Object.keys(SECTION_BY_LINE).forEach(function (line) {
+    STATION_BY_LINE[line] = stationsFromSections(SECTION_BY_LINE[line]);
+  });
+  ["3号线", "4号线"].forEach(function (line) {
+    if (!STATION_BY_LINE[line]) STATION_BY_LINE[line] = stationsFromSections(DEFAULT_SECTIONS);
+  });
+
+  function parseSectionFields(row) {
+    row = row || {};
+    if (row.sectionStart && row.sectionEnd) {
+      return { start: row.sectionStart, end: row.sectionEnd };
+    }
+    var name = String(row.sectionName || "").trim();
+    if (!name) return { start: "", end: "" };
+    var parts = name.split("-").map(function (p) {
+      return p.trim();
+    });
+    if (parts.length >= 2) {
+      return { start: parts[0], end: parts[parts.length - 1] };
+    }
+    return { start: name, end: "" };
+  }
 
   function escapeHtml(value) {
     return String(value || "")
@@ -30,10 +68,16 @@
     );
   }
 
-  function selectField(key, label, options, value, required) {
+  function selectField(key, label, options, value, required, emptyLabel) {
     var html = '<div class="wb-form-item">' + formLabel(label, required);
     html += '<select class="wh-input" data-form="' + key + '">';
-    if (!required) html += '<option value="">请选择</option>';
+    if (emptyLabel !== false) {
+      var placeholder =
+        emptyLabel != null ? emptyLabel : !required ? "请选择" : null;
+      if (placeholder) {
+        html += '<option value="">' + escapeHtml(placeholder) + "</option>";
+      }
+    }
     options.forEach(function (opt) {
       html +=
         '<option value="' +
@@ -80,7 +124,8 @@
     row = row || {};
     var isEdit = !!(row && row.userId);
     var line = row.lineName || "8号线";
-    var sections = SECTION_BY_LINE[line] || DEFAULT_SECTIONS;
+    var stations = STATION_BY_LINE[line] || stationsFromSections(DEFAULT_SECTIONS);
+    var section = parseSectionFields(row);
 
     return (
       '<div class="wb-form-grid wb-form-grid--user">' +
@@ -97,7 +142,8 @@
       selectField("roleName", "角色", roleOptions, row.roleName, true) +
       inputField("postName", "岗位", row.postName || "", false) +
       selectField("lineName", "所属线路", LINE_OPTIONS, line, true) +
-      selectField("sectionName", "所在区间", sections, row.sectionName, true) +
+      selectField("sectionStart", "起始区间", stations, section.start, true, STATION_PLACEHOLDER) +
+      selectField("sectionEnd", "终点区间", stations, section.end, true, STATION_PLACEHOLDER) +
       inputField("phone", "手机号码", row.phone, true) +
       inputField("email", "邮箱", row.email, false) +
       selectField("sex", "性别", ["男", "女"], row.sex, false) +
@@ -252,12 +298,14 @@
     mountSingleFileUpload("wb-pilot-cert-input", "wb-pilot-cert-name", row.pilotCertName || "");
 
     var lineSelect = document.querySelector('[data-form="lineName"]');
-    var sectionSelect = document.querySelector('[data-form="sectionName"]');
-    if (lineSelect && sectionSelect) {
-      lineSelect.onchange = function () {
-        var sections = SECTION_BY_LINE[lineSelect.value] || DEFAULT_SECTIONS;
-        var prev = sectionSelect.value;
-        sectionSelect.innerHTML = sections
+    var sectionStartSelect = document.querySelector('[data-form="sectionStart"]');
+    var sectionEndSelect = document.querySelector('[data-form="sectionEnd"]');
+
+    function fillStationSelect(select, stations, prev) {
+      if (!select) return;
+      var html =
+        '<option value="">' + escapeHtml(STATION_PLACEHOLDER) + "</option>" +
+        stations
           .map(function (s) {
             return (
               '<option value="' +
@@ -270,9 +318,55 @@
             );
           })
           .join("");
-        if (sections.indexOf(prev) === -1) sectionSelect.selectedIndex = 0;
+      select.innerHTML = html;
+      if (!prev || stations.indexOf(prev) === -1) select.selectedIndex = 0;
+    }
+
+    if (lineSelect && sectionStartSelect && sectionEndSelect) {
+      lineSelect.onchange = function () {
+        var stations = STATION_BY_LINE[lineSelect.value] || stationsFromSections(DEFAULT_SECTIONS);
+        fillStationSelect(sectionStartSelect, stations, "");
+        fillStationSelect(sectionEndSelect, stations, "");
       };
     }
+  }
+
+  function applyUserFormData(row, data) {
+    if (!data.sectionStart || !data.sectionEnd) {
+      if (global.WBSystem && global.WBSystem.toast) {
+        global.WBSystem.toast("请选择起始区间与终点区间站点");
+      }
+      return false;
+    }
+    if (data.sectionStart === data.sectionEnd) {
+      if (global.WBSystem && global.WBSystem.toast) {
+        global.WBSystem.toast("起始区间与终点区间不能相同");
+      }
+      return false;
+    }
+    var patch = {
+      userName: (data.userName || "").trim(),
+      nickName: (data.nickName || "").trim(),
+      deptName: data.deptName,
+      roleName: data.roleName,
+      postName: (data.postName || "").trim(),
+      lineName: data.lineName,
+      sectionStart: data.sectionStart,
+      sectionEnd: data.sectionEnd,
+      sectionName: data.sectionStart + "-" + data.sectionEnd,
+      phone: (data.phone || "").trim(),
+      email: (data.email || "").trim(),
+      sex: data.sex || "",
+      status: data.statusText === "启用",
+      remark: (data.remark || "").trim(),
+    };
+    if (row) {
+      Object.keys(patch).forEach(function (key) {
+        row[key] = patch[key];
+      });
+      return true;
+    }
+    return patch;
   }
 
   function bindImportDropzone() {
@@ -404,9 +498,13 @@
   global.WBUserForm = {
     buildUserFormHtml: buildUserFormHtml,
     mountUserFormUploads: mountUserFormUploads,
+    applyUserFormData: applyUserFormData,
+    parseSectionFields: parseSectionFields,
     openUserImportModal: openUserImportModal,
     openResetPasswordModal: openResetPasswordModal,
     LINE_OPTIONS: LINE_OPTIONS,
     SECTION_BY_LINE: SECTION_BY_LINE,
+    STATION_BY_LINE: STATION_BY_LINE,
+    STATION_PLACEHOLDER: STATION_PLACEHOLDER,
   };
 })(window);

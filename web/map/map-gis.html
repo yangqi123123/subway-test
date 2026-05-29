@@ -151,6 +151,14 @@
         </div>
       </aside>
 
+      <div id="gis-wh-panel" class="gis-wh-panel hidden" aria-live="polite">
+        <div class="gis-detail-head">
+          <div class="gis-detail-title" id="gis-wh-title">仓库列表</div>
+          <button type="button" class="wh-modal-close gis-detail-close" id="gis-wh-close" aria-label="关闭">×</button>
+        </div>
+        <div class="gis-detail-body" id="gis-wh-body"></div>
+      </div>
+
       <div class="gis-toolbar" role="toolbar" aria-label="地图工具">
         <button type="button" class="gis-toolbar__btn" data-tool="base" title="当前：道路地图，点击切换为卫星影像">
           <i class="fa-solid fa-layer-group" data-base-icon></i>
@@ -218,6 +226,7 @@
     <script src="../../assets/js/menu-config.js"></script>
     <script src="../../assets/js/shell.js"></script>
     <script src="../../assets/js/map-metro-data.js"></script>
+    <script src="../../assets/js/map-patrol-clear-settings.js"></script>
     <script src="../../assets/js/map-patrol-overlay.js"></script>
     <script src="../../assets/js/map-gis.js"></script>
   </body>

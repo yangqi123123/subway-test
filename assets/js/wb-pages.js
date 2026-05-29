@@ -41,11 +41,11 @@
   ];
 
   var userRows = [
-    { userId: "1", userName: "admin", nickName: "系统管理员", deptName: "系统管理部", roleName: "超级管理员", postName: "平台负责人", lineName: "8号线", sectionName: "洪山路-小洪山", phone: "13800001111", email: "admin@metro.com", sex: "男", status: true, createTime: "2026-05-01 09:12", deptId: "101", remark: "平台超级管理员", pilotCertName: "" },
-    { userId: "2", userName: "zhangsan", nickName: "张三", deptName: "平台运维组", roleName: "系统管理员", postName: "运维工程师", lineName: "8号线", sectionName: "洪山路-徐家棚", phone: "13800002222", email: "zhangsan@metro.com", sex: "男", status: true, createTime: "2026-05-03 10:18", deptId: "1011", remark: "负责日常运维", pilotCertName: "" },
-    { userId: "3", userName: "lisi", nickName: "李四", deptName: "人工巡检组", roleName: "业务审核员", postName: "巡检员", lineName: "7号线", sectionName: "武昌火车站-小东门", phone: "13800003333", email: "lisi@metro.com", sex: "女", status: false, createTime: "2026-05-04 13:02", deptId: "1021", remark: "待启用", pilotCertName: "李四-飞手证.pdf" },
-    { userId: "4", userName: "wangwu", nickName: "王五", deptName: "无人机巡检组", roleName: "业务审核员", postName: "飞手", lineName: "8号线", sectionName: "徐家棚-徐东", phone: "13800004444", email: "wangwu@metro.com", sex: "男", status: true, createTime: "2026-05-05 16:26", deptId: "1022", remark: "无人机审批员", pilotCertName: "王五-飞手证.pdf", avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&q=80" },
-    { userId: "5", userName: "zhaoliu", nickName: "赵六", deptName: "资料管理组", roleName: "系统管理员", postName: "", lineName: "19号线", sectionName: "花山河-光谷五路", phone: "13800005555", email: "zhaoliu@metro.com", sex: "", status: true, createTime: "2026-05-06 08:41", deptId: "1031", remark: "资料库维护", pilotCertName: "" },
+    { userId: "1", userName: "admin", nickName: "系统管理员", deptName: "系统管理部", roleName: "超级管理员", postName: "平台负责人", lineName: "8号线", sectionStart: "洪山路", sectionEnd: "小洪山", sectionName: "洪山路-小洪山", phone: "13800001111", email: "admin@metro.com", sex: "男", status: true, createTime: "2026-05-01 09:12", deptId: "101", remark: "平台超级管理员", pilotCertName: "" },
+    { userId: "2", userName: "zhangsan", nickName: "张三", deptName: "平台运维组", roleName: "系统管理员", postName: "运维工程师", lineName: "8号线", sectionStart: "洪山路", sectionEnd: "徐家棚", sectionName: "洪山路-徐家棚", phone: "13800002222", email: "zhangsan@metro.com", sex: "男", status: true, createTime: "2026-05-03 10:18", deptId: "1011", remark: "负责日常运维", pilotCertName: "" },
+    { userId: "3", userName: "lisi", nickName: "李四", deptName: "人工巡检组", roleName: "业务审核员", postName: "巡检员", lineName: "7号线", sectionStart: "武昌火车站", sectionEnd: "小东门", sectionName: "武昌火车站-小东门", phone: "13800003333", email: "lisi@metro.com", sex: "女", status: false, createTime: "2026-05-04 13:02", deptId: "1021", remark: "待启用", pilotCertName: "李四-飞手证.pdf" },
+    { userId: "4", userName: "wangwu", nickName: "王五", deptName: "无人机巡检组", roleName: "业务审核员", postName: "飞手", lineName: "8号线", sectionStart: "徐家棚", sectionEnd: "徐东", sectionName: "徐家棚-徐东", phone: "13800004444", email: "wangwu@metro.com", sex: "男", status: true, createTime: "2026-05-05 16:26", deptId: "1022", remark: "无人机审批员", pilotCertName: "王五-飞手证.pdf", avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&q=80" },
+    { userId: "5", userName: "zhaoliu", nickName: "赵六", deptName: "资料管理组", roleName: "系统管理员", postName: "", lineName: "19号线", sectionStart: "花山河", sectionEnd: "光谷五路", sectionName: "花山河-光谷五路", phone: "13800005555", email: "zhaoliu@metro.com", sex: "", status: true, createTime: "2026-05-06 08:41", deptId: "1031", remark: "资料库维护", pilotCertName: "" },
   ];
 
   var deptRows = [
@@ -369,10 +369,35 @@
     ];
   }
 
+  function systemMgmtQuickLinks(activePath) {
+    if (window.SystemMgmtQuickLinks) return SystemMgmtQuickLinks.getLinks(activePath);
+    var links = [
+      { label: "用户管理", path: "wb/wb-user.html", icon: "fa-user" },
+      { label: "角色管理", path: "wb/wb-role.html", icon: "fa-user-shield" },
+      { label: "部门管理", path: "wb/wb-dept.html", icon: "fa-sitemap" },
+      { label: "岗位管理", path: "wb/wb-post.html", icon: "fa-briefcase" },
+      { label: "菜单管理", path: "wb/wb-menu.html", icon: "fa-bars" },
+      { label: "字典管理", path: "wb/wb-dict.html", icon: "fa-book" },
+      { label: "日志管理", path: "wb/wb-log.html", icon: "fa-clock-rotate-left" },
+      { label: "参数设置", path: "wb/wb-param.html", icon: "fa-sliders" },
+      { label: "通知公告", path: "wb/wb-notice.html", icon: "fa-bullhorn" },
+      { label: "消息模板", path: "wb/wb-msg-template.html", icon: "fa-envelope" },
+      { label: "资源监控", path: "wb/am-ops-metro.html", icon: "fa-gauge-high" },
+      { label: "设置", path: "wb/am-ops-settings.html", icon: "fa-gear" },
+    ];
+    return links.map(function (item) {
+      return { label: item.label, path: item.path, icon: item.icon, active: item.path === activePath };
+    });
+  }
+
   function pageConfig(key) {
     if (key === "wb-user") {
       return {
         pageType: "tree-table",
+        diseaseLayout: true,
+        stickyActionColumn: true,
+        panelBadge: "用户管理面板",
+        quickLinks: systemMgmtQuickLinks("wb/wb-user.html"),
         title: "用户管理",
         filters: [
           { key: "userName", label: "用户名称" },
@@ -413,6 +438,19 @@
         onFormOpen: function (row) {
           WBUserForm.mountUserFormUploads(row);
         },
+        onModalSave: function (row, data) {
+          if (!window.WBUserForm || !WBUserForm.applyUserFormData) return false;
+          var patch = WBUserForm.applyUserFormData(row, data);
+          if (patch === false) return false;
+          if (!row && patch) {
+            patch.userId = String(Date.now());
+            patch.createTime = patch.createTime || "2026-05-19 10:00";
+            patch.deptId = patch.deptId || "100";
+            patch.pilotCertName = patch.pilotCertName || "";
+            userRows.unshift(patch);
+          }
+          return true;
+        },
         openImport: function () {
           WBUserForm.openUserImportModal();
         },
@@ -423,6 +461,16 @@
     if (key === "wb-role") {
       return {
         pageType: "table",
+        diseaseLayout: true,
+        panelBadge: "角色管理面板",
+        diseaseStatLabels: {
+          total: "全部角色",
+          totalTrend: "角色档案",
+          totalIcon: "fa-user-shield",
+          enabledTrend: "角色状态",
+          disabledTrend: "角色状态",
+        },
+        quickLinks: systemMgmtQuickLinks("wb/wb-role.html"),
         title: "角色管理",
         filters: [
           { key: "roleName", label: "角色名称" },
@@ -461,6 +509,16 @@
     if (key === "wb-dept") {
       return {
         pageType: "tree-table",
+        diseaseLayout: true,
+        panelBadge: "部门管理面板",
+        diseaseStatLabels: {
+          total: "全部部门",
+          totalTrend: "组织树",
+          totalIcon: "fa-sitemap",
+          enabledTrend: "部门状态",
+          disabledTrend: "部门状态",
+        },
+        quickLinks: systemMgmtQuickLinks("wb/wb-dept.html"),
         title: "部门管理",
         filters: [
           { key: "deptName", label: "部门名称" },
@@ -506,6 +564,16 @@
     if (key === "wb-menu") {
       return {
         pageType: "menu",
+        diseaseLayout: true,
+        panelBadge: "菜单管理面板",
+        diseaseStatLabels: {
+          total: "全部菜单",
+          totalTrend: "菜单树",
+          totalIcon: "fa-bars",
+          enabledTrend: "菜单状态",
+          disabledTrend: "菜单状态",
+        },
+        quickLinks: systemMgmtQuickLinks("wb/wb-menu.html"),
         title: "菜单管理",
         filters: [
           { key: "menuName", label: "菜单名称" },
@@ -550,6 +618,16 @@
     if (key === "wb-post") {
       return {
         pageType: "table",
+        diseaseLayout: true,
+        panelBadge: "岗位管理面板",
+        diseaseStatLabels: {
+          total: "全部岗位",
+          totalTrend: "岗位档案",
+          totalIcon: "fa-briefcase",
+          enabledTrend: "岗位状态",
+          disabledTrend: "岗位状态",
+        },
+        quickLinks: systemMgmtQuickLinks("wb/wb-post.html"),
         title: "岗位管理",
         filters: [
           { key: "deptName", label: "所属部门" },
@@ -592,6 +670,16 @@
     if (key === "wb-dict") {
       return {
         pageType: "tree-table",
+        diseaseLayout: true,
+        panelBadge: "字典管理面板",
+        diseaseStatLabels: {
+          total: "字典数据",
+          totalTrend: "当前类型",
+          totalIcon: "fa-book",
+          enabledTrend: "字典状态",
+          disabledTrend: "字典状态",
+        },
+        quickLinks: systemMgmtQuickLinks("wb/wb-dict.html"),
         title: "字典管理",
         filters: [
           { key: "dictLabel", label: "字典标签" },
@@ -656,6 +744,27 @@
     if (key === "wb-param") {
       return {
         pageType: "table",
+        diseaseLayout: true,
+        panelBadge: "参数配置面板",
+        diseaseStatLabels: {
+          total: "全部参数",
+          totalTrend: "系统配置",
+          totalIcon: "fa-sliders",
+          enabled: "系统内置",
+          disabled: "自定义",
+          enabledTrend: "参数类型",
+          disabledTrend: "参数类型",
+        },
+        diseaseStatCount: function (rows) {
+          var yes = 0;
+          var no = 0;
+          rows.forEach(function (r) {
+            if (r.configType === "是") yes++;
+            else if (r.configType === "否") no++;
+          });
+          return { enabled: yes, disabled: no };
+        },
+        quickLinks: systemMgmtQuickLinks("wb/wb-param.html"),
         title: "参数配置",
         filters: [
           { key: "configName", label: "参数名称" },
@@ -695,7 +804,24 @@
     if (key === "wb-msg-template") {
       return {
         pageType: "table",
+        diseaseLayout: true,
+        panelBadge: "消息模板面板",
+        diseaseStatLabels: {
+          total: "全部模板",
+          totalTrend: "消息配置",
+          totalIcon: "fa-envelope",
+          enabledTrend: "模板状态",
+          disabledTrend: "模板状态",
+        },
+        quickLinks: systemMgmtQuickLinks("wb/wb-msg-template.html"),
         title: "消息模板",
+        detailPanelLabel: "消息模板详情",
+        buildDetailHtml: function (row) {
+          return WBMsgTemplateForm.buildMsgTemplateDetailHtml(row);
+        },
+        detailSubtitle: function (row) {
+          return row.templateName || "消息模板详情";
+        },
         filters: [
           { key: "templateName", label: "模板名称" },
           {
@@ -771,6 +897,27 @@
     if (key === "wb-notice") {
       return {
         pageType: "table",
+        diseaseLayout: true,
+        panelBadge: "通知公告面板",
+        diseaseStatLabels: {
+          total: "全部公告",
+          totalTrend: "公告列表",
+          totalIcon: "fa-bullhorn",
+          enabled: "已发布",
+          disabled: "草稿",
+          enabledTrend: "发布状态",
+          disabledTrend: "发布状态",
+        },
+        diseaseStatCount: function (rows) {
+          var pub = 0;
+          var draft = 0;
+          rows.forEach(function (r) {
+            if (r.statusText === "已发布") pub++;
+            else if (r.statusText === "草稿") draft++;
+          });
+          return { enabled: pub, disabled: draft };
+        },
+        quickLinks: systemMgmtQuickLinks("wb/wb-notice.html"),
         title: "通知公告",
         filters: [
           { key: "noticeTitle", label: "公告标题" },
@@ -929,6 +1076,27 @@
     if (key === "wb-log") {
       return {
         pageType: "log",
+        diseaseLayout: true,
+        panelBadge: "日志管理面板",
+        diseaseStatLabels: {
+          total: "日志总数",
+          totalTrend: "当前分类",
+          totalIcon: "fa-clock-rotate-left",
+          enabled: "成功",
+          disabled: "失败",
+          enabledTrend: "执行结果",
+          disabledTrend: "执行结果",
+        },
+        diseaseStatCount: function (rows) {
+          var ok = 0;
+          var fail = 0;
+          rows.forEach(function (r) {
+            if (r.statusText === "成功") ok++;
+            else if (r.statusText === "失败") fail++;
+          });
+          return { enabled: ok, disabled: fail };
+        },
+        quickLinks: systemMgmtQuickLinks("wb/wb-log.html"),
         title: "日志管理",
         filters: [
           { key: "userName", label: "用户名称" },

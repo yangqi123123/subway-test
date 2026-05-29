@@ -91,6 +91,11 @@
     reviewDraft.scene = state.scene || state.detail || "";
     reviewDraft.photos = (state.photos && state.photos.length ? state.photos : DEFAULT_PHOTOS).slice();
 
+    var projectRow = document.getElementById("review-project-name-row");
+    if (projectRow) {
+      projectRow.classList.toggle("is-hidden", !state.showProjectSelect);
+    }
+
     document.querySelectorAll('input[name="review-false-alarm"]').forEach(function (input) {
       input.checked = input.value === reviewDraft.falseAlarm;
     });
@@ -120,6 +125,9 @@
     if (!mask) return;
     reviewSaveCallback = onSave || null;
     fillReviewForm(initialState);
+    if (typeof initialState.onFormReady === "function") {
+      initialState.onFormReady(initialState);
+    }
     mask.classList.add("show");
   }
 

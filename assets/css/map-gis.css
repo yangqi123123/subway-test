@@ -124,6 +124,32 @@
   font-size: 14px;
 }
 
+/* 仓库列表：紧贴左侧面板右侧，底部与图层面板对齐 */
+.gis-wh-panel {
+  position: absolute;
+  left: calc(12px + 300px + 12px);
+  bottom: 96px;
+  z-index: 1000;
+  width: min(300px, calc(100vw - 340px));
+  max-height: calc(100% - 12px - 96px);
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(34, 211, 238, 0.26);
+  background: rgba(6, 12, 28, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), 0 0 24px rgba(34, 211, 238, 0.12);
+  transition: left 0.22s ease;
+}
+
+.gis-wh-panel.hidden {
+  display: none;
+}
+
+.gis-filter-panel.is-collapsed ~ .gis-wh-panel {
+  left: calc(12px + 52px + 12px);
+}
+
 .gis-filter-scroll {
   flex: 1;
   overflow-y: auto;
@@ -735,6 +761,51 @@
   line-height: 1.7;
 }
 
+.gis-wh-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.gis-wh-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gis-wh-material {
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.gis-wh-item {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 2px 0 2px 16px;
+  border: none;
+  background: transparent;
+  color: #e2f5ff;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+  line-height: 1.65;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.gis-wh-item:hover {
+  color: #67e8f9;
+}
+
+.gis-wh-item:focus-visible {
+  outline: 2px solid rgba(34, 211, 238, 0.45);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .gis-detail-field {
   margin-bottom: 8px;
 }
@@ -779,6 +850,46 @@
   gap: 10px;
 }
 
+.gis-track-range-field .gis-detail-label {
+  margin-bottom: 6px;
+}
+
+.gis-track-range-inputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+}
+
+.gis-track-range-input {
+  width: 100%;
+  min-height: 30px;
+  padding: 4px 6px;
+  font-size: 11px;
+  color: #e2f5ff;
+  border-radius: 6px;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  background: rgba(15, 23, 42, 0.65);
+}
+
+.gis-track-range-input:focus {
+  outline: none;
+  border-color: rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.2);
+}
+
+.gis-track-range-sep {
+  font-size: 11px;
+  color: rgba(148, 163, 184, 0.9);
+  white-space: nowrap;
+}
+
+.gis-track-list-empty {
+  color: rgba(148, 163, 184, 0.88);
+  text-align: center;
+  font-size: 12px;
+}
+
 .gis-detail-list {
   margin-top: 6px;
   border: 1px solid rgba(34, 211, 238, 0.16);
@@ -814,7 +925,9 @@
 .gis-detail-action {
   margin-top: 14px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
 }
 
 .gis-detail-btn {

@@ -8,10 +8,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
   <link rel="stylesheet" href="../../assets/css/patrol-media-gallery.css" />
+  <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
   <style>
     .page-table th, .page-table td { height: 45px; border-right: 1px solid rgba(34,211,238,.08); border-bottom: 1px solid rgba(34,211,238,.1); vertical-align: middle; }
     .page-table th:last-child, .page-table td:last-child { border-right: 0; }
-    .row-action { display:inline-flex; align-items:center; gap:3px; margin-right:8px; white-space:nowrap; font-size:11px; cursor:pointer; }
     .form-label { width:116px; flex:0 0 116px; text-align:right; color:rgba(226,245,255,.88); font-size:12px; line-height:32px; }
     .required::before { content:"*"; color:#fb7185; margin-right:3px; }
     .confirm-pop { position:fixed; z-index:120; width:156px; padding:12px 12px 10px; border-radius:4px; background:#fff; box-shadow:0 8px 24px rgba(15,23,42,.28); color:#333; }
@@ -221,15 +221,80 @@
       .disease-stats { grid-template-columns: 1fr; }
       .disease-layout__right { grid-template-columns: 1fr; }
     }
+    .disease-detail-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 115;
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding: calc(var(--header-h, 64px) + 20px) 24px 24px;
+      background: rgba(2, 8, 23, 0.72);
+    }
+    .disease-detail-mask.show { display: flex; }
+    .disease-detail-dialog {
+      width: min(980px, 96vw);
+      max-height: calc(100vh - var(--header-h, 64px) - 44px);
+      border-radius: 8px;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      background: linear-gradient(180deg, #071525, #020617);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .disease-detail-dialog__head {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+    }
+    .disease-detail-dialog__body {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 20px 24px 16px;
+    }
+    .disease-detail-dialog__foot {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 14px 24px 18px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .detail-value {
+      flex: 1;
+      min-width: 0;
+      min-height: 32px;
+      line-height: 32px;
+      color: rgba(226, 245, 255, 0.92);
+      font-size: 12px;
+      word-break: break-word;
+    }
+    .detail-value--multiline {
+      line-height: 1.55;
+      padding: 6px 0;
+      min-height: 86px;
+      white-space: pre-wrap;
+    }
+    .detail-value--empty { color: #64748b; }
+    .wh-row-open-tbody tr { cursor: pointer; }
+    .wh-row-open-tbody tr:hover > td:not(.disease-col-actions) {
+      background: rgba(14, 48, 78, 0.38) !important;
+    }
   </style>
 </head>
 <body data-shell="default" data-top="patrol" data-sidebar-key="in-disease">
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">病害巡查</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">病害巡查面板</span>
+    </div>
     <section id="list-view">
-      <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-        <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
-        <span>巡查记录</span><span class="text-slate-600">&gt;&gt;</span><span class="text-cyan-50 font-semibold tracking-wide">病害巡查</span>
-      </nav>
       <div class="disease-layout">
         <div class="disease-layout__left">
           <div class="disease-stats" aria-label="病害统计">
@@ -273,7 +338,7 @@
               <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost"><i class="fa-solid fa-file-export mr-1"></i>导出</button>
             </div>
             <div class="wh-table-shell bg-slate-950/35">
-              <div class="overflow-x-auto">
+              <div class="disease-table-wrap overflow-x-auto">
                 <table class="page-table min-w-[1580px] w-full text-left text-[11px]">
                   <thead>
                     <tr class="bg-slate-950/75">
@@ -290,7 +355,7 @@
                       <th class="px-3 text-cyan-50/95">巡查人</th>
                       <th class="px-3 text-cyan-50/95">巡查日期</th>
                       <th class="px-3 text-cyan-50/95">处理进度</th>
-                      <th class="px-3 text-cyan-50/95">操作</th>
+                      <th class="px-3 text-cyan-50/95 disease-col-actions">操作</th>
                     </tr>
                   </thead>
                   <tbody id="table-body"></tbody>
@@ -405,6 +470,22 @@
     </div>
   </div>
 
+  <div id="disease-detail-mask" class="disease-detail-mask" aria-hidden="true">
+    <div class="disease-detail-dialog" role="dialog" aria-labelledby="disease-detail-title">
+      <div class="disease-detail-dialog__head">
+        <div>
+          <h3 id="disease-detail-title" class="text-white font-semibold text-sm m-0">查看详情</h3>
+          <div class="text-[11px] text-slate-400 mt-0.5">病害巡查记录详情</div>
+        </div>
+        <button type="button" class="wh-modal-close text-slate-400 hover:text-white text-xl leading-none" data-action="close-disease-detail" aria-label="关闭">×</button>
+      </div>
+      <div id="disease-detail-body" class="disease-detail-dialog__body max-w-[980px] space-y-4 text-xs"></div>
+      <div class="disease-detail-dialog__foot">
+        <button type="button" class="px-6 py-2 rounded text-xs wh-btn-ghost" data-action="close-disease-detail">关闭</button>
+      </div>
+    </div>
+  </div>
+
   <script src="../../assets/js/menu-config.js"></script>
   <script src="../../assets/js/expert-review-modal.js"></script>
   <script src="../../assets/js/flight-report-modal.js"></script>
@@ -426,7 +507,87 @@
       var confirmIcon = document.getElementById("confirm-icon");
       var recordMask = document.getElementById("record-mask");
       var recordBody = document.getElementById("record-body");
+      var detailMask = document.getElementById("disease-detail-mask");
+      var detailBody = document.getElementById("disease-detail-body");
       var pendingConfirm = null;
+
+      function escHtml(value) {
+        return String(value || "").replace(/[&<>"']/g, function (char) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+        });
+      }
+      function detailValue(value, multiline) {
+        var text = value === undefined || value === null || value === "" ? "—" : String(value);
+        var cls = "detail-value" + (multiline ? " detail-value--multiline" : "") + (text === "—" ? " detail-value--empty" : "");
+        return '<div class="' + cls + '">' + escHtml(text) + "</div>";
+      }
+      function detailRow(label, value, multiline) {
+        var align = multiline ? "items-start" : "items-center";
+        var labelCls = multiline ? "form-label pt-1" : "form-label";
+        return (
+          '<div class="flex ' + align + ' gap-4">' +
+          '<label class="' + labelCls + '">' + escHtml(label) + "：</label>" +
+          detailValue(value, multiline) +
+          "</div>"
+        );
+      }
+      function historyLabel(row) {
+        if (!row || !row.historyId) return "—";
+        var found = rows.filter(function (r) {
+          return r.id === row.historyId;
+        })[0];
+        return found ? found.id + " · " + found.desc : row.historyId;
+      }
+      function buildDetailHtml(row) {
+        return (
+          detailRow("编号", row.id) +
+          detailRow("所属线路", row.line) +
+          detailRow("上下行", row.direction) +
+          detailRow("所在区间", row.section) +
+          detailRow("站点", row.station) +
+          detailRow("病害里程", row.mileage) +
+          detailRow("巡查项", dictLabel("disease_inspect_item", row.inspectItem)) +
+          detailRow("结构类型", dictLabel("disease_structure_type", row.structureType)) +
+          detailRow("病害类型", dictLabel("disease_type", row.diseaseType)) +
+          detailRow("病害程度", dictLabel("disease_level", row.level)) +
+          detailRow("病害发展", dictLabel("disease_development", row.development)) +
+          detailRow("环号", row.ring) +
+          detailRow("病害描述", row.desc, true) +
+          detailRow("标签", row.tags) +
+          '<div class="flex items-start gap-4"><label class="form-label pt-2">病害照片：</label><div class="flex-1 min-w-0">' +
+          mediaCell("photo", row, 3) +
+          "</div></div>" +
+          '<div class="flex items-start gap-4"><label class="form-label pt-2">病害视频：</label><div class="flex-1 min-w-0">' +
+          mediaCell("video", row, 2) +
+          "</div></div>" +
+          detailRow("关联历史病害", historyLabel(row)) +
+          detailRow("处理进度", row.progress) +
+          detailRow("更新时间", row.date) +
+          detailRow("巡查人", "汪兵")
+        );
+      }
+      function findRowIndex(row) {
+        if (!row) return -1;
+        for (var i = 0; i < rows.length; i++) {
+          if (rows[i].id === row.id) return i;
+        }
+        return -1;
+      }
+      function openDetail(index) {
+        var row = lastRenderedList[index];
+        if (!row || !detailMask || !detailBody) return;
+        detailBody.innerHTML = buildDetailHtml(row);
+        if (window.WHPatrolMediaGallery) {
+          WHPatrolMediaGallery.bind(detailBody);
+        }
+        detailMask.classList.add("show");
+        detailMask.setAttribute("aria-hidden", "false");
+      }
+      function closeDetail() {
+        if (!detailMask) return;
+        detailMask.classList.remove("show");
+        detailMask.setAttribute("aria-hidden", "true");
+      }
 
       function $(id) { return document.getElementById(id); }
       function dictLabel(type, val) {
@@ -619,14 +780,17 @@
         var list = rows.filter(function (row) {
           return !devFilter || row.development === devFilter;
         });
+        lastRenderedList = list;
         updateDashboardStats(list);
         tbody.innerHTML = list
           .map(function (row, index) {
             var typeLabel = dictLabel("disease_type", row.diseaseType);
             var levelLabel = dictLabel("disease_level", row.level);
             return (
-              '<tr class="' +
+              '<tr class="wh-row-open ' +
               (index % 2 ? "bg-slate-900/35" : "bg-slate-950/25") +
+              '" data-row-index="' +
+              index +
               '">' +
               '<td class="px-3 text-slate-100/95">' +
               row.id +
@@ -654,7 +818,7 @@
               row.date +
               '</td><td class="px-3 text-slate-100/95">' +
               row.progress +
-              '</td><td class="px-3"><span class="row-action text-sky-300" data-action="edit-item" data-index="' +
+              '</td><td class="px-3 disease-col-actions"><div class="disease-op-actions"><span class="row-action text-sky-300" data-action="edit-item" data-index="' +
               index +
               '"><i class="fa-regular fa-pen-to-square"></i>编辑</span><span class="row-action text-cyan-300" data-action="confirm-item" data-index="' +
               index +
@@ -662,7 +826,7 @@
               index +
               '"><i class="fa-regular fa-circle-xmark"></i>拒绝</span><span class="row-action text-rose-300"><i class="fa-regular fa-trash-can"></i>删除</span><span class="row-action text-sky-300" data-action="view-records" data-index="' +
               index +
-              '"><i class="fa-regular fa-clock"></i>操作记录</span></td></tr>'
+              '"><i class="fa-regular fa-clock"></i>操作记录</span></div></td></tr>'
             );
           })
           .join("");
@@ -802,6 +966,15 @@
 
       bindUploader("photo", "f-photo-input");
       bindUploader("video", "f-video-input");
+      var lastRenderedList = [];
+      function setupPatrolRowClick() {
+        if (!window.WHTableRowClick) return window.setTimeout(setupPatrolRowClick, 40);
+        WHTableRowClick.bindById("table-body", {
+          getRows: function () { return lastRenderedList; },
+          onOpen: function (row, index) { openDetail(index); }
+        });
+      }
+      setupPatrolRowClick();
       initFilterDevelopment();
       initQuickLinks();
       renderRows();
@@ -823,7 +996,7 @@
           return;
         }
         if (action === "new-item") showForm("new");
-        if (action === "edit-item") showForm("edit", index);
+        if (action === "edit-item") showForm("edit", findRowIndex(lastRenderedList[index]));
         if (action === "back-list") showList();
         if (action === "save-item") saveItem();
         if (action === "confirm-item") openConfirm("confirm", index, target);
@@ -842,6 +1015,10 @@
         }
         if (action === "view-records") openRecords(index);
         if (action === "close-record") closeRecords();
+        if (action === "close-disease-detail") closeDetail();
+      });
+      detailMask.addEventListener("click", function (event) {
+        if (event.target === detailMask) closeDetail();
       });
     })();
   </script>

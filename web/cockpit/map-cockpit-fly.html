@@ -15,6 +15,34 @@
       .cockpit-video__tools,
       .cockpit-video__time { display: none !important; }
       #fly-mini-map.cockpit-leaflet .leaflet-control-zoom { display: none !important; }
+      #confirm-modal.modal-mask {
+        position: fixed;
+        inset: 0;
+        z-index: 1200;
+        background: rgba(2, 8, 23, 0.72);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 22px;
+        overflow-y: auto;
+        box-sizing: border-box;
+      }
+      #confirm-modal.modal-mask.show { display: flex; }
+      #confirm-modal .modal-card {
+        width: min(440px, 92vw);
+        max-height: calc(100vh - var(--header-h, 64px) - 48px);
+        margin: 0 auto;
+        flex-shrink: 0;
+        overflow: visible;
+        background: #071b33;
+        border: 1px solid rgba(34, 211, 238, 0.25);
+        border-radius: 10px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+      }
+      #cockpit-launch-msg {
+        white-space: nowrap;
+        margin: 0;
+      }
     </style>
   </head>
   <body data-shell="fullscreen" data-top="cockpit">
@@ -31,6 +59,7 @@
           </div>
           <div class="cockpit-actions cockpit-actions--fly-left">
             <button id="btn-unlock" type="button" class="cockpit-btn cockpit-btn--ghost"><i class="fa-solid fa-lock-open mr-1"></i>点击解锁人工操控</button>
+            <button id="btn-ai-recognition" type="button" class="cockpit-btn"><i class="fa-solid fa-robot mr-1"></i>AI识别</button>
           </div>
           <div id="cockpit-manual-panel" class="cockpit-manual-inline cockpit-manual-inline--left">
             <div class="cockpit-manual-inline__head">无人机操控台</div>
@@ -121,12 +150,27 @@
       </div>
     </div>
 
+    <div id="confirm-modal" class="modal-mask">
+      <div class="modal-card">
+        <div class="flex items-center justify-between gap-3 px-5 py-4 border-b border-white/10">
+          <h3 class="text-base font-semibold text-white">虚拟座舱</h3>
+          <button id="close-confirm" type="button" class="wh-modal-close" aria-label="关闭">×</button>
+        </div>
+        <p id="cockpit-launch-msg" class="px-5 py-6 text-sm text-cyan-50 leading-7">相关空域在有效期内，请确认是否立即起飞</p>
+        <div class="px-5 py-4 border-t border-white/10 flex justify-end gap-2">
+          <button id="btn-cancel-launch" type="button" class="wh-btn-ghost px-4 py-2">取消</button>
+          <button id="btn-confirm-launch" type="button" class="wh-btn-primary px-4 py-2">立即起飞</button>
+        </div>
+      </div>
+    </div>
+
     <div id="toast" class="fixed right-5 bottom-5 z-[1400] hidden rounded bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="../../assets/js/menu-config.js"></script>
     <script src="../../assets/js/shell.js"></script>
     <script src="../../assets/js/map-metro-data.js"></script>
+    <script src="../../assets/js/map-patrol-clear-settings.js"></script>
     <script src="../../assets/js/map-patrol-overlay.js"></script>
     <script src="../../assets/js/map-gis.js"></script>
     <script>
@@ -153,8 +197,15 @@
       const manualPanel = document.getElementById("cockpit-manual-panel");
       const flyMainSection = document.getElementById("fly-main-section");
       const btnUnlock = document.getElementById("btn-unlock");
+      const btnAiRecognition = document.getElementById("btn-ai-recognition");
       let flyMapApi = null;
       let manualOpen = false;
+
+      function openAiRecognitionTab() {
+        const path = "ai/ai.html";
+        const url = typeof whPageHref === "function" ? whPageHref(path) : "../ai/ai.html";
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
 
       function setManualOpen(open) {
         manualOpen = open;
@@ -170,10 +221,33 @@
         }
       }
 
+      const confirmModal = document.getElementById("confirm-modal");
+      function showLaunchConfirm() {
+        if (confirmModal) confirmModal.classList.add("show");
+      }
+      function hideLaunchConfirm() {
+        if (confirmModal) confirmModal.classList.remove("show");
+      }
+      function gotoFlightPlanPage() {
+        const path = "map/map-flight-plan.html";
+        location.href = typeof whPageHref === "function" ? whPageHref(path) : "../map/map-flight-plan.html";
+      }
+
       btnUnlock.addEventListener("click", () => setManualOpen(!manualOpen));
+      if (btnAiRecognition) btnAiRecognition.addEventListener("click", openAiRecognitionTab);
       document.getElementById("btn-stop").addEventListener("click", () => toast("急停指令已发送"));
       document.getElementById("btn-return").addEventListener("click", () => toast("智能返航指令已发送"));
-      document.getElementById("btn-takeoff").addEventListener("click", () => toast("无人机已处于飞行状态"));
+      document.getElementById("btn-takeoff").addEventListener("click", () => showLaunchConfirm());
+      document.getElementById("close-confirm").addEventListener("click", gotoFlightPlanPage);
+      document.getElementById("btn-cancel-launch").addEventListener("click", gotoFlightPlanPage);
+      document.getElementById("btn-confirm-launch").addEventListener("click", () => {
+        hideLaunchConfirm();
+        toast("已确认起飞，任务执行中");
+      });
+
+      if (params.get("confirmLaunch") === "1") {
+        requestAnimationFrame(showLaunchConfirm);
+      }
       manualPanel.querySelectorAll("[data-console]").forEach((btn) => {
         btn.addEventListener("click", () => toast("已执行：" + btn.textContent));
       });

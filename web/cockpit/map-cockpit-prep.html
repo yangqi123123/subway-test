@@ -16,12 +16,6 @@
   </head>
   <body data-shell="fullscreen" data-top="cockpit">
     <div id="page-root" class="cockpit-screen h-[calc(100vh-64px)] px-5 py-4 flex flex-col gap-4">
-      <nav class="cockpit-panel cockpit-crumb">
-        <span class="cockpit-crumb__icon"><i class="fa-solid fa-location-crosshairs"></i></span>
-        <span>全景地图</span>
-        <span class="cockpit-crumb__sep">&gt;&gt;</span>
-        <span class="cockpit-crumb__current">虚拟座舱</span>
-      </nav>
       <div class="flex-1 min-h-0 cockpit-layout">
         <section class="flex min-h-0 flex-col gap-3">
           <div class="cockpit-panel flex-1 min-h-0 flex flex-col">
@@ -109,6 +103,7 @@
     <script src="../../assets/js/menu-config.js"></script>
     <script src="../../assets/js/shell.js"></script>
     <script src="../../assets/js/map-metro-data.js"></script>
+    <script src="../../assets/js/map-patrol-clear-settings.js"></script>
     <script src="../../assets/js/map-patrol-overlay.js"></script>
     <script src="../../assets/js/map-gis.js"></script>
     <script>
@@ -166,11 +161,20 @@
         }
       }
 
+      function gotoFlyPage(airportId) {
+        const qs = new URLSearchParams();
+        if (airportId) qs.set("airport", airportId);
+        qs.set("confirmLaunch", "1");
+        const rel = "map-cockpit-fly.html?" + qs.toString();
+        const path = "cockpit/map-cockpit-fly.html?" + qs.toString();
+        location.href = typeof whPageHref === "function" ? whPageHref(path) : rel;
+      }
+
       function bindAirportActions() {
         document.querySelectorAll("[data-select-airport]").forEach((btn) => {
           btn.addEventListener("click", () => {
             const airport = airports.find((item) => item.id === btn.dataset.selectAirport) || airports[0];
-            location.href = "map-cockpit-fly.html?airport=" + encodeURIComponent(airport.id);
+            gotoFlyPage(airport.id);
           });
         });
       }
@@ -185,10 +189,10 @@
         document.getElementById("confirm-modal").classList.remove("show");
       });
       document.getElementById("btn-direct").addEventListener("click", () => {
-        document.getElementById("confirm-modal").classList.add("show");
+        gotoFlyPage(selectedAirport.id);
       });
       document.getElementById("btn-go-fly").addEventListener("click", () => {
-        location.href = "map-cockpit-fly.html?airport=" + encodeURIComponent(selectedAirport.id);
+        gotoFlyPage(selectedAirport.id);
       });
       document.getElementById("btn-stop").addEventListener("click", () => toast("急停指令已发送"));
       document.getElementById("btn-back").addEventListener("click", () => toast("智能返航待起飞后可执行"));
@@ -196,7 +200,7 @@
         btn.addEventListener("click", () => {
           if (btn.dataset.console === "takeoff") {
             document.getElementById("manual-drawer").classList.remove("show");
-            document.getElementById("confirm-modal").classList.add("show");
+            gotoFlyPage(selectedAirport.id);
             return;
           }
           toast("已执行：" + btn.textContent);

@@ -149,8 +149,55 @@
     );
   }
 
+  function renderApprovalDetail(record) {
+    return renderDisposalFieldRows([
+      ["是否误报", record.falseAlarm || "—"],
+      ["是否违规施工", record.illegalConstruction || "—"],
+      ["风险等级", record.riskLevel || "—"],
+      ["审批内容", record.approvalContent || record.opinion || "—"],
+    ]);
+  }
+
+  function renderApproval(item) {
+    item = item || {};
+    var records = (item.approvalRecords || []).slice();
+    if (!records.length) {
+      return '<div class="alert-disposal-empty">暂无审批记录</div>';
+    }
+    return (
+      '<div class="alert-disposal-scroll">' +
+      '<div class="alert-timeline">' +
+      records
+        .map(function (record, index) {
+          var nodeClass = record.result === "审核不通过" ? "reject" : "pass";
+          return (
+            '<div class="alert-timeline-item' +
+            (index === records.length - 1 ? " alert-timeline-item--last" : "") +
+            (nodeClass ? " alert-timeline-item--" + nodeClass : "") +
+            '">' +
+            '<div class="alert-timeline-item__rail" aria-hidden="true">' +
+            '<span class="alert-timeline-item__dot"></span>' +
+            (index === records.length - 1 ? "" : '<span class="alert-timeline-item__line"></span>') +
+            "</div>" +
+            '<div class="alert-timeline-item__body">' +
+            '<div class="alert-time">' +
+            (record.time || "—") +
+            "</div>" +
+            '<div class="alert-disposal-text">' +
+            (record.text || "审批") +
+            "</div>" +
+            renderApprovalDetail(record) +
+            "</div></div>"
+          );
+        })
+        .join("") +
+      "</div></div>"
+    );
+  }
+
   global.AlertDisposalTimeline = {
     render: render,
+    renderApproval: renderApproval,
     prepareRecords: prepareRecords,
   };
 })(typeof window !== "undefined" ? window : global);

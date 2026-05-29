@@ -8,22 +8,157 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
   <style>
-    .score-filter-bar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 16px 24px;
+    .disease-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+      align-items: start;
     }
-    .score-filter-item {
+    .disease-layout__right {
+      position: sticky;
+      top: 72px;
+      align-self: start;
+      width: 300px;
+      max-height: calc(100dvh - 88px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .disease-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .disease-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88));
+    }
+    .disease-stat-card__icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+    .disease-stat-card--rose .disease-stat-card__icon { background: rgba(251, 113, 133, 0.12); color: #fda4af; border: 1px solid rgba(251, 113, 133, 0.35); }
+    .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
+    .disease-filter-panel,
+    .disease-quick-panel {
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(8, 15, 35, 0.78);
+    }
+    .disease-panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2f5ff;
+      margin: 0;
+      padding: 8px 10px 7px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.92);
+    }
+    .disease-panel-body { padding: 8px 10px 10px; }
+    .disease-filter-panel .disease-panel-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .disease-filter-panel label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 0;
+      font-size: 10px;
+    }
+    .disease-filter-panel label > span:first-child { color: #94a3b8; }
+    .disease-filter-panel .wh-input {
+      height: 26px !important;
+      min-height: 26px;
+      font-size: 11px;
+      padding: 0 6px;
+    }
+    .disease-filter-dates {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .disease-filter-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .disease-filter-actions button {
+      flex: 1;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      font-size: 11px;
+    }
+    .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+    .disease-quick-link {
       display: flex;
       align-items: center;
       gap: 8px;
-      min-width: 0;
+      width: 100%;
+      padding: 7px 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.14);
+      background: rgba(15, 23, 42, 0.45);
+      color: #e2f5ff;
+      font-size: 11px;
+      text-decoration: none;
     }
-    .score-filter-label {
-      color: rgba(226,245,255,.78);
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.08);
+      color: #fff;
+    }
+    .disease-quick-link.is-active {
+      border-color: rgba(34, 211, 238, 0.55);
+      background: rgba(34, 211, 238, 0.12);
+      color: #a5f3fc;
+    }
+    .disease-quick-link i {
+      width: 16px;
+      text-align: center;
+      color: #67e8f9;
       font-size: 12px;
-      white-space: nowrap;
+    }
+    @media (max-width: 1400px) {
+      .disease-layout { grid-template-columns: 1fr; }
+      .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .disease-layout__right {
+        position: static;
+        width: 100%;
+        max-height: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+    }
+    @media (max-width: 768px) {
+      .disease-stats { grid-template-columns: 1fr; }
+      .disease-layout__right { grid-template-columns: 1fr; }
     }
     .score-table th,
     .score-table td {
@@ -128,66 +263,113 @@
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="in-score" data-wb-view="page">
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
-    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
-      <span>我的工作台</span>
-      <span class="text-slate-600">&gt;&gt;</span>
-      <span class="text-cyan-50 font-semibold tracking-wide">巡查打分</span>
-    </nav>
-
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
       <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">巡查打分</h1>
-      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">巡查评分记录台账</span>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">巡查打分面板</span>
     </div>
 
-    <section class="neon-panel neon-panel--tight p-4 mb-4">
-      <div class="score-filter-bar">
-        <div class="score-filter-item">
-          <span class="score-filter-label">时间范围：</span>
-          <div class="flex items-center gap-2">
-            <input class="wh-input h-8 w-[160px] px-3" value="2026-03-09 10:44:15" />
-            <span class="text-slate-500">至</span>
-            <input class="wh-input h-8 w-[160px] px-3" value="2026-04-08 10:44:15" />
+    <section id="score-list-view">
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="巡查打分统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-clipboard-list"></i></div>
+              <div>
+                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">评分记录</div>
+                <div class="disease-stat-card__trend">台账条数</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-users"></i></div>
+              <div>
+                <div id="stat-people" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">巡查人员</div>
+                <div class="disease-stat-card__trend">去重统计</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-chart-line"></i></div>
+              <div>
+                <div id="stat-avg" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">平均最低分</div>
+                <div class="disease-stat-card__trend">当前列表</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--rose">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <div>
+                <div id="stat-low" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">低分预警</div>
+                <div class="disease-stat-card__trend">最低分 &lt; 60</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="disease-list-area">
+            <div class="wh-table-shell bg-slate-950/35">
+              <div class="overflow-x-auto">
+                <table class="score-table min-w-[1600px] w-full text-left">
+                  <thead>
+                    <tr>
+                      <th class="px-4">账号</th>
+                      <th class="px-4">巡查人员</th>
+                      <th class="px-4">负责线路</th>
+                      <th class="px-4">设备号</th>
+                      <th class="px-4">巡查日期</th>
+                      <th class="px-4">最低分数</th>
+                      <th class="px-4">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="score-table-body"></tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-end gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+                <span>共 <b id="table-total" class="text-cyan-200">0</b> 条</span>
+                <div class="score-pager">
+                  <button type="button" class="score-page-btn text-slate-500">&lt;</button>
+                  <button type="button" class="score-page-btn is-active">1</button>
+                  <button type="button" class="score-page-btn text-slate-500">&gt;</button>
+                  <select class="wh-input h-[30px] px-2 text-[11px]">
+                    <option>10 条/页</option>
+                    <option>20 条/页</option>
+                  </select>
+                  <span>跳至</span>
+                  <input class="wh-input h-[30px] w-12 px-2 text-center text-[11px]" value="1" />
+                  <span>页</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary">搜索</button>
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">重置</button>
-        </div>
-      </div>
-    </section>
 
-    <section class="wh-table-shell bg-slate-950/35">
-      <div class="overflow-x-auto">
-        <table class="score-table min-w-[1600px] w-full text-left">
-          <thead>
-            <tr>
-              <th class="px-4">账号</th>
-              <th class="px-4">巡查人员</th>
-              <th class="px-4">负责线路</th>
-              <th class="px-4">设备号</th>
-              <th class="px-4">巡查日期</th>
-              <th class="px-4">最低分数</th>
-              <th class="px-4">操作</th>
-            </tr>
-          </thead>
-          <tbody id="score-table-body"></tbody>
-        </table>
-      </div>
-      <div class="flex flex-wrap items-center justify-end gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
-        <span>共 <b class="text-cyan-200">7</b> 条</span>
-        <div class="score-pager">
-          <button class="score-page-btn text-slate-500">&lt;</button>
-          <button class="score-page-btn is-active">1</button>
-          <button class="score-page-btn text-slate-500">&gt;</button>
-          <select class="wh-input h-[30px] px-2 text-[11px]">
-            <option>10 条/页</option>
-            <option>20 条/页</option>
-          </select>
-          <span>跳至</span>
-          <input class="wh-input h-[30px] w-12 px-2 text-center text-[11px]" value="1" />
-          <span>页</span>
-        </div>
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label>
+                <span>时间范围</span>
+                <div class="disease-filter-dates">
+                  <input id="filter-date-start" class="wh-input w-full" value="2026-03-09 10:44:15" />
+                  <input id="filter-date-end" class="wh-input w-full" value="2026-04-08 10:44:15" />
+                </div>
+              </label>
+              <div class="disease-filter-actions">
+                <button id="btn-search" type="button" class="wh-btn-primary">搜索</button>
+                <button id="btn-reset" type="button" class="wh-btn-ghost">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body">
+              <a class="disease-quick-link" data-quick-href="wb/in-track-person.html" href="in-track-person.html"><i class="fa-solid fa-person-walking"></i><span>人员轨迹</span></a>
+              <a class="disease-quick-link" data-quick-href="wb/in-quality-stats.html" href="in-quality-stats.html"><i class="fa-solid fa-chart-line"></i><span>统计分析</span></a>
+              <a class="disease-quick-link is-active" data-quick-href="wb/in-score.html" href="in-score.html"><i class="fa-solid fa-star-half-stroke"></i><span>巡查打分</span></a>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
   </div>
@@ -226,7 +408,10 @@
 
   <script>
     (function () {
-      var listRows = [
+      var DEFAULT_DATE_START = "2026-03-09 10:44:15";
+      var DEFAULT_DATE_END = "2026-04-08 10:44:15";
+
+      var allListRows = [
         { account:"yanghaotian", user:"杨昊天", line:"5号线", device:"Y18807", date:"2026-04-13 00:00:00", minScore:50 },
         { account:"yanghaotian", user:"杨昊天", line:"5号线", device:"Y18807", date:"2026-04-12 00:00:00", minScore:56 },
         { account:"zhangwei", user:"张伟", line:"2号线", device:"Y15502", date:"2026-04-11 00:00:00", minScore:61 },
@@ -235,6 +420,7 @@
         { account:"zhaomin", user:"赵敏", line:"11号线", device:"Y19831", date:"2026-04-08 00:00:00", minScore:63 },
         { account:"chenkai", user:"陈凯", line:"5号线", device:"Y18810", date:"2026-04-07 00:00:00", minScore:67 }
       ];
+      var listRows = allListRows.slice();
 
       var detailMap = {
         Y18807: [
@@ -263,6 +449,39 @@
       var tableBody = document.getElementById("score-table-body");
       var detailBody = document.getElementById("score-detail-body");
       var modalMask = document.getElementById("score-modal-mask");
+      var tableTotal = document.getElementById("table-total");
+
+      function parseDateTime(value) {
+        var normalized = String(value || "").trim().replace(" ", "T");
+        var time = Date.parse(normalized);
+        return Number.isNaN(time) ? null : time;
+      }
+
+      function updateScoreStats(rows) {
+        var data = rows || [];
+        var people = {};
+        var sum = 0;
+        var low = 0;
+        data.forEach(function (row) {
+          people[row.user] = true;
+          sum += row.minScore;
+          if (row.minScore < 60) low += 1;
+        });
+        document.getElementById("stat-total").textContent = String(data.length);
+        document.getElementById("stat-people").textContent = String(Object.keys(people).length);
+        document.getElementById("stat-avg").textContent = data.length ? (sum / data.length).toFixed(1) : "0";
+        document.getElementById("stat-low").textContent = String(low);
+        if (tableTotal) tableTotal.textContent = String(data.length);
+      }
+
+      function initQuickLinks() {
+        document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
+          var target = anchor.getAttribute("data-quick-href");
+          if (target && typeof whPageHref === "function") {
+            anchor.setAttribute("href", whPageHref(target));
+          }
+        });
+      }
 
       function renderList() {
         tableBody.innerHTML = listRows.map(function (row, index) {
@@ -276,6 +495,27 @@
             '<td class="px-4"><span class="score-action-link" data-action="open-detail" data-device="' + row.device + '">详情</span></td>' +
           '</tr>';
         }).join("");
+        updateScoreStats(listRows);
+      }
+
+      function searchRows() {
+        var start = parseDateTime(document.getElementById("filter-date-start").value);
+        var end = parseDateTime(document.getElementById("filter-date-end").value);
+        listRows = allListRows.filter(function (row) {
+          var rowTime = parseDateTime(row.date);
+          if (rowTime === null) return true;
+          if (start !== null && rowTime < start) return false;
+          if (end !== null && rowTime > end) return false;
+          return true;
+        });
+        renderList();
+      }
+
+      function resetFilters() {
+        document.getElementById("filter-date-start").value = DEFAULT_DATE_START;
+        document.getElementById("filter-date-end").value = DEFAULT_DATE_END;
+        listRows = allListRows.slice();
+        renderList();
       }
 
       function openDetail(device) {
@@ -299,6 +539,17 @@
         modalMask.classList.remove("show");
       }
 
+      document.getElementById("btn-search").addEventListener("click", searchRows);
+      document.getElementById("btn-reset").addEventListener("click", resetFilters);
+      initQuickLinks();
+      function setupScoreRowClick() {
+        if (!window.WHTableRowClick) return window.setTimeout(setupScoreRowClick, 40);
+        WHTableRowClick.bindById("score-table-body", {
+          getRows: function () { return listRows; },
+          onOpen: function (row) { openDetail(row.device); }
+        });
+      }
+      setupScoreRowClick();
       renderList();
 
       document.addEventListener("click", function (event) {

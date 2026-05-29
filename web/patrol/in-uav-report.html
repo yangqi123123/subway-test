@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
   <style>
     .uav-table th,
     .uav-table td {
@@ -212,13 +213,10 @@
 <body data-shell="default" data-top="patrol" data-sidebar-key="in-uav-report">
   <script src="../../assets/js/page-embed-bootstrap.js"></script>
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
-    <nav data-embed-hide class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-      <span class="text-cyan-400"><i class="fa-solid fa-plane"></i></span>
-      <span>巡查记录</span>
-      <span class="text-slate-600">&gt;&gt;</span>
-      <span class="text-cyan-50 font-semibold tracking-wide">无人机巡检报告</span>
-    </nav>
-
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">无人机巡查记录</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">无人机巡查记录面板</span>
+    </div>
     <div class="disease-layout">
       <div class="disease-layout__left">
         <div class="disease-stats" aria-label="无人机巡查统计">
@@ -261,7 +259,7 @@
             <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost"><i class="fa-solid fa-file-export mr-1"></i>导出</button>
           </div>
           <div class="wh-table-shell bg-slate-950/35">
-            <div class="overflow-x-auto">
+            <div class="uav-table-wrap overflow-x-auto">
               <table class="uav-table min-w-[1500px] w-full text-center text-[12px]">
                 <thead>
                   <tr class="bg-slate-950/75">
@@ -278,7 +276,7 @@
                     <th class="px-3 text-cyan-50/95">降落时间</th>
                     <th class="px-3 text-cyan-50/95">操作员姓名</th>
                     <th class="px-3 text-cyan-50/95">报警数量</th>
-                    <th class="px-3 text-cyan-50/95">操作</th>
+                    <th class="px-3 text-cyan-50/95 disease-col-actions">操作</th>
                   </tr>
                 </thead>
                 <tbody id="uav-report-tbody"></tbody>

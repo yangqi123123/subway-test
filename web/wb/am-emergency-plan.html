@@ -7,7 +7,160 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
   <style>
+    .disease-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+      align-items: start;
+    }
+    .disease-layout__right {
+      position: sticky;
+      top: 72px;
+      align-self: start;
+      width: 300px;
+      max-height: calc(100dvh - 88px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .disease-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .disease-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88));
+    }
+    .disease-stat-card__icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+    .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
+    .disease-filter-panel,
+    .disease-quick-panel {
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(8, 15, 35, 0.78);
+    }
+    .disease-panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2f5ff;
+      margin: 0;
+      padding: 8px 10px 7px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.92);
+    }
+    .disease-panel-body { padding: 8px 10px 10px; }
+    .disease-filter-panel .disease-panel-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .disease-filter-panel label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 0;
+      font-size: 10px;
+    }
+    .disease-filter-panel label > span:first-child { color: #94a3b8; }
+    .disease-filter-panel .wh-input {
+      height: 26px !important;
+      min-height: 26px;
+      font-size: 11px;
+      padding: 0 6px;
+    }
+    .disease-filter-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .disease-filter-actions button {
+      flex: 1;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      font-size: 11px;
+    }
+    .disease-list-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+    .disease-quick-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.14);
+      background: rgba(15, 23, 42, 0.45);
+      color: #e2f5ff;
+      font-size: 11px;
+      text-decoration: none;
+    }
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.08);
+      color: #fff;
+    }
+    .disease-quick-link.is-active {
+      border-color: rgba(34, 211, 238, 0.55);
+      background: rgba(34, 211, 238, 0.12);
+      color: #a5f3fc;
+    }
+    .disease-quick-link i {
+      width: 16px;
+      text-align: center;
+      color: #67e8f9;
+      font-size: 12px;
+    }
+    @media (max-width: 1400px) {
+      .disease-layout { grid-template-columns: 1fr; }
+      .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .disease-layout__right {
+        position: static;
+        width: 100%;
+        max-height: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+    }
+    @media (max-width: 768px) {
+      .disease-stats { grid-template-columns: 1fr; }
+      .disease-layout__right { grid-template-columns: 1fr; }
+    }
     .plan-table th,
     .plan-table td {
       height: 52px;
@@ -89,61 +242,185 @@
       box-shadow: 0 24px 80px rgba(0,0,0,.48);
       overflow: hidden;
     }
+    .am-detail-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 115;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(2, 8, 23, 0.72);
+    }
+    .am-detail-mask.show { display: flex; }
+    .am-detail-dialog {
+      width: min(860px, 92vw);
+      max-height: min(86vh, 900px);
+      border-radius: 8px;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      background: linear-gradient(180deg, #071525, #020617);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .am-detail-dialog__head {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+    }
+    .am-detail-dialog__body {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 20px 24px 16px;
+    }
+    .am-detail-dialog__foot {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 14px 24px 18px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .detail-value {
+      flex: 1;
+      min-width: 0;
+      min-height: 32px;
+      line-height: 32px;
+      color: rgba(226, 245, 255, 0.92);
+      font-size: 12px;
+      word-break: break-word;
+    }
+    .detail-value--multiline {
+      line-height: 1.6;
+      padding: 6px 0;
+      white-space: pre-wrap;
+    }
+    .detail-value--empty { color: #64748b; }
   </style>
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="am-emergency-plan" data-wb-view="page">
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
-    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
-      <span>我的工作台</span>
-      <span class="text-slate-600">&gt;&gt;</span>
-      <span class="text-cyan-50 font-semibold tracking-wide">应急预案管理</span>
-    </nav>
-
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
       <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">应急预案管理</h1>
-      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">应急预案信息维护</span>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">应急预案面板</span>
     </div>
 
-    <section class="neon-panel neon-panel--tight p-4 mb-4">
-      <div class="flex flex-wrap items-end gap-4">
-        <div class="min-w-[240px]">
-          <label class="wh-filter-label block mb-1.5">名称</label>
-          <input class="wh-input h-8 w-full px-3" placeholder="请输入预案名称" />
-        </div>
-        <div class="flex gap-2">
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary">搜索</button>
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">重置</button>
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary" data-action="new-plan">新建</button>
-        </div>
-      </div>
-    </section>
+    <section id="plan-list-view">
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="应急预案统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-file-shield"></i></div>
+              <div>
+                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">预案总数</div>
+                <div class="disease-stat-card__trend">应急台账</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-building"></i></div>
+              <div>
+                <div id="stat-dept" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">应急部门</div>
+                <div class="disease-stat-card__trend">部门去重</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+              <div>
+                <div id="stat-emergency" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">应急中心</div>
+                <div class="disease-stat-card__trend">本部门预案</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-clipboard-list"></i></div>
+              <div>
+                <div id="stat-types" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">预案类型</div>
+                <div class="disease-stat-card__trend">名称去重</div>
+              </div>
+            </div>
+          </div>
 
-    <section class="wh-table-shell bg-slate-950/35">
-      <div class="overflow-x-auto">
-        <table class="plan-table min-w-[1200px] w-full text-left">
-          <thead>
-            <tr>
-              <th class="px-4">名称</th>
-              <th class="px-4">应急部门</th>
-              <th class="px-4">备注</th>
-              <th class="px-4">操作</th>
-            </tr>
-          </thead>
-          <tbody id="plan-table-body"></tbody>
-        </table>
-      </div>
-      <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
-        <span>共 <b class="text-cyan-200">4</b> 条</span>
-        <div class="flex items-center gap-2 flex-wrap">
-          <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button>
-          <select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select>
-          <span>跳至</span>
-          <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
-          <span>页</span>
+          <div class="disease-list-area">
+            <div class="disease-list-toolbar">
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new-plan">
+                <i class="fa-solid fa-plus mr-1"></i>新建
+              </button>
+            </div>
+            <div class="wh-table-shell bg-slate-950/35">
+              <div class="overflow-x-auto">
+                <table class="plan-table min-w-[1200px] w-full text-left">
+                  <thead>
+                    <tr>
+                      <th class="px-4">名称</th>
+                      <th class="px-4">应急部门</th>
+                      <th class="px-4">备注</th>
+                      <th class="px-4 disease-col-actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="plan-table-body"></tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+                <span>共 <b id="table-total" class="text-cyan-200">0</b> 条</span>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <button type="button" class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button>
+                  <select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select>
+                  <span>跳至</span>
+                  <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+                  <span>页</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label><span>名称</span><input id="filter-name" class="wh-input w-full" placeholder="请输入预案名称" /></label>
+              <div class="disease-filter-actions">
+                <button id="btn-search" type="button" class="wh-btn-primary">搜索</button>
+                <button id="btn-reset" type="button" class="wh-btn-ghost">重置</button>
+              </div>
+            </div>
+          </div>
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body">
+              <a class="disease-quick-link" data-quick-href="wb/am-emergency-staff.html" href="am-emergency-staff.html"><i class="fa-solid fa-user-shield"></i><span>应急人员</span></a>
+              <a class="disease-quick-link" data-quick-href="wb/am-emergency-warehouse.html" href="am-emergency-warehouse.html"><i class="fa-solid fa-warehouse"></i><span>应急仓库</span></a>
+              <a class="disease-quick-link is-active" data-quick-href="wb/am-emergency-plan.html" href="am-emergency-plan.html"><i class="fa-solid fa-file-shield"></i><span>应急预案</span></a>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
+  </div>
+
+  <div id="plan-detail-mask" class="am-detail-mask" aria-hidden="true">
+    <div class="am-detail-dialog" role="dialog" aria-labelledby="plan-detail-title">
+      <div class="am-detail-dialog__head">
+        <div>
+          <h3 id="plan-detail-title" class="text-white font-semibold text-sm m-0">查看详情</h3>
+          <div id="plan-detail-subtitle" class="text-[11px] text-slate-400 mt-0.5">应急预案详情</div>
+        </div>
+        <button type="button" class="wh-modal-close text-slate-400 hover:text-white text-xl leading-none" data-action="close-plan-detail" aria-label="关闭">×</button>
+      </div>
+      <div id="plan-detail-body" class="am-detail-dialog__body"></div>
+      <div class="am-detail-dialog__foot">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-plan-detail">关闭</button>
+      </div>
+    </div>
   </div>
 
   <div id="plan-modal-mask" class="plan-modal-mask">
@@ -193,26 +470,115 @@
         { name:"其他", dept:"应急中心", remark:"适用于未归类应急场景" }
       ];
 
+      var displayRows = rows.slice();
       var editIndex = -1;
-      var deleteIndex = -1;
+      var deleteName = "";
       var tableBody = document.getElementById("plan-table-body");
+      var tableTotal = document.getElementById("table-total");
       var modalMask = document.getElementById("plan-modal-mask");
       var confirmMask = document.getElementById("confirm-mask");
       var modalTitle = document.getElementById("plan-modal-title");
+      var detailMask = document.getElementById("plan-detail-mask");
+      var detailBody = document.getElementById("plan-detail-body");
+      var detailSubtitle = document.getElementById("plan-detail-subtitle");
+
+      function escHtml(value) {
+        return String(value || "").replace(/[&<>"']/g, function (char) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+        });
+      }
+      function detailValue(value, multiline) {
+        var text = value === undefined || value === null || value === "" ? "—" : String(value);
+        var cls = "detail-value" + (text === "—" ? " detail-value--empty" : "") + (multiline ? " detail-value--multiline" : "");
+        return '<div class="' + cls + '">' + escHtml(text) + "</div>";
+      }
+      function detailRow(label, value, multiline) {
+        return '<label class="plan-form-item"><span class="plan-form-label">' + escHtml(label) + "：</span>" + detailValue(value, multiline) + "</label>";
+      }
+      function buildDetailHtml(row) {
+        return (
+          '<div class="plan-form-grid">' +
+          detailRow("名称", row.name) +
+          detailRow("应急部门", row.dept) +
+          detailRow("备注", row.remark, true) +
+          "</div>"
+        );
+      }
+      function openDetail(displayIndex) {
+        var row = displayRows[displayIndex];
+        if (!row || !detailMask || !detailBody) return;
+        if (detailSubtitle) detailSubtitle.textContent = row.name || "应急预案详情";
+        detailBody.innerHTML = buildDetailHtml(row);
+        detailMask.classList.add("show");
+        detailMask.setAttribute("aria-hidden", "false");
+      }
+      function closeDetail() {
+        if (!detailMask) return;
+        detailMask.classList.remove("show");
+        detailMask.setAttribute("aria-hidden", "true");
+      }
+
+      function materialHref() {
+        return typeof whPageHref === "function" ? whPageHref("wb/am-emergency-material.html") : "am-emergency-material.html";
+      }
+
+      function findRowIndex(name) {
+        return rows.findIndex(function (row) { return row.name === name; });
+      }
+
+      function updatePlanStats(data) {
+        var list = data || [];
+        var depts = {};
+        var names = {};
+        var emergency = 0;
+        list.forEach(function (row) {
+          depts[row.dept] = true;
+          names[row.name] = true;
+          if (row.dept === "应急中心") emergency += 1;
+        });
+        document.getElementById("stat-total").textContent = String(list.length);
+        document.getElementById("stat-dept").textContent = String(Object.keys(depts).length);
+        document.getElementById("stat-emergency").textContent = String(emergency);
+        document.getElementById("stat-types").textContent = String(Object.keys(names).length);
+        if (tableTotal) tableTotal.textContent = String(list.length);
+      }
+
+      function initQuickLinks() {
+        document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
+          var target = anchor.getAttribute("data-quick-href");
+          if (target && typeof whPageHref === "function") anchor.setAttribute("href", whPageHref(target));
+        });
+      }
 
       function renderRows() {
-        tableBody.innerHTML = rows.map(function (row, index) {
-          return '<tr class="' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '">' +
+        tableBody.innerHTML = displayRows.map(function (row, index) {
+          return '<tr class="wh-row-open ' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '" data-row-index="' + index + '">' +
             '<td class="px-4">' + row.name + '</td>' +
             '<td class="px-4">' + row.dept + '</td>' +
             '<td class="px-4">' + row.remark + '</td>' +
-            '<td class="px-4">' +
-              '<span class="plan-action text-amber-300" data-action="edit-plan" data-index="' + index + '"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
-              '<span class="plan-action text-sky-300" onclick="location.href=\'am-emergency-material.html\'"><i class="fa-regular fa-boxes-stacked"></i>查看物资调配</span>' +
-              '<span class="plan-action text-rose-300" data-action="delete-plan" data-index="' + index + '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
-            '</td>' +
+            '<td class="px-4 disease-col-actions"><div class="disease-op-actions">' +
+              '<span class="plan-action text-amber-300" data-action="edit-plan" data-plan-name="' + row.name + '"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
+              '<span class="plan-action text-sky-300" data-action="view-material"><i class="fa-regular fa-boxes-stacked"></i>查看物资调配</span>' +
+              '<span class="plan-action text-rose-300" data-action="delete-plan" data-plan-name="' + row.name + '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
+            '</div></td>' +
           '</tr>';
         }).join("");
+        updatePlanStats(displayRows);
+      }
+
+      function applyFilter() {
+        var name = document.getElementById("filter-name").value.trim();
+        displayRows = rows.filter(function (row) {
+          if (name && row.name.indexOf(name) === -1 && row.remark.indexOf(name) === -1) return false;
+          return true;
+        });
+        renderRows();
+      }
+
+      function resetFilters() {
+        document.getElementById("filter-name").value = "";
+        displayRows = rows.slice();
+        renderRows();
       }
 
       function normalizeDeptValue(dept) {
@@ -251,35 +617,56 @@
         if (editIndex > -1) rows[editIndex] = row;
         else rows.unshift(row);
         modalMask.classList.remove("show");
-        renderRows();
+        applyFilter();
       }
 
+      document.getElementById("btn-search").addEventListener("click", applyFilter);
+      document.getElementById("btn-reset").addEventListener("click", resetFilters);
+      initQuickLinks();
+      function setupListRowClick() {
+        if (!window.WHTableRowClick) return window.setTimeout(setupListRowClick, 40);
+        WHTableRowClick.bindById("plan-table-body", {
+          getRows: function () { return displayRows; },
+          onOpen: function (row, index) { openDetail(index); }
+        });
+      }
+      setupListRowClick();
+      displayRows = rows.slice();
       renderRows();
 
       document.addEventListener("click", function (event) {
         var trigger = event.target.closest("[data-action]");
         if (!trigger) return;
         var action = trigger.getAttribute("data-action");
-        var index = Number(trigger.getAttribute("data-index"));
+        var planName = trigger.getAttribute("data-plan-name");
+        var index = planName ? findRowIndex(planName) : -1;
         if (action === "new-plan") openModal("new");
-        if (action === "edit-plan") openModal("edit", index);
-        if (action === "delete-plan") {
-          deleteIndex = index;
+        if (action === "edit-plan" && index > -1) openModal("edit", index);
+        if (action === "view-material") location.href = materialHref();
+        if (action === "delete-plan" && planName) {
+          deleteName = planName;
           confirmMask.classList.add("show");
         }
         if (action === "close-plan-modal") modalMask.classList.remove("show");
+        if (action === "close-plan-detail") closeDetail();
         if (action === "save-plan") savePlan();
         if (action === "cancel-plan-delete") {
-          deleteIndex = -1;
+          deleteName = "";
           confirmMask.classList.remove("show");
         }
         if (action === "confirm-plan-delete") {
+          var deleteIndex = deleteName ? findRowIndex(deleteName) : -1;
           if (deleteIndex > -1) rows.splice(deleteIndex, 1);
-          deleteIndex = -1;
+          deleteName = "";
           confirmMask.classList.remove("show");
-          renderRows();
+          applyFilter();
         }
       });
+      if (detailMask) {
+        detailMask.addEventListener("click", function (event) {
+          if (event.target === detailMask) closeDetail();
+        });
+      }
     })();
   </script>
   <script src="../../assets/js/menu-config.js"></script>

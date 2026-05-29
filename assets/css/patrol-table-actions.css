@@ -1,0 +1,129 @@
+/* 巡查 / 项目 / 资产管理列表：右侧操作列横向滚动固定 + 按钮左对齐 */
+.disease-table-wrap,
+.uav-table-wrap,
+.project-table-wrap,
+.am-table-wrap,
+.alert-tree-wrap {
+  overflow-x: auto;
+}
+
+.disease-table-wrap thead th.disease-col-actions,
+.disease-table-wrap tbody td.disease-col-actions,
+.uav-table-wrap thead th.disease-col-actions,
+.uav-table-wrap tbody td.disease-col-actions,
+.project-table-wrap thead th.disease-col-actions,
+.project-table-wrap tbody td.disease-col-actions,
+.am-table-wrap thead th.disease-col-actions,
+.am-table-wrap tbody td.disease-col-actions,
+.alert-tree-wrap thead th.disease-col-actions,
+.alert-tree-wrap tbody td.disease-col-actions {
+  position: sticky;
+  right: 0;
+  width: 0;
+  min-width: max-content;
+  max-width: max-content;
+  white-space: nowrap;
+  text-align: left;
+  vertical-align: middle;
+  padding-left: 10px;
+  padding-right: 12px;
+  box-shadow: -6px 0 10px rgba(0, 0, 0, 0.22);
+  border-right: 0;
+}
+
+.disease-table-wrap thead th.disease-col-actions,
+.uav-table-wrap thead th.disease-col-actions,
+.project-table-wrap thead th.disease-col-actions,
+.am-table-wrap thead th.disease-col-actions,
+.alert-tree-wrap thead th.disease-col-actions {
+  z-index: 5;
+  background: rgba(2, 6, 23, 0.96);
+}
+
+.disease-table-wrap tbody td.disease-col-actions,
+.uav-table-wrap tbody td.disease-col-actions,
+.project-table-wrap tbody td.disease-col-actions,
+.am-table-wrap tbody td.disease-col-actions,
+.alert-tree-wrap tbody td.disease-col-actions {
+  z-index: 2;
+}
+
+.disease-op-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 4px;
+  width: max-content;
+}
+
+.disease-table-wrap tbody tr:nth-child(odd) td.disease-col-actions,
+.uav-table-wrap tbody tr:nth-child(odd) td.disease-col-actions,
+.project-table-wrap tbody tr:nth-child(odd) td.disease-col-actions,
+.am-table-wrap tbody tr:nth-child(odd) td.disease-col-actions {
+  background: rgba(2, 6, 23, 0.92);
+}
+
+.disease-table-wrap tbody tr:nth-child(even) td.disease-col-actions,
+.uav-table-wrap tbody tr:nth-child(even) td.disease-col-actions,
+.project-table-wrap tbody tr:nth-child(even) td.disease-col-actions,
+.am-table-wrap tbody tr:nth-child(even) td.disease-col-actions {
+  background: rgba(15, 23, 42, 0.88);
+}
+
+.disease-table-wrap tbody tr:hover td.disease-col-actions,
+.uav-table-wrap tbody tr:hover td.disease-col-actions,
+.project-table-wrap tbody tr:hover td.disease-col-actions,
+.am-table-wrap tbody tr:hover td.disease-col-actions,
+.alert-tree-wrap tbody tr:hover td.disease-col-actions {
+  background: rgba(12, 40, 68, 0.98);
+}
+
+.alert-tree-wrap tbody tr.alert-tree-row--parent td.disease-col-actions {
+  background: rgba(14, 116, 178, 0.95);
+}
+
+.alert-tree-wrap tbody tr.alert-tree-row--parent:hover td.disease-col-actions {
+  background: rgba(14, 116, 178, 1);
+}
+
+.alert-tree-wrap tbody tr.alert-tree-row--child td.disease-col-actions {
+  background: rgba(12, 24, 48, 0.92);
+}
+
+.alert-tree-wrap tbody tr.alert-tree-row--child:nth-child(even) td.disease-col-actions {
+  background: rgba(15, 32, 58, 0.88);
+}
+
+.page-table .row-action,
+.project-table-wrap .disease-op-actions .project-action,
+.am-table-wrap .disease-op-actions [class$="-action"],
+.am-table-wrap .disease-op-actions .fl-op-btn,
+.am-table-wrap .disease-op-actions .mm-op-btn,
+.am-table-wrap .disease-op-actions .wb-action-btn,
+.am-table-wrap .disease-op-actions .alert-op-btn,
+.alert-tree-wrap .disease-op-actions .alert-op-btn,
+.uav-table-wrap .disease-op-actions .uav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-right: 0;
+  white-space: nowrap;
+  font-size: 11px;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.uav-table-wrap .disease-op-actions .uav-link {
+  font-size: 12px;
+}
+
+.project-table-wrap .disease-op-actions .project-action {
+  color: #38bdf8;
+}
+
+.project-table-wrap .disease-op-actions .project-action--danger {
+  color: #fb7185;
+}

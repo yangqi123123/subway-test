@@ -100,6 +100,7 @@
   "am-line.html": "wb/am-line.html",
   "am-maintenance.html": "wb/am-maintenance.html",
   "am-ops-metro.html": "wb/am-ops-metro.html",
+  "am-ops-settings.html": "wb/am-ops-settings.html",
   "am-section.html": "wb/am-section.html",
   "am-station.html": "wb/am-station.html",
   "in-project-done.html": "wb/in-project-done.html",
@@ -137,23 +138,22 @@
     {
       id: "patrol",
       label: "巡查记录",
-      kind: "dropdown",
-      items: [
-        { label: "病害巡查", href: "patrol/in-disease.html" },
-        { label: "夜班作业", href: "patrol/in-night.html" },
-        { label: "无人机巡查记录", href: "patrol/in-uav-report.html" },
-        { label: "人工巡查记录", href: "patrol/in-manual.html" },
-      ],
+      kind: "link",
+      href: "patrol/in-disease.html",
+      matchTop: "patrol",
     },
-    { id: "ai", label: "AI识别", kind: "link", href: "ai/ai.html" },
     {
       id: "st",
       label: "数据统计",
-      kind: "dropdown",
-      items: [
-        { label: "线路项目统计", href: "stats/dc-line-stats.html" },
-        { label: "全时全域数据统计报表", href: "stats/dc-system-stats.html" },
-      ],
+      kind: "link",
+      href: "stats/dc-line-stats.html",
+      matchTop: "st",
+    },
+    {
+      id: "project",
+      label: "项目管理",
+      kind: "link",
+      href: "wb/in-project.html",
     },
     { id: "wb", label: "我的工作台", kind: "link", href: "wb/wb-hub.html" },
   ];
@@ -324,6 +324,7 @@
             { key: "wb-notice", label: "通知公告", href: "wb/wb-notice.html" },
             { key: "wb-msg-template", label: "消息模板", href: "wb/wb-msg-template.html" },
             { key: "am-ops-metro", label: "资源监控", href: "wb/am-ops-metro.html" },
+            { key: "am-ops-settings", label: "设置", href: "wb/am-ops-settings.html" },
           ],
         },
         {
@@ -357,12 +358,22 @@
     return false;
   }
 
+  function isProjectNavPage(file) {
+    return (
+      file === "in-project.html" ||
+      file === "in-project-done.html" ||
+      file === "in-project-patrol.html"
+    );
+  }
+
   function topNavMatchId(file, bodyTopId) {
     for (var i = 0; i < TOP_NAV.length; i++) {
       var it = TOP_NAV[i];
+      if (it.matchTop && it.matchTop === bodyTopId) return it.id;
+      if (it.id === "project" && isProjectNavPage(file)) return it.id;
       if (it.kind === "dropdown") {
         if (dropdownContainsPage(it, file)) return it.id;
-      } else if (hrefFileName(it.href) === file) return it.id;
+      } else if (it.href && hrefFileName(it.href) === file) return it.id;
     }
     return bodyTopId;
   }
@@ -400,6 +411,8 @@
         });
       }
     });
+    add("AI识别", "ai/ai.html", "业务功能");
+    add("完工项目", "wb/in-project-done.html", "项目管理");
     Object.keys(SIDEBAR).forEach(function (topId) {
       (SIDEBAR[topId] || []).forEach(function (node) {
         if (node.type === "item") add(node.label, node.href, topId);

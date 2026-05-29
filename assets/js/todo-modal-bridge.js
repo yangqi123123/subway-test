@@ -281,6 +281,7 @@
     var note = (item.locationNote || "").trim();
     var grid = [
       ["项目名称", item.projectName],
+      ["告警来源", item.source || "—"],
       ["报警类型", item.type],
       ["报警区间", item.section],
       ["位置", item.location],

@@ -11,18 +11,6 @@
   <link rel="stylesheet" href="../../assets/css/map-gis.css" />
   <style>
     .track-shell { min-height: 100%; }
-    .track-filter-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 12px;
-    }
-    .track-filter-actions {
-      display: flex;
-      align-items: end;
-      justify-content: flex-end;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
     .track-split {
       display: grid;
       grid-template-columns: 460px minmax(0, 1fr);
@@ -160,89 +148,293 @@
       background: rgba(9, 18, 36, 0.78);
     }
     @media (max-width: 1400px) {
-      .track-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .track-split { grid-template-columns: 1fr; }
     }
     @media (max-width: 900px) {
-      .track-filter-grid { grid-template-columns: 1fr; }
       .track-base-grid { grid-template-columns: 1fr; }
+    }
+
+    .disease-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+      align-items: start;
+    }
+    .disease-layout__right {
+      position: sticky;
+      top: 72px;
+      align-self: start;
+      width: 300px;
+      max-height: calc(100dvh - 88px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .disease-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .disease-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88));
+    }
+    .disease-stat-card__icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+    .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
+    .disease-filter-panel,
+    .disease-quick-panel {
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(8, 15, 35, 0.78);
+    }
+    .disease-panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2f5ff;
+      margin: 0;
+      padding: 8px 10px 7px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.92);
+    }
+    .disease-panel-body {
+      padding: 8px 10px 10px;
+    }
+    .disease-filter-panel .disease-panel-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .disease-filter-panel label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 0;
+      font-size: 10px;
+    }
+    .disease-filter-panel label > span:first-child { color: #94a3b8; }
+    .disease-filter-panel .wh-input {
+      height: 26px !important;
+      min-height: 26px;
+      font-size: 11px;
+      padding: 0 6px;
+    }
+    .disease-filter-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .disease-filter-actions button {
+      flex: 1;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      font-size: 11px;
+    }
+    .disease-list-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .disease-quick-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.14);
+      background: rgba(15, 23, 42, 0.45);
+      color: #e2f5ff;
+      font-size: 11px;
+      text-decoration: none;
+    }
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.08);
+      color: #fff;
+    }
+    .disease-quick-link.is-active {
+      border-color: rgba(34, 211, 238, 0.55);
+      background: rgba(34, 211, 238, 0.12);
+      color: #a5f3fc;
+    }
+    .disease-quick-link i {
+      width: 16px;
+      text-align: center;
+      color: #67e8f9;
+      font-size: 12px;
+    }
+    .track-table-shell th,
+    .track-table-shell td {
+      height: 45px;
+      border-right: 1px solid rgba(34, 211, 238, 0.08);
+      border-bottom: 1px solid rgba(34, 211, 238, 0.1);
+      vertical-align: middle;
+      padding: 0 12px;
+      font-size: 11px;
+    }
+    .track-table-shell th:last-child,
+    .track-table-shell td:last-child { border-right: 0; }
+    @media (max-width: 1400px) {
+      .disease-layout { grid-template-columns: 1fr; }
+      .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .disease-layout__right {
+        position: static;
+        width: 100%;
+        max-height: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+    }
+    @media (max-width: 768px) {
+      .disease-stats { grid-template-columns: 1fr; }
+      .disease-layout__right { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="in-track-person" data-wb-view="page">
   <div id="page-root" class="track-shell max-w-[1920px] mx-auto min-h-full">
-    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
-      <span class="text-slate-600">/</span>
-      <span>巡检质量</span>
-      <span class="text-slate-600">/</span>
-      <span class="text-cyan-50 font-semibold tracking-wide">人员轨迹</span>
-    </nav>
-
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
       <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">人员轨迹</h1>
-      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">后台轨迹回放模式</span>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">人员轨迹面板</span>
     </div>
 
-    <section id="track-list-view" class="space-y-4">
-      <div class="neon-panel p-4">
-        <div class="track-filter-grid">
-          <div>
-            <label class="wh-filter-label block mb-1">人员姓名</label>
-            <input id="filter-name" class="wh-input w-full px-3 py-2" placeholder="请输入人员姓名" />
+    <section id="track-list-view">
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="人员轨迹统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-users"></i></div>
+              <div>
+                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">人员总数</div>
+                <div class="disease-stat-card__trend">轨迹台账</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-signal"></i></div>
+              <div>
+                <div id="stat-online" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">在线</div>
+                <div class="disease-stat-card__trend">实时在线</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-power-off"></i></div>
+              <div>
+                <div id="stat-offline" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">离线</div>
+                <div class="disease-stat-card__trend">暂无定位</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-route"></i></div>
+              <div>
+                <div id="stat-points" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">轨迹点位</div>
+                <div class="disease-stat-card__trend">累计定位点</div>
+              </div>
+            </div>
           </div>
-          <div>
-            <label class="wh-filter-label block mb-1">设备编号</label>
-            <input id="filter-device" class="wh-input w-full px-3 py-2" placeholder="请输入设备编号" />
-          </div>
-          <div>
-            <label class="wh-filter-label block mb-1">所属线路</label>
-            <select id="filter-line" class="wh-input w-full px-3 py-2">
-              <option value="">全部</option>
-              <option value="2号线">2号线</option>
-              <option value="5号线">5号线</option>
-              <option value="8号线">8号线</option>
-            </select>
-          </div>
-          <div>
-            <label class="wh-filter-label block mb-1">所属部门</label>
-            <select id="filter-dept" class="wh-input w-full px-3 py-2">
-              <option value="">全部</option>
-              <option value="巡检一部">巡检一部</option>
-              <option value="巡检二部">巡检二部</option>
-              <option value="应急中心">应急中心</option>
-            </select>
-          </div>
-          <div>
-            <label class="wh-filter-label block mb-1">轨迹日期</label>
-            <input id="filter-date" type="date" class="wh-input w-full px-3 py-2" />
-          </div>
-        </div>
-        <div class="track-filter-actions mt-4">
-          <button id="btn-search" type="button" class="wh-btn-primary px-4 py-2 text-sm">搜索</button>
-          <button id="btn-reset" type="button" class="wh-btn-ghost px-4 py-2 text-sm">重置</button>
-          <button id="btn-export" type="button" class="wh-btn-gold px-4 py-2 text-sm">导出</button>
-        </div>
-      </div>
 
-      <div class="wh-table-shell overflow-hidden">
-        <div class="overflow-auto">
-          <table class="min-w-full">
-            <thead>
-              <tr class="text-left text-cyan-50">
-                <th>序号</th>
-                <th>人员姓名</th>
-                <th>设备编号</th>
-                <th>所属部门</th>
-                <th>所属线路</th>
-                <th>最新定位时间</th>
-                <th>当前状态</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody id="track-table-body"></tbody>
-          </table>
+          <div class="disease-list-area">
+            <div class="disease-list-toolbar">
+              <button id="btn-export" type="button" class="px-4 py-1.5 rounded text-xs wh-btn-gold">
+                <i class="fa-solid fa-file-export mr-1"></i>导出
+              </button>
+            </div>
+            <div class="wh-table-shell bg-slate-950/35 track-table-shell overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="min-w-full w-full text-left">
+                  <thead>
+                    <tr class="bg-slate-950/75 text-cyan-50/95">
+                      <th>序号</th>
+                      <th>人员姓名</th>
+                      <th>设备编号</th>
+                      <th>所属部门</th>
+                      <th>所属线路</th>
+                      <th>最新定位时间</th>
+                      <th>当前状态</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="track-table-body"></tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-end gap-2 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+                <span>共 <b id="table-total" class="text-cyan-200">0</b> 条</span>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label><span>人员姓名</span><input id="filter-name" class="wh-input w-full" placeholder="请输入人员姓名" /></label>
+              <label><span>设备编号</span><input id="filter-device" class="wh-input w-full" placeholder="请输入设备编号" /></label>
+              <label><span>所属线路</span>
+                <select id="filter-line" class="wh-input w-full">
+                  <option value="">全部</option>
+                  <option value="2号线">2号线</option>
+                  <option value="5号线">5号线</option>
+                  <option value="8号线">8号线</option>
+                </select>
+              </label>
+              <label><span>所属部门</span>
+                <select id="filter-dept" class="wh-input w-full">
+                  <option value="">全部</option>
+                  <option value="巡检一部">巡检一部</option>
+                  <option value="巡检二部">巡检二部</option>
+                  <option value="应急中心">应急中心</option>
+                </select>
+              </label>
+              <label><span>轨迹日期</span><input id="filter-date" type="date" class="wh-input w-full" /></label>
+              <div class="disease-filter-actions">
+                <button id="btn-search" type="button" class="wh-btn-primary rounded text-xs">搜索</button>
+                <button id="btn-reset" type="button" class="wh-btn-ghost rounded text-xs">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body">
+              <a class="disease-quick-link is-active" data-quick-href="wb/in-track-person.html" href="in-track-person.html"><i class="fa-solid fa-person-walking"></i><span>人员轨迹</span></a>
+              <a class="disease-quick-link" data-quick-href="wb/in-quality-stats.html" href="in-quality-stats.html"><i class="fa-solid fa-chart-line"></i><span>统计分析</span></a>
+              <a class="disease-quick-link" data-quick-href="wb/in-score.html" href="in-score.html"><i class="fa-solid fa-star-half-stroke"></i><span>巡查打分</span></a>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
 
@@ -359,9 +551,34 @@
     let endMarker = null;
     let playMarker = null;
 
+    function updateTrackStats(rows) {
+      const list = rows || trackRows;
+      const online = list.filter((r) => r.status === "在线").length;
+      const offline = list.filter((r) => r.status === "离线").length;
+      const points = list.reduce((sum, r) => sum + (r.points ? r.points.length : 0), 0);
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = String(val);
+      };
+      set("stat-total", list.length);
+      set("stat-online", online);
+      set("stat-offline", offline);
+      set("stat-points", points);
+      set("table-total", list.length);
+    }
+
+    function initQuickLinks() {
+      document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach((anchor) => {
+        const target = anchor.getAttribute("data-quick-href");
+        if (target && typeof whPageHref === "function") {
+          anchor.setAttribute("href", whPageHref(target));
+        }
+      });
+    }
+
     function renderTable(rows) {
       tableBody.innerHTML = rows.map((row, index) => `
-        <tr style="background:${index % 2 === 0 ? 'var(--row-a)' : 'var(--row-b)'}">
+        <tr data-row-index="${index}" style="background:${index % 2 === 0 ? 'var(--row-a)' : 'var(--row-b)'}">
           <td>${index + 1}</td>
           <td>${row.personName}</td>
           <td>${row.deviceCode}</td>
@@ -376,6 +593,7 @@
       tableBody.querySelectorAll("[data-detail-id]").forEach((btn) => {
         btn.addEventListener("click", () => openDetail(Number(btn.dataset.detailId)));
       });
+      updateTrackStats(rows);
     }
 
     function buildBaseInfo(row) {
@@ -575,7 +793,30 @@
       if (trackLine && trackMap) trackMap.fitBounds(trackLine.getBounds(), { padding: [40, 40] });
     });
 
+    initQuickLinks();
+    function setupTrackRowClick() {
+      if (!window.WHTableRowClick) return window.setTimeout(setupTrackRowClick, 40);
+      WHTableRowClick.bindById("track-table-body", {
+        getRows: function () { return trackRows; },
+        getIndex: function (tr) { return Number(tr.getAttribute("data-row-index")); },
+        onOpen: function (row) { openDetail(row.id); }
+      });
+    }
+    setupTrackRowClick();
     renderTable(trackRows);
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var id = params.get("id");
+      if (id) {
+        setTimeout(function () { openDetail(Number(id)); }, 120);
+        return;
+      }
+      var device = params.get("device");
+      if (device) {
+        var row = trackRows.find(function (item) { return item.deviceCode === device; });
+        if (row) setTimeout(function () { openDetail(row.id); }, 120);
+      }
+    })();
   </script>
 </body>
 </html>

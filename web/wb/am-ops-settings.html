@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>设置</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/wb-system.css" />
+  <style>
+    .ops-page { color: #e2f5ff; }
+    .ops-settings-layout.disease-layout {
+      grid-template-columns: minmax(0, 1fr) 272px;
+      gap: 10px;
+      align-items: start;
+    }
+    .ops-settings-layout .disease-layout__left {
+      min-width: 0;
+    }
+    .ops-settings-layout .disease-layout__right {
+      width: 272px;
+    }
+    .ops-settings-card {
+      width: 100%;
+      max-width: none;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88));
+      padding: 18px 22px 20px;
+    }
+    .ops-settings-card h2 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #f0f9ff;
+    }
+    .ops-settings-card .ops-settings-desc {
+      margin: 0 0 16px;
+      font-size: 12px;
+      line-height: 1.65;
+      color: #94a3b8;
+    }
+    .ops-settings-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .ops-settings-row label {
+      font-size: 12px;
+      color: #9cc6df;
+      min-width: 120px;
+    }
+    .ops-settings-row .wh-input {
+      width: 120px;
+      height: 34px;
+    }
+    .ops-settings-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 20px;
+      margin: 16px 0;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(2, 8, 23, 0.45);
+    }
+    @media (max-width: 900px) {
+      .ops-settings-meta { grid-template-columns: 1fr; }
+    }
+    .ops-settings-meta dt {
+      font-size: 10px;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+    .ops-settings-meta dd {
+      margin: 0;
+      font-size: 12px;
+      color: #e2f5ff;
+    }
+    .ops-settings-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      background: rgba(34, 211, 238, 0.08);
+      color: #a5f3fc;
+    }
+    .ops-settings-status.is-cleared {
+      border-color: rgba(251, 191, 36, 0.35);
+      background: rgba(251, 191, 36, 0.1);
+      color: #fcd34d;
+    }
+    .ops-settings-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    @media (max-width: 1400px) {
+      .ops-settings-layout.disease-layout {
+        grid-template-columns: 1fr;
+      }
+      .ops-settings-layout .disease-layout__right {
+        width: 100%;
+        max-height: none;
+      }
+    }
+  </style>
+</head>
+<body data-shell="default" data-top="wb" data-sidebar-key="am-ops-settings" data-wb-view="page">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full ops-page px-1 pb-4">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">设置</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">巡查色块清空</span>
+    </div>
+
+    <section>
+      <div class="disease-layout ops-settings-layout">
+        <div class="disease-layout__left">
+          <div class="ops-settings-card">
+            <h2>全景地图巡查色块自动清空</h2>
+            <p class="ops-settings-desc">
+              按自定义间隔天数，系统自动清空全景地图上<strong class="text-cyan-200/90">已巡查</strong>与<strong class="text-cyan-200/90">待巡查</strong>区域色块及关联工地照片标注。到达周期后，用户打开全景地图时将执行清空；也可在此立即清空。
+            </p>
+
+            <div class="ops-settings-row">
+              <label for="ops-clear-interval">清空间隔（天）</label>
+              <input id="ops-clear-interval" type="number" class="wh-input px-3 text-sm" min="1" max="365" step="1" value="7" />
+              <span class="text-[11px] text-slate-500">范围 1～365 天</span>
+            </div>
+
+            <p id="ops-clear-status-wrap" class="mb-3 hidden">
+              <span id="ops-clear-status" class="ops-settings-status">—</span>
+            </p>
+
+            <dl class="ops-settings-meta">
+              <div>
+                <dt>色块开始展示时间</dt>
+                <dd id="ops-meta-seeded">—</dd>
+              </div>
+              <div>
+                <dt>预计下次自动清空</dt>
+                <dd id="ops-meta-next">—</dd>
+              </div>
+            </dl>
+
+            <div class="ops-settings-actions">
+              <button type="button" id="ops-save-interval" class="px-4 py-1.5 rounded text-xs wh-btn-primary">
+                <i class="fa-solid fa-floppy-disk mr-1"></i>保存间隔
+              </button>
+              <button type="button" id="ops-clear-now" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">
+                <i class="fa-solid fa-eraser mr-1"></i>立即清空色块
+              </button>
+              <a id="ops-open-map" href="../map/map-gis.html" class="px-4 py-1.5 rounded text-xs wh-btn-ghost inline-flex items-center">
+                <i class="fa-solid fa-map mr-1"></i>打开全景地图
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <aside class="disease-layout__right" aria-label="快捷操作">
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body" id="ops-quick-links"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/map-patrol-clear-settings.js"></script>
+  <script src="../../assets/js/system-mgmt-quick-links.js"></script>
+  <script src="../../assets/js/workbench-mega.js"></script>
+  <script src="../../assets/js/shell.js"></script>
+  <script>
+    (function () {
+      var S = window.MapPatrolClearSettings;
+      if (!S) return;
+
+      function showToast(message) {
+        var box = document.getElementById("ops-settings-toast");
+        if (!box) {
+          box = document.createElement("div");
+          box.id = "ops-settings-toast";
+          box.className =
+            "fixed bottom-5 right-5 z-[1300] hidden rounded bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg";
+          document.body.appendChild(box);
+        }
+        box.textContent = message;
+        box.classList.remove("hidden");
+        clearTimeout(showToast._timer);
+        showToast._timer = setTimeout(function () {
+          box.classList.add("hidden");
+        }, 1800);
+      }
+
+      function refreshUi() {
+        var summary = S.getSummary();
+        document.getElementById("ops-clear-interval").value = String(summary.intervalDays);
+        document.getElementById("ops-meta-seeded").textContent = summary.zonesSeededText;
+        document.getElementById("ops-meta-next").textContent = summary.nextClearText;
+        var statusWrap = document.getElementById("ops-clear-status-wrap");
+        var status = document.getElementById("ops-clear-status");
+        if (summary.zonesSuppressed && summary.statusText) {
+          statusWrap.classList.remove("hidden");
+          status.textContent = summary.statusText;
+          status.classList.add("is-cleared");
+        } else {
+          statusWrap.classList.add("hidden");
+          status.textContent = "";
+          status.classList.remove("is-cleared");
+        }
+      }
+
+      document.getElementById("ops-save-interval").addEventListener("click", function () {
+        S.setIntervalDays(document.getElementById("ops-clear-interval").value);
+        refreshUi();
+        showToast("清空间隔已保存");
+      });
+
+      document.getElementById("ops-clear-now").addEventListener("click", function () {
+        S.performClear();
+        refreshUi();
+        showToast("已清空全景地图巡查色块，打开地图后生效");
+      });
+
+      var openMap = document.getElementById("ops-open-map");
+      if (openMap && typeof whPageHref === "function") {
+        openMap.href = whPageHref("map/map-gis.html");
+      }
+
+      if (window.SystemMgmtQuickLinks) {
+        SystemMgmtQuickLinks.mount(document.getElementById("ops-quick-links"), "wb/am-ops-settings.html");
+      }
+
+      refreshUi();
+    })();
+  </script>
+</body>
+</html>

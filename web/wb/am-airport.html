@@ -8,7 +8,38 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
   <style>
+    .disease-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+    .disease-layout__right{position:sticky;top:72px;align-self:start;width:300px;max-height:calc(100dvh - 88px);display:flex;flex-direction:column;gap:10px}
+    .disease-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+    .disease-stat-card{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:10px;border:1px solid rgba(34,211,238,.22);background:linear-gradient(135deg,rgba(8,15,35,.92),rgba(6,12,28,.88))}
+    .disease-stat-card__icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .disease-stat-card--blue .disease-stat-card__icon{background:rgba(59,130,246,.18);color:#93c5fd;border:1px solid rgba(59,130,246,.35)}
+    .disease-stat-card--cyan .disease-stat-card__icon{background:rgba(34,211,238,.12);color:#67e8f9;border:1px solid rgba(34,211,238,.35)}
+    .disease-stat-card--green .disease-stat-card__icon{background:rgba(74,222,128,.12);color:#86efac;border:1px solid rgba(74,222,128,.35)}
+    .disease-stat-card--amber .disease-stat-card__icon{background:rgba(251,191,36,.12);color:#fcd34d;border:1px solid rgba(251,191,36,.35)}
+    .disease-stat-card__value{font-size:22px;font-weight:700;color:#f0f9ff;line-height:1.2}
+    .disease-stat-card__label{font-size:11px;color:#94a3b8;margin-top:2px}
+    .disease-stat-card__trend{font-size:10px;margin-top:4px;color:#94a3b8}
+    .disease-filter-panel,.disease-quick-panel{display:flex;flex-direction:column;border-radius:10px;border:1px solid rgba(34,211,238,.2);background:rgba(8,15,35,.78)}
+    .disease-panel-title{font-size:12px;font-weight:600;color:#e2f5ff;margin:0;padding:8px 10px 7px;border-bottom:1px solid rgba(34,211,238,.12);background:rgba(8,15,35,.92)}
+    .disease-panel-body{padding:8px 10px 10px}
+    .disease-filter-panel .disease-panel-body{display:flex;flex-direction:column;gap:6px}
+    .disease-filter-panel label{display:flex;flex-direction:column;gap:3px;margin:0;font-size:10px}
+    .disease-filter-panel label>span:first-child{color:#94a3b8}
+    .disease-filter-panel .wh-input{height:26px!important;min-height:26px;font-size:11px;padding:0 6px}
+    .disease-filter-actions{display:flex;gap:6px;margin-top:4px;padding-top:6px;border-top:1px solid rgba(34,211,238,.1)}
+    .disease-filter-actions button{flex:1;padding-top:4px;padding-bottom:4px;font-size:11px}
+    .disease-list-toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+    .disease-quick-panel .disease-panel-body{padding:6px 10px 8px}
+    .disease-quick-link{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;margin-bottom:5px;border-radius:6px;border:1px solid rgba(34,211,238,.14);background:rgba(15,23,42,.45);color:#e2f5ff;font-size:11px;text-decoration:none}
+    .disease-quick-link:last-child{margin-bottom:0}
+    .disease-quick-link:hover{border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.08);color:#fff}
+    .disease-quick-link.is-active{border-color:rgba(34,211,238,.55);background:rgba(34,211,238,.12);color:#a5f3fc}
+    .disease-quick-link i{width:16px;text-align:center;color:#67e8f9;font-size:12px}
+    @media(max-width:1400px){.disease-layout{grid-template-columns:1fr}.disease-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.disease-layout__right{position:static;width:100%;max-height:none;display:grid;grid-template-columns:1fr 1fr;gap:10px}}
+    @media(max-width:768px){.disease-stats{grid-template-columns:1fr}.disease-layout__right{grid-template-columns:1fr}}
     .am-table th,.am-table td{height:52px;border-right:1px solid rgba(34,211,238,.08);border-bottom:1px solid rgba(34,211,238,.08);vertical-align:middle}
     .am-table th:last-child,.am-table td:last-child{border-right:0}.am-table thead th{background:rgba(2,8,23,.66);color:rgba(240,249,255,.96);font-size:12px;font-weight:600;white-space:nowrap}.am-table tbody td{color:rgba(226,245,255,.88);font-size:12px}
     .am-action,.dr-action{display:inline-flex;align-items:center;gap:4px;margin-right:10px;white-space:nowrap;cursor:pointer;font-size:12px}
@@ -24,30 +55,115 @@
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="am-airport" data-wb-view="page">
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
-    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span><span>我的工作台</span><span class="text-slate-600">&gt;&gt;</span><span class="text-cyan-50 font-semibold tracking-wide">机场设备管理</span>
-    </nav>
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
-      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,.25)">机场设备列表</h1>
-      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">线路 → 机场 → 无人机联动管理</span>
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,.25)">机场设备管理</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">机场设备面板</span>
     </div>
-    <section class="neon-panel neon-panel--tight p-3 flex flex-wrap gap-2 items-center mb-4">
-      <div class="flex flex-wrap gap-2 items-center">
-        <input id="search-key" type="search" class="wh-input px-3 py-1.5 w-64 text-xs" placeholder="请输入设备型号或设备名称" />
-        <button type="button" class="px-4 py-1.5 rounded-md text-xs wh-btn-primary" data-action="search">搜索</button>
-        <button type="button" class="px-4 py-1.5 rounded-md text-xs wh-btn-ghost" data-action="reset">重置</button>
+
+    <section id="airport-list-view">
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="机场设备统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-list"></i></div>
+              <div>
+                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">展示设备</div>
+                <div class="disease-stat-card__trend">树形列表</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-warehouse"></i></div>
+              <div>
+                <div id="stat-airport" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">机场</div>
+                <div class="disease-stat-card__trend">Dock 设备</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-plane-up"></i></div>
+              <div>
+                <div id="stat-drone" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">无人机</div>
+                <div class="disease-stat-card__trend">挂载设备</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-signal"></i></div>
+              <div>
+                <div id="stat-online" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">在线</div>
+                <div class="disease-stat-card__trend">当前展示</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="disease-list-area">
+            <div class="disease-list-toolbar">
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new">
+                <i class="fa-solid fa-plus mr-1"></i>新增
+              </button>
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost" data-action="toast">
+                <i class="fa-solid fa-file-export mr-1"></i>导出
+              </button>
+            </div>
+            <div class="wh-table-shell bg-slate-950/35">
+              <div class="am-table-wrap overflow-x-auto">
+                <table class="am-table min-w-[1800px] w-full text-left">
+                  <thead>
+                    <tr>
+                      <th class="px-4">设备型号</th>
+                      <th class="px-4">设备SN</th>
+                      <th class="px-4">设备名称</th>
+                      <th class="px-4">所属线路</th>
+                      <th class="px-4">当前状态</th>
+                      <th class="px-4">位置坐标</th>
+                      <th class="px-4">最后在线时间</th>
+                      <th class="px-4">购买日期</th>
+                      <th class="px-4">质保结束日期</th>
+                      <th class="px-4">厂家</th>
+                      <th class="px-4">重量</th>
+                      <th class="px-4">配件信息</th>
+                      <th class="px-4 disease-col-actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-body"></tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+                <span>共 <b id="table-total" class="text-cyan-200">0</b> 条</span>
+                <div class="flex items-center gap-2">
+                  <button type="button" class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button>
+                  <select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label>
+                <span>设备型号 / 名称</span>
+                <input id="search-key" type="search" class="wh-input w-full" placeholder="请输入设备型号或设备名称" />
+              </label>
+              <div class="disease-filter-actions">
+                <button type="button" class="wh-btn-primary" data-action="search">搜索</button>
+                <button type="button" class="wh-btn-ghost" data-action="reset">重置</button>
+              </div>
+            </div>
+          </div>
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body">
+              <a class="disease-quick-link is-active" data-quick-href="wb/am-airport.html" href="am-airport.html"><i class="fa-solid fa-warehouse"></i><span>机场设备管理</span></a>
+              <a class="disease-quick-link" data-quick-href="wb/am-drone.html" href="am-drone.html"><i class="fa-solid fa-plane-up"></i><span>无人机设备管理</span></a>
+            </div>
+          </div>
+        </aside>
       </div>
-      <div class="ml-auto flex flex-wrap gap-2 items-center justify-end">
-        <button type="button" class="px-4 py-2 rounded-md text-xs font-semibold wh-btn-primary" data-action="new"><i class="fa-solid fa-plus mr-1"></i>新增</button>
-        <button type="button" class="px-4 py-2 rounded-md text-xs wh-btn-ghost" data-action="toast">导出</button>
-      </div>
-    </section>
-    <section class="wh-table-shell bg-slate-950/35">
-      <div class="overflow-x-auto"><table class="am-table min-w-[1800px] w-full text-left">
-        <thead><tr><th class="px-4">设备型号</th><th class="px-4">设备SN</th><th class="px-4">设备名称</th><th class="px-4">所属线路</th><th class="px-4">当前状态</th><th class="px-4">位置坐标</th><th class="px-4">最后在线时间</th><th class="px-4">购买日期</th><th class="px-4">质保结束日期</th><th class="px-4">厂家</th><th class="px-4">重量</th><th class="px-4">配件信息</th><th class="px-4">操作</th></tr></thead>
-        <tbody id="table-body"></tbody>
-      </table></div>
-      <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400"><span>共 <b id="total-count" class="text-cyan-200">0</b> 条</span><div class="flex items-center gap-2"><button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button><select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select></div></div>
     </section>
   </div>
 
@@ -77,7 +193,27 @@
       var body=document.getElementById("table-body"),detail=document.getElementById("detail-mask");
       function statusHtml(s){var cls=s==="在线"?"am-status-online":s==="故障"?"am-status-error":s==="维护中"?"am-status-maintain":"am-status-offline";return '<span class="'+cls+'"><i class="am-dot"></i>'+s+'</span>'}
       function visibleRows(list){var closed={};list.forEach(function(r){if(r.type==="airport"&&!r.expanded)closed[r.id]=true});return list.filter(function(r){return !r.parentId||!closed[r.parentId]})}
-      function render(list){var shown=visibleRows(list);body.innerHTML=shown.map(function(r){var index=rows.indexOf(r),isAirport=r.type==="airport",icon=isAirport?"fa-solid fa-warehouse":"fa-solid fa-plane-up",indent=isAirport?"":" am-child",caret=isAirport?'<i class="fa-solid '+(r.expanded?'fa-caret-down':'fa-caret-right')+' am-caret" data-action="toggle" data-index="'+index+'"></i>':'<span class="am-caret"></span>';return '<tr class="'+(isAirport?'bg-slate-950/25':'bg-slate-950/10')+'"><td class="px-4"><span class="am-tree-cell'+indent+(isAirport?' am-parent':'')+'" data-action="'+(isAirport?'toggle':'')+'" data-index="'+index+'">'+caret+'<i class="'+icon+' text-cyan-300"></i>'+r.model+'</span></td><td class="px-4">'+r.sn+'</td><td class="px-4">'+r.name+'</td><td class="px-4">'+r.line+'</td><td class="px-4">'+statusHtml(r.status)+'</td><td class="px-4"><span class="text-cyan-300 cursor-pointer" data-action="map" data-index="'+index+'">'+r.lng+' / '+r.lat+'</span></td><td class="px-4">'+r.last+'</td><td class="px-4">'+r.buy+'</td><td class="px-4">'+r.warranty+'</td><td class="px-4">'+r.maker+'</td><td class="px-4">'+r.weight+'</td><td class="px-4">'+r.parts+'</td><td class="px-4"><span class="am-action text-cyan-300" data-action="detail" data-index="'+index+'">详情</span><span class="am-action text-amber-300" data-action="edit" data-index="'+index+'">编辑</span><span class="am-action text-rose-300" data-action="delete" data-index="'+index+'">删除</span></td></tr>'}).join("");document.getElementById("total-count").textContent=shown.length}
+      function updateAirportStats(list){
+        var shown=visibleRows(list);
+        var airports=0,drones=0,online=0;
+        shown.forEach(function(r){
+          if(r.type==="airport") airports++; else drones++;
+          if(r.status==="在线") online++;
+        });
+        document.getElementById("stat-total").textContent=String(shown.length);
+        document.getElementById("stat-airport").textContent=String(airports);
+        document.getElementById("stat-drone").textContent=String(drones);
+        document.getElementById("stat-online").textContent=String(online);
+        var totalEl=document.getElementById("table-total");
+        if(totalEl) totalEl.textContent=String(shown.length);
+      }
+      function initQuickLinks(){
+        document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function(anchor){
+          var target=anchor.getAttribute("data-quick-href");
+          if(target&&typeof whPageHref==="function") anchor.setAttribute("href",whPageHref(target));
+        });
+      }
+      function render(list){var shown=visibleRows(list);body.innerHTML=shown.map(function(r){var index=rows.indexOf(r),isAirport=r.type==="airport",icon=isAirport?"fa-solid fa-warehouse":"fa-solid fa-plane-up",indent=isAirport?"":" am-child",caret=isAirport?'<i class="fa-solid '+(r.expanded?'fa-caret-down':'fa-caret-right')+' am-caret" data-action="toggle" data-index="'+index+'"></i>':'<span class="am-caret"></span>';return '<tr data-row-index="'+index+'" class="'+(isAirport?'bg-slate-950/25':'bg-slate-950/10')+'"><td class="px-4"><span class="am-tree-cell'+indent+(isAirport?' am-parent':'')+'" data-action="'+(isAirport?'toggle':'')+'" data-index="'+index+'">'+caret+'<i class="'+icon+' text-cyan-300"></i>'+r.model+'</span></td><td class="px-4">'+r.sn+'</td><td class="px-4">'+r.name+'</td><td class="px-4">'+r.line+'</td><td class="px-4">'+statusHtml(r.status)+'</td><td class="px-4"><span class="text-cyan-300 cursor-pointer" data-action="map" data-index="'+index+'">'+r.lng+' / '+r.lat+'</span></td><td class="px-4">'+r.last+'</td><td class="px-4">'+r.buy+'</td><td class="px-4">'+r.warranty+'</td><td class="px-4">'+r.maker+'</td><td class="px-4">'+r.weight+'</td><td class="px-4">'+r.parts+'</td><td class="px-4 disease-col-actions"><div class="disease-op-actions"><span class="am-action text-cyan-300" data-action="detail" data-index="'+index+'">详情</span><span class="am-action text-amber-300" data-action="edit" data-index="'+index+'">编辑</span><span class="am-action text-rose-300" data-action="delete" data-index="'+index+'">删除</span></div></td></tr>'}).join("");updateAirportStats(list)}
       function openAirportForm(rowIndex){
         var row=typeof rowIndex==="number"?rows[rowIndex]:null;
         window.WHDroneForm.open(row,function(data){
@@ -103,7 +239,25 @@
       function showAirportDetail(r){var photos=(r.photos&&r.photos.length)?r.photos:defaultPhotos;var photoHtml=photos.map(function(src,n){return '<div class="am-detail-photo"><img src="'+src+'" alt="机场设备照片'+(n+1)+'" loading="lazy" /></div>'}).join("");document.getElementById("detail-body").innerHTML='<div class="grid grid-cols-1 xl:grid-cols-[1fr_1fr] gap-4"><section class="dr-card p-4"><h4 class="text-cyan-50 font-semibold mb-3">基本信息</h4><div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-slate-300">'+detailField("设备型号",r.model)+detailField("设备SN",r.sn)+detailField("设备名称",r.name)+detailField("所属线路",r.line)+detailField("经度",r.lng)+detailField("纬度",r.lat)+detailField("购买日期",r.buy)+detailField("质保结束日期",r.warranty)+detailField("厂家",r.maker)+detailField("重量",r.weight)+'<span class="col-span-2">配件信息：'+(r.parts||"-")+'</span><span>当前状态：'+statusHtml(r.status)+'</span></div><h4 class="text-cyan-50 font-semibold mt-5 mb-3">照片</h4><div class="grid grid-cols-2 sm:grid-cols-3 gap-3">'+photoHtml+'</div></section><section class="dr-card p-4"><h4 class="text-cyan-50 font-semibold mb-3">存放位置（GIS地图）</h4><div id="airport-detail-map" class="am-detail-map" aria-label="机场存放位置地图"></div><p class="mt-2 text-xs text-slate-400">经度 '+r.lng+' / 纬度 '+r.lat+' · 地图标注为机场停放点</p></section></div>';detail.classList.add("show");mountDetailMap(r)}
       function showDetail(i){var r=rows[i];if(r.type==="drone"){window.WHDroneDetail.open(r)}else{showAirportDetail(r)}}
       document.addEventListener("click",function(e){var a=e.target.closest("[data-action]");if(!a)return;var act=a.dataset.action,idx=Number(a.dataset.index);if(act==="toggle"){rows[idx].expanded=!rows[idx].expanded;render(rows);return}if(act==="new")openAirportForm();if(act==="edit"){if(rows[idx].type==="drone"){window.WHDroneForm.open(rows[idx],function(data){rows[idx]=Object.assign(rows[idx],data,{id:rows[idx].id,parentId:rows[idx].parentId,type:"drone"});render(rows)})}else{openAirportForm(idx)}}if(act==="close-detail"){detail.classList.remove("show");destroyDetailMap()}if(act==="detail")showDetail(idx);if(act==="delete"&&confirm("确认删除该设备？")){var row=rows[idx];rows=rows.filter(function(r,i){return i!==idx&&r.parentId!==row.id});render(rows)}if(act==="search"){var key=document.getElementById("search-key").value.trim();render(rows.filter(function(r){return !key||r.model.indexOf(key)>-1||r.name.indexOf(key)>-1}))}if(act==="reset"){document.getElementById("search-key").value="";render(rows)}if(act==="map"&&rows[idx])showAirportDetail(rows[idx]);if(act==="toast")alert("原型演示：导出已触发")});
+      initQuickLinks();
+      function setupAirportRowClick() {
+        if (!window.WHTableRowClick) return window.setTimeout(setupAirportRowClick, 40);
+        WHTableRowClick.bindById("table-body", {
+          onOpenByTr: function (tr) {
+            var idx = Number(tr.getAttribute("data-row-index"));
+            if (!Number.isNaN(idx) && idx >= 0) showDetail(idx);
+          }
+        });
+      }
+      setupAirportRowClick();
       render(rows);
+      (function () {
+        var params = new URLSearchParams(location.search);
+        var detailId = params.get("detail");
+        if (!detailId) return;
+        var idx = rows.findIndex(function (row) { return row.id === detailId; });
+        if (idx >= 0) setTimeout(function () { showDetail(idx); }, 120);
+      })();
     })();
   </script>
 </body>

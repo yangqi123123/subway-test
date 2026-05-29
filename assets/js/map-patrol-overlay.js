@@ -58,18 +58,29 @@
     return out;
   }
 
-  function lineBufferPolygon(points, halfWidthM) {
-    if (!points || points.length < 2) return [];
-    var left = [];
-    var right = [];
+  function offsetEdgePoints(points, halfWidthM, side) {
+    var edge = [];
     for (var i = 0; i < points.length; i++) {
       var prev = points[Math.max(0, i - 1)];
       var next = points[Math.min(points.length - 1, i + 1)];
       var br = bearingDeg(prev, next);
-      left.push(destinationPoint(points[i], br - 90, halfWidthM));
-      right.push(destinationPoint(points[i], br + 90, halfWidthM));
+      edge.push(destinationPoint(points[i], side === "left" ? br - 90 : br + 90, halfWidthM));
     }
+    return edge;
+  }
+
+  function lineBufferPolygon(points, halfWidthM) {
+    if (!points || points.length < 2) return [];
+    var left = offsetEdgePoints(points, halfWidthM, "left");
+    var right = offsetEdgePoints(points, halfWidthM, "right");
     return left.concat(right.reverse());
+  }
+
+  /** 线路单侧缓冲带：一侧贴中心线，一侧沿垂直偏移，紧贴线路走向 */
+  function lineHalfBufferPolygon(points, halfWidthM, side) {
+    if (!points || points.length < 2) return [];
+    var edge = offsetEdgePoints(points, halfWidthM, side === "right" ? "right" : "left");
+    return edge.concat(points.slice().reverse());
   }
 
   function pointOnLineAtRatio(points, ratio) {
@@ -94,13 +105,18 @@
     return { point: points[last].slice(), bearing: bearingDeg(points[last - 1], points[last]) };
   }
 
-  var PATROL_ZONE_DEFS = [
+  var Settings = window.MapPatrolClearSettings;
+
+  var PATROL_ZONE_DEFS = Settings ? Settings.DEFAULT_ZONE_DEFS : [
     {
       lineKey: "l2",
-      start: 0.4,
-      end: 0.58,
-      kind: "done",
-      popup: "已巡查区域",
+      start: 0,
+      end: 1,
+      kind: "splitLR",
+      photoStart: 0.4,
+      photoEnd: 0.58,
+      popupLeft: "已巡查区域（线路左侧）",
+      popupRight: "风险区域（线路右侧）",
       lineFilter: "l2",
     },
     {
@@ -113,7 +129,7 @@
     },
   ];
 
-  var PATROL_PHOTO_DROPS = [
+  var PATROL_PHOTO_DROPS = Settings ? Settings.DEFAULT_PHOTO_DROPS : [
     {
       lineKey: "l2",
       ratio: 0.44,
@@ -136,6 +152,19 @@
       src: "assets/img/map-gis-road.png",
     },
   ];
+
+  function activeZoneDefs() {
+    if (Settings) {
+      Settings.maybeAutoClear();
+      return Settings.getZoneDefs();
+    }
+    return PATROL_ZONE_DEFS;
+  }
+
+  function activePhotoDrops() {
+    if (Settings) return Settings.getPhotoDrops();
+    return PATROL_PHOTO_DROPS;
+  }
 
   function buildPhotoTooltipHtml(drop) {
     return (
@@ -175,11 +204,44 @@
     var registerFeature = opts.registerFeature;
     var makeIcon = opts.makePhotoDropIcon || GIS.makePhotoDropIcon;
 
-    PATROL_ZONE_DEFS.forEach(function (def) {
+    activeZoneDefs().forEach(function (def) {
       var anchors = metroPaths[def.lineKey];
       if (!anchors) return;
       var fullCurve = smooth(anchors, { segmentsPerLeg: segmentsPerLeg });
       var segment = sliceLineByRatio(fullCurve, def.start, def.end);
+
+      if (def.kind === "splitLR") {
+        var leftRing = lineHalfBufferPolygon(segment, halfWidth, "left");
+        var rightRing = lineHalfBufferPolygon(segment, halfWidth, "right");
+        if (leftRing.length >= 3) {
+          var leftPoly = L.polygon(leftRing, {
+            color: "#22c55e",
+            weight: 1.5,
+            fillColor: "#22c55e",
+            fillOpacity: 0.22,
+          })
+            .bindPopup(def.popupLeft || "已巡查区域")
+            .addTo(layers.patrolDone);
+          if (typeof registerFeature === "function") {
+            registerFeature(leftPoly, layers.patrolDone, "patrolDone", def.lineFilter);
+          }
+        }
+        if (rightRing.length >= 3) {
+          var rightPoly = L.polygon(rightRing, {
+            color: "#ef4444",
+            weight: 1.5,
+            fillColor: "#ef4444",
+            fillOpacity: 0.22,
+          })
+            .bindPopup(def.popupRight || "风险区域")
+            .addTo(layers.patrolTodo);
+          if (typeof registerFeature === "function") {
+            registerFeature(rightPoly, layers.patrolTodo, "patrolTodo", def.lineFilter);
+          }
+        }
+        return;
+      }
+
       var ring = lineBufferPolygon(segment, halfWidth);
       if (ring.length < 3) return;
 
@@ -197,15 +259,17 @@
     });
 
     if (opts.showPhotos !== false && typeof makeIcon === "function") {
-      PATROL_PHOTO_DROPS.forEach(function (drop) {
+      activePhotoDrops().forEach(function (drop) {
         var anchors = metroPaths[drop.lineKey];
         if (!anchors) return;
-        var doneDef = PATROL_ZONE_DEFS.filter(function (d) {
-          return d.lineKey === drop.lineKey && d.kind === "done";
+        var doneDef = activeZoneDefs().filter(function (d) {
+          return d.lineKey === drop.lineKey && (d.kind === "done" || d.kind === "splitLR");
         })[0];
         if (!doneDef) return;
         var fullCurve = smooth(anchors, { segmentsPerLeg: segmentsPerLeg });
-        var segment = sliceLineByRatio(fullCurve, doneDef.start, doneDef.end);
+        var photoStart = doneDef.photoStart != null ? doneDef.photoStart : doneDef.start;
+        var photoEnd = doneDef.photoEnd != null ? doneDef.photoEnd : doneDef.end;
+        var segment = sliceLineByRatio(fullCurve, photoStart, photoEnd);
         var pos = pointOnLineAtRatio(segment, drop.ratio);
         var marker = L.marker(pos.point, {
           icon: makeIcon(),
@@ -221,6 +285,11 @@
           className: "gis-photo-tooltip-wrap",
           sticky: true,
         });
+        if (typeof opts.onPhotoClick === "function") {
+          marker.on("click", function () {
+            opts.onPhotoClick(drop);
+          });
+        }
       });
     }
 
@@ -228,6 +297,7 @@
   }
 
   GIS.lineBufferPolygon = lineBufferPolygon;
+  GIS.lineHalfBufferPolygon = lineHalfBufferPolygon;
   GIS.sliceLineByRatio = sliceLineByRatio;
   GIS.pointOnLineAtRatio = pointOnLineAtRatio;
   GIS.mountPatrolLayers = mountPatrolLayers;

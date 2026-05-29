@@ -8,80 +8,162 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
   <style>
-    .stats-card {
-      position: relative;
-      overflow: hidden;
-      min-height: 100px;
-      border-radius: 8px;
-      border: 1px solid rgba(34,211,238,.18);
-      background:
-        linear-gradient(180deg, rgba(8,15,35,.96), rgba(6,12,28,.94)),
-        radial-gradient(circle at top right, rgba(34,211,238,.12), transparent 42%);
-      box-shadow: 0 16px 36px rgba(2,8,23,.32), inset 0 1px 0 rgba(148,163,184,.08);
+    .disease-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+      align-items: start;
     }
-    .stats-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(135deg, rgba(34,211,238,.08), transparent 34%),
-        linear-gradient(0deg, rgba(59,130,246,.05), transparent 38%);
-      pointer-events: none;
+    .disease-layout__right {
+      position: sticky;
+      top: 72px;
+      align-self: start;
+      width: 300px;
+      max-height: calc(100dvh - 88px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-    .stats-card::after {
-      content: "";
-      position: absolute;
-      inset: auto -20% -55% auto;
-      width: 180px;
-      height: 180px;
-      border-radius: 999px;
-      background: rgba(34,211,238,.08);
-      filter: blur(10px);
+    .disease-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
     }
-    .stats-card__icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      display: inline-flex;
+    .disease-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88));
+    }
+    .disease-stat-card__icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(34,211,238,.12);
-      color: #a5f3fc;
-      font-size: 15px;
-      border: 1px solid rgba(34,211,238,.18);
+      font-size: 18px;
+      flex-shrink: 0;
     }
-    .stats-card__value {
-      font-size: 20px;
-      line-height: 1.1;
-      font-weight: 700;
-      color: #f8fafc;
-    }
-    .stats-card__label {
-      margin-top: 10px;
-      font-size: 12px;
-      color: rgba(207,250,254,.8);
-    }
-    .stats-blue .stats-card__icon { color: #67e8f9; }
-    .stats-cyan .stats-card__icon { color: #5eead4; }
-    .stats-green .stats-card__icon { color: #86efac; }
-    .stats-lime .stats-card__icon { color: #bef264; }
-    .stats-filter-grid {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr 1fr auto;
-      gap: 14px 26px;
-      align-items: end;
-    }
-    .stats-filter-label {
-      display: block;
-      margin-bottom: 6px;
-      color: rgba(226,245,255,.78);
-      font-size: 12px;
-    }
-    .stats-filter-actions {
+    .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+    .disease-stat-card--lime .disease-stat-card__icon { background: rgba(163, 230, 53, 0.12); color: #bef264; border: 1px solid rgba(163, 230, 53, 0.35); }
+    .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
+    .disease-filter-panel,
+    .disease-quick-panel {
       display: flex;
-      gap: 8px;
+      flex-direction: column;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(8, 15, 35, 0.78);
+    }
+    .disease-panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2f5ff;
+      margin: 0;
+      padding: 8px 10px 7px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.92);
+    }
+    .disease-panel-body { padding: 8px 10px 10px; }
+    .disease-filter-panel .disease-panel-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .disease-filter-panel label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 0;
+      font-size: 10px;
+    }
+    .disease-filter-panel label > span:first-child { color: #94a3b8; }
+    .disease-filter-panel .wh-input {
+      height: 26px !important;
+      min-height: 26px;
+      font-size: 11px;
+      padding: 0 6px;
+    }
+    .disease-filter-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .disease-filter-actions button {
+      flex: 1;
+      min-width: calc(50% - 3px);
+      padding-top: 4px;
+      padding-bottom: 4px;
+      font-size: 11px;
+    }
+    .disease-filter-actions button#btn-export {
+      flex: 1 1 100%;
+    }
+    .disease-list-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+    .disease-quick-link {
+      display: flex;
       align-items: center;
-      justify-content: flex-start;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.14);
+      background: rgba(15, 23, 42, 0.45);
+      color: #e2f5ff;
+      font-size: 11px;
+      text-decoration: none;
+    }
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.08);
+      color: #fff;
+    }
+    .disease-quick-link.is-active {
+      border-color: rgba(34, 211, 238, 0.55);
+      background: rgba(34, 211, 238, 0.12);
+      color: #a5f3fc;
+    }
+    .disease-quick-link i {
+      width: 16px;
+      text-align: center;
+      color: #67e8f9;
+      font-size: 12px;
+    }
+    @media (max-width: 1400px) {
+      .disease-layout { grid-template-columns: 1fr; }
+      .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .disease-layout__right {
+        position: static;
+        width: 100%;
+        max-height: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+    }
+    @media (max-width: 768px) {
+      .disease-stats { grid-template-columns: 1fr; }
+      .disease-layout__right { grid-template-columns: 1fr; }
     }
     .stats-table th,
     .stats-table td {
@@ -126,173 +208,225 @@
       color: #dbeafe;
       background: rgba(37,99,235,.18);
     }
-    @media (max-width: 1280px) {
-      .stats-filter-grid { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 768px) {
-      .stats-filter-grid { grid-template-columns: 1fr; }
-    }
   </style>
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="in-quality-stats" data-wb-view="page">
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
-    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
-      <span>我的工作台</span>
-      <span class="text-slate-600">&gt;&gt;</span>
-      <span class="text-cyan-50 font-semibold tracking-wide">统计分析</span>
-    </nav>
-
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
       <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,.25)">统计分析</h1>
-      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">巡检质量统计总览</span>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">统计分析面板</span>
     </div>
 
-    <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
-      <div class="stats-card stats-blue p-6">
-        <div class="relative z-[1] flex items-start gap-4">
-          <span class="stats-card__icon"><i class="fa-solid fa-share-nodes"></i></span>
-          <div>
-            <div class="stats-card__value">10/165</div>
-            <div class="stats-card__label">今日重点项目巡查次数</div>
+    <section id="stats-list-view">
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="巡检质量统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-share-nodes"></i></div>
+              <div>
+                <div id="stat-key-today" class="disease-stat-card__value">10/165</div>
+                <div class="disease-stat-card__label">今日重点项目巡查次数</div>
+                <div class="disease-stat-card__trend">重点项目</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-crosshairs"></i></div>
+              <div>
+                <div id="stat-normal-today" class="disease-stat-card__value">20/254</div>
+                <div class="disease-stat-card__label">今日一般项目巡查次数</div>
+                <div class="disease-stat-card__trend">一般项目</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-object-group"></i></div>
+              <div>
+                <div id="stat-key-week" class="disease-stat-card__value">123</div>
+                <div class="disease-stat-card__label">本周重点项目巡查次数</div>
+                <div class="disease-stat-card__trend">本周累计</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--lime">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-terminal"></i></div>
+              <div>
+                <div id="stat-key-month" class="disease-stat-card__value">529</div>
+                <div class="disease-stat-card__label">本月重点项目巡查次数</div>
+                <div class="disease-stat-card__trend">本月累计</div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      <div class="stats-card stats-cyan p-6">
-        <div class="relative z-[1] flex items-start gap-4">
-          <span class="stats-card__icon"><i class="fa-solid fa-crosshairs"></i></span>
-          <div>
-            <div class="stats-card__value">20/254</div>
-            <div class="stats-card__label">今日一般项目巡查次数</div>
-          </div>
-        </div>
-      </div>
-      <div class="stats-card stats-green p-6">
-        <div class="relative z-[1] flex items-start gap-4">
-          <span class="stats-card__icon"><i class="fa-solid fa-object-group"></i></span>
-          <div>
-            <div class="stats-card__value">123</div>
-            <div class="stats-card__label">本周重点项目巡查次数</div>
-          </div>
-        </div>
-      </div>
-      <div class="stats-card stats-lime p-6">
-        <div class="relative z-[1] flex items-start gap-4">
-          <span class="stats-card__icon"><i class="fa-solid fa-terminal"></i></span>
-          <div>
-            <div class="stats-card__value">529</div>
-            <div class="stats-card__label">本月重点项目巡查次数</div>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <section class="neon-panel neon-panel--tight p-5 mb-5">
-      <div class="stats-filter-grid">
-        <div>
-          <label class="stats-filter-label">站点名称：</label>
-          <input class="wh-input h-8 w-full px-3" value="" placeholder="请输入搜索内容" />
+          <div class="disease-list-area">
+            <div class="wh-table-shell bg-slate-950/35">
+              <div class="overflow-x-auto">
+                <table class="stats-table min-w-[1680px] w-full text-left">
+                  <thead>
+                    <tr>
+                      <th class="px-4">序号</th>
+                      <th class="px-4">所属线路</th>
+                      <th class="px-4">项目名称</th>
+                      <th class="px-4">项目类型</th>
+                      <th class="px-4">昨日巡查次数</th>
+                      <th class="px-4">上周巡查次数</th>
+                      <th class="px-4">上月巡查次数</th>
+                      <th class="px-4">本日巡查次数</th>
+                      <th class="px-4">本周巡查次数</th>
+                      <th class="px-4">本月巡查次数</th>
+                    </tr>
+                  </thead>
+                  <tbody id="stats-table-body"></tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+                <span>共 <b id="table-total" class="text-cyan-200">419</b> 条</span>
+                <div class="stats-pager">
+                  <button type="button" class="stats-page-btn text-slate-500">&lt;</button>
+                  <button type="button" class="stats-page-btn is-active">1</button>
+                  <button type="button" class="stats-page-btn">2</button>
+                  <button type="button" class="stats-page-btn">3</button>
+                  <button type="button" class="stats-page-btn">4</button>
+                  <button type="button" class="stats-page-btn">5</button>
+                  <span class="text-slate-500 px-1">…</span>
+                  <button type="button" class="stats-page-btn">42</button>
+                  <button type="button" class="stats-page-btn">&gt;</button>
+                  <select class="wh-input h-[30px] px-2 text-[11px]">
+                    <option>10 条/页</option>
+                    <option>20 条/页</option>
+                    <option>50 条/页</option>
+                  </select>
+                  <span>跳至</span>
+                  <input class="wh-input h-[30px] w-12 px-2 text-center text-[11px]" value="1" />
+                  <span>页</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div>
-          <label class="stats-filter-label">所属线路：</label>
-          <select class="wh-input h-8 w-full px-2">
-            <option>全部</option>
-            <option>2号线</option>
-            <option>7号线</option>
-            <option>11号线</option>
-          </select>
-        </div>
-        <div>
-          <label class="stats-filter-label">项目类型：</label>
-          <select class="wh-input h-8 w-full px-2">
-            <option>全部</option>
-            <option>重点项目</option>
-            <option>一般项目</option>
-          </select>
-        </div>
-        <div class="stats-filter-actions">
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary">搜索</button>
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">重置</button>
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">导出</button>
-        </div>
-      </div>
-    </section>
 
-    <section class="wh-table-shell bg-slate-950/35">
-      <div class="overflow-x-auto">
-        <table class="stats-table min-w-[1680px] w-full text-left">
-          <thead>
-            <tr>
-              <th class="px-4">序号</th>
-              <th class="px-4">所属线路</th>
-              <th class="px-4">项目名称</th>
-              <th class="px-4">项目类型</th>
-              <th class="px-4">昨日巡查次数</th>
-              <th class="px-4">上周巡查次数</th>
-              <th class="px-4">上月巡查次数</th>
-              <th class="px-4">本日巡查次数</th>
-              <th class="px-4">本周巡查次数</th>
-              <th class="px-4">本月巡查次数</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="bg-slate-950/18">
-              <td class="px-4">1</td><td class="px-4">2号线</td><td class="px-4">常青花园保护区综合项目</td><td class="px-4">重点项目</td><td class="px-4">2</td><td class="px-4">8</td><td class="px-4">27</td><td class="px-4">3</td><td class="px-4">11</td><td class="px-4">38</td>
-            </tr>
-            <tr class="bg-slate-950/8">
-              <td class="px-4">4</td><td class="px-4">2号线</td><td class="px-4">长港路站口改造项目</td><td class="px-4">一般项目</td><td class="px-4">1</td><td class="px-4">4</td><td class="px-4">15</td><td class="px-4">2</td><td class="px-4">6</td><td class="px-4">19</td>
-            </tr>
-            <tr class="bg-slate-950/18">
-              <td class="px-4">17</td><td class="px-4">2号线</td><td class="px-4">汉口火车站临近工程</td><td class="px-4">重点项目</td><td class="px-4">0</td><td class="px-4">5</td><td class="px-4">18</td><td class="px-4">2</td><td class="px-4">9</td><td class="px-4">24</td>
-            </tr>
-            <tr class="bg-slate-950/8">
-              <td class="px-4">18</td><td class="px-4">2号线</td><td class="px-4">常青车辆段外部配套项目</td><td class="px-4">一般项目</td><td class="px-4">1</td><td class="px-4">3</td><td class="px-4">12</td><td class="px-4">1</td><td class="px-4">5</td><td class="px-4">16</td>
-            </tr>
-            <tr class="bg-slate-950/18">
-              <td class="px-4">21</td><td class="px-4">2号线</td><td class="px-4">金银潭保护区施工项目</td><td class="px-4">重点项目</td><td class="px-4">2</td><td class="px-4">7</td><td class="px-4">20</td><td class="px-4">3</td><td class="px-4">10</td><td class="px-4">31</td>
-            </tr>
-            <tr class="bg-slate-950/8">
-              <td class="px-4">24</td><td class="px-4">7号线</td><td class="px-4">园博园沿线市政迁改</td><td class="px-4">重点项目</td><td class="px-4">1</td><td class="px-4">6</td><td class="px-4">22</td><td class="px-4">2</td><td class="px-4">8</td><td class="px-4">28</td>
-            </tr>
-            <tr class="bg-slate-950/18">
-              <td class="px-4">28</td><td class="px-4">2号线</td><td class="px-4">长港路周边配套工程</td><td class="px-4">一般项目</td><td class="px-4">0</td><td class="px-4">2</td><td class="px-4">9</td><td class="px-4">1</td><td class="px-4">3</td><td class="px-4">10</td>
-            </tr>
-            <tr class="bg-slate-950/8">
-              <td class="px-4">33</td><td class="px-4">2号线</td><td class="px-4">青年路沿线维护项目</td><td class="px-4">一般项目</td><td class="px-4">1</td><td class="px-4">3</td><td class="px-4">11</td><td class="px-4">1</td><td class="px-4">4</td><td class="px-4">13</td>
-            </tr>
-            <tr class="bg-slate-950/18">
-              <td class="px-4">38</td><td class="px-4">2号线</td><td class="px-4">王家墩商务区接口工程</td><td class="px-4">重点项目</td><td class="px-4">2</td><td class="px-4">7</td><td class="px-4">24</td><td class="px-4">2</td><td class="px-4">9</td><td class="px-4">32</td>
-            </tr>
-            <tr class="bg-slate-950/8">
-              <td class="px-4">40</td><td class="px-4">11号线</td><td class="px-4">光谷高架联络项目</td><td class="px-4">重点项目</td><td class="px-4">1</td><td class="px-4">5</td><td class="px-4">18</td><td class="px-4">2</td><td class="px-4">7</td><td class="px-4">25</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
-        <span>共 <b class="text-cyan-200">419</b> 条</span>
-        <div class="stats-pager">
-          <button class="stats-page-btn text-slate-500">&lt;</button>
-          <button class="stats-page-btn is-active">1</button>
-          <button class="stats-page-btn">2</button>
-          <button class="stats-page-btn">3</button>
-          <button class="stats-page-btn">4</button>
-          <button class="stats-page-btn">5</button>
-          <span class="text-slate-500 px-1">…</span>
-          <button class="stats-page-btn">42</button>
-          <button class="stats-page-btn">&gt;</button>
-          <select class="wh-input h-[30px] px-2 text-[11px]">
-            <option>10 条/页</option>
-            <option>20 条/页</option>
-            <option>50 条/页</option>
-          </select>
-          <span>跳至</span>
-          <input class="wh-input h-[30px] w-12 px-2 text-center text-[11px]" value="1" />
-          <span>页</span>
-        </div>
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label>
+                <span>站点名称</span>
+                <input id="filter-station" class="wh-input w-full" value="" placeholder="请输入搜索内容" />
+              </label>
+              <label>
+                <span>所属线路</span>
+                <select id="filter-line" class="wh-input w-full px-2">
+                  <option value="">全部</option>
+                  <option value="2号线">2号线</option>
+                  <option value="7号线">7号线</option>
+                  <option value="11号线">11号线</option>
+                </select>
+              </label>
+              <label>
+                <span>项目类型</span>
+                <select id="filter-type" class="wh-input w-full px-2">
+                  <option value="">全部</option>
+                  <option value="重点项目">重点项目</option>
+                  <option value="一般项目">一般项目</option>
+                </select>
+              </label>
+              <div class="disease-filter-actions">
+                <button id="btn-search" type="button" class="wh-btn-primary">搜索</button>
+                <button id="btn-reset" type="button" class="wh-btn-ghost">重置</button>
+                <button id="btn-export" type="button" class="wh-btn-ghost">导出</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body">
+              <a class="disease-quick-link" data-quick-href="wb/in-track-person.html" href="in-track-person.html"><i class="fa-solid fa-person-walking"></i><span>人员轨迹</span></a>
+              <a class="disease-quick-link is-active" data-quick-href="wb/in-quality-stats.html" href="in-quality-stats.html"><i class="fa-solid fa-chart-line"></i><span>统计分析</span></a>
+              <a class="disease-quick-link" data-quick-href="wb/in-score.html" href="in-score.html"><i class="fa-solid fa-star-half-stroke"></i><span>巡查打分</span></a>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
   </div>
+
+  <script>
+    (function () {
+      var allRows = [
+        { seq: 1, line: "2号线", name: "常青花园保护区综合项目", type: "重点项目", yesterday: 2, lastWeek: 8, lastMonth: 27, today: 3, thisWeek: 11, thisMonth: 38 },
+        { seq: 4, line: "2号线", name: "长港路站口改造项目", type: "一般项目", yesterday: 1, lastWeek: 4, lastMonth: 15, today: 2, thisWeek: 6, thisMonth: 19 },
+        { seq: 17, line: "2号线", name: "汉口火车站临近工程", type: "重点项目", yesterday: 0, lastWeek: 5, lastMonth: 18, today: 2, thisWeek: 9, thisMonth: 24 },
+        { seq: 18, line: "2号线", name: "常青车辆段外部配套项目", type: "一般项目", yesterday: 1, lastWeek: 3, lastMonth: 12, today: 1, thisWeek: 5, thisMonth: 16 },
+        { seq: 21, line: "2号线", name: "金银潭保护区施工项目", type: "重点项目", yesterday: 2, lastWeek: 7, lastMonth: 20, today: 3, thisWeek: 10, thisMonth: 31 },
+        { seq: 24, line: "7号线", name: "园博园沿线市政迁改", type: "重点项目", yesterday: 1, lastWeek: 6, lastMonth: 22, today: 2, thisWeek: 8, thisMonth: 28 },
+        { seq: 28, line: "2号线", name: "长港路周边配套工程", type: "一般项目", yesterday: 0, lastWeek: 2, lastMonth: 9, today: 1, thisWeek: 3, thisMonth: 10 },
+        { seq: 33, line: "2号线", name: "青年路沿线维护项目", type: "一般项目", yesterday: 1, lastWeek: 3, lastMonth: 11, today: 1, thisWeek: 4, thisMonth: 13 },
+        { seq: 38, line: "2号线", name: "王家墩商务区接口工程", type: "重点项目", yesterday: 2, lastWeek: 7, lastMonth: 24, today: 2, thisWeek: 9, thisMonth: 32 },
+        { seq: 40, line: "11号线", name: "光谷高架联络项目", type: "重点项目", yesterday: 1, lastWeek: 5, lastMonth: 18, today: 2, thisWeek: 7, thisMonth: 25 }
+      ];
+      var listRows = allRows.slice();
+      var tableBody = document.getElementById("stats-table-body");
+      var TABLE_TOTAL_ALL = 419;
+
+      function renderTable(rows) {
+        tableBody.innerHTML = rows.map(function (row, index) {
+          return '<tr class="' + (index % 2 ? "bg-slate-950/8" : "bg-slate-950/18") + '">' +
+            '<td class="px-4">' + row.seq + '</td>' +
+            '<td class="px-4">' + row.line + '</td>' +
+            '<td class="px-4">' + row.name + '</td>' +
+            '<td class="px-4">' + row.type + '</td>' +
+            '<td class="px-4">' + row.yesterday + '</td>' +
+            '<td class="px-4">' + row.lastWeek + '</td>' +
+            '<td class="px-4">' + row.lastMonth + '</td>' +
+            '<td class="px-4">' + row.today + '</td>' +
+            '<td class="px-4">' + row.thisWeek + '</td>' +
+            '<td class="px-4">' + row.thisMonth + '</td>' +
+          '</tr>';
+        }).join("");
+      }
+
+      function searchRows() {
+        var station = document.getElementById("filter-station").value.trim();
+        var line = document.getElementById("filter-line").value;
+        var type = document.getElementById("filter-type").value;
+        listRows = allRows.filter(function (row) {
+          if (station && row.name.indexOf(station) === -1 && String(row.seq).indexOf(station) === -1) return false;
+          if (line && row.line !== line) return false;
+          if (type && row.type !== type) return false;
+          return true;
+        });
+        renderTable(listRows);
+      }
+
+      function resetFilters() {
+        document.getElementById("filter-station").value = "";
+        document.getElementById("filter-line").value = "";
+        document.getElementById("filter-type").value = "";
+        listRows = allRows.slice();
+        renderTable(listRows);
+      }
+
+      function exportRows() {
+        if (typeof window.alert === "function") {
+          window.alert("导出当前筛选结果（原型演示）");
+        }
+      }
+
+      function initQuickLinks() {
+        document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
+          var target = anchor.getAttribute("data-quick-href");
+          if (target && typeof whPageHref === "function") {
+            anchor.setAttribute("href", whPageHref(target));
+          }
+        });
+      }
+
+      document.getElementById("btn-search").addEventListener("click", searchRows);
+      document.getElementById("btn-reset").addEventListener("click", resetFilters);
+      document.getElementById("btn-export").addEventListener("click", exportRows);
+      initQuickLinks();
+      renderTable(listRows);
+      document.getElementById("table-total").textContent = String(TABLE_TOTAL_ALL);
+    })();
+  </script>
   <script src="../../assets/js/menu-config.js"></script>
   <script src="../../assets/js/workbench-mega.js"></script>
   <script src="../../assets/js/shell.js"></script>

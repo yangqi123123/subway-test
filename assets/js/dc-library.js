@@ -273,11 +273,37 @@
     return "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=600&q=80";
   }
 
+  function countFilesInList(list) {
+    return list.reduce(function (n, m) {
+      return n + (m.files ? m.files.length : 0);
+    }, 0);
+  }
+
+  function updateLibraryStats(filteredList) {
+    var list = filteredList || getFilteredMaterials();
+    var totalEl = $("stat-total");
+    var filteredEl = $("stat-filtered");
+    var catEl = $("stat-categories");
+    var filesEl = $("stat-files");
+    if (totalEl) totalEl.textContent = String(materials.length);
+    if (filteredEl) filteredEl.textContent = String(list.length);
+    if (catEl) catEl.textContent = String(categories.length);
+    if (filesEl) filesEl.textContent = String(countFilesInList(list));
+  }
+
+  function initQuickLinks() {
+    document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
+      var target = anchor.getAttribute("data-quick-href");
+      if (target && typeof whPageHref === "function") anchor.setAttribute("href", whPageHref(target));
+    });
+  }
+
   function renderCards() {
     var grid = $("lib-card-grid");
     var countEl = $("lib-result-count");
     if (!grid) return;
     var list = getFilteredMaterials();
+    updateLibraryStats(list);
     if (countEl) countEl.textContent = String(list.length);
 
     if (!list.length) {
@@ -716,6 +742,7 @@
   }
 
   function init() {
+    initQuickLinks();
     renderTree();
     renderCards();
     bindEvents();

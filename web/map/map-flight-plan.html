@@ -17,11 +17,47 @@
       .field-label { color:#9cc6df; font-size:12px; margin-bottom:6px; display:block; }
       .req::before { content:"*"; color:#fb7185; margin-right:3px; }
       .op-btn { color:#67e8f9; border:1px solid rgba(34,211,238,.26); background:rgba(8,47,73,.55); padding:4px 8px; border-radius:6px; white-space:nowrap; }
-      .op-btn:hover { background:rgba(34,211,238,.14); }
-      .modal-mask { position:fixed; inset:0; z-index:80; background:rgba(2,8,23,.72); display:none; align-items:center; justify-content:center; padding:22px; }
-      .modal-mask.show { display:flex; }
-      .modal-card { width:min(1080px,96vw); max-height:88vh; overflow:auto; background:#071b33; border:1px solid rgba(34,211,238,.25); border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,.55); }
-      .modal-card.modal-card--report { overflow-x:hidden; overflow-y:hidden; }
+      .op-btn:hover:not(:disabled):not(.op-btn--disabled) { background:rgba(34,211,238,.14); }
+      .op-btn--disabled,
+      .op-btn:disabled {
+        color: #64748b;
+        border-color: rgba(100, 116, 139, 0.4);
+        background: rgba(15, 23, 42, 0.55);
+        cursor: not-allowed;
+        opacity: 0.62;
+      }
+      .modal-mask,
+      #report-modal.modal-mask {
+        position: fixed;
+        inset: 0;
+        z-index: 1200;
+        background: rgba(2, 8, 23, 0.72);
+        display: none;
+        align-items: flex-start;
+        justify-content: center;
+        padding: calc(var(--header-h, 64px) + 16px) 22px 32px;
+        overflow-y: auto;
+        box-sizing: border-box;
+      }
+      .modal-mask.show,
+      #report-modal.modal-mask.show { display: flex; }
+      .modal-card {
+        width: min(1080px, 96vw);
+        max-height: calc(100vh - var(--header-h, 64px) - 48px);
+        margin: 0 auto;
+        flex-shrink: 0;
+        overflow: auto;
+        background: #071b33;
+        border: 1px solid rgba(34, 211, 238, 0.25);
+        border-radius: 10px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+      }
+      #report-modal .modal-card--report {
+        max-height: calc(100vh - var(--header-h, 64px) - 48px);
+        margin: 0 auto;
+        flex-shrink: 0;
+      }
+      .modal-card.modal-card--report { overflow-x: hidden; overflow-y: hidden; }
       .status-dot { width:7px; height:7px; border-radius:999px; display:inline-block; margin-right:6px; }
       .step-line { display:grid; grid-template-columns:110px 1fr 120px; gap:12px; align-items:center; border-bottom:1px solid rgba(148,163,184,.12); padding:10px 0; }
       .approval-records-scroll { max-height:min(520px,58vh); overflow-y:auto; padding:2px 8px 2px 2px; }
@@ -192,48 +228,186 @@
       .num-stepper--suffix { position: relative; padding-right: 28px; }
       .num-stepper__unit { position: absolute; right: 38px; font-size: 12px; color: #9cc6df; pointer-events: none; }
       .month-days-select { min-height: 168px; max-width: 28rem; }
+      .disease-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; height: 100%; }
+      .disease-layout__left { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+      .disease-layout__right { position: sticky; top: 0; align-self: start; width: 300px; max-height: calc(100dvh - 120px); display: flex; flex-direction: column; gap: 10px; }
+      .disease-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; flex-shrink: 0; }
+      .disease-stat-card { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.22); background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88)); }
+      .disease-stat-card__icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+      .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+      .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+      .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+      .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
+      .disease-stat-card--rose .disease-stat-card__icon { background: rgba(251, 113, 133, 0.12); color: #fda4af; border: 1px solid rgba(251, 113, 133, 0.35); }
+      .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+      .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+      .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
+      .disease-filter-panel, .disease-quick-panel { display: flex; flex-direction: column; border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.2); background: rgba(8, 15, 35, 0.78); }
+      .disease-panel-title { font-size: 12px; font-weight: 600; color: #e2f5ff; margin: 0; padding: 8px 10px 7px; border-bottom: 1px solid rgba(34, 211, 238, 0.12); background: rgba(8, 15, 35, 0.92); }
+      .disease-panel-body { padding: 8px 10px 10px; }
+      .disease-filter-panel .disease-panel-body { display: flex; flex-direction: column; gap: 6px; max-height: min(52vh, 480px); overflow-y: auto; }
+      .disease-filter-panel label { display: flex; flex-direction: column; gap: 3px; margin: 0; font-size: 10px; }
+      .disease-filter-panel label > span:first-child { color: #94a3b8; }
+      .disease-filter-panel .wh-input { height: 26px !important; min-height: 26px; font-size: 11px; padding: 0 6px; }
+      .disease-filter-panel input[type="datetime-local"].wh-input { height: auto !important; min-height: 26px; padding: 4px 6px; }
+      .disease-filter-actions { display: flex; gap: 6px; margin-top: 4px; padding-top: 6px; border-top: 1px solid rgba(34, 211, 238, 0.1); flex-shrink: 0; }
+      .disease-filter-actions button { flex: 1; padding-top: 4px; padding-bottom: 4px; font-size: 11px; }
+      .disease-list-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; flex-shrink: 0; }
+      .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+      .disease-quick-link { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px; margin-bottom: 5px; border-radius: 6px; border: 1px solid rgba(34, 211, 238, 0.14); background: rgba(15, 23, 42, 0.45); color: #e2f5ff; font-size: 11px; text-decoration: none; }
+      .disease-quick-link:last-child { margin-bottom: 0; }
+      .disease-quick-link:hover { border-color: rgba(34, 211, 238, 0.4); background: rgba(34, 211, 238, 0.08); color: #fff; }
+      .disease-quick-link.is-active { border-color: rgba(34, 211, 238, 0.55); background: rgba(34, 211, 238, 0.12); color: #a5f3fc; }
+      .disease-quick-link i { width: 16px; text-align: center; color: #67e8f9; font-size: 12px; }
+      .flight-plan-table-wrap { flex: 1; min-height: 0; overflow: auto; }
+      .flight-plan-table-wrap thead th.flight-plan-col-actions,
+      .flight-plan-table-wrap tbody td.flight-plan-col-actions {
+        position: sticky;
+        right: 0;
+        width: 0;
+        min-width: max-content;
+        max-width: max-content;
+        white-space: nowrap;
+        text-align: right;
+        vertical-align: middle;
+        padding-left: 12px;
+        padding-right: 10px;
+        box-shadow: -6px 0 10px rgba(0, 0, 0, 0.22);
+      }
+      .flight-plan-table-wrap thead th.flight-plan-col-actions {
+        top: 0;
+        z-index: 5;
+        background: linear-gradient(180deg, rgba(8, 47, 73, 0.98), rgba(6, 22, 45, 0.95));
+      }
+      .flight-plan-table-wrap tbody td.flight-plan-col-actions {
+        z-index: 2;
+      }
+      .flight-plan-op-actions {
+        display: inline-flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 4px;
+        width: max-content;
+        margin-left: auto;
+      }
+      .flight-plan-table-wrap tbody tr:nth-child(odd) td.flight-plan-col-actions { background: #071b33; }
+      .flight-plan-table-wrap tbody tr:nth-child(even) td.flight-plan-col-actions { background: #08213d; }
+      .flight-plan-table-wrap tbody tr:hover td.flight-plan-col-actions { background: rgba(12, 40, 68, 0.98); }
+      .flight-plan-table-wrap tbody tr.flight-plan-row { cursor: pointer; }
+      .flight-plan-table-wrap tbody tr.flight-plan-row:hover td:not(.flight-plan-col-actions) {
+        background: rgba(14, 48, 78, 0.55) !important;
+      }
+      @media (max-width: 1400px) { .disease-layout { grid-template-columns: 1fr; height: auto; } .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .disease-layout__right { position: static; width: 100%; max-height: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } }
+      @media (max-width: 768px) { .disease-stats { grid-template-columns: 1fr; } .disease-layout__right { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body data-shell="fullscreen" data-top="map">
     <div id="page-root" class="h-[calc(100vh-64px)] flex flex-col bg-[#061528] text-[#e2f5ff]">
-      <nav class="neon-panel neon-panel--tight map-breadcrumb">
-        <span class="map-breadcrumb__icon"><i class="fa-solid fa-location-crosshairs"></i></span>
-        <span>全景地图</span>
-        <span class="map-breadcrumb__sep">&gt;&gt;</span>
-        <span class="map-breadcrumb__current">飞行计划</span>
-      </nav>
-      <section class="neon-panel neon-panel--tight m-4 mb-3 p-4">
-        <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-9 gap-3 items-end">
-          <label><span class="field-label">计划名称</span><input id="f-name" class="wh-input w-full px-3 py-2" placeholder="请输入" /></label>
-          <label><span class="field-label">计划类型</span><select id="f-type" class="wh-input w-full px-3 py-2"><option value="">全部</option><option>常规巡检</option><option>告警复核</option><option>临时任务</option></select></label>
-          <label><span class="field-label">所属线路</span><select id="f-line" class="wh-input w-full px-3 py-2"><option value="">全部</option><option>8号线</option><option>2号线</option><option>5号线</option></select></label>
-          <label><span class="field-label">飞行策略</span><select id="f-strategy" class="wh-input w-full px-3 py-2"><option value="">全部</option><option>立即起飞</option><option>单次定时</option><option>周期定时</option></select></label>
-          <label><span class="field-label">起降机场</span><select id="f-airport" class="wh-input w-full px-3 py-2"><option value="">全部</option><option>车辆段机场</option><option>梨园机场</option><option>青山机场</option></select></label>
-          <label><span class="field-label">计划状态</span><select id="f-exec" class="wh-input w-full px-3 py-2"><option value="">全部</option><option>已执行</option><option>未执行</option><option>执行失败</option><option>执行终止</option></select></label>
-          <label><span class="field-label">申请人</span><input id="f-applicant" class="wh-input w-full px-3 py-2" placeholder="请输入" /></label>
-          <label><span class="field-label">审核状态</span><select id="f-audit" class="wh-input w-full px-3 py-2"><option value="">全部</option><option>审核通过</option><option>审核中</option><option>已驳回</option></select></label>
-          <div class="flex gap-2"><button id="search-btn" class="wh-btn-primary px-4 py-2 text-sm">搜索</button><button id="reset-btn" class="wh-btn-ghost px-4 py-2 text-sm">重置</button></div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 mt-3 items-end">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <label><span class="field-label">执行开始时间</span><input id="f-start" type="datetime-local" class="wh-input w-full px-3 py-2" /></label>
-            <label><span class="field-label">执行结束时间</span><input id="f-end" type="datetime-local" class="wh-input w-full px-3 py-2" /></label>
+      <div class="px-4 pt-3 pb-2 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 flex-shrink-0">
+        <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">飞行计划管理</h1>
+        <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">飞行计划面板</span>
+      </div>
+
+      <section id="flight-plan-list-view" class="flex-1 min-h-0 px-4 py-3 overflow-hidden">
+        <div class="disease-layout">
+          <div class="disease-layout__left">
+            <div class="disease-stats" aria-label="飞行计划统计">
+              <div class="disease-stat-card disease-stat-card--blue">
+                <div class="disease-stat-card__icon"><i class="fa-solid fa-plane"></i></div>
+                <div>
+                  <div id="stat-total" class="disease-stat-card__value">0</div>
+                  <div class="disease-stat-card__label">计划总数</div>
+                  <div class="disease-stat-card__trend">全库</div>
+                </div>
+              </div>
+              <div class="disease-stat-card disease-stat-card--amber">
+                <div class="disease-stat-card__icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                <div>
+                  <div id="stat-auditing" class="disease-stat-card__value">0</div>
+                  <div class="disease-stat-card__label">审核中</div>
+                  <div class="disease-stat-card__trend">待审批</div>
+                </div>
+              </div>
+              <div class="disease-stat-card disease-stat-card--rose">
+                <div class="disease-stat-card__icon"><i class="fa-solid fa-circle-xmark"></i></div>
+                <div>
+                  <div id="stat-rejected" class="disease-stat-card__value">0</div>
+                  <div class="disease-stat-card__label">已驳回</div>
+                  <div class="disease-stat-card__trend">审批未通过</div>
+                </div>
+              </div>
+              <div class="disease-stat-card disease-stat-card--green">
+                <div class="disease-stat-card__icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div>
+                  <div id="stat-approved" class="disease-stat-card__value">0</div>
+                  <div class="disease-stat-card__label">审核通过</div>
+                  <div class="disease-stat-card__trend">已通过</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="disease-list-area flex flex-col flex-1 min-h-0">
+              <div class="disease-list-toolbar">
+                <button id="add-btn" type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary"><i class="fa-solid fa-plus mr-1"></i>新增</button>
+                <button id="batch-approve-btn" type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary">批量审批</button>
+              </div>
+              <div class="wh-table-shell bg-[#071b33]/80 flex flex-col flex-1 min-h-0">
+                <div class="flight-plan-table-wrap">
+                  <table class="min-w-[2080px] w-full text-left">
+                    <thead><tr>
+                      <th class="w-10"><input id="check-all" type="checkbox" /></th><th>计划名称</th><th>航线名称</th><th>起降机场</th><th>无人机设备</th><th>计划类型</th><th>飞行策略</th><th>所属线路</th><th>申请人</th><th>提交时间</th><th>审核状态</th><th>执行状态</th><th>计划执行时间</th><th>实际执行时间</th><th>实际结束时间</th><th class="flight-plan-col-actions">操作</th>
+                    </tr></thead>
+                    <tbody id="plan-body"></tbody>
+                  </table>
+                </div>
+                <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400 flex-shrink-0">
+                  <span>共 <b id="plan-table-total" class="text-cyan-200">0</b> 条</span>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-left"></i></button>
+                    <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary" type="button">1</button>
+                    <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-right"></i></button>
+                    <select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select>
+                    <span>跳至</span>
+                    <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+                    <span>页</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="flex gap-2 justify-end"><button id="add-btn" class="wh-btn-primary px-4 py-2 text-sm"><i class="fa-solid fa-plus mr-1"></i>新增</button><button id="batch-approve-btn" class="wh-btn-primary px-4 py-2 text-sm">批量审批</button></div>
+
+          <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+            <div class="disease-filter-panel">
+              <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+              <div class="disease-panel-body">
+                <label><span>计划名称</span><input id="f-name" class="wh-input w-full" placeholder="请输入" /></label>
+                <label><span>计划类型</span><select id="f-type" class="wh-input w-full px-2"><option value="">全部</option><option>常规巡检</option><option>告警复核</option><option>临时任务</option></select></label>
+                <label><span>所属线路</span><select id="f-line" class="wh-input w-full px-2"><option value="">全部</option><option>8号线</option><option>2号线</option><option>5号线</option></select></label>
+                <label><span>飞行策略</span><select id="f-strategy" class="wh-input w-full px-2"><option value="">全部</option><option>立即起飞</option><option>单次定时</option><option>周期定时</option></select></label>
+                <label><span>起降机场</span><select id="f-airport" class="wh-input w-full px-2"><option value="">全部</option><option>车辆段机场</option><option>梨园机场</option><option>青山机场</option></select></label>
+                <label><span>执行状态</span><select id="f-exec" class="wh-input w-full px-2"><option value="">全部</option><option>未执行</option><option>执行中</option><option>数据处理</option><option>已执行</option><option>执行终止</option></select></label>
+                <label><span>申请人</span><input id="f-applicant" class="wh-input w-full" placeholder="请输入" /></label>
+                <label><span>审核状态</span><select id="f-audit" class="wh-input w-full px-2"><option value="">全部</option><option>审核通过</option><option>审核中</option><option>已驳回</option></select></label>
+                <label><span>执行开始时间</span><input id="f-start" type="datetime-local" class="wh-input w-full" /></label>
+                <label><span>执行结束时间</span><input id="f-end" type="datetime-local" class="wh-input w-full" /></label>
+                <div class="disease-filter-actions">
+                  <button id="search-btn" type="button" class="wh-btn-primary">搜索</button>
+                  <button id="reset-btn" type="button" class="wh-btn-ghost">重置</button>
+                </div>
+              </div>
+            </div>
+            <div class="disease-quick-panel">
+              <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+              <div class="disease-panel-body">
+                <a class="disease-quick-link is-active" data-quick-href="map/map-flight-plan.html" href="map-flight-plan.html"><i class="fa-solid fa-plane"></i><span>飞行计划</span></a>
+                <a class="disease-quick-link" data-quick-href="map/map-routes.html" href="map-routes.html"><i class="fa-solid fa-route"></i><span>航线管理</span></a>
+                <a class="disease-quick-link" data-quick-href="map/map-gis.html" href="map-gis.html"><i class="fa-solid fa-map"></i><span>全景地图</span></a>
+              </div>
+            </div>
+          </aside>
         </div>
       </section>
-
-      <main class="flex-1 overflow-hidden px-4 pb-4">
-        <div class="wh-table-shell h-full overflow-auto bg-[#071b33]/80">
-          <table class="min-w-[2240px] w-full text-left">
-            <thead><tr>
-              <th class="w-10"><input id="check-all" type="checkbox" /></th><th>计划名称</th><th>航线名称</th><th>起降机场</th><th>无人机设备</th><th>计划类型</th><th>飞行策略</th><th>所属线路</th><th>申请人</th><th>提交时间</th><th>审核状态</th><th>执行状态</th><th>计划执行时间</th><th>实际执行时间</th><th>实际结束时间</th><th class="w-[360px]">操作</th>
-            </tr></thead>
-            <tbody id="plan-body"></tbody>
-          </table>
-        </div>
-      </main>
-
     </div>
 
     <div id="form-modal" class="modal-mask">
@@ -248,7 +422,7 @@
             <label><span class="field-label req">返航高度(ALT)</span><div class="num-stepper"><button type="button" class="num-stepper__btn" data-step="-10" data-target="p-rth-alt">−</button><input id="p-rth-alt" type="number" class="wh-input num-stepper__input" value="100" min="20" max="500" step="10" /><button type="button" class="num-stepper__btn" data-step="10" data-target="p-rth-alt">+</button></div></label>
             <label><span class="field-label">AI识别模型</span><select id="p-ai-model" class="wh-input w-full px-3 py-2"><option value="">请选择AI模型</option><option>地铁保护区通用模型</option><option>施工机械识别模型</option><option>堆土围挡识别模型</option></select></label>
             <label><span class="field-label">电量限制</span><div class="num-stepper num-stepper--suffix"><button type="button" class="num-stepper__btn" data-step="-5" data-target="p-battery">−</button><input id="p-battery" type="number" class="wh-input num-stepper__input" value="30" min="10" max="100" step="5" /><button type="button" class="num-stepper__btn" data-step="5" data-target="p-battery">+</button><span class="num-stepper__unit">%</span></div></label>
-            <label><span class="field-label">巡查类型</span><select id="p-inspect-type" class="wh-input w-full px-3 py-2"><option>日常巡查</option><option>项目巡查</option><option>其他巡查</option></select></label>
+            <label><span class="field-label">巡查类型</span><select id="p-inspect-type" class="wh-input w-full px-3 py-2"><option>日常巡查</option><option>项目巡查</option><option>其他巡查</option><option>告警复核</option></select></label>
             <label><span class="field-label req">飞行策略</span><select id="p-strategy" class="wh-input w-full px-3 py-2"><option>立即起飞</option><option>单次定时</option><option>周期定时</option></select></label>
           </div>
           <section id="exec-time-panel" class="plan-form-exec-row" aria-labelledby="exec-time-heading">
@@ -312,26 +486,23 @@
           <div id="plan-form-advanced" class="plan-form-grid">
             <label><span class="field-label req">计划类型</span><select id="p-type" class="wh-input w-full px-3 py-2"><option>常规计划</option><option>告警复核</option><option>临时任务</option></select></label>
             <label><span class="field-label req">执行方式</span><select id="p-exec-method" class="wh-input w-full px-3 py-2"><option>自主飞行</option><option>遥控飞行</option></select></label>
-            <label><span class="field-label req">任务精度</span><select id="p-task-precision" class="wh-input w-full px-3 py-2"><option>GNSS</option><option>高精度RTK</option></select></label>
             <label><span class="field-label">飞行模式</span><select id="p-flight-mode" class="wh-input w-full px-3 py-2"><option>超视距</option><option>视距内</option></select></label>
-            <label><span class="field-label">遥控器失控动作</span><input id="p-rc-lost" type="text" class="wh-input wh-input--readonly w-full px-3 py-2" readonly value="返航" tabindex="-1" /></label>
+            <label><span class="field-label req">任务精度</span><select id="p-task-precision" class="wh-input w-full px-3 py-2"><option>GNSS</option><option>高精度RTK</option></select></label>
             <label><span class="field-label">返航高度模式</span><input id="p-rth-mode" type="text" class="wh-input wh-input--readonly w-full px-3 py-2" readonly value="设定高度" tabindex="-1" /></label>
-            <label><span class="field-label req">飞手</span><select id="p-pilot" class="wh-input w-full px-3 py-2"><option>武汉地保1</option><option>武汉地保2</option><option>武汉地保3</option></select></label>
+            <label><span class="field-label">遥控器失控动作</span><input id="p-rc-lost" type="text" class="wh-input wh-input--readonly w-full px-3 py-2" readonly value="返航" tabindex="-1" /></label>
             <label><span class="field-label req">航线失控动作</span><select id="p-route-lost" class="wh-input w-full px-3 py-2"><option>返航</option><option>继续执行</option></select></label>
-            <label><span class="field-label">视频模式</span><select id="p-video-mode" class="wh-input w-full px-3 py-2"><option>默认</option><option>红外线</option></select></label>
+            <label><span class="field-label req">飞手</span><select id="p-pilot" class="wh-input w-full px-3 py-2"><option>武汉地保1</option><option>武汉地保2</option><option>武汉地保3</option></select></label>
             <label><span class="field-label">适用挂载设备</span><select id="p-mount" class="wh-input w-full px-3 py-2"><option value="">请选择适用挂载设备</option><option>可见光相机</option><option>红外热成像</option><option>激光雷达</option><option>喊话器</option></select></label>
+            <label><span class="field-label">视频模式</span><select id="p-video-mode" class="wh-input w-full px-3 py-2"><option>默认</option><option>红外线</option></select></label>
             <label class="hidden-field"><span class="field-label">所属线路</span><select id="p-line" class="wh-input w-full px-3 py-2"></select></label>
             <label class="hidden-field"><span class="field-label">申请人</span><input id="p-applicant" class="wh-input w-full px-3 py-2" value="当前用户" readonly /></label>
-          </div>
-          <div class="rounded border border-cyan-400/20 bg-cyan-950/20 p-3 text-xs text-cyan-100 leading-6">
-            业务校验：仅可选择审批通过且空域许可有效的航线；计划需完成“提交 → 工长 → 工务 → 物管 → 车间主任 → 部门领导”审批后才允许执行；空域许可临期自动预警。
           </div>
         </div>
         <div class="px-5 py-4 border-t border-white/10 flex justify-end gap-2"><button type="button" class="wh-btn-ghost px-4 py-2" data-close="form-modal">取消</button><button type="button" id="save-plan-btn" class="wh-btn-primary px-4 py-2">确定</button></div>
       </div>
     </div>
 
-    <div id="detail-modal" class="modal-mask"><div class="modal-card modal-card--detail"><div class="flex items-center justify-between px-5 py-4 border-b border-white/10"><h3 class="text-base font-semibold">查阅计划</h3><button type="button" class="wh-modal-close" data-close="detail-modal" aria-label="关闭">×</button></div><div id="detail-box" class="p-5"></div></div></div>
+    <div id="detail-modal" class="modal-mask"><div class="modal-card modal-card--detail"><div class="flex items-center justify-between px-5 py-4 border-b border-white/10"><h3 class="text-base font-semibold">查看详情</h3><button type="button" class="wh-modal-close" data-close="detail-modal" aria-label="关闭">×</button></div><div id="detail-box" class="p-5"></div></div></div>
     <div id="approval-modal" class="modal-mask"><div class="modal-card"><div class="flex items-center justify-between px-5 py-4 border-b border-white/10"><h3 class="text-base font-semibold">飞行计划审批</h3><button type="button" class="wh-modal-close" data-close="approval-modal" aria-label="关闭">×</button></div><div id="approval-box" class="p-5"></div></div></div>
     <div id="cockpit-airspace-modal" class="modal-mask"><div class="modal-card" style="width:min(440px,92vw)"><div class="flex items-center justify-between px-5 py-4 border-b border-white/10"><h3 class="text-base font-semibold">虚拟座舱</h3><button type="button" class="wh-modal-close" data-close="cockpit-airspace-modal" aria-label="关闭">×</button></div><p id="cockpit-airspace-msg" class="px-5 py-6 text-sm text-cyan-50 leading-7"></p><div id="cockpit-airspace-actions-blocked" class="hidden px-5 py-4 border-t border-white/10 flex justify-end"><button type="button" class="wh-btn-primary px-4 py-2" data-close="cockpit-airspace-modal">关闭</button></div><div id="cockpit-airspace-actions-confirm" class="hidden px-5 py-4 border-t border-white/10 flex justify-end gap-2"><button type="button" class="wh-btn-ghost px-4 py-2" data-close="cockpit-airspace-modal">取消</button><button type="button" id="cockpit-launch-btn" class="wh-btn-primary px-4 py-2">立即起飞</button></div></div></div>
     <div id="toast" class="fixed right-5 bottom-5 z-[100] hidden rounded bg-cyan-500 text-slate-950 px-4 py-2 text-sm font-semibold shadow-lg"></div>
@@ -350,11 +521,12 @@
         "5号线": { airports:["青山机场"], drones:{"青山机场":["青山巡检无人机 M350"]}, routes:["青山站周期巡检航线"] }
       };
       let plans = [
-        {id:1,name:"8号线车辆段常规巡检",route:"车辆段日常巡查航线",airport:"车辆段机场",drone:"车辆段无人机 M350",type:"常规巡检",strategy:"单次定时",line:"8号线",applicant:"张三",submit:"2026-05-13 09:20",audit:"审核通过",airspaceValid:true,exec:"未执行",planTime:"2026-05-13 15:30",actualStart:"-",actualEnd:"-",execMeta:{singleAt:"2026-05-13T15:30"}},
-        {id:2,name:"梨园站告警复核",route:"梨园-中南医院演示航线",airport:"梨园机场",drone:"梨园巡检无人机 M30T",type:"告警复核",strategy:"立即起飞",line:"2号线",applicant:"李四",submit:"2026-05-13 10:15",audit:"审核中",exec:"未执行",planTime:"2026-05-13 16:00（即时起飞）",actualStart:"-",actualEnd:"-",execMeta:{immediateAt:"2026-05-13T16:00"}},
-        {id:3,name:"长江新区临时巡检",route:"涉铁施工复核航线",airport:"车辆段机场",drone:"长江新区无人机 M300",type:"临时任务",strategy:"立即起飞",line:"8号线",applicant:"王五",submit:"2026-05-12 18:40",audit:"已驳回",exec:"执行终止",planTime:"2026-05-13 08:30（即时起飞）",actualStart:"-",actualEnd:"-",execMeta:{immediateAt:"2026-05-13T08:30"}},
+        {id:2,name:"梨园站告警复核",route:"梨园-中南医院演示航线",airport:"梨园机场",drone:"梨园巡检无人机 M30T",type:"告警复核",strategy:"立即起飞",line:"2号线",applicant:"李四",submit:"2026-05-13 10:15",audit:"审核中",airspaceValid:true,exec:"未执行",planTime:"2026-05-13 16:00（即时起飞）",actualStart:"-",actualEnd:"-",execMeta:{immediateAt:"2026-05-13T16:00"}},
+        {id:6,name:"2号线保护区例行巡检",route:"梨园-中南医院演示航线",airport:"梨园机场",drone:"梨园巡检无人机 M30T",type:"常规巡检",strategy:"单次定时",line:"2号线",applicant:"陈八",submit:"2026-05-13 08:50",audit:"审核通过",airspaceValid:true,exec:"未执行",planTime:"2026-05-13 18:00",actualStart:"-",actualEnd:"-",execMeta:{singleAt:"2026-05-13T18:00"}},
+        {id:1,name:"8号线车辆段常规巡检",route:"车辆段日常巡查航线",airport:"车辆段机场",drone:"车辆段无人机 M350",type:"常规巡检",strategy:"单次定时",line:"8号线",applicant:"张三",submit:"2026-05-13 09:20",audit:"审核通过",airspaceValid:true,exec:"执行中",planTime:"2026-05-13 15:30",actualStart:"2026-05-13 15:32",actualEnd:"-",execMeta:{singleAt:"2026-05-13T15:30"}},
+        {id:3,name:"长江新区临时巡检",route:"涉铁施工复核航线",airport:"车辆段机场",drone:"长江新区无人机 M300",type:"临时任务",strategy:"立即起飞",line:"8号线",applicant:"王五",submit:"2026-05-12 18:40",audit:"已驳回",exec:"执行终止",planTime:"2026-05-13 08:30（即时起飞）",actualStart:"2026-05-13 08:32",actualEnd:"2026-05-13 08:45",execMeta:{immediateAt:"2026-05-13T08:30"}},
         {id:4,name:"青山站周期巡检",route:"青山站周期巡检航线",airport:"青山机场",drone:"青山巡检无人机 M350",type:"常规巡检",strategy:"周期定时",line:"5号线",applicant:"赵六",submit:"2026-05-11 14:05",audit:"审核通过",airspaceValid:false,exec:"已执行",planTime:"每日 09:00",actualStart:"2026-05-12 09:02",actualEnd:"2026-05-12 09:38",execMeta:{cycleType:"日",cycleDailyTime:"09:00"}},
-        {id:5,name:"涉铁施工夜间复核",route:"涉铁施工复核航线",airport:"车辆段机场",drone:"长江新区无人机 M300",type:"告警复核",strategy:"单次定时",line:"8号线",applicant:"周七",submit:"2026-05-13 11:00",audit:"审核中",exec:"未执行",planTime:"2026-05-14 02:00",actualStart:"-",actualEnd:"-",execMeta:{singleAt:"2026-05-14T02:00"}}
+        {id:5,name:"涉铁施工夜间复核",route:"涉铁施工复核航线",airport:"车辆段机场",drone:"长江新区无人机 M300",type:"告警复核",strategy:"单次定时",line:"8号线",applicant:"周七",submit:"2026-05-13 11:00",audit:"审核通过",airspaceValid:true,exec:"数据处理",planTime:"2026-05-14 02:00",actualStart:"2026-05-14 02:01",actualEnd:"2026-05-14 02:28",execMeta:{singleAt:"2026-05-14T02:00"}}
       ];
       let editingId = null;
       let approvalId = null;
@@ -562,25 +734,74 @@
       }
       const badge = (text, type) => `<span class="wh-status ${type}"><span class="status-dot" style="background:currentColor"></span>${text}</span>`;
       const auditBadge = s => badge(s, s === "审核通过" ? "wh-status--done" : s === "审核中" ? "wh-status--progress" : "wh-status--pending");
-      const execBadge = s => badge(s, s === "已执行" ? "wh-status--done" : s === "未执行" ? "wh-status--progress" : "wh-status--pending");
+      const execBadge = s => {
+        const type =
+          s === "已执行" ? "wh-status--done"
+          : s === "执行终止" ? "wh-status--pending"
+          : "wh-status--progress";
+        return badge(s, type);
+      };
       function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),1800); }
       function rows(){
         const name=$("f-name").value.trim(), type=$("f-type").value, line=$("f-line").value, strategy=$("f-strategy").value, airport=$("f-airport").value, exec=$("f-exec").value, applicant=$("f-applicant").value.trim(), audit=$("f-audit").value;
         return plans.filter(p=>(!name||p.name.includes(name))&&(!type||p.type===type)&&(!line||p.line===line)&&(!strategy||p.strategy===strategy)&&(!airport||p.airport===airport)&&(!exec||p.exec===exec)&&(!applicant||p.applicant.includes(applicant))&&(!audit||p.audit===audit));
       }
-      function planRowActions(p){
-        const detail=`<button class="op-btn" onclick="showDetail(${p.id})">查阅计划</button>`;
-        const copy=`<button class="op-btn" onclick="copyPlan(${p.id})">复制计划</button>`;
-        const approve=`<button class="op-btn" onclick="showApproval(${p.id})">审批</button>`;
-        const cockpit=`<button class="op-btn" onclick="openCockpit(${p.id})">虚拟座舱</button>`;
-        const report=`<button class="op-btn" onclick="showReport(${p.id})">查看报告</button>`;
-        if(p.audit==="审核中") return detail+copy+approve;
-        if(p.audit==="已驳回") return detail+copy;
-        if(p.audit==="审核通过") return detail+cockpit+copy+report;
-        return detail+copy;
+      function updateFlightPlanStats(list) {
+        const set = (id, val) => { const el = $(id); if (el) el.textContent = String(val); };
+        set("stat-total", plans.length);
+        set("stat-auditing", plans.filter(p => p.audit === "审核中").length);
+        set("stat-rejected", plans.filter(p => p.audit === "已驳回").length);
+        set("stat-approved", plans.filter(p => p.audit === "审核通过").length);
+        set("plan-table-total", list.length);
+      }
+      function initQuickLinks() {
+        document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(anchor => {
+          const target = anchor.getAttribute("data-quick-href");
+          if (target && typeof whPageHref === "function") anchor.setAttribute("href", whPageHref(target));
+        });
+      }
+      function isPlanOpDisabled(p, action) {
+        const audit = p.audit;
+        const exec = p.exec;
+        if (action === "cockpit") {
+          if (audit === "审核中" && exec === "未执行") return true;
+          if (audit === "审核通过" && (exec === "执行中" || exec === "已执行" || exec === "数据处理")) return true;
+          if (audit === "已驳回" && exec === "执行终止") return true;
+          return false;
+        }
+        if (action === "approve") {
+          if (audit === "审核通过" && (exec === "未执行" || exec === "执行中" || exec === "已执行" || exec === "数据处理")) return true;
+          if (audit === "已驳回" && exec === "执行终止") return true;
+          return false;
+        }
+        if (action === "report") {
+          if (audit === "审核中" && exec === "未执行") return true;
+          if (audit === "审核通过" && (exec === "未执行" || exec === "执行中")) return true;
+          if (exec === "数据处理") return true;
+          if (audit === "已驳回" && exec === "执行终止") return true;
+          return false;
+        }
+        return false;
+      }
+      function planOpBtn(p, action, label, handlerName) {
+        const disabled = isPlanOpDisabled(p, action);
+        const cls = disabled ? "op-btn op-btn--disabled" : "op-btn";
+        const extra = disabled ? " disabled" : ' onclick="' + handlerName + "(" + p.id + ')"';
+        return '<button type="button" class="' + cls + '"' + extra + ">" + label + "</button>";
+      }
+      function planRowActions(p) {
+        return [
+          planOpBtn(p, "detail", "查阅计划", "showDetail"),
+          planOpBtn(p, "cockpit", "虚拟座舱", "openCockpit"),
+          planOpBtn(p, "copy", "复制计划", "copyPlan"),
+          planOpBtn(p, "approve", "审批", "showApproval"),
+          planOpBtn(p, "report", "查看报告", "showReport"),
+        ].join("");
       }
       function render(){
-        $("plan-body").innerHTML = rows().map((p,i)=>{ const canSelect=p.audit==="审核中"; return `<tr style="background:${i%2?"#08213d":"#071b33"}"><td><input class="row-check" type="checkbox" value="${p.id}"${canSelect?"":" disabled title=\"仅审核中计划可批量审批\""}></td><td class="font-medium text-cyan-100 nowrap-cell">${p.name}</td><td class="nowrap-cell">${p.route}</td><td>${p.airport}</td><td>${p.drone}</td><td>${p.type}</td><td>${p.strategy}</td><td>${p.line}</td><td>${p.applicant}</td><td class="nowrap-cell">${p.submit}</td><td>${auditBadge(p.audit)}</td><td>${execBadge(p.exec)}</td><td class="nowrap-cell">${p.planTime}</td><td class="nowrap-cell">${p.actualStart}</td><td class="nowrap-cell">${p.actualEnd}</td><td class="space-x-1 nowrap-cell">${planRowActions(p)}</td></tr>`; }).join("");
+        const list = rows();
+        updateFlightPlanStats(list);
+        $("plan-body").innerHTML = list.map((p,i)=>{ const canSelect=p.audit==="审核中"; return `<tr class="flight-plan-row" data-plan-id="${p.id}" style="background:${i%2?"#08213d":"#071b33"}"><td><input class="row-check" type="checkbox" value="${p.id}"${canSelect?"":" disabled title=\"仅审核中计划可批量审批\""}></td><td class="font-medium text-cyan-100 nowrap-cell">${p.name}</td><td class="nowrap-cell">${p.route}</td><td>${p.airport}</td><td>${p.drone}</td><td>${p.type}</td><td>${p.strategy}</td><td>${p.line}</td><td>${p.applicant}</td><td class="nowrap-cell">${p.submit}</td><td>${auditBadge(p.audit)}</td><td>${execBadge(p.exec)}</td><td class="nowrap-cell">${p.planTime}</td><td class="nowrap-cell">${p.actualStart}</td><td class="nowrap-cell">${p.actualEnd}</td><td class="flight-plan-col-actions"><div class="flight-plan-op-actions">${planRowActions(p)}</div></td></tr>`; }).join("");
         syncCheckAllState();
       }
       function syncCheckAllState(){
@@ -598,7 +819,16 @@
         else $(id).classList.remove("show");
       }
       document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>closeModal(b.dataset.close));
-      $("cockpit-launch-btn").onclick=()=>{ closeModal("cockpit-airspace-modal"); location.href="../cockpit/map-cockpit-prep.html"; };
+      function cockpitFlyUrl(query) {
+        var path = "cockpit/map-cockpit-fly.html";
+        var qs = query ? (query.charAt(0) === "?" ? query.slice(1) : query) : "";
+        var href = qs ? path + "?" + qs : path;
+        return typeof whPageHref === "function" ? whPageHref(href) : "../cockpit/map-cockpit-fly.html" + (qs ? "?" + qs : "");
+      }
+      $("cockpit-launch-btn").onclick = function () {
+        closeModal("cockpit-airspace-modal");
+        location.href = cockpitFlyUrl("confirmLaunch=1");
+      };
       function fillSelect(id, arr, placeholder){
         const ph = placeholder ? '<option value="">' + placeholder + "</option>" : "";
         $(id).innerHTML = ph + arr.map(function (v) { return "<option>" + v + "</option>"; }).join("");
@@ -662,7 +892,36 @@
       }
       function normalizePlanType(type){ return type === "常规巡检" ? "常规计划" : type || "常规计划"; }
       function displayPlanType(type){ return type === "常规计划" ? "常规巡检" : type; }
+      function resetPlanTypeLock(){
+        const typeEl = $("p-type");
+        if (typeEl) {
+          typeEl.disabled = false;
+          typeEl.removeAttribute("title");
+        }
+        const inspectEl = $("p-inspect-type");
+        if (inspectEl) {
+          inspectEl.disabled = false;
+          inspectEl.removeAttribute("title");
+        }
+        window.__flightPlanFromAlert = false;
+      }
+      function lockPlanTypeAsAlertReview(){
+        const typeEl = $("p-type");
+        if (typeEl) {
+          typeEl.value = "告警复核";
+          typeEl.disabled = true;
+          typeEl.title = "由告警无人机复核创建，计划类型不可修改";
+        }
+        const inspectEl = $("p-inspect-type");
+        if (inspectEl) {
+          inspectEl.value = "告警复核";
+          inspectEl.disabled = true;
+          inspectEl.title = "由告警无人机复核创建，巡查类型不可修改";
+        }
+        window.__flightPlanFromAlert = true;
+      }
       function setPlanFormDefaults(){
+        resetPlanTypeLock();
         $("p-type").value = "常规计划";
         $("p-strategy").value = "立即起飞";
         $("p-inspect-type").value = "日常巡查";
@@ -745,21 +1004,11 @@
       initMonthDayMulti();
       initNumSteppers();
       initFormCollapse();
-      function openForm(p){
-        editingId = p ? p.id : null;
-        $("form-title").textContent = p ? "编辑计划" : "新增计划";
+      function fillFormFromPlan(p, opts){
+        opts = opts || {};
         fillSelect("p-line", Object.keys(linkData));
         fillSelect("p-route", allRoutes(), "请选择飞行航线");
-        if (p) {
-          $("p-name").value = p.name;
-          $("p-route").value = p.route;
-          syncFromRoute();
-          if (p.drone) $("p-drone").value = p.drone;
-          $("p-type").value = normalizePlanType(p.type);
-          $("p-strategy").value = p.strategy;
-          $("p-applicant").value = p.applicant;
-          applyPlanExtraFields(p);
-        } else {
+        if (!p) {
           $("p-name").value = "";
           $("p-applicant").value = "当前用户";
           $("p-line").value = "";
@@ -768,12 +1017,55 @@
           $("p-route").value = "";
           $("p-drone").value = "";
           setPlanFormDefaults();
+          return;
         }
+        $("p-name").value = opts.copy ? p.name + "（复制）" : p.name;
+        $("p-route").value = p.route;
+        syncFromRoute();
+        if (p.drone) $("p-drone").value = p.drone;
+        $("p-type").value = normalizePlanType(p.type);
+        $("p-strategy").value = p.strategy;
+        $("p-applicant").value = p.applicant;
+        applyPlanExtraFields(p);
+      }
+      function applyFlightPlanAlertPrefill(){
+        let pre = null;
+        try {
+          const raw = sessionStorage.getItem("whFlightPlanAlertPrefill");
+          if (raw) {
+            pre = JSON.parse(raw);
+            sessionStorage.removeItem("whFlightPlanAlertPrefill");
+          }
+        } catch (e) {}
+        if (!pre) return false;
+        openForm(null, { keepAlertLock: true });
+        fillSelect("p-line", Object.keys(linkData));
+        if (pre.line) $("p-line").value = pre.line;
+        fillSelect("p-route", allRoutes(), "请选择飞行航线");
+        if (pre.route) $("p-route").value = pre.route;
+        syncFromRoute();
+        if (pre.drone) $("p-drone").value = pre.drone;
+        if (pre.airport && !$("p-airport").value) $("p-airport").value = pre.airport;
+        $("p-name").value = pre.name || "";
+        $("p-applicant").value = "当前用户";
+        lockPlanTypeAsAlertReview();
+        $("p-strategy").value = "立即起飞";
+        onStrategyChangeForExec();
+        syncStrategyExecUI();
+        return true;
+      }
+      function openForm(p, opts){
+        opts = opts || {};
+        const isCopy = !!opts.copy;
+        if (!opts.keepAlertLock) resetPlanTypeLock();
+        editingId = isCopy || !p ? null : p.id;
+        $("form-title").textContent = isCopy ? "复制计划" : p ? "编辑计划" : "新增计划";
+        fillFormFromPlan(p, { copy: isCopy });
         const panel = $("plan-form-advanced");
         const toggle = $("plan-form-toggle");
         if (panel) panel.classList.remove("is-collapsed");
         if (toggle) toggle.textContent = "收起";
-        fillExecFormFromPlan(p);
+        fillExecFormFromPlan(p || null);
         syncStrategyExecUI();
         closeMonthDaysMs();
         openModal("form-modal");
@@ -800,9 +1092,25 @@
           execMeta:exec.execMeta,
           planExtra:readPlanExtraFields()
         };
-        if(editingId){ Object.assign(plans.find(p=>p.id===editingId), data, {audit:"审核中", exec:"未执行"}); }
-        else { plans.unshift({id:Date.now(),...data,submit:"2026-05-13 11:30",audit:"审核中",exec:"未执行",actualStart:"-",actualEnd:"-"}); }
-        closeModal("form-modal"); render(); toast("已保存，进入审批流程");
+        const fromAlert = !!window.__flightPlanFromAlert;
+        if(editingId){
+          Object.assign(plans.find(p=>p.id===editingId), data, fromAlert ? {audit:"审核通过", exec:"未执行", airspaceValid:true} : {audit:"审核中", exec:"未执行"});
+        } else {
+          plans.unshift({
+            id:Date.now(),
+            ...data,
+            submit:"2026-05-13 11:30",
+            audit: fromAlert ? "审核通过" : "审核中",
+            exec:"未执行",
+            actualStart:"-",
+            actualEnd:"-",
+            ...(fromAlert ? { airspaceValid: true } : {}),
+          });
+        }
+        resetPlanTypeLock();
+        closeModal("form-modal");
+        render();
+        toast(fromAlert ? "已创建飞行计划，状态为审核通过-未执行" : "已保存，进入审批流程");
       }
       function getPlanExtraDisplay(p){
         const x=p.planExtra||{};
@@ -848,14 +1156,14 @@
           detailField("执行时间",p.planTime,true),
           detailField("计划类型",displayPlanType(normalizePlanType(p.type))),
           detailField("执行方式",x.execMethod),
-          detailField("任务精度",x.taskPrecision),
           detailField("飞行模式",x.flightMode),
-          detailField("遥控器失控动作",x.rcLostAction),
+          detailField("任务精度",x.taskPrecision),
           detailField("返航高度模式",x.rthMode),
-          detailField("飞手",x.pilot),
+          detailField("遥控器失控动作",x.rcLostAction),
           detailField("航线失控动作",x.routeLostAction),
-          detailField("视频模式",x.videoMode),
+          detailField("飞手",x.pilot),
           detailField("适用挂载设备",x.mountDevice),
+          detailField("视频模式",x.videoMode),
           detailField("所属线路",p.line),
           detailField("申请人",p.applicant),
           detailField("提交时间",p.submit),
@@ -957,10 +1265,14 @@
       function openCockpit(id){
         const p=plans.find(x=>x.id===id);
         if(!p||p.audit!=="审核通过") return toast("飞行计划未审批通过，不能进入虚拟座舱");
-        if(isAirspaceValid(p)) showCockpitAirspaceModal("confirm");
+        if(isAirspaceValid(p)) location.href = cockpitFlyUrl("confirmLaunch=1");
         else showCockpitAirspaceModal("blocked");
       }
-      function copyPlan(id){ const p=plans.find(x=>x.id===id); plans.unshift({...p,id:Date.now(),name:p.name+"（复制）",audit:"审核中",exec:"未执行",actualStart:"-",actualEnd:"-",submit:"2026-05-13 11:35",execMeta:p.execMeta?JSON.parse(JSON.stringify(p.execMeta)):undefined}); render(); toast("已复制计划，可继续编辑提交"); }
+      function copyPlan(id){
+        const p = plans.find(x => x.id === id);
+        if (!p) return;
+        openForm(p, { copy: true });
+      }
       function submitApproval(status){
         const ids=approvalBatchIds && approvalBatchIds.length ? approvalBatchIds.slice() : approvalId ? [approvalId] : [];
         if(!ids.length) return;
@@ -994,13 +1306,29 @@
       $("check-all").onchange=e=>document.querySelectorAll(".row-check:not(:disabled)").forEach(c=>c.checked=e.target.checked);
       document.addEventListener("change",e=>{ if(e.target.classList&&e.target.classList.contains("row-check")) syncCheckAllState(); });
       $("batch-approve-btn").onclick=openBatchApproval;
-      
+      $("plan-body").addEventListener("click", function (e) {
+        if (e.target.closest("input, button, .flight-plan-col-actions, a, label")) return;
+        const row = e.target.closest("tr[data-plan-id]");
+        if (!row) return;
+        const id = Number(row.dataset.planId);
+        if (!Number.isNaN(id)) showDetail(id);
+      });
+
       window.showDetail=showDetail;
       window.showApproval=showApproval;
       window.showReport=showReport;
       window.copyPlan=copyPlan;
       window.openCockpit=openCockpit;
+      initQuickLinks();
       render();
+      (function () {
+        var params = new URLSearchParams(location.search);
+        if (params.get("create") === "1" && params.get("fromAlert") === "1") {
+          applyFlightPlanAlertPrefill();
+        } else if (params.get("create") === "1") {
+          openForm();
+        }
+      })();
     </script>
   </body>
 </html>

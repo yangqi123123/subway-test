@@ -7,7 +7,160 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
   <style>
+    .disease-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+      align-items: start;
+    }
+    .disease-layout__right {
+      position: sticky;
+      top: 72px;
+      align-self: start;
+      width: 300px;
+      max-height: calc(100dvh - 88px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .disease-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .disease-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88));
+    }
+    .disease-stat-card__icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+    .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
+    .disease-filter-panel,
+    .disease-quick-panel {
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(8, 15, 35, 0.78);
+    }
+    .disease-panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2f5ff;
+      margin: 0;
+      padding: 8px 10px 7px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.92);
+    }
+    .disease-panel-body { padding: 8px 10px 10px; }
+    .disease-filter-panel .disease-panel-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .disease-filter-panel label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 0;
+      font-size: 10px;
+    }
+    .disease-filter-panel label > span:first-child { color: #94a3b8; }
+    .disease-filter-panel .wh-input {
+      height: 26px !important;
+      min-height: 26px;
+      font-size: 11px;
+      padding: 0 6px;
+    }
+    .disease-filter-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .disease-filter-actions button {
+      flex: 1;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      font-size: 11px;
+    }
+    .disease-list-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+    .disease-quick-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.14);
+      background: rgba(15, 23, 42, 0.45);
+      color: #e2f5ff;
+      font-size: 11px;
+      text-decoration: none;
+    }
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.08);
+      color: #fff;
+    }
+    .disease-quick-link.is-active {
+      border-color: rgba(34, 211, 238, 0.55);
+      background: rgba(34, 211, 238, 0.12);
+      color: #a5f3fc;
+    }
+    .disease-quick-link i {
+      width: 16px;
+      text-align: center;
+      color: #67e8f9;
+      font-size: 12px;
+    }
+    @media (max-width: 1400px) {
+      .disease-layout { grid-template-columns: 1fr; }
+      .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .disease-layout__right {
+        position: static;
+        width: 100%;
+        max-height: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+    }
+    @media (max-width: 768px) {
+      .disease-stats { grid-template-columns: 1fr; }
+      .disease-layout__right { grid-template-columns: 1fr; }
+    }
     .section-table th,
     .section-table td {
       height: 52px;
@@ -88,89 +241,216 @@
       box-shadow: 0 24px 80px rgba(0,0,0,.48);
       overflow: hidden;
     }
+    .am-detail-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 115;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(2, 8, 23, 0.72);
+    }
+    .am-detail-mask.show { display: flex; }
+    .am-detail-dialog {
+      width: min(920px, 96vw);
+      max-height: min(86vh, 900px);
+      border-radius: 8px;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      background: linear-gradient(180deg, #071525, #020617);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .am-detail-dialog__head {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+    }
+    .am-detail-dialog__body {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 20px 24px 16px;
+    }
+    .am-detail-dialog__foot {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 14px 24px 18px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .detail-value {
+      flex: 1;
+      min-width: 0;
+      min-height: 32px;
+      line-height: 32px;
+      color: rgba(226, 245, 255, 0.92);
+      font-size: 12px;
+      word-break: break-word;
+    }
+    .detail-value--empty { color: #64748b; }
   </style>
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="am-section" data-wb-view="page">
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
-    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
-      <span>我的工作台</span>
-      <span class="text-slate-600">&gt;&gt;</span>
-      <span class="text-cyan-50 font-semibold tracking-wide">区间管理</span>
-    </nav>
-
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
       <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">区间管理</h1>
-      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">区间基础台账维护</span>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">区间管理面板</span>
     </div>
 
-    <section class="neon-panel neon-panel--tight p-4 mb-4">
-      <div class="flex flex-wrap items-end gap-4">
-        <div class="min-w-[220px]">
-          <label class="wh-filter-label block mb-1.5">区间名称</label>
-          <input class="wh-input h-8 w-full px-3" placeholder="请输入区间名称" />
-        </div>
-        <div class="min-w-[180px]">
-          <label class="wh-filter-label block mb-1.5">所属线路</label>
-          <select class="wh-input h-8 w-full px-2">
-            <option>全部</option>
-            <option>2号线</option>
-            <option>5号线</option>
-            <option>7号线</option>
-            <option>11号线</option>
-          </select>
-        </div>
-        <div class="min-w-[160px]">
-          <label class="wh-filter-label block mb-1.5">上下行</label>
-          <select class="wh-input h-8 w-full px-2">
-            <option>全部</option>
-            <option>上行</option>
-            <option>下行</option>
-          </select>
-        </div>
-        <div class="flex gap-2">
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary">搜索</button>
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">重置</button>
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">导出</button>
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary" data-action="new-section">新建</button>
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">导入区间</button>
-        </div>
-      </div>
-    </section>
+    <section id="section-list-view">
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="区间统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-road"></i></div>
+              <div>
+                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">区间总数</div>
+                <div class="disease-stat-card__trend">基础台账</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-train-subway"></i></div>
+              <div>
+                <div id="stat-lines" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">覆盖线路</div>
+                <div class="disease-stat-card__trend">所属线路去重</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-ruler-horizontal"></i></div>
+              <div>
+                <div id="stat-length" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">长度合计（米）</div>
+                <div class="disease-stat-card__trend">当前列表</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-arrows-up-down"></i></div>
+              <div>
+                <div id="stat-direction" class="disease-stat-card__value">0/0</div>
+                <div class="disease-stat-card__label">上行/下行</div>
+                <div class="disease-stat-card__trend">方向分布</div>
+              </div>
+            </div>
+          </div>
 
-    <section class="wh-table-shell bg-slate-950/35">
-      <div class="overflow-x-auto">
-        <table class="section-table min-w-[2000px] w-full text-left">
-          <thead>
-            <tr>
-              <th class="px-4">编号</th>
-              <th class="px-4">区间名称</th>
-              <th class="px-4">所属线路</th>
-              <th class="px-4">上下行</th>
-              <th class="px-4">起点里程</th>
-              <th class="px-4">终点里程</th>
-              <th class="px-4">长度（米）</th>
-              <th class="px-4">所处地层</th>
-              <th class="px-4">施工单位</th>
-              <th class="px-4">施工方法</th>
-              <th class="px-4">创建时间</th>
-              <th class="px-4">操作</th>
-            </tr>
-          </thead>
-          <tbody id="section-table-body"></tbody>
-        </table>
-      </div>
-      <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
-        <span>共 <b class="text-cyan-200">5</b> 条</span>
-        <div class="flex items-center gap-2 flex-wrap">
-          <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button>
-          <select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select>
-          <span>跳至</span>
-          <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
-          <span>页</span>
+          <div class="disease-list-area">
+            <div class="disease-list-toolbar">
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new-section">
+                <i class="fa-solid fa-plus mr-1"></i>新建
+              </button>
+              <button id="btn-import" type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">
+                <i class="fa-solid fa-file-import mr-1"></i>导入区间
+              </button>
+              <button id="btn-export" type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">
+                <i class="fa-solid fa-file-export mr-1"></i>导出
+              </button>
+            </div>
+            <div class="wh-table-shell bg-slate-950/35">
+              <div class="am-table-wrap overflow-x-auto">
+                <table class="section-table min-w-[2000px] w-full text-left">
+                  <thead>
+                    <tr>
+                      <th class="px-4">编号</th>
+                      <th class="px-4">区间名称</th>
+                      <th class="px-4">所属线路</th>
+                      <th class="px-4">上下行</th>
+                      <th class="px-4">起点里程</th>
+                      <th class="px-4">终点里程</th>
+                      <th class="px-4">长度（米）</th>
+                      <th class="px-4">所处地层</th>
+                      <th class="px-4">施工单位</th>
+                      <th class="px-4">施工方法</th>
+                      <th class="px-4">创建时间</th>
+                      <th class="px-4 disease-col-actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="section-table-body"></tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+                <span>共 <b id="table-total" class="text-cyan-200">0</b> 条</span>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <button type="button" class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button>
+                  <select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select>
+                  <span>跳至</span>
+                  <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+                  <span>页</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label>
+                <span>区间名称</span>
+                <input id="filter-name" class="wh-input w-full" placeholder="请输入区间名称" />
+              </label>
+              <label>
+                <span>所属线路</span>
+                <select id="filter-line" class="wh-input w-full px-2">
+                  <option value="">全部</option>
+                  <option value="2号线">2号线</option>
+                  <option value="5号线">5号线</option>
+                  <option value="7号线">7号线</option>
+                  <option value="11号线">11号线</option>
+                </select>
+              </label>
+              <label>
+                <span>上下行</span>
+                <select id="filter-direction" class="wh-input w-full px-2">
+                  <option value="">全部</option>
+                  <option value="上行">上行</option>
+                  <option value="下行">下行</option>
+                </select>
+              </label>
+              <div class="disease-filter-actions">
+                <button id="btn-search" type="button" class="wh-btn-primary">搜索</button>
+                <button id="btn-reset" type="button" class="wh-btn-ghost">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body">
+              <a class="disease-quick-link" data-quick-href="wb/am-line.html" href="am-line.html"><i class="fa-solid fa-train-subway"></i><span>线路管理</span></a>
+              <a class="disease-quick-link" data-quick-href="wb/am-station.html" href="am-station.html"><i class="fa-solid fa-train"></i><span>站点管理</span></a>
+              <a class="disease-quick-link is-active" data-quick-href="wb/am-section.html" href="am-section.html"><i class="fa-solid fa-road"></i><span>区间管理</span></a>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
+  </div>
+
+  <div id="section-detail-mask" class="am-detail-mask" aria-hidden="true">
+    <div class="am-detail-dialog" role="dialog" aria-labelledby="section-detail-title">
+      <div class="am-detail-dialog__head">
+        <div>
+          <h3 id="section-detail-title" class="text-white font-semibold text-sm m-0">查看详情</h3>
+          <div id="section-detail-subtitle" class="text-[11px] text-slate-400 mt-0.5">区间详情</div>
+        </div>
+        <button type="button" class="wh-modal-close text-slate-400 hover:text-white text-xl leading-none" data-action="close-section-detail" aria-label="关闭">×</button>
+      </div>
+      <div id="section-detail-body" class="am-detail-dialog__body"></div>
+      <div class="am-detail-dialog__foot">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-section-detail">关闭</button>
+      </div>
+    </div>
   </div>
 
   <div id="section-modal-mask" class="section-modal-mask">
@@ -221,16 +501,96 @@
         { id:"Q1101", name:"光谷五路-左岭", line:"11号线", direction:"下行", startMile:"K08+260", endMile:"K10+420", length:"2160", strata:"中风化砂岩", builder:"中铁一局", method:"明挖法", createdAt:"2026-05-01 10:42" }
       ];
 
+      var displayRows = rows.slice();
       var editIndex = -1;
-      var deleteIndex = -1;
+      var deleteId = "";
       var tableBody = document.getElementById("section-table-body");
+      var tableTotal = document.getElementById("table-total");
       var modalMask = document.getElementById("section-modal-mask");
       var confirmMask = document.getElementById("confirm-mask");
       var modalTitle = document.getElementById("section-modal-title");
+      var detailMask = document.getElementById("section-detail-mask");
+      var detailBody = document.getElementById("section-detail-body");
+      var detailSubtitle = document.getElementById("section-detail-subtitle");
+
+      function escHtml(value) {
+        return String(value || "").replace(/[&<>"']/g, function (char) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+        });
+      }
+      function detailValue(value) {
+        var text = value === undefined || value === null || value === "" ? "—" : String(value);
+        return '<div class="detail-value' + (text === "—" ? " detail-value--empty" : "") + '">' + escHtml(text) + "</div>";
+      }
+      function detailRow(label, value) {
+        return '<label class="section-form-item"><span class="section-form-label">' + escHtml(label) + "：</span>" + detailValue(value) + "</label>";
+      }
+      function buildDetailHtml(row) {
+        return (
+          '<div class="section-form-grid">' +
+          detailRow("编号", row.id) +
+          detailRow("区间名称", row.name) +
+          detailRow("所属线路", row.line) +
+          detailRow("上下行", row.direction) +
+          detailRow("起点里程", row.startMile) +
+          detailRow("终点里程", row.endMile) +
+          detailRow("长度", row.length) +
+          detailRow("所处地层", row.strata) +
+          detailRow("施工单位", row.builder) +
+          detailRow("施工方法", row.method) +
+          detailRow("创建时间", row.createdAt) +
+          "</div>"
+        );
+      }
+      function openDetail(displayIndex) {
+        var row = displayRows[displayIndex];
+        if (!row || !detailMask || !detailBody) return;
+        if (detailSubtitle) detailSubtitle.textContent = row.name || "区间详情";
+        detailBody.innerHTML = buildDetailHtml(row);
+        detailMask.classList.add("show");
+        detailMask.setAttribute("aria-hidden", "false");
+      }
+      function closeDetail() {
+        if (!detailMask) return;
+        detailMask.classList.remove("show");
+        detailMask.setAttribute("aria-hidden", "true");
+      }
+
+      function findRowIndex(id) {
+        return rows.findIndex(function (row) { return row.id === id; });
+      }
+
+      function updateSectionStats(data) {
+        var list = data || [];
+        var lines = {};
+        var lengthSum = 0;
+        var up = 0;
+        var down = 0;
+        list.forEach(function (row) {
+          lines[row.line] = true;
+          lengthSum += Number(row.length) || 0;
+          if (row.direction === "上行") up += 1;
+          else if (row.direction === "下行") down += 1;
+        });
+        document.getElementById("stat-total").textContent = String(list.length);
+        document.getElementById("stat-lines").textContent = String(Object.keys(lines).length);
+        document.getElementById("stat-length").textContent = String(lengthSum);
+        document.getElementById("stat-direction").textContent = up + "/" + down;
+        if (tableTotal) tableTotal.textContent = String(list.length);
+      }
+
+      function initQuickLinks() {
+        document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
+          var target = anchor.getAttribute("data-quick-href");
+          if (target && typeof whPageHref === "function") {
+            anchor.setAttribute("href", whPageHref(target));
+          }
+        });
+      }
 
       function renderRows() {
-        tableBody.innerHTML = rows.map(function (row, index) {
-          return '<tr class="' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '">' +
+        tableBody.innerHTML = displayRows.map(function (row, index) {
+          return '<tr class="wh-row-open ' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '" data-row-index="' + index + '">' +
             '<td class="px-4">' + row.id + '</td>' +
             '<td class="px-4">' + row.name + '</td>' +
             '<td class="px-4">' + row.line + '</td>' +
@@ -242,12 +602,34 @@
             '<td class="px-4">' + row.builder + '</td>' +
             '<td class="px-4">' + row.method + '</td>' +
             '<td class="px-4">' + row.createdAt + '</td>' +
-            '<td class="px-4">' +
-              '<span class="section-action text-amber-300" data-action="edit-section" data-index="' + index + '"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
-              '<span class="section-action text-rose-300" data-action="delete-section" data-index="' + index + '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
-            '</td>' +
+            '<td class="px-4 disease-col-actions"><div class="disease-op-actions">' +
+              '<span class="section-action text-amber-300" data-action="edit-section" data-section-id="' + row.id + '"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
+              '<span class="section-action text-rose-300" data-action="delete-section" data-section-id="' + row.id + '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
+            '</div></td>' +
           '</tr>';
         }).join("");
+        updateSectionStats(displayRows);
+      }
+
+      function applyFilter() {
+        var name = document.getElementById("filter-name").value.trim();
+        var line = document.getElementById("filter-line").value;
+        var direction = document.getElementById("filter-direction").value;
+        displayRows = rows.filter(function (row) {
+          if (name && row.name.indexOf(name) === -1 && row.id.indexOf(name) === -1) return false;
+          if (line && row.line !== line) return false;
+          if (direction && row.direction !== direction) return false;
+          return true;
+        });
+        renderRows();
+      }
+
+      function resetFilters() {
+        document.getElementById("filter-name").value = "";
+        document.getElementById("filter-line").value = "";
+        document.getElementById("filter-direction").value = "";
+        displayRows = rows.slice();
+        renderRows();
       }
 
       function openModal(mode, index) {
@@ -297,35 +679,61 @@
         if (editIndex > -1) rows[editIndex] = row;
         else rows.unshift(row);
         closeModal();
-        renderRows();
+        applyFilter();
       }
 
+      document.getElementById("btn-search").addEventListener("click", applyFilter);
+      document.getElementById("btn-reset").addEventListener("click", resetFilters);
+      document.getElementById("btn-export").addEventListener("click", function () {
+        alert("导出当前筛选结果（原型演示）");
+      });
+      document.getElementById("btn-import").addEventListener("click", function () {
+        alert("导入区间（原型演示）");
+      });
+      initQuickLinks();
+      function setupListRowClick() {
+        if (!window.WHTableRowClick) return window.setTimeout(setupListRowClick, 40);
+        WHTableRowClick.bindById("section-table-body", {
+          getRows: function () { return displayRows; },
+          onOpen: function (row, index) { openDetail(index); }
+        });
+      }
+      setupListRowClick();
+      displayRows = rows.slice();
       renderRows();
 
       document.addEventListener("click", function (event) {
         var trigger = event.target.closest("[data-action]");
         if (!trigger) return;
         var action = trigger.getAttribute("data-action");
-        var index = Number(trigger.getAttribute("data-index"));
+        var sectionId = trigger.getAttribute("data-section-id");
+        var index = sectionId ? findRowIndex(sectionId) : -1;
         if (action === "new-section") openModal("new");
-        if (action === "edit-section") openModal("edit", index);
-        if (action === "delete-section") {
-          deleteIndex = index;
+        if (action === "edit-section" && index > -1) openModal("edit", index);
+        if (action === "delete-section" && sectionId) {
+          deleteId = sectionId;
           confirmMask.classList.add("show");
         }
         if (action === "close-section-modal") closeModal();
+        if (action === "close-section-detail") closeDetail();
         if (action === "save-section") saveSection();
         if (action === "cancel-delete") {
-          deleteIndex = -1;
+          deleteId = "";
           confirmMask.classList.remove("show");
         }
         if (action === "confirm-delete") {
+          var deleteIndex = deleteId ? findRowIndex(deleteId) : -1;
           if (deleteIndex > -1) rows.splice(deleteIndex, 1);
-          deleteIndex = -1;
+          deleteId = "";
           confirmMask.classList.remove("show");
-          renderRows();
+          applyFilter();
         }
       });
+      if (detailMask) {
+        detailMask.addEventListener("click", function (event) {
+          if (event.target === detailMask) closeDetail();
+        });
+      }
     })();
   </script>
   <script src="../../assets/js/menu-config.js"></script>

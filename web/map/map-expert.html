@@ -152,6 +152,24 @@
         box-shadow: 0 0 9px rgba(255, 77, 79, 0.6);
       }
 
+      .expert-chart-img-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      .expert-chart-img {
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        object-position: center;
+      }
+
       .spec-view {
         background: linear-gradient(180deg, #0a1222 0%, #0d1830 100%);
       }
@@ -546,14 +564,6 @@
   </head>
   <body data-shell="fullscreen" data-top="map">
     <div id="page-root" class="expert-page h-[calc(100vh-64px)] flex flex-col text-[#DCE8F8]">
-      <nav class="neon-panel neon-panel--tight map-breadcrumb">
-        <span class="map-breadcrumb__icon"><i class="fa-solid fa-location-crosshairs"></i></span>
-        <span>全景地图</span>
-        <span class="map-breadcrumb__sep">&gt;&gt;</span>
-        <span class="map-breadcrumb__current">专家工具</span>
-        <a href="map-situation.html" class="ml-auto text-[#58AEFF] hover:text-white transition-ui">返回态势感知</a>
-      </nav>
-
       <div class="flex-1 min-h-0 p-3">
         <div class="h-full flex flex-col gap-3 min-h-0">
           <section class="grid grid-cols-[30%_50%_20%] gap-2.5 h-[66%] min-h-0">
@@ -567,94 +577,30 @@
             <div class="expert-panel min-h-0">
               <div class="panel-title">瀑布图</div>
               <div class="relative h-[calc(100%-28px)] bg-[#f7f8fb] overflow-hidden">
-                <div class="waterfall-legend">
-                  <span><i class="is-normal"></i>正常</span>
-                  <span><i class="is-warn"></i>预警</span>
-                  <span><i class="is-danger"></i>告警</span>
+                <div class="expert-chart-img-wrap">
+                  <img
+                    class="expert-chart-img"
+                    src="../../assets/images/expert-waterfall.png"
+                    width="860"
+                    height="534"
+                    alt="瀑布图"
+                  />
                 </div>
-                <div class="absolute inset-x-6 top-7 h-px bg-[#9ca3af]"></div>
-                <div class="absolute left-7 top-7 bottom-5 w-px bg-[#6b7280]"></div>
-                <div class="absolute inset-0">
-                  <span class="axis-text" style="left: 26px; top: 34px;">8:32:49</span>
-                  <span class="axis-text" style="left: 26px; top: 69px;">8:32:39</span>
-                  <span class="axis-text" style="left: 26px; top: 104px;">8:32:29</span>
-                  <span class="axis-text" style="left: 26px; top: 139px;">8:32:19</span>
-                  <span class="axis-text" style="left: 26px; top: 174px;">8:32:09</span>
-                  <span class="axis-text" style="left: 26px; top: 209px;">8:31:59</span>
-                  <span class="axis-text" style="left: 26px; top: 244px;">8:31:49</span>
-                  <span class="axis-text" style="left: 26px; top: 279px;">8:31:39</span>
-                  <span class="axis-text" style="left: 26px; top: 314px;">8:31:29</span>
-
-                  <span class="axis-text text-[#374151]" style="left: 52px; top: 10px;">19770</span>
-                  <span class="axis-text text-[#374151]" style="left: 108px; top: 10px;">19820</span>
-                  <span class="axis-text text-[#374151]" style="left: 168px; top: 10px;">19870</span>
-                  <span class="axis-text text-[#374151]" style="left: 228px; top: 10px;">19920</span>
-                  <span class="axis-text text-[#374151]" style="left: 290px; top: 10px;">19970</span>
-                  <span class="axis-text text-[#374151]" style="left: 350px; top: 10px;">20020</span>
-                  <span class="axis-text text-[#374151]" style="left: 410px; top: 10px;">20070</span>
-                  <span class="axis-text text-[#374151]" style="left: 470px; top: 10px;">20120</span>
-                  <span class="axis-text text-[#374151]" style="left: 530px; top: 10px;">20220</span>
-                  <span class="axis-text text-[#374151]" style="left: 592px; top: 10px;">20270</span>
-                  <span class="axis-text text-[#374151]" style="left: 650px; top: 10px;">20320</span>
-                </div>
-
-                <div class="waterfall-dot left-[246px] top-[54px] waterfall-dot--normal"></div>
-                <div class="waterfall-dot left-[275px] top-[42px] waterfall-dot--normal"></div>
-                <div class="waterfall-dot left-[285px] top-[44px] waterfall-dot--normal"></div>
-                <div class="waterfall-dot left-[296px] top-[39px] waterfall-dot--normal"></div>
-                <div class="waterfall-dot left-[315px] top-[32px] waterfall-dot--normal"></div>
-                <div class="waterfall-dot left-[328px] top-[36px] waterfall-dot--normal"></div>
-                <div class="waterfall-dot left-[340px] top-[41px] waterfall-dot--normal"></div>
-
-                <div class="waterfall-dot left-[286px] top-[118px] waterfall-dot--warn"></div>
-                <div class="waterfall-dot left-[297px] top-[124px] waterfall-dot--warn"></div>
-
-                <div class="waterfall-dot left-[287px] top-[166px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[298px] top-[170px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[304px] top-[177px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[311px] top-[184px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[321px] top-[190px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[333px] top-[194px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[344px] top-[189px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[301px] top-[198px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[312px] top-[205px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[321px] top-[214px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[328px] top-[224px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[333px] top-[235px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[330px] top-[244px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[322px] top-[253px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[319px] top-[263px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[324px] top-[274px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[330px] top-[282px] waterfall-dot--danger"></div>
-                <div class="waterfall-dot left-[338px] top-[291px] waterfall-dot--danger"></div>
-
-                <div class="waterfall-dot left-[270px] top-[312px] waterfall-dot--normal"></div>
-                <div class="waterfall-dot left-[278px] top-[318px] waterfall-dot--normal"></div>
-                <div class="waterfall-dot left-[286px] top-[305px] waterfall-dot--normal"></div>
-                <div class="waterfall-dot left-[294px] top-[324px] waterfall-dot--warn"></div>
-                <div class="waterfall-dot left-[305px] top-[331px] waterfall-dot--warn"></div>
-
-                <div class="absolute left-[36px] right-[18px] top-[58px] h-px bg-[linear-gradient(90deg,rgba(59,130,246,0.05),rgba(0,0,0,0.06),rgba(59,130,246,0.05))]"></div>
-                <div class="absolute left-[36px] right-[18px] top-[148px] h-px bg-[linear-gradient(90deg,rgba(59,130,246,0.05),rgba(0,0,0,0.06),rgba(59,130,246,0.05))]"></div>
-                <div class="absolute left-[36px] right-[18px] top-[238px] h-px bg-[linear-gradient(90deg,rgba(59,130,246,0.05),rgba(0,0,0,0.06),rgba(59,130,246,0.05))]"></div>
               </div>
             </div>
 
             <div class="expert-panel min-h-0">
               <div class="panel-title">频谱图</div>
               <div class="spec-view relative h-[calc(100%-28px)] overflow-hidden">
-                <div class="spec-legend">
-                  <span><i class="is-normal"></i>正常</span>
-                  <span><i class="is-warn"></i>预警</span>
-                  <span><i class="is-danger"></i>告警</span>
+                <div class="expert-chart-img-wrap">
+                  <img
+                    class="expert-chart-img"
+                    src="../../assets/images/expert-spectrum.png"
+                    width="324"
+                    height="534"
+                    alt="频谱图"
+                  />
                 </div>
-                <div class="spec-chart-area">
-                  <canvas id="expert-spectrum-canvas" aria-label="频谱图"></canvas>
-                </div>
-                <div class="spec-axis-y" id="expert-spec-axis-y"></div>
-                <div class="spec-axis-x" id="expert-spec-axis-x"></div>
-                <div class="spec-axis-unit spec-axis-unit--x">频率（Hz）</div>
-                <div class="spec-axis-unit spec-axis-unit--y">时间</div>
               </div>
             </div>
           </section>
@@ -667,7 +613,7 @@
                 <div>告警开始时间：2026-03-05 08:14:49</div>
                 <div>最新告警时间：2026-03-05 18:30:46</div>
                 <div>告警来源：AI</div>
-                <div>工地：金融街六中北项目</div>
+                <div id="expert-site-project">工地：金融街六中北项目</div>
                 <button id="btn-go-alert-detail" type="button" class="mt-4 w-full h-8 rounded bg-[#178df2] hover:bg-[#2999ff] text-white text-[12px] font-medium transition-ui shadow-[0_0_14px_rgba(23,141,242,0.3)]">前往告警详情</button>
               </div>
             </article>
@@ -675,6 +621,7 @@
             <article id="expert-review-card" class="expert-panel min-h-0 flex flex-col is-active">
               <div class="card-title">最新告警复核情况</div>
               <div id="expert-review-body" class="card-body scrollbar-thin">
+                <div data-review-line="projectName">项目名称：<span data-review-val>金融街六中北项目</span></div>
                 <div data-review-line="falseAlarm">是否误报：<span data-review-val>非误报</span></div>
                 <div data-review-line="levelAdjust">报警级别调整：<span data-review-val>一级告警</span></div>
                 <div data-review-line="scene">现场情况：<span data-review-val>现场工地有破拆机械作业</span></div>
@@ -773,6 +720,10 @@
           <button type="button" class="wh-modal-close expert-modal__close" data-action="close-review-modal" aria-label="关闭">×</button>
         </div>
         <form id="expert-review-form" class="expert-modal__body">
+          <div class="expert-form-row" id="review-project-name-row">
+            <label class="expert-form-label">项目名称</label>
+            <div id="review-project-name-select" class="w-full" data-input-id="review-project-name-value"></div>
+          </div>
           <div class="expert-form-row">
             <label class="expert-form-label">是否误报</label>
             <div class="expert-radio-group">
@@ -810,6 +761,7 @@
     <script src="../../assets/js/map-situation-gis.js"></script>
     <script src="../../assets/js/menu-config.js"></script>
     <script src="../../assets/js/shell.js"></script>
+    <script src="../../assets/js/search-select.js"></script>
     <script src="../../assets/js/map-expert.js"></script>
   </body>
 </html>

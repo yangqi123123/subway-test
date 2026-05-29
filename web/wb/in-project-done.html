@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
   <style>
     .project-table th,
     .project-table td {
@@ -102,6 +103,66 @@
 
     .done-modal-mask.show {
       display: flex;
+    }
+
+    .project-view-detail-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 85;
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding: calc(var(--header-h, 64px) + 20px) 24px 24px;
+      background: rgba(2, 8, 23, 0.72);
+    }
+
+    .project-view-detail-mask.show {
+      display: flex;
+    }
+
+    .project-view-detail-dialog {
+      width: min(1280px, 98vw);
+      max-height: calc(100vh - var(--header-h, 64px) - 44px);
+      border-radius: 8px;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      background: linear-gradient(180deg, #071525, #020617);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .project-view-detail-dialog__head {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+    }
+
+    .project-view-detail-dialog__body {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 12px 16px 8px;
+    }
+
+    .project-view-detail-dialog__body .neon-panel {
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+      padding: 0 !important;
+    }
+
+    .project-view-detail-dialog__foot {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 14px 24px 18px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
     }
 
     .project-modal {
@@ -353,6 +414,13 @@
       background: rgba(2, 8, 23, 0.45);
     }
 
+    .project-patrol-frame-wrap--embed {
+      min-height: calc(100vh - 168px);
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+
     .project-patrol-frame-wrap iframe {
       display: block;
       width: 100%;
@@ -360,6 +428,11 @@
       height: calc(100vh - 200px);
       border: 0;
       background: #020617;
+    }
+
+    .project-patrol-frame-wrap--embed iframe {
+      min-height: calc(100vh - 168px);
+      height: calc(100vh - 168px);
     }
 
     .project-patrol-tab {
@@ -376,143 +449,318 @@
       color: #67e8f9;
       border-color: #38bdf8;
     }
+
+    .disease-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+      align-items: start;
+    }
+    .disease-layout__right {
+      position: sticky;
+      top: 72px;
+      align-self: start;
+      width: 300px;
+      max-height: calc(100dvh - 88px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: flex-start;
+    }
+    .disease-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .disease-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88));
+      box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.06), inset 0 1px 0 rgba(148, 163, 184, 0.06);
+    }
+    .disease-stat-card__icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+    .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
+    .disease-filter-panel,
+    .disease-quick-panel {
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(8, 15, 35, 0.78);
+      overflow: visible;
+    }
+    .disease-panel-title {
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2f5ff;
+      margin: 0;
+      padding: 8px 10px 7px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.92);
+    }
+    .disease-panel-body {
+      flex: 0 0 auto;
+      overflow: visible;
+      padding: 8px 10px 10px;
+    }
+    .project-filter-panel .disease-panel-body {
+      max-height: min(520px, calc(100dvh - 220px));
+      overflow-y: auto;
+    }
+    .disease-filter-panel .disease-panel-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 8px;
+      row-gap: 6px;
+      align-content: start;
+    }
+    .disease-filter-panel label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 0;
+      font-size: 10px;
+      min-width: 0;
+    }
+    .disease-filter-panel label.disease-filter-span-2 {
+      grid-column: 1 / -1;
+    }
+    .disease-filter-panel label > span:first-child { color: #94a3b8; line-height: 1.2; }
+    .disease-filter-panel .wh-input,
+    .disease-filter-panel select.wh-input {
+      height: 26px !important;
+      min-height: 26px;
+      font-size: 11px;
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+    .disease-filter-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0;
+      padding-top: 6px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .disease-filter-actions button {
+      padding-top: 4px;
+      padding-bottom: 4px;
+      font-size: 11px;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+    .disease-list-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .disease-quick-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.14);
+      background: rgba(15, 23, 42, 0.45);
+      color: #e2f5ff;
+      font-size: 11px;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.08);
+      color: #fff;
+    }
+    .disease-quick-link.is-active {
+      border-color: rgba(34, 211, 238, 0.55);
+      background: rgba(34, 211, 238, 0.12);
+      color: #a5f3fc;
+    }
+    .disease-quick-link i {
+      width: 16px;
+      text-align: center;
+      color: #67e8f9;
+      font-size: 12px;
+    }
+    @media (max-width: 1400px) {
+      .disease-layout { grid-template-columns: 1fr; }
+      .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .disease-layout__right {
+        position: static;
+        width: 100%;
+        max-height: none;
+        grid-template-columns: 1fr 1fr;
+      }
+      .project-filter-panel .disease-panel-body { max-height: none; }
+    }
+    @media (max-width: 768px) {
+      .disease-stats { grid-template-columns: 1fr; }
+      .disease-layout__right { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="in-project-done" data-wb-view="page">
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
     <section id="done-list-view">
-      <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-        <span class="text-cyan-400"><i class="fa-solid fa-diagram-project"></i></span>
-        <span>保护区项目</span>
-        <span class="text-slate-600">&gt;&gt;</span>
-        <span class="text-cyan-50 font-semibold tracking-wide">完工项目</span>
-      </nav>
-
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
-        <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">完工项目列表</h1>
-        <button type="button" class="hidden px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new-done-project" aria-hidden="true" tabindex="-1">
-          <i class="fa-solid fa-plus mr-1"></i>新增
-        </button>
+        <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">完工项目</h1>
+        <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">完工项目面板</span>
       </div>
 
-      <div class="neon-panel neon-panel--tight p-4 mb-4">
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-x-12 gap-y-3 text-xs">
-          <div class="space-y-3">
-            <label class="flex items-center gap-2">
-              <span class="w-24 text-right text-cyan-100/75">项目名称：</span>
-              <input class="wh-input h-8 flex-1 px-2" data-filter placeholder="请输入搜索项目名称" />
-            </label>
-            <label class="flex items-center gap-2">
-              <span class="w-24 text-right text-cyan-100/75">所属区间：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>请选择区间</option><option>洪山路~小洪山</option><option>松槐路~天阳大道</option></select>
-            </label>
-            <label class="flex items-center gap-2">
-              <span class="w-24 text-right text-cyan-100/75">工程类别：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>钻孔、地勘、打桩</option><option>道路排水工程</option><option>房建工程</option></select>
-            </label>
-            <label class="flex items-center gap-2">
-              <span class="w-24 text-right text-cyan-100/75">是否降水：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>是</option><option>否</option></select>
-            </label>
-            <label class="flex items-center gap-2">
-              <span class="w-24 text-right text-cyan-100/75">地质类型：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>长江三级阶地</option></select>
-            </label>
+      <button type="button" class="hidden" data-action="new-done-project" aria-hidden="true" tabindex="-1">新增</button>
+
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="完工项目统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-circle-check"></i></div>
+              <div>
+                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">完工总数</div>
+                <div class="disease-stat-card__trend">已归档项目</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-star"></i></div>
+              <div>
+                <div id="stat-key" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">重点项目</div>
+                <div class="disease-stat-card__trend">重点完工</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-regular fa-folder-open"></i></div>
+              <div>
+                <div id="stat-general" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">一般项目</div>
+                <div class="disease-stat-card__trend">常规完工</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-calendar-check"></i></div>
+              <div>
+                <div id="stat-month" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">本月完工</div>
+                <div class="disease-stat-card__trend">按结束时间统计</div>
+              </div>
+            </div>
           </div>
 
-          <div class="space-y-3">
-            <label class="flex items-center gap-2">
-              <span class="w-28 text-right text-cyan-100/75">所属线路：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>7号线</option><option>8号线</option><option>19号线</option></select>
-            </label>
-            <label class="flex items-center gap-2">
-              <span class="w-28 text-right text-cyan-100/75">所在站点：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>请选择站点</option><option>洪山路</option><option>小洪山</option></select>
-            </label>
-            <label class="flex items-center gap-2">
-              <span class="w-28 text-right text-cyan-100/75">是否发函：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>是</option><option>否</option></select>
-            </label>
-            <label class="flex items-center gap-2">
-              <span class="w-28 text-right text-cyan-100/75">评估报告风险：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>一级</option><option>二级</option><option>三级</option><option>四级</option><option>特级</option><option>无</option></select>
-            </label>
-            <label class="flex items-center gap-2">
-              <span class="w-28 text-right text-cyan-100/75">地铁结构类型：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>盾构结构</option><option>明挖结构</option></select>
-            </label>
+          <div class="disease-list-area">
+            <div class="disease-list-toolbar">
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost" data-action="export-done-project">
+                <i class="fa-solid fa-file-export mr-1"></i>导出
+              </button>
+            </div>
+            <div class="wh-table-shell bg-slate-950/35">
+              <div class="project-table-wrap overflow-x-auto">
+                <table class="project-table min-w-[1680px] w-full text-left text-[11px]">
+                  <thead>
+                    <tr class="bg-slate-950/75">
+                      <th class="px-3 text-cyan-50/95">编号</th>
+                      <th class="px-3 text-cyan-50/95">项目名称</th>
+                      <th class="px-3 text-cyan-50/95">项目类型</th>
+                      <th class="px-3 text-cyan-50/95">工程类别</th>
+                      <th class="px-3 text-cyan-50/95">所属线路</th>
+                      <th class="px-3 text-cyan-50/95">所在区间/站点</th>
+                      <th class="px-3 text-cyan-50/95">上下行</th>
+                      <th class="px-3 text-cyan-50/95">更新时间</th>
+                      <th class="px-3 text-cyan-50/95">经度</th>
+                      <th class="px-3 text-cyan-50/95">纬度</th>
+                      <th class="px-3 text-cyan-50/95">开始时间</th>
+                      <th class="px-3 text-cyan-50/95">结束时间</th>
+                      <th class="px-3 text-cyan-50/95">工程概况</th>
+                      <th class="px-3 text-cyan-50/95 disease-col-actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="done-table-body"></tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-end gap-2 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+                <span>共 <b id="table-total" class="text-cyan-200">0</b> 条</span>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost text-slate-500">&lt;</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-primary">1</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">2</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">3</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">4</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">5</button>
+                <span>...</span>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">69</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">&gt;</button>
+                <select class="wh-input h-7 px-2"><option>10 条/页</option><option>20 条/页</option></select>
+                <span>跳至</span>
+                <input class="wh-input h-7 w-12 px-2 text-center" />
+                <span>页</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel project-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label class="disease-filter-span-2"><span>项目名称</span><input class="wh-input w-full px-2" data-filter placeholder="请输入搜索项目名称" /></label>
+              <label><span>所属线路</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>7号线</option><option>8号线</option><option>19号线</option></select></label>
+              <label><span>上下行</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>上行</option><option>下行</option></select></label>
+              <label><span>所属区间</span><select class="wh-input w-full px-2" data-filter><option>请选择区间</option><option>洪山路~小洪山</option><option>松槐路~天阳大道</option></select></label>
+              <label><span>所在站点</span><select class="wh-input w-full px-2" data-filter><option>请选择站点</option><option>洪山路</option><option>小洪山</option></select></label>
+              <label><span>项目类型</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>一般项目</option><option>重点项目</option></select></label>
+              <label><span>工程类别</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>钻孔、地勘、打桩</option><option>道路排水工程</option><option>房建工程</option></select></label>
+              <label><span>是否发函</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>是</option><option>否</option></select></label>
+              <label><span>是否降水</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>是</option><option>否</option></select></label>
+              <label><span>是否监测</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>是</option><option>否</option></select></label>
+              <label><span>评估报告风险</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>一级</option><option>二级</option><option>三级</option><option>四级</option><option>特级</option><option>无</option></select></label>
+              <label><span>地质类型</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>长江三级阶地</option></select></label>
+              <label><span>地铁结构类型</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>盾构结构</option><option>明挖结构</option></select></label>
+              <label><span>是否与车站接驳</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>是</option><option>否</option></select></label>
+              <label class="disease-filter-span-2"><span>是否签订安全协议</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>是</option><option>否</option></select></label>
+              <div class="disease-filter-actions">
+                <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary flex-1" data-action="search-done-project">搜索</button>
+                <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost flex-1" data-action="reset-done-filter">重置</button>
+              </div>
+            </div>
           </div>
 
-          <div class="space-y-3">
-            <label class="flex items-center gap-2">
-              <span class="w-28 text-right text-cyan-100/75">上下行：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>上行</option><option>下行</option></select>
-            </label>
-            <label class="flex items-center gap-2">
-              <span class="w-28 text-right text-cyan-100/75">项目类型：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>一般项目</option><option>重点项目</option></select>
-            </label>
-            <label class="flex items-center gap-2">
-              <span class="w-28 text-right text-cyan-100/75">是否监测：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>是</option><option>否</option></select>
-            </label>
-            <label class="flex items-center gap-2">
-              <span class="w-28 text-right text-cyan-100/75">是否与车站接驳：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>是</option><option>否</option></select>
-            </label>
-            <label class="flex items-center gap-2">
-              <span class="w-28 text-right text-cyan-100/75">是否签订安全协议：</span>
-              <select class="wh-input h-8 flex-1 px-2" data-filter><option>全部</option><option>是</option><option>否</option></select>
-            </label>
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body">
+              <a class="disease-quick-link" data-quick-href="wb/in-project.html" href="in-project.html"><i class="fa-solid fa-folder-tree"></i><span>项目管理</span></a>
+              <a class="disease-quick-link is-active" data-quick-href="wb/in-project-done.html" href="in-project-done.html"><i class="fa-solid fa-circle-check"></i><span>完工项目</span></a>
+              <a class="disease-quick-link hidden" data-quick-href="wb/in-project-patrol.html" href="in-project-patrol.html" aria-hidden="true" hidden><i class="fa-solid fa-route"></i><span>项目巡查</span></a>
+            </div>
           </div>
-        </div>
-        <div class="mt-4 flex items-center gap-2 pl-[104px]">
-          <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="search-done-project">搜索</button>
-          <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost" data-action="reset-done-filter">重置</button>
-          <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost" data-action="export-done-project">导出</button>
-        </div>
-      </div>
-
-      <div class="wh-table-shell bg-slate-950/35">
-        <div class="overflow-x-auto">
-          <table class="project-table min-w-[1680px] w-full text-left text-[11px]">
-            <thead>
-              <tr class="bg-slate-950/75">
-                <th class="px-3 text-cyan-50/95">编号</th>
-                <th class="px-3 text-cyan-50/95">项目名称</th>
-                <th class="px-3 text-cyan-50/95">项目类型</th>
-                <th class="px-3 text-cyan-50/95">工程类别</th>
-                <th class="px-3 text-cyan-50/95">所属线路</th>
-                <th class="px-3 text-cyan-50/95">所在区间/站点</th>
-                <th class="px-3 text-cyan-50/95">上下行</th>
-                <th class="px-3 text-cyan-50/95">更新时间</th>
-                <th class="px-3 text-cyan-50/95">经度</th>
-                <th class="px-3 text-cyan-50/95">纬度</th>
-                <th class="px-3 text-cyan-50/95">开始时间</th>
-                <th class="px-3 text-cyan-50/95">结束时间</th>
-                <th class="px-3 text-cyan-50/95">工程概况</th>
-                <th class="px-3 text-cyan-50/95">操作</th>
-              </tr>
-            </thead>
-            <tbody id="done-table-body"></tbody>
-          </table>
-        </div>
-        <div class="flex flex-wrap items-center justify-end gap-2 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
-          <span>共 <b class="text-cyan-200">685</b> 条</span>
-          <button class="min-w-[28px] h-7 rounded wh-btn-ghost text-slate-500">&lt;</button>
-          <button class="min-w-[28px] h-7 rounded wh-btn-primary">1</button>
-          <button class="min-w-[28px] h-7 rounded wh-btn-ghost">2</button>
-          <button class="min-w-[28px] h-7 rounded wh-btn-ghost">3</button>
-          <button class="min-w-[28px] h-7 rounded wh-btn-ghost">4</button>
-          <button class="min-w-[28px] h-7 rounded wh-btn-ghost">5</button>
-          <span>...</span>
-          <button class="min-w-[28px] h-7 rounded wh-btn-ghost">69</button>
-          <button class="min-w-[28px] h-7 rounded wh-btn-ghost">&gt;</button>
-          <select class="wh-input h-7 px-2"><option>10 条/页</option><option>20 条/页</option></select>
-          <span>跳至</span>
-          <input class="wh-input h-7 w-12 px-2 text-center" />
-          <span>页</span>
-        </div>
+        </aside>
       </div>
     </section>
 
@@ -531,6 +779,7 @@
         </div>
       </div>
 
+      <div id="done-detail-shell-host">
       <div class="neon-panel neon-panel--tight p-5" id="done-detail-shell">
         <div class="done-tabs" id="done-tabs">
           <button type="button" class="done-tab active" data-tab="base">项目基本信息</button>
@@ -695,6 +944,7 @@
         <div class="done-tab-panel hidden" data-panel="monitor" id="done-monitor-tab-root"></div>
 
       </div>
+      </div>
     </section>
 
     <section id="done-patrol-view" class="hidden">
@@ -707,15 +957,9 @@
           <div id="done-patrol-subtitle" class="text-[11px] text-slate-400 mt-0.5"></div>
         </div>
       </div>
-      <div class="neon-panel neon-panel--tight p-4">
-        <div class="project-patrol-tabs" id="done-patrol-tabs">
-          <button type="button" class="project-patrol-tab active" data-patrol-tab="manual">人工巡查</button>
-          <button type="button" class="project-patrol-tab" data-patrol-tab="uav">无人机巡查</button>
-        </div>
-        <div class="project-patrol-frame-wrap">
+      <div class="project-patrol-frame-wrap project-patrol-frame-wrap--embed">
           <iframe id="done-patrol-frame" title="巡查记录"></iframe>
         </div>
-      </div>
     </section>
   </div>
 
@@ -741,6 +985,23 @@
         <button type="button" class="wh-modal-close" data-action="close-done-record" aria-label="关闭">×</button>
       </div>
       <div id="done-record-body" class="record-list p-6"></div>
+    </div>
+  </div>
+
+  <div id="done-view-detail-mask" class="project-view-detail-mask" aria-hidden="true">
+    <div class="project-view-detail-dialog" role="dialog" aria-labelledby="done-detail-modal-title">
+      <div class="project-view-detail-dialog__head">
+        <div>
+          <h3 id="done-detail-modal-title" class="text-white font-semibold text-sm m-0">查看详情</h3>
+          <div id="done-detail-modal-name" class="text-[11px] text-slate-400 mt-0.5">完工项目详情</div>
+        </div>
+        <button type="button" class="wh-modal-close text-slate-400 hover:text-white text-xl leading-none" data-action="close-done-detail-modal" aria-label="关闭">×</button>
+      </div>
+      <div id="done-detail-modal-slot" class="project-view-detail-dialog__body"></div>
+      <div class="project-view-detail-dialog__foot">
+        <button type="button" class="px-6 py-2 rounded text-xs wh-btn-ghost" data-action="close-done-detail-modal">关闭</button>
+        <button type="button" class="px-6 py-2 rounded text-xs wh-btn-primary" data-action="edit-from-done-detail">编辑</button>
+      </div>
     </div>
   </div>
 
@@ -782,6 +1043,11 @@
       var viewTitle = document.getElementById("done-view-title");
       var viewSubtitle = document.getElementById("done-view-subtitle");
       var detailShell = document.getElementById("done-detail-shell");
+      var detailShellHost = document.getElementById("done-detail-shell-host");
+      var detailModalMask = document.getElementById("done-view-detail-mask");
+      var detailModalSlot = document.getElementById("done-detail-modal-slot");
+      var detailModalName = document.getElementById("done-detail-modal-name");
+      var detailModalRowIndex = null;
       var backBtn = document.getElementById("done-back-btn");
       var modalType = "";
       var currentProjectMode = "detail";
@@ -963,6 +1229,41 @@
         ]
       };
 
+      function setStatText(id, val) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = String(val);
+      }
+
+      function updateDoneStats() {
+        var total = projects.length;
+        var key = 0;
+        var general = 0;
+        var month = 0;
+        var now = new Date();
+        var monthKey =
+          now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+        projects.forEach(function (row) {
+          if (row[2] === "重点项目") key += 1;
+          if (row[2] === "一般项目") general += 1;
+          var endTime = row[11] || "";
+          if (endTime && String(endTime).indexOf(monthKey) === 0) month += 1;
+        });
+        setStatText("stat-total", total);
+        setStatText("stat-key", key);
+        setStatText("stat-general", general);
+        setStatText("stat-month", month);
+        setStatText("table-total", total);
+      }
+
+      function initQuickLinks() {
+        document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
+          var target = anchor.getAttribute("data-quick-href");
+          if (target && typeof whPageHref === "function") {
+            anchor.setAttribute("href", whPageHref(target));
+          }
+        });
+      }
+
       function renderRows() {
         tbody.innerHTML = projects.map(function (row, index) {
           return '<tr class="' + (index % 2 ? "bg-slate-900/35" : "bg-slate-950/25") + '" data-row="' + index + '">' +
@@ -970,14 +1271,16 @@
               var width = i === 1 ? "max-w-[190px]" : i === 12 ? "max-w-[260px]" : "";
               return '<td class="px-3 text-slate-100/95 ' + width + ' truncate" title="' + (cell || "") + '">' + (cell || "") + '</td>';
             }).join("") +
-            '<td class="px-3 whitespace-nowrap">' +
+            '<td class="px-3 disease-col-actions">' +
+              '<div class="disease-op-actions">' +
               '<span class="project-action" data-action="edit-done-project"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
               '<span class="project-action" data-action="patrol-done-project" data-row="' + index + '"><i class="fa-regular fa-clipboard"></i>巡查</span>' +
               '<span class="project-action project-action--danger" data-action="delete-done-project"><i class="fa-regular fa-trash-can"></i>删除</span>' +
               '<span class="project-action" data-action="view-done-project-records" data-row="' + index + '"><i class="fa-regular fa-clock"></i>操作记录</span>' +
-            '</td>' +
+              '</div></td>' +
           '</tr>';
         }).join("");
+        updateDoneStats();
       }
 
       function escapeHtml(value) {
@@ -1128,11 +1431,7 @@
 
       var donePatrolFrame = document.getElementById("done-patrol-frame");
       var currentPatrolProject = "";
-      var currentPatrolTab = "";
-      var patrolPageByTab = {
-        manual: "../patrol/in-manual.html",
-        uav: "../patrol/in-uav-report.html",
-      };
+      var patrolPage = "in-project-patrol.html";
 
       function buildPatrolEmbedUrl(page, projectName) {
         var params = new URLSearchParams({ embed: "1" });
@@ -1146,42 +1445,30 @@
         donePatrolFrame.src = "about:blank";
       }
 
-      function loadPatrolTab(tab) {
-        var page = patrolPageByTab[tab];
-        if (!donePatrolFrame || !page) return;
+      function loadPatrolFrame() {
+        if (!donePatrolFrame) return;
         clearPatrolFrame();
         var projectName = currentPatrolProject;
         requestAnimationFrame(function () {
-          donePatrolFrame.src = buildPatrolEmbedUrl(page, projectName);
+          donePatrolFrame.src = buildPatrolEmbedUrl(patrolPage, projectName);
         });
-      }
-
-      function switchPatrolTab(tab) {
-        if (!tab || tab === currentPatrolTab) return;
-        currentPatrolTab = tab;
-        document.querySelectorAll("#done-patrol-tabs [data-patrol-tab]").forEach(function (btn) {
-          btn.classList.toggle("active", btn.getAttribute("data-patrol-tab") === tab);
-        });
-        loadPatrolTab(tab);
       }
 
       function showPatrolView(rowIndex) {
         var row = projects[rowIndex];
         var projectName = row ? row[1] : "";
         currentPatrolProject = projectName;
-        currentPatrolTab = "";
         document.getElementById("done-list-view").classList.add("hidden");
         document.getElementById("done-form-view").classList.add("hidden");
         document.getElementById("done-patrol-view").classList.remove("hidden");
         var subtitle = document.getElementById("done-patrol-subtitle");
         if (subtitle) subtitle.textContent = projectName ? "关联项目：" + projectName : "";
-        switchPatrolTab("manual");
+        loadPatrolFrame();
       }
 
       function showList() {
         clearPatrolFrame();
         currentPatrolProject = "";
-        currentPatrolTab = "";
         document.getElementById("done-patrol-view").classList.add("hidden");
         document.getElementById("done-form-view").classList.add("hidden");
         document.getElementById("done-list-view").classList.remove("hidden");
@@ -1343,6 +1630,17 @@
         previewPayload = null;
       }
 
+      initQuickLinks();
+      function setupDoneRowClick() {
+        if (!window.WHTableRowClick) return window.setTimeout(setupDoneRowClick, 40);
+        WHTableRowClick.bindById("done-table-body", {
+          onOpenByTr: function (tr) {
+            var index = Number(tr.getAttribute("data-row"));
+            if (!Number.isNaN(index) && index >= 0) showProjectView("detail");
+          }
+        });
+      }
+      setupDoneRowClick();
       renderRows();
       unitRows();
       docRows();
@@ -1365,7 +1663,14 @@
         }
         if (action === "delete-done-project") {
           var row = trigger.closest("tr");
-          if (row) row.remove();
+          var rowIndex = row ? Number(row.getAttribute("data-row")) : -1;
+          if (rowIndex > -1) {
+            projects.splice(rowIndex, 1);
+            renderRows();
+          } else if (row) {
+            row.remove();
+            updateDoneStats();
+          }
           showToast("项目已删除");
         }
         if (action === "view-done-project-records") {
@@ -1546,11 +1851,6 @@
         switchTab(btn.getAttribute("data-tab"));
       });
 
-      document.getElementById("done-patrol-tabs").addEventListener("click", function (event) {
-        var btn = event.target.closest("[data-patrol-tab]");
-        if (!btn) return;
-        switchPatrolTab(btn.getAttribute("data-patrol-tab") || "manual");
-      });
 
       document.addEventListener("change", function (event) {
         var target = event.target;

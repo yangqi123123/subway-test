@@ -108,6 +108,157 @@
     );
   }
 
+  function gisDetailHref(path, query) {
+    var qs = "";
+    if (query && typeof query === "object") {
+      var parts = [];
+      Object.keys(query).forEach(function (key) {
+        if (query[key] != null && query[key] !== "") {
+          parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(String(query[key])));
+        }
+      });
+      if (parts.length) qs = "?" + parts.join("&");
+    }
+    var href = path + qs;
+    return typeof whPageHref === "function" ? whPageHref(href) : href;
+  }
+
+  function buildDetailNavHtml(url) {
+    if (!url) return "";
+    return (
+      '<div class="gis-detail-action">' +
+      '<button type="button" class="gis-detail-btn gis-detail-btn--block" data-detail-url="' +
+      String(url).replace(/"/g, "&quot;") +
+      '">前往详情页</button></div>'
+    );
+  }
+
+  function trackPersonDetailUrl(deviceCode) {
+    var idMap = { Y18807: 1, Y18812: 2, Y18819: 3, Y18824: 4, Y18831: 5, Y18837: 6 };
+    return gisDetailHref("wb/in-track-person.html", { id: idMap[deviceCode] || 1 });
+  }
+
+  function flightLogDetailUrl() {
+    return gisDetailHref("wb/am-flight-log.html", { detail: "FL20251225001" });
+  }
+
+  function stationDetailUrl(item) {
+    var row = typeof item === "string" ? { name: item } : item || {};
+    return gisDetailHref("wb/am-station.html", {
+      view: "detail",
+      name: row.name || "",
+      line: row.line || "",
+      startMile: row.startMileage || row.startMile || "",
+      endMile: row.endMileage || row.endMile || "",
+      length: row.length || "",
+      lng: row.lng || "",
+      lat: row.lat || "",
+    });
+  }
+
+  function projectDetailUrl(name) {
+    return gisDetailHref("wb/in-project.html", { view: "detail", project: name });
+  }
+
+  function alarmDetailUrl(alarm) {
+    return gisDetailHref("map/map-alerts.html", {
+      view: "detail",
+      id: (alarm && alarm.alertId) || 201,
+    });
+  }
+
+  function airportDetailUrl(name) {
+    var idMap = { "机场1": "dock-a", "机场2": "dock-b" };
+    return gisDetailHref("wb/am-airport.html", { detail: idMap[name] || "dock-a" });
+  }
+
+  function manualPatrolDetailUrl() {
+    return gisDetailHref("patrol/in-manual.html", { detail: "122820" });
+  }
+
+  function emergencyStaffDetailUrl(person) {
+    person = person || {};
+    return gisDetailHref("wb/am-emergency-staff.html", {
+      view: "detail",
+      name: person.name || "",
+      no: person.code || person.no || "",
+      phone: person.phone || "",
+      line: person.line || "",
+      dept: person.dept || "",
+      post: person.post || "",
+      address: person.address || "",
+    });
+  }
+
+  function emergencyWarehouseDetailUrl(wh) {
+    return gisDetailHref("wb/am-emergency-warehouse.html", { name: wh && wh.name ? wh.name : "" });
+  }
+
+  function gisEscapeAttr(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;");
+  }
+
+  var emergencyMaterialWarehouses = [
+    { material: "万能道尺", warehouses: ["阳逻线委外项目部应急库"] },
+    { material: "轨温计", warehouses: ["2号线中南路应急仓库", "2号线中山公园应急仓库"] },
+    {
+      material: "撬棍",
+      warehouses: [
+        "4号线土建洪山广场应急仓库",
+        "2号线中南路应急仓库",
+        "4号线武昌火车站仓库",
+        "7号线三阳路仓库",
+      ],
+    },
+  ];
+
+  function buildWarehouseListHtml(groups) {
+    return (
+      '<div class="gis-wh-list">' +
+      (groups || [])
+        .map(function (group) {
+          return (
+            '<div class="gis-wh-group">' +
+            '<div class="gis-wh-material">' +
+            (group.material || "") +
+            "</div>" +
+            (group.warehouses || [])
+              .map(function (name) {
+                return (
+                  '<button type="button" class="gis-wh-item" data-warehouse-pick="' +
+                  gisEscapeAttr(name) +
+                  '">' +
+                  name +
+                  "</button>"
+                );
+              })
+              .join("") +
+            "</div>"
+          );
+        })
+        .join("") +
+      "</div>"
+    );
+  }
+
+  function buildWarehouseDetailBodyHtml(wh) {
+    if (!wh) return "";
+    return (
+      buildInfoGridHtml([
+        { label: "仓库名称", value: wh.name },
+        { label: "存储物资数量", value: wh.materialCount },
+        { label: "仓库经度", value: wh.lng },
+        { label: "仓库纬度", value: wh.lat },
+        { label: "仓库地址", value: wh.address },
+        { label: "仓库负责人", value: wh.manager },
+        { label: "联系电话", value: wh.phone },
+      ]) + buildDetailNavHtml(emergencyWarehouseDetailUrl(wh))
+    );
+  }
+
   var defaultAlarmAirportPair = [
     {
       airportName: "机场1",
@@ -240,17 +391,195 @@
       (options.hideCockpitNav
         ? ""
         : '<div class="gis-detail-action gis-alarm-panel__action">' +
-          '<button type="button" class="gis-detail-btn gis-detail-btn--block" data-cockpit-url="cockpit/map-cockpit-prep.html">前往虚拟座舱</button>' +
+          '<button type="button" class="gis-detail-btn gis-detail-btn--block" data-flight-url="map/map-flight-plan.html?create=1">新增飞行计划</button>' +
           "</div>") +
+      buildDetailNavHtml(alarmDetailUrl(alarm)) +
       "</div>"
     );
   }
 
+  function pad2(n) {
+    return String(n).padStart(2, "0");
+  }
+
+  function getTodayTrackRange() {
+    var now = new Date();
+    var start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    var end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    return { start: start, end: end };
+  }
+
+  function toDatetimeLocalValue(date) {
+    return (
+      date.getFullYear() +
+      "-" +
+      pad2(date.getMonth() + 1) +
+      "-" +
+      pad2(date.getDate()) +
+      "T" +
+      pad2(date.getHours()) +
+      ":" +
+      pad2(date.getMinutes())
+    );
+  }
+
+  function formatTrackDisplayTime(date) {
+    return (
+      date.getFullYear() +
+      "/" +
+      pad2(date.getMonth() + 1) +
+      "/" +
+      pad2(date.getDate()) +
+      " " +
+      pad2(date.getHours()) +
+      ":" +
+      pad2(date.getMinutes()) +
+      ":" +
+      pad2(date.getSeconds())
+    );
+  }
+
+  function parseTrackRecordTime(text) {
+    if (!text) return NaN;
+    var normalized = String(text).trim().replace(/\//g, "-");
+    var ts = Date.parse(normalized.replace(" ", "T"));
+    if (!isNaN(ts)) return ts;
+    return Date.parse(normalized);
+  }
+
+  function normalizeTrackRecords(records) {
+    return (records || []).map(function (record) {
+      var ts = record.ts != null ? Number(record.ts) : parseTrackRecordTime(record.time);
+      return Object.assign({}, record, { ts: ts });
+    });
+  }
+
+  function buildTrackItemData(cfg) {
+    var range = getTodayTrackRange();
+    var slots = cfg.slots || [
+      { h: 8, m: 52, s: 15, suffix: "001" },
+      { h: 12, m: 40, s: 31, suffix: "002" },
+      { h: 17, m: 55, s: 29, suffix: "003" },
+    ];
+    var records = slots.map(function (slot) {
+      var d = new Date(range.start);
+      d.setHours(slot.h, slot.m || 0, slot.s || 0, 0);
+      return {
+        code: cfg.deviceCode + "-" + slot.suffix,
+        time: formatTrackDisplayTime(d),
+        ts: d.getTime(),
+      };
+    });
+    return {
+      ll: cfg.ll,
+      deviceCode: cfg.deviceCode,
+      records: records,
+    };
+  }
+
+  function renderTrackPanelHtml(data, options) {
+    options = options || {};
+    var range = getTodayTrackRange();
+    var records = normalizeTrackRecords(data.records || []);
+    var recordsJson = encodeURIComponent(JSON.stringify(records));
+    return (
+      '<div class="gis-track-card" data-gis-track-panel data-track-records="' +
+      recordsJson +
+      '">' +
+      '<div class="gis-track-head">' +
+      '<div class="gis-detail-field"><div class="gis-detail-label">设备编号</div><div class="gis-detail-value">' +
+      (data.deviceCode || "-") +
+      "</div></div>" +
+      '<div class="gis-detail-field gis-track-range-field">' +
+      '<div class="gis-detail-label">时间范围</div>' +
+      '<div class="gis-track-range-inputs">' +
+      '<input type="datetime-local" class="gis-track-range-input wh-input" data-track-range-start value="' +
+      toDatetimeLocalValue(range.start) +
+      '" step="60" />' +
+      '<span class="gis-track-range-sep">至</span>' +
+      '<input type="datetime-local" class="gis-track-range-input wh-input" data-track-range-end value="' +
+      toDatetimeLocalValue(range.end) +
+      '" step="60" />' +
+      "</div></div>" +
+      "</div>" +
+      '<div class="gis-detail-list" data-track-record-list></div>' +
+      '<div class="gis-detail-action"><button type="button" class="gis-detail-btn">播放轨迹</button></div>' +
+      (options.detailUrl ? buildDetailNavHtml(options.detailUrl) : "") +
+      "</div>"
+    );
+  }
+
+  function renderTrackRecordListHtml(records) {
+    if (!records.length) {
+      return '<div class="gis-detail-list-row gis-track-list-empty">该时间范围内暂无轨迹记录</div>';
+    }
+    return records
+      .map(function (item) {
+        return (
+          '<div class="gis-detail-list-row">' +
+          '<div class="gis-track-row-title">' +
+          item.code +
+          "</div>" +
+          '<div class="gis-track-row-time">' +
+          item.time +
+          "</div>" +
+          "</div>"
+        );
+      })
+      .join("");
+  }
+
+  function wireTrackPanel(body) {
+    var card = body.querySelector("[data-gis-track-panel]");
+    if (!card) return;
+    var startInput = card.querySelector("[data-track-range-start]");
+    var endInput = card.querySelector("[data-track-range-end]");
+    var listEl = card.querySelector("[data-track-record-list]");
+    if (!startInput || !endInput || !listEl) return;
+    var raw = card.getAttribute("data-track-records");
+    var allRecords = [];
+    try {
+      allRecords = raw ? normalizeTrackRecords(JSON.parse(decodeURIComponent(raw))) : [];
+    } catch (err) {
+      allRecords = [];
+    }
+
+    function readRange() {
+      var start = startInput.value ? new Date(startInput.value) : getTodayTrackRange().start;
+      var end = endInput.value ? new Date(endInput.value) : getTodayTrackRange().end;
+      if (endInput.value && endInput.value.length === 16) {
+        end.setSeconds(59, 999);
+      }
+      return { start: start, end: end };
+    }
+
+    function applyFilter() {
+      var range = readRange();
+      var filtered = allRecords.filter(function (record) {
+        if (isNaN(record.ts)) return false;
+        return record.ts >= range.start.getTime() && record.ts <= range.end.getTime();
+      });
+      filtered.sort(function (a, b) {
+        return a.ts - b.ts;
+      });
+      listEl.innerHTML = renderTrackRecordListHtml(filtered);
+    }
+
+    startInput.addEventListener("change", applyFilter);
+    endInput.addEventListener("change", applyFilter);
+    applyFilter();
+  }
+
+  window.WuhanGIS.renderTrackPanelHtml = renderTrackPanelHtml;
+
   function wireDetailInteractivity(body) {
     if (!body) return;
+    wireTrackPanel(body);
     body.querySelectorAll("[data-flight-url]").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        window.location.href = btn.getAttribute("data-flight-url");
+        var flightUrl = btn.getAttribute("data-flight-url");
+        window.location.href =
+          typeof whPageHref === "function" ? whPageHref(flightUrl) : flightUrl;
       });
     });
     body.querySelectorAll("[data-cockpit-url]").forEach(function (btn) {
@@ -258,6 +587,20 @@
         var cockpitUrl = btn.getAttribute("data-cockpit-url");
         window.location.href =
           typeof whPageHref === "function" ? whPageHref(cockpitUrl) : cockpitUrl;
+      });
+    });
+    body.querySelectorAll("[data-detail-url]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var detailUrl = btn.getAttribute("data-detail-url");
+        if (detailUrl) window.location.href = detailUrl;
+      });
+    });
+    body.querySelectorAll("[data-warehouse-pick]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var pickHandler = body._gisWarehousePick;
+        if (typeof pickHandler === "function") {
+          pickHandler(btn.getAttribute("data-warehouse-pick"));
+        }
       });
     });
     var carousel = body.querySelector("[data-alarm-carousel]");
@@ -337,8 +680,11 @@
                 "</span></div>"
               : "") +
             (options.hideCockpitNav
-              ? ""
-              : '<div class="gis-detail-action"><button type="button" class="gis-detail-btn" data-cockpit-url="cockpit/map-cockpit-prep.html">前往虚拟座舱</button></div>') +
+              ? buildDetailNavHtml(airportDetailUrl(item.airportName))
+              : '<div class="gis-detail-action">' +
+                '<button type="button" class="gis-detail-btn gis-detail-btn--block" data-cockpit-url="cockpit/map-cockpit-prep.html">前往虚拟座舱</button>' +
+                "</div>" +
+                buildDetailNavHtml(airportDetailUrl(item.airportName))) +
             "</div>"
           );
         })
@@ -390,6 +736,7 @@
   var defaultAlarmDetails = [
     {
       ll: [30.598, 114.318],
+      alertId: 201,
       projectName: "光谷广场综合体基坑项目",
       alarmSection: "省博湖北日报-中南医院",
       alarmPosition: "里程Z23+200,左线外侧37米",
@@ -403,6 +750,7 @@
     },
     {
       ll: [30.572, 114.292],
+      alertId: 202,
       projectName: "武昌滨江总部基地项目",
       alarmSection: "武昌火车站-梅苑小区",
       alarmPosition: "里程Y18+065,右线外侧21米",
@@ -415,6 +763,7 @@
     },
     {
       ll: [30.618, 114.328],
+      alertId: 203,
       projectName: "后湖大道市政管廊项目",
       alarmSection: "宏图大道-市民之家",
       alarmPosition: "里程Z31+480,左线外侧15米",
@@ -428,13 +777,18 @@
   ];
 
   window.WuhanGIS.renderAirportDronePanelHtml = buildAirportDronePanelHtml;
+  window.WuhanGIS.buildDetailNavHtml = buildDetailNavHtml;
+  window.WuhanGIS.gisDetailHref = gisDetailHref;
+  window.WuhanGIS.manualPatrolDetailUrl = manualPatrolDetailUrl;
   window.WuhanGIS.buildAlarmPanelHtml = buildAlarmPanelHtml;
   window.WuhanGIS.wireDetailInteractivity = wireDetailInteractivity;
+  window.WuhanGIS.wireTrackPanel = wireTrackPanel;
   function normalizeCockpitAlarm(item, index) {
     var base = defaultAlarmDetails[index] || defaultAlarmDetails[0];
     if (!item) return Object.assign({}, base);
     return {
       ll: item.ll || base.ll,
+      alertId: item.alertId || base.alertId,
       projectName: item.projectName || base.projectName,
       alarmSection: item.alarmSection || base.alarmSection,
       alarmPosition: item.alarmPosition || base.alarmPosition,
@@ -833,6 +1187,9 @@
     var detailTitle = document.getElementById("gis-detail-title");
     var detailBody = document.getElementById("gis-detail-body");
     var detailClose = document.getElementById("gis-detail-close");
+    var whPanel = document.getElementById("gis-wh-panel");
+    var whBody = document.getElementById("gis-wh-body");
+    var whClose = document.getElementById("gis-wh-close");
 
     var baseIsSatellite = false;
     var drawLayer = L.layerGroup().addTo(map);
@@ -859,7 +1216,7 @@
       alarms: true,
       airports: true,
       drones: true,
-      patrolDone: false,
+      patrolDone: true,
       patrolTodo: true,
       emergency: {},
     };
@@ -886,50 +1243,74 @@
     var emKeys = ["e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "ew"];
     var emergencyWarehouses = [
       {
-        ll: [30.5184, 114.3521],
-        name: "南湖应急仓",
-        materialCount: "326 件",
-        lng: "114.352100",
-        lat: "30.518400",
-        address: "洪山区南湖大道 88 号",
+        ll: [30.6842, 114.5531],
+        name: "阳逻线委外项目部应急库",
+        materialCount: "86 件",
+        lng: "114.553100",
+        lat: "30.684200",
+        address: "新洲区阳逻开发区地铁委外基地",
+        manager: "王磊",
+        phone: "138 0000 2101",
+        line: "武汉地铁阳逻线",
+      },
+      {
+        ll: [30.5365, 114.3328],
+        name: "2号线中南路应急仓库",
+        materialCount: "214 件",
+        lng: "114.332800",
+        lat: "30.536500",
+        address: "武昌区中南路 168 号",
         manager: "赵敏",
-        phone: "138 0000 2001",
-        line: "武汉地铁 7 号线",
-      },
-      {
-        ll: [30.5081, 114.3148],
-        name: "白沙洲应急仓",
-        materialCount: "158 件",
-        lng: "114.314800",
-        lat: "30.508100",
-        address: "武昌区白沙洲大道 120 号",
-        manager: "刘凯",
-        phone: "138 0000 2002",
-        line: "武汉地铁 5 号线",
-      },
-      {
-        ll: [30.6479, 114.2406],
-        name: "金银潭应急仓",
-        materialCount: "412 件",
-        lng: "114.240600",
-        lat: "30.647900",
-        address: "江汉区常青一路 66 号",
-        manager: "李倩",
-        phone: "138 0000 2003",
+        phone: "138 0000 2102",
         line: "武汉地铁 2 号线",
       },
       {
-        ll: [30.4896, 114.4215],
-        name: "光谷东应急仓",
-        materialCount: "203 件",
-        lng: "114.421500",
-        lat: "30.489600",
-        address: "东湖高新区高新大道 188 号",
+        ll: [30.5872, 114.2715],
+        name: "2号线中山公园应急仓库",
+        materialCount: "178 件",
+        lng: "114.271500",
+        lat: "30.587200",
+        address: "江汉区解放大道 1265 号",
+        manager: "刘凯",
+        phone: "138 0000 2103",
+        line: "武汉地铁 2 号线",
+      },
+      {
+        ll: [30.5512, 114.3378],
+        name: "4号线土建洪山广场应急仓库",
+        materialCount: "265 件",
+        lng: "114.337800",
+        lat: "30.551200",
+        address: "武昌区中北路洪山广场段",
+        manager: "李倩",
+        phone: "138 0000 2104",
+        line: "武汉地铁 4 号线",
+      },
+      {
+        ll: [30.5301, 114.3168],
+        name: "4号线武昌火车站仓库",
+        materialCount: "192 件",
+        lng: "114.316800",
+        lat: "30.530100",
+        address: "武昌区中山路武昌火车站",
         manager: "陈涛",
-        phone: "138 0000 2004",
+        phone: "138 0000 2105",
+        line: "武汉地铁 4 号线",
+      },
+      {
+        ll: [30.6012, 114.3085],
+        name: "7号线三阳路仓库",
+        materialCount: "143 件",
+        lng: "114.308500",
+        lat: "30.601200",
+        address: "江岸区三阳路地铁站旁",
+        manager: "周芳",
+        phone: "138 0000 2106",
         line: "武汉地铁 7 号线",
       },
     ];
+    var warehouseByName = {};
+    var warehouseMarkers = {};
     var staffLineKeys = ["l2", "l4", "l5", "l8", "l2", "l4"];
 
     function registerFeature(layer, parent, category, metroKey, emergencyKey) {
@@ -1022,6 +1403,11 @@
       detailPanel.classList.add("hidden");
     }
 
+    function closeWarehouseListPanel() {
+      if (!whPanel) return;
+      whPanel.classList.add("hidden");
+    }
+
     function openDetailPanel(title, html) {
       if (!detailPanel || !detailTitle || !detailBody) return;
       detailTitle.textContent = title;
@@ -1030,9 +1416,42 @@
       wireDetailInteractivity(detailBody);
     }
 
+    function openWarehouseListPanel() {
+      if (!whPanel || !whBody) return;
+      whBody.innerHTML = buildWarehouseListHtml(emergencyMaterialWarehouses);
+      whPanel.classList.remove("hidden");
+      whBody._gisWarehousePick = focusWarehouseByName;
+      wireDetailInteractivity(whBody);
+    }
+
+    function openWarehouseDetailPanel(wh) {
+      openDetailPanel("仓库信息", buildWarehouseDetailBodyHtml(wh));
+    }
+
+    function focusWarehouseByName(name) {
+      var wh = warehouseByName[name];
+      if (!wh) return;
+      if (!state.emergency.ew) {
+        state.emergency.ew = true;
+        applyEmergency();
+      }
+      map.flyTo(wh.ll, 15, { duration: 0.75 });
+      openWarehouseDetailPanel(wh);
+      var marker = warehouseMarkers[name];
+      if (marker && marker.setZIndexOffset) marker.setZIndexOffset(1000);
+    }
+
+    detailBody._gisWarehousePick = focusWarehouseByName;
+
     if (detailClose) {
       detailClose.addEventListener("click", function () {
         closeDetailPanel();
+      });
+    }
+
+    if (whClose) {
+      whClose.addEventListener("click", function () {
+        closeWarehouseListPanel();
       });
     }
 
@@ -1057,36 +1476,8 @@
       );
     }
 
-    function renderTrackPanel(data) {
-      return (
-        '<div class="gis-track-card">' +
-        '<div class="gis-track-head">' +
-        '<div class="gis-detail-field"><div class="gis-detail-label">设备编号</div><div class="gis-detail-value">' +
-        data.deviceCode +
-        "</div></div>" +
-        '<div class="gis-detail-field"><div class="gis-detail-label">时间范围</div><div class="gis-detail-value">' +
-        data.timeRange +
-        "</div></div>" +
-        "</div>" +
-        '<div class="gis-detail-list">' +
-        data.records
-          .map(function (item) {
-            return (
-              '<div class="gis-detail-list-row">' +
-              '<div class="gis-track-row-title">' +
-              item.code +
-              "</div>" +
-              '<div class="gis-track-row-time">' +
-              item.time +
-              "</div>" +
-              "</div>"
-            );
-          })
-          .join("") +
-        "</div>" +
-        '<div class="gis-detail-action"><button type="button" class="gis-detail-btn">播放轨迹</button></div>' +
-        "</div>"
-      );
+    function renderTrackPanel(data, detailUrl) {
+      return renderTrackPanelHtml(data, { detailUrl: detailUrl });
     }
 
     function renderLongTextFields(fields) {
@@ -1144,7 +1535,8 @@
                 item.distance +
                 "</span></div>"
               : "") +
-            '<div class="gis-detail-action"><button type="button" class="gis-detail-btn" data-cockpit-url="cockpit/map-cockpit-prep.html">前往虚拟座舱</button></div>' +
+            '<div class="gis-detail-action"><button type="button" class="gis-detail-btn gis-detail-btn--block" data-cockpit-url="cockpit/map-cockpit-prep.html">前往虚拟座舱</button></div>' +
+            buildDetailNavHtml(airportDetailUrl(item.airportName)) +
             "</div>"
           );
         })
@@ -1273,7 +1665,7 @@
             { label: "长度", value: item.length },
             { label: "经度", value: item.lng },
             { label: "纬度", value: item.lat },
-          ])
+          ]) + buildDetailNavHtml(stationDetailUrl(item))
         );
       });
     });
@@ -1348,79 +1740,73 @@
             { label: "距离地铁结构最小净距", value: item.minDistance },
             { label: "地铁结构埋深", value: item.depth },
             { label: "位置关系", value: item.relation, multiline: true },
-          ])
+          ]) + buildDetailNavHtml(projectDetailUrl(item.name))
         );
       });
     });
 
     [
-      {
+      buildTrackItemData({
         ll: [WUHAN[0] + jitter(50, 0) * 0.04, WUHAN[1] + jitter(51, 0) * 0.05],
         deviceCode: "Y18807",
-        timeRange: "2026/04/08 08:30:00 - 2026/04/08 18:00:00",
-        records: [
-          { code: "Y18807-248447", time: "2026/04/08 08:38:15" },
-          { code: "Y18807-248451", time: "2026/04/08 10:12:06" },
-          { code: "Y18807-248468", time: "2026/04/08 14:26:41" },
+        slots: [
+          { h: 8, m: 38, s: 15, suffix: "248447" },
+          { h: 10, m: 12, s: 6, suffix: "248451" },
+          { h: 14, m: 26, s: 41, suffix: "248468" },
         ],
-      },
-      {
+      }),
+      buildTrackItemData({
         ll: [WUHAN[0] + jitter(50, 1) * 0.04, WUHAN[1] + jitter(51, 1) * 0.05],
         deviceCode: "Y18812",
-        timeRange: "2026/04/09 07:00:00 - 2026/04/09 17:30:00",
-        records: [
-          { code: "Y18812-248602", time: "2026/04/09 07:18:23" },
-          { code: "Y18812-248615", time: "2026/04/09 11:43:08" },
-          { code: "Y18812-248633", time: "2026/04/09 16:12:50" },
+        slots: [
+          { h: 7, m: 18, s: 23, suffix: "248602" },
+          { h: 11, m: 43, s: 8, suffix: "248615" },
+          { h: 16, m: 12, s: 50, suffix: "248633" },
         ],
-      },
-      {
+      }),
+      buildTrackItemData({
         ll: [WUHAN[0] + jitter(50, 2) * 0.04, WUHAN[1] + jitter(51, 2) * 0.05],
         deviceCode: "Y18819",
-        timeRange: "2026/04/10 09:00:00 - 2026/04/10 20:00:00",
-        records: [
-          { code: "Y18819-248741", time: "2026/04/10 09:31:02" },
-          { code: "Y18819-248763", time: "2026/04/10 13:22:47" },
-          { code: "Y18819-248788", time: "2026/04/10 18:09:13" },
+        slots: [
+          { h: 9, m: 31, s: 2, suffix: "248741" },
+          { h: 13, m: 22, s: 47, suffix: "248763" },
+          { h: 18, m: 9, s: 13, suffix: "248788" },
         ],
-      },
-      {
+      }),
+      buildTrackItemData({
         ll: [WUHAN[0] + jitter(50, 3) * 0.04, WUHAN[1] + jitter(51, 3) * 0.05],
         deviceCode: "Y18824",
-        timeRange: "2026/04/11 08:00:00 - 2026/04/11 19:00:00",
-        records: [
-          { code: "Y18824-248910", time: "2026/04/11 08:52:15" },
-          { code: "Y18824-248926", time: "2026/04/11 12:40:31" },
-          { code: "Y18824-248941", time: "2026/04/11 17:55:29" },
+        slots: [
+          { h: 8, m: 52, s: 15, suffix: "248910" },
+          { h: 12, m: 40, s: 31, suffix: "248926" },
+          { h: 17, m: 55, s: 29, suffix: "248941" },
         ],
-      },
-      {
+      }),
+      buildTrackItemData({
         ll: [WUHAN[0] + jitter(50, 4) * 0.04, WUHAN[1] + jitter(51, 4) * 0.05],
         deviceCode: "Y18831",
-        timeRange: "2026/04/12 06:30:00 - 2026/04/12 18:30:00",
-        records: [
-          { code: "Y18831-249004", time: "2026/04/12 07:11:09" },
-          { code: "Y18831-249028", time: "2026/04/12 11:26:14" },
-          { code: "Y18831-249053", time: "2026/04/12 17:03:42" },
+        slots: [
+          { h: 7, m: 11, s: 9, suffix: "249004" },
+          { h: 11, m: 26, s: 14, suffix: "249028" },
+          { h: 17, m: 3, s: 42, suffix: "249053" },
         ],
-      },
-      {
+      }),
+      buildTrackItemData({
         ll: [WUHAN[0] + jitter(50, 5) * 0.04, WUHAN[1] + jitter(51, 5) * 0.05],
         deviceCode: "Y18837",
-        timeRange: "2026/04/13 08:00:00 - 2026/04/13 18:00:00",
-        records: [
-          { code: "Y18837-249144", time: "2026/04/13 08:26:58" },
-          { code: "Y18837-249158", time: "2026/04/13 13:17:05" },
-          { code: "Y18837-249176", time: "2026/04/13 17:48:36" },
+        slots: [
+          { h: 8, m: 26, s: 58, suffix: "249144" },
+          { h: 13, m: 17, s: 5, suffix: "249158" },
+          { h: 17, m: 48, s: 36, suffix: "249176" },
         ],
-      },
+      }),
     ].forEach(function (item, staffIdx) {
       var marker = L.marker(item.ll, {
         icon: makeBadgeIcon("#2563eb", "fa-solid fa-person-walking", 28),
       }).addTo(layers.staff);
       registerFeature(marker, layers.staff, "staff", staffLineKeys[staffIdx % staffLineKeys.length]);
       marker.on("click", function () {
-        openDetailPanel("人员轨迹", renderTrackPanel(item));
+        openDetailPanel("人员轨迹", renderTrackPanel(item, trackPersonDetailUrl(item.deviceCode)));
       });
     });
 
@@ -1470,31 +1856,29 @@
     });
 
     [
-      {
+      buildTrackItemData({
         ll: [30.584, 114.314],
         deviceCode: "DJI-M350-0007",
-        timeRange: "2026/05/12 08:00:00 - 2026/05/12 18:00:00",
-        records: [
-          { code: "FLIGHT-350-1821", time: "2026/05/12 08:42:11" },
-          { code: "FLIGHT-350-1830", time: "2026/05/12 11:28:37" },
-          { code: "FLIGHT-350-1839", time: "2026/05/12 16:14:52" },
+        slots: [
+          { h: 8, m: 42, s: 11, suffix: "1821" },
+          { h: 11, m: 28, s: 37, suffix: "1830" },
+          { h: 16, m: 14, s: 52, suffix: "1839" },
         ],
-      },
-      {
+      }),
+      buildTrackItemData({
         ll: [30.609, 114.322],
         deviceCode: "DJI-M350-0012",
-        timeRange: "2026/05/13 08:00:00 - 2026/05/13 18:00:00",
-        records: [
-          { code: "FLIGHT-350-1914", time: "2026/05/13 09:06:45" },
-          { code: "FLIGHT-350-1927", time: "2026/05/13 13:52:26" },
-          { code: "FLIGHT-350-1933", time: "2026/05/13 17:31:08" },
+        slots: [
+          { h: 9, m: 6, s: 45, suffix: "1914" },
+          { h: 13, m: 52, s: 26, suffix: "1927" },
+          { h: 17, m: 31, s: 8, suffix: "1933" },
         ],
-      },
+      }),
     ].forEach(function (item, droneIdx) {
       var marker = L.marker(item.ll, { icon: makeBadgeIcon("#2563eb", "fa-solid fa-helicopter-symbol", 28) }).addTo(layers.drones);
       registerFeature(marker, layers.drones, "drones", droneIdx === 0 ? "l2" : "l8");
       marker.on("click", function () {
-        openDetailPanel("无人机详情", renderTrackPanel(item));
+        openDetailPanel("无人机详情", renderTrackPanel(item, flightLogDetailUrl(item.deviceCode)));
       });
     });
 
@@ -1504,6 +1888,21 @@
         registerFeature: registerFeature,
         makePhotoDropIcon: makePhotoDropIcon,
         showPhotos: true,
+        onPhotoClick: function (drop) {
+          var src = typeof whAsset === "function" ? whAsset(drop.src) : drop.src;
+          openDetailPanel(
+            "工地最新照片",
+            renderLongTextFields([
+              { label: "工程项目", value: drop.name },
+              { label: "拍摄时间", value: drop.time },
+              {
+                label: "现场照片",
+                value: '<img src="' + src + '" alt="' + (drop.name || "工地照片") + '" style="max-width:100%;border-radius:8px;display:block" />',
+                multiline: true,
+              },
+            ]) + buildDetailNavHtml(manualPatrolDetailUrl(drop))
+          );
+        },
       });
     }
 
@@ -1511,23 +1910,14 @@
       var g = L.layerGroup();
       if (ek === "ew") {
         emergencyWarehouses.forEach(function (wh) {
+          warehouseByName[wh.name] = wh;
           var marker = L.marker(wh.ll, {
             icon: makeBadgeIcon("#d97706", "fa-solid fa-warehouse", 28),
           }).addTo(g);
+          warehouseMarkers[wh.name] = marker;
           registerFeature(marker, g, "emergency", lineKeyFromLabel(wh.line), ek);
           marker.on("click", function () {
-            openDetailPanel(
-              "仓库信息",
-              renderDetailFields([
-                { label: "仓库名称", value: wh.name },
-                { label: "存储物资数量", value: wh.materialCount },
-                { label: "仓库经度", value: wh.lng },
-                { label: "仓库纬度", value: wh.lat },
-                { label: "仓库地址", value: wh.address },
-                { label: "仓库负责人", value: wh.manager },
-                { label: "联系电话", value: wh.phone },
-              ])
-            );
+            openWarehouseDetailPanel(wh);
           });
         });
       } else {
@@ -1563,7 +1953,7 @@
                   { label: "部门", value: person.dept },
                   { label: "岗位", value: person.post },
                   { label: "常驻地址", value: person.address },
-                ])
+                ]) + buildDetailNavHtml(emergencyStaffDetailUrl(person))
               );
             });
           })(k);
@@ -1600,6 +1990,10 @@
     }
 
     function applyEmergency() {
+      var anyStaffOn = emKeys.some(function (k) {
+        return k !== "ew" && !!state.emergency[k];
+      });
+      state.emergency.ew = anyStaffOn;
       emKeys.forEach(function (k) {
         syncLayer(layers.emergency[k], !!state.emergency[k]);
       });
@@ -1765,6 +2159,9 @@
         setToggleBtn(btn, state.emergency[k]);
         applyEmergency();
         refreshEmergencyBatchSwitch();
+        if (state.emergency[k] && k !== "ew") {
+          openWarehouseListPanel();
+        }
       });
       setToggleBtn(btn, !!state.emergency[k]);
     });
@@ -1782,6 +2179,7 @@
         });
         applyEmergency();
         refreshEmergencyBatchSwitch();
+        if (next) openWarehouseListPanel();
       });
     }
 

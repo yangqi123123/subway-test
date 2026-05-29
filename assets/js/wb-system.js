@@ -1,4 +1,16 @@
 (function () {
+  (function loadSystemMgmtQuickLinks() {
+    if (window.SystemMgmtQuickLinks) return;
+    var cur = document.currentScript;
+    if (!cur || !cur.src) return;
+    var url = cur.src.replace(/wb-system\.js(?:\?.*)?$/, "system-mgmt-quick-links.js");
+    var s = document.createElement("script");
+    s.id = "wh-system-mgmt-quick-links";
+    s.src = url;
+    s.async = false;
+    cur.parentNode.insertBefore(s, cur.nextSibling);
+  })();
+
   function $(id) {
     return document.getElementById(id);
   }
@@ -117,6 +129,66 @@
     }
   }
 
+  function escapeDetailHtml(value) {
+    return String(value || "").replace(/[&<>"']/g, function (char) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+    });
+  }
+
+  function createDetailModal() {
+    if ($("wb-detail-mask")) return;
+    var mask = el("div", "wb-detail-mask");
+    mask.id = "wb-detail-mask";
+    mask.setAttribute("aria-hidden", "true");
+    mask.innerHTML =
+      '<div class="wb-detail-dialog" role="dialog" aria-labelledby="wb-detail-title">' +
+      '  <div class="wb-detail-dialog__head">' +
+      '    <div>' +
+      '      <h3 id="wb-detail-title" class="text-white font-semibold text-sm m-0">查看详情</h3>' +
+      '      <div id="wb-detail-subtitle" class="text-[11px] text-slate-400 mt-0.5"></div>' +
+      "    </div>" +
+      '    <button type="button" class="wh-modal-close text-slate-400 hover:text-white text-xl leading-none" id="wb-detail-close" aria-label="关闭">×</button>' +
+      "  </div>" +
+      '  <div id="wb-detail-body" class="wb-detail-dialog__body"></div>' +
+      '  <div class="wb-detail-dialog__foot">' +
+      '    <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" id="wb-detail-foot-close">关闭</button>' +
+      "  </div>" +
+      "</div>";
+    document.body.appendChild(mask);
+    function closeDetailModal() {
+      mask.classList.remove("show");
+      mask.setAttribute("aria-hidden", "true");
+    }
+    $("wb-detail-close").onclick = closeDetailModal;
+    $("wb-detail-foot-close").onclick = closeDetailModal;
+    mask.addEventListener("click", function (event) {
+      if (event.target === mask) closeDetailModal();
+    });
+  }
+
+  function openDetailModal(page, row) {
+    if (!page || typeof page.buildDetailHtml !== "function" || !row) return;
+    createDetailModal();
+    var mask = $("wb-detail-mask");
+    var subtitleEl = $("wb-detail-subtitle");
+    var bodyEl = $("wb-detail-body");
+    var subtitle =
+      typeof page.detailSubtitle === "function"
+        ? page.detailSubtitle(row)
+        : row.templateName || row.name || row.roleName || "";
+    if (subtitleEl) subtitleEl.textContent = subtitle || page.detailPanelLabel || page.title || "详情";
+    if (bodyEl) bodyEl.innerHTML = page.buildDetailHtml(row, page);
+    mask.classList.add("show");
+    mask.setAttribute("aria-hidden", "false");
+  }
+
+  function closeDetailModal() {
+    var mask = $("wb-detail-mask");
+    if (!mask) return;
+    mask.classList.remove("show");
+    mask.setAttribute("aria-hidden", "true");
+  }
+
   function confirmAction(message, onConfirm) {
     openModal(
       "操作确认",
@@ -150,15 +222,353 @@
   }
 
   function simplePageShell(root, page) {
+    var badge = page.panelBadge || "深色系统原型 · Mock 交互";
     root.innerHTML =
       '<div class="wb-page">' +
       '  <div class="wb-head">' +
       "    <h1>" +
       page.title +
       "</h1>" +
-      '    <span class="text-[10px] rounded-md border border-cyan-400/25 bg-cyan-500/5 px-2 py-1 text-cyan-100/80">深色系统原型 · Mock 交互</span>' +
+      '    <span class="text-[10px] rounded-md border border-cyan-400/25 bg-cyan-500/5 px-2 py-1 text-cyan-100/80">' +
+      badge +
+      "</span>" +
       "  </div>" +
       "</div>";
+  }
+
+  function getTreeScopedRows(page) {
+    return page.getRows ? page.getRows.call(page) : page.rows || [];
+  }
+
+  function flattenTreeDataRows(rows, bucket) {
+    bucket = bucket || [];
+    (rows || []).forEach(function (row) {
+      bucket.push(row);
+      if (row.children && row.children.length) flattenTreeDataRows(row.children, bucket);
+    });
+    return bucket;
+  }
+
+  function getDiseaseScopeRows(page) {
+    if (page.pageType === "menu") return flattenTreeDataRows(page.rows || []);
+    if (page.pageType === "log" && typeof page.getCurrentTab === "function") {
+      return page.getCurrentTab().rows || [];
+    }
+    return getTreeScopedRows(page);
+  }
+
+  function countDiseaseStatPair(page, rows) {
+    if (typeof page.diseaseStatCount === "function") return page.diseaseStatCount(rows);
+    var enabled = 0;
+    var disabled = 0;
+    (rows || []).forEach(function (row) {
+      if (row.status === true) enabled++;
+      else if (row.status === false) disabled++;
+    });
+    return { enabled: enabled, disabled: disabled };
+  }
+
+  function getFilteredRows(page) {
+    return filterRows(page, getTreeScopedRows(page));
+  }
+
+  function userStatusLabel(row) {
+    if (row.status === true) return "启用";
+    if (row.status === false) return "停用";
+    return "";
+  }
+
+  function matchStatusFilter(row, value) {
+    if (!value) return true;
+    return userStatusLabel(row) === value;
+  }
+
+  function filterRowsForPage(page, rows) {
+    return (rows || []).filter(function (row) {
+      return (page.filters || []).every(function (filter) {
+        if (filter.type === "daterange") return true;
+        var value = page.filterState[filter.key];
+        if (!value) return true;
+        if (filter.key === "statusText") return matchStatusFilter(row, value);
+        return String(getValue(row, filter.key)).indexOf(String(value)) > -1;
+      });
+    });
+  }
+
+  function updateDiseaseStats(page, filteredRows) {
+    var scoped = getDiseaseScopeRows(page);
+    var filtered = filteredRows || filterRowsForPage(page, scoped);
+    var pair = countDiseaseStatPair(page, filtered);
+    var enabled = pair.enabled;
+    var disabled = pair.disabled;
+    var map = {
+      "wb-stat-total": String(scoped.length),
+      "wb-stat-filtered": String(filtered.length),
+      "wb-stat-enabled": String(enabled),
+      "wb-stat-disabled": String(disabled),
+    };
+    Object.keys(map).forEach(function (id) {
+      var node = $(id);
+      if (node) node.textContent = map[id];
+    });
+  }
+
+  function bindFilterInputs(panel, page) {
+    panel.querySelectorAll("[data-filter]").forEach(function (input) {
+      var key = input.getAttribute("data-filter");
+      var value = page.filterState[key] || "";
+      if (input.tagName === "SELECT") input.value = value;
+      else input.value = value;
+    });
+  }
+
+  function collectFilterState(panel, page) {
+    panel.querySelectorAll("[data-filter]").forEach(function (input) {
+      page.filterState[input.getAttribute("data-filter")] = input.value.trim();
+    });
+  }
+
+  function buildFilterFieldHtml(filter, page) {
+    var value = page.filterState[filter.key] || "";
+    var html = "<label><span>" + filter.label + "</span>";
+    if (filter.type === "select") {
+      html += '<select class="wh-input w-full px-2" data-filter="' + filter.key + '">';
+      html += '<option value="">全部</option>';
+      normalizeOptions(filter.options).forEach(function (opt) {
+        html +=
+          '<option value="' +
+          opt.value +
+          '"' +
+          (String(opt.value) === String(value) ? " selected" : "") +
+          ">" +
+          opt.label +
+          "</option>";
+      });
+      html += "</select>";
+    } else {
+      html +=
+        '<input class="wh-input w-full" data-filter="' +
+        filter.key +
+        '" value="' +
+        value +
+        '" placeholder="请输入' +
+        filter.label +
+        '" />';
+    }
+    html += "</label>";
+    return html;
+  }
+
+  function buildDiseaseFilterPanel(page) {
+    var panel = el("div", "disease-filter-panel");
+    panel.innerHTML =
+      '<div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>';
+    var body = el("div", "disease-panel-body");
+    (page.filters || []).forEach(function (filter) {
+      var wrap = el("div");
+      wrap.innerHTML = buildFilterFieldHtml(filter, page);
+      body.appendChild(wrap.firstChild);
+    });
+    var actions = el("div", "disease-filter-actions");
+    var search = el("button", "wh-btn-primary", "搜索");
+    var reset = el("button", "wh-btn-ghost", "重置");
+    search.type = "button";
+    reset.type = "button";
+    search.onclick = function () {
+      collectFilterState(body, page);
+      page.pageState.page = 1;
+      window.__wbRender();
+    };
+    reset.onclick = function () {
+      page.filterState = {};
+      page.pageState.page = 1;
+      window.__wbRender();
+    };
+    actions.appendChild(search);
+    actions.appendChild(reset);
+    body.appendChild(actions);
+    panel.appendChild(body);
+    return panel;
+  }
+
+  function buildDiseaseQuickPanel(page) {
+    var panel = el("div", "disease-quick-panel");
+    panel.innerHTML =
+      '<div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>';
+    var body = el("div", "disease-panel-body");
+    (page.quickLinks || []).forEach(function (link) {
+      var anchor = el(
+        "a",
+        "disease-quick-link" + (link.active ? " is-active" : ""),
+        '<i class="fa-solid ' +
+          link.icon +
+          '"></i><span>' +
+          link.label +
+          "</span>"
+      );
+      anchor.href = link.href;
+      anchor.setAttribute("data-quick-href", link.path || link.href);
+      body.appendChild(anchor);
+    });
+    panel.appendChild(body);
+    body.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
+      var target = anchor.getAttribute("data-quick-href");
+      if (target && typeof whPageHref === "function") anchor.setAttribute("href", whPageHref(target));
+    });
+    return panel;
+  }
+
+  function buildDiseaseStats(page) {
+    var scoped = getDiseaseScopeRows(page);
+    var filtered = filterRowsForPage(page, scoped);
+    var pair = countDiseaseStatPair(page, filtered);
+    var enabled = pair.enabled;
+    var disabled = pair.disabled;
+    var labels = page.diseaseStatLabels || {};
+    var totalLabel = labels.total || "部门用户";
+    var totalTrend = labels.totalTrend || "当前组织";
+    var totalIcon = labels.totalIcon || "fa-users";
+    var filteredLabel = labels.filtered || "当前列表";
+    var filteredTrend = labels.filteredTrend || "筛选结果";
+    var enabledLabel = labels.enabled || "启用";
+    var disabledLabel = labels.disabled || "停用";
+    var enabledTrend = labels.enabledTrend || "账号状态";
+    var disabledTrend = labels.disabledTrend || "账号状态";
+    var wrap = el("div", "disease-stats");
+    wrap.setAttribute("aria-label", page.title + "统计");
+    wrap.innerHTML =
+      '<div class="disease-stat-card disease-stat-card--blue"><div class="disease-stat-card__icon"><i class="fa-solid ' +
+      totalIcon +
+      '"></i></div><div><div id="wb-stat-total" class="disease-stat-card__value">' +
+      scoped.length +
+      '</div><div class="disease-stat-card__label">' +
+      totalLabel +
+      '</div><div class="disease-stat-card__trend">' +
+      totalTrend +
+      '</div></div></div>' +
+      '<div class="disease-stat-card disease-stat-card--cyan"><div class="disease-stat-card__icon"><i class="fa-solid fa-list"></i></div><div><div id="wb-stat-filtered" class="disease-stat-card__value">' +
+      filtered.length +
+      '</div><div class="disease-stat-card__label">' +
+      filteredLabel +
+      '</div><div class="disease-stat-card__trend">' +
+      filteredTrend +
+      '</div></div></div>' +
+      '<div class="disease-stat-card disease-stat-card--green"><div class="disease-stat-card__icon"><i class="fa-solid fa-circle-check"></i></div><div><div id="wb-stat-enabled" class="disease-stat-card__value">' +
+      enabled +
+      '</div><div class="disease-stat-card__label">' +
+      enabledLabel +
+      '</div><div class="disease-stat-card__trend">' +
+      enabledTrend +
+      '</div></div></div>' +
+      '<div class="disease-stat-card disease-stat-card--amber"><div class="disease-stat-card__icon"><i class="fa-solid fa-ban"></i></div><div><div id="wb-stat-disabled" class="disease-stat-card__value">' +
+      disabled +
+      '</div><div class="disease-stat-card__label">' +
+      disabledLabel +
+      '</div><div class="disease-stat-card__trend">' +
+      disabledTrend +
+      "</div></div></div>";
+    return wrap;
+  }
+
+  function appendDiseaseRightColumn(layout, page) {
+    var right = el("aside", "disease-layout__right");
+    right.setAttribute("aria-label", "筛选与快捷操作");
+    right.appendChild(buildDiseaseFilterPanel(page));
+    if (page.quickLinks && page.quickLinks.length) right.appendChild(buildDiseaseQuickPanel(page));
+    layout.appendChild(right);
+  }
+
+  function buildDiseaseToolbar(page) {
+    var toolbar = el("div", "disease-list-toolbar");
+    (page.primaryButtons || []).forEach(function (btn) {
+      var button = el(
+        "button",
+        "px-4 py-1.5 rounded text-xs " + (btn.variant === "ghost" ? "wh-btn-ghost" : "wh-btn-primary"),
+        btn.label
+      );
+      button.type = "button";
+      button.onclick = function () {
+        if (btn.action === "add") {
+          openRecordModal(page, btn.modalTitle || page.addTitle || "新增", null, (btn.modalTitle || "新增") + "成功");
+          return;
+        }
+        if (btn.action === "import") {
+          if (typeof page.openImport === "function") page.openImport();
+          else toast("导入功能已打开");
+          return;
+        }
+        toast(btn.tip || btn.label + "已执行");
+      };
+      toolbar.appendChild(button);
+    });
+    return toolbar;
+  }
+
+  function renderDiseaseTreeTablePage(root, page) {
+    simplePageShell(root, page);
+    var wrap = root.firstElementChild;
+
+    var section = el("section");
+    var layout = el("div", "disease-layout");
+    var left = el("div", "disease-layout__left");
+
+    left.appendChild(buildDiseaseStats(page));
+    left.appendChild(buildDiseaseToolbar(page));
+
+    var innerLayout = el("div", "wb-layout");
+    var treePanel = el("section", "neon-panel neon-panel--tight p-3 wb-tree-panel");
+    treePanel.innerHTML =
+      '<div class="wb-tree-search"><i class="fa-solid fa-magnifying-glass"></i><input class="wh-input" placeholder="搜索节点" /></div>';
+    treePanel.appendChild(
+      buildTree(
+        page.treeData,
+        page.selectedTreeId,
+        function (node) {
+          page.selectedTreeId = node.id;
+          page.pageState.page = 1;
+          window.__wbRender();
+        },
+        page.expandedMap
+      )
+    );
+    innerLayout.appendChild(treePanel);
+
+    var mainPanel = el("div", "wb-main-panel");
+    var scoped = getDiseaseScopeRows(page);
+    updateDiseaseStats(page, filterRowsForPage(page, scoped));
+    renderTableOnly(mainPanel, page, scoped);
+    innerLayout.appendChild(mainPanel);
+    left.appendChild(innerLayout);
+
+    layout.appendChild(left);
+    appendDiseaseRightColumn(layout, page);
+
+    section.appendChild(layout);
+    wrap.appendChild(section);
+  }
+
+  function renderDiseaseTablePage(root, page) {
+    simplePageShell(root, page);
+    var wrap = root.firstElementChild;
+
+    var section = el("section");
+    var layout = el("div", "disease-layout");
+    var left = el("div", "disease-layout__left");
+
+    left.appendChild(buildDiseaseStats(page));
+    left.appendChild(buildDiseaseToolbar(page));
+
+    var mainPanel = el("div", "wb-main-panel");
+    var scoped = getDiseaseScopeRows(page);
+    updateDiseaseStats(page, filterRowsForPage(page, scoped));
+    renderTableOnly(mainPanel, page, scoped);
+    left.appendChild(mainPanel);
+
+    layout.appendChild(left);
+    appendDiseaseRightColumn(layout, page);
+
+    section.appendChild(layout);
+    wrap.appendChild(section);
   }
 
   function renderSearch(container, page) {
@@ -366,14 +776,7 @@
   }
 
   function filterRows(page, rows) {
-    return (rows || []).filter(function (row) {
-      return (page.filters || []).every(function (filter) {
-        if (filter.type === "daterange") return true;
-        var value = page.filterState[filter.key];
-        if (!value) return true;
-        return String(getValue(row, filter.key)).indexOf(String(value)) > -1;
-      });
-    });
+    return filterRowsForPage(page, rows);
   }
 
   function buildTree(nodes, selectedId, onSelect, expanded) {
@@ -473,8 +876,9 @@
   }
 
   function renderActions(actions, row, page) {
-    var actionTd = el("td", "px-3 py-3 whitespace-nowrap");
-    var bar = el("div", "flex flex-wrap items-center gap-3");
+    var sticky = !!page.stickyActionColumn;
+    var actionTd = el("td", sticky ? "px-3 py-3 disease-col-actions" : "px-3 py-3 whitespace-nowrap");
+    var bar = el("div", sticky ? "disease-op-actions" : "flex flex-wrap items-center gap-3");
     (actions || []).forEach(function (action) {
       bar.appendChild(
         actionBtn(action.label, action.cls, function () {
@@ -486,10 +890,40 @@
     return actionTd;
   }
 
+  function attachRowOpen(tr, row, page) {
+    if (!tr || !row) return;
+    tr.classList.add("wh-row-open");
+    tr.style.cursor = "pointer";
+    if (window.WHTableRowClick) WHTableRowClick.injectStyles();
+    tr.addEventListener("click", function (e) {
+      if (window.WHTableRowClick && WHTableRowClick.shouldIgnore(e)) return;
+      if (e.target.closest("input,button,a,label,select,textarea,.disease-col-actions,.flight-plan-col-actions,.wb-action")) return;
+      if (typeof page.buildDetailHtml === "function") {
+        openDetailModal(page, row);
+        return;
+      }
+      var action = window.WHTableRowClick && WHTableRowClick.pickOpenAction(page.actions);
+      if (!action && page.actions && page.actions.length) {
+        action =
+          page.actions.find(function (a) {
+            return a.label === "查看" || a.label === "编辑" || a.type === "edit" || a.type === "view";
+          }) || page.actions[0];
+      }
+      if (action) defaultActionHandler(action, row, page);
+    });
+  }
+
   function renderTableOnly(container, page, rows) {
+    var sticky = !!page.stickyActionColumn;
     var tableWrap = el("section", "wh-table-shell bg-slate-950/35");
-    var tableBox = el("div", "overflow-x-auto max-h-[min(560px,calc(100vh-310px))]");
-    var table = el("table", "w-full text-left");
+    var tableBox = el(
+      "div",
+      (sticky ? "am-table-wrap " : "") + "overflow-x-auto max-h-[min(560px,calc(100vh-310px))]"
+    );
+    var table = el("table", sticky ? "w-full text-left min-w-[1180px]" : "w-full text-left");
+    var actionThClass = sticky
+      ? "px-3 py-3 text-left uppercase tracking-wide text-cyan-50/95 disease-col-actions"
+      : "px-3 py-3 text-left uppercase tracking-wide text-cyan-50/95";
     table.innerHTML =
       "<thead><tr>" +
       page.columns
@@ -497,7 +931,7 @@
           return '<th class="px-3 py-3 text-left uppercase tracking-wide text-cyan-50/95">' + col.label + "</th>";
         })
         .join("") +
-      '<th class="px-3 py-3 text-left uppercase tracking-wide text-cyan-50/95">操作</th></tr></thead>';
+      '<th class="' + actionThClass + '">操作</th></tr></thead>';
 
     var body = el("tbody");
     var result = paginate(filterRows(page, rows), page.pageState);
@@ -508,6 +942,7 @@
         tr.appendChild(renderCell(col, row, page));
       });
       tr.appendChild(renderActions(page.actions, row, page));
+      attachRowOpen(tr, row, page);
       body.appendChild(tr);
     });
 
@@ -525,6 +960,10 @@
   }
 
   function renderTablePage(root, page) {
+    if (page.diseaseLayout) {
+      renderDiseaseTablePage(root, page);
+      return;
+    }
     simplePageShell(root, page);
     var wrap = root.firstElementChild;
     renderSearch(wrap, page);
@@ -532,6 +971,10 @@
   }
 
   function renderTreeTablePage(root, page) {
+    if (page.diseaseLayout) {
+      renderDiseaseTreeTablePage(root, page);
+      return;
+    }
     simplePageShell(root, page);
     var wrap = root.firstElementChild;
     renderSearch(wrap, page);
@@ -560,11 +1003,7 @@
     wrap.appendChild(layout);
   }
 
-  function renderMenuPage(root, page) {
-    simplePageShell(root, page);
-    var wrap = root.firstElementChild;
-    renderSearch(wrap, page);
-
+  function renderMenuTableOnly(container, page) {
     var tableWrap = el("section", "wh-table-shell bg-slate-950/35");
     var tableBox = el("div", "overflow-x-auto max-h-[min(620px,calc(100vh-300px))]");
     var table = el("table", "w-full text-left");
@@ -615,6 +1054,7 @@
       });
 
       tr.appendChild(renderActions(page.actions, row, page));
+      attachRowOpen(tr, row, page);
       body.appendChild(tr);
 
       if (row.children && row.children.length && page.expandedMap[row.id]) {
@@ -631,10 +1071,100 @@
     table.appendChild(body);
     tableBox.appendChild(table);
     tableWrap.appendChild(tableBox);
-    wrap.appendChild(tableWrap);
+    container.appendChild(tableWrap);
+  }
+
+  function renderDiseaseMenuPage(root, page) {
+    simplePageShell(root, page);
+    var wrap = root.firstElementChild;
+
+    var section = el("section");
+    var layout = el("div", "disease-layout");
+    var left = el("div", "disease-layout__left");
+
+    left.appendChild(buildDiseaseStats(page));
+    left.appendChild(buildDiseaseToolbar(page));
+
+    var mainPanel = el("div", "wb-main-panel");
+    var scoped = getDiseaseScopeRows(page);
+    updateDiseaseStats(page, filterRowsForPage(page, scoped));
+    renderMenuTableOnly(mainPanel, page);
+    left.appendChild(mainPanel);
+
+    layout.appendChild(left);
+    appendDiseaseRightColumn(layout, page);
+
+    section.appendChild(layout);
+    wrap.appendChild(section);
+  }
+
+  function renderDiseaseLogPage(root, page) {
+    simplePageShell(root, page);
+    var wrap = root.firstElementChild;
+
+    var section = el("section");
+    var layout = el("div", "disease-layout");
+    var left = el("div", "disease-layout__left");
+
+    left.appendChild(buildDiseaseStats(page));
+    left.appendChild(buildDiseaseToolbar(page));
+
+    var tabs = el("div", "wb-tabbar");
+    (page.logTabs || []).forEach(function (tab) {
+      var btn = el("button", "wb-tab" + (page.activeLogTab === tab.key ? " active" : ""), tab.label);
+      btn.type = "button";
+      btn.onclick = function () {
+        page.activeLogTab = tab.key;
+        page.pageState.page = 1;
+        window.__wbRender();
+      };
+      tabs.appendChild(btn);
+    });
+    left.appendChild(tabs);
+
+    var current = page.getCurrentTab ? page.getCurrentTab() : { rows: [], columns: [] };
+    var scoped = current.rows || [];
+    var mainPanel = el("div", "wb-main-panel");
+    updateDiseaseStats(page, filterRowsForPage(page, scoped));
+    renderTableOnly(
+      mainPanel,
+      {
+        title: page.title,
+        columns: current.columns,
+        rows: scoped,
+        pageState: page.pageState,
+        filters: page.filters,
+        filterState: page.filterState,
+        actions: current.actions || page.actions || [],
+        formFields: current.formFields || page.formFields || [],
+      },
+      scoped
+    );
+    left.appendChild(mainPanel);
+
+    layout.appendChild(left);
+    appendDiseaseRightColumn(layout, page);
+
+    section.appendChild(layout);
+    wrap.appendChild(section);
+  }
+
+  function renderMenuPage(root, page) {
+    if (page.diseaseLayout) {
+      renderDiseaseMenuPage(root, page);
+      return;
+    }
+    simplePageShell(root, page);
+    var wrap = root.firstElementChild;
+    renderSearch(wrap, page);
+    renderMenuTableOnly(wrap, page);
   }
 
   function renderLogPage(root, page) {
+    if (page.diseaseLayout) {
+      renderDiseaseLogPage(root, page);
+      return;
+    }
     simplePageShell(root, page);
     var wrap = root.firstElementChild;
     var tabs = el("div", "wb-tabbar");
@@ -690,6 +1220,9 @@
     createPage: createPage,
     toast: toast,
     openModal: openModal,
+    openDetailModal: openDetailModal,
+    closeDetailModal: closeDetailModal,
     confirmAction: confirmAction,
+    escapeDetailHtml: escapeDetailHtml,
   };
 })();

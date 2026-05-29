@@ -79,6 +79,9 @@
 
   DCChartToolbar.prototype.render = function () {
     var config = this.getConfig();
+    if (!config || !config.labels || !config.series) {
+      return;
+    }
     this._updateToolStates(config);
     if (this.state.viewMode === "table") {
       this._showTable(config);

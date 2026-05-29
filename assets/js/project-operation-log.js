@@ -38,19 +38,19 @@
       "#project-record-mask .record-item__title,#done-record-mask .record-item__title{margin:0 0 8px;font-size:14px;font-weight:500;color:rgba(240,253,250,.95);line-height:1.4}" +
       "#project-record-mask .record-item__meta,#done-record-mask .record-item__meta{font-size:12px;color:rgba(148,163,184,.95);line-height:1.55;margin:0}" +
       "#project-record-mask .record-empty,#done-record-mask .record-empty{text-align:center;color:rgba(148,163,184,.75);font-size:12px;padding:40px 0}" +
-      "#record-mask.record-mask{position:fixed;inset:0;z-index:110;display:none;align-items:center;justify-content:center;background:rgba(2,8,23,.72);padding:24px}" +
-      "#record-mask.record-mask.show{display:flex}" +
-      "#record-mask .record-dialog{width:min(760px,96vw);max-height:min(86vh,720px);border-radius:8px;border:1px solid rgba(34,211,238,.24);background:#071426;color:rgba(226,245,255,.92);box-shadow:0 24px 80px rgba(0,0,0,.55),0 0 30px rgba(34,211,238,.12);display:flex;flex-direction:column;overflow:hidden}" +
-      "#record-mask .record-dialog__head{flex-shrink:0}" +
-      "#record-mask .record-list{flex:1 1 auto;overflow-y:auto;max-height:min(60vh,520px)}" +
-      "#record-mask .record-timeline{position:relative;padding-left:28px}" +
-      "#record-mask .record-timeline::before{content:'';position:absolute;left:11px;top:10px;bottom:10px;width:1px;background:rgba(34,211,238,.28)}" +
-      "#record-mask .record-item{position:relative;padding:0 0 22px;font-size:14px}" +
-      "#record-mask .record-item:last-child{padding-bottom:0}" +
-      "#record-mask .record-item::before{content:'';position:absolute;left:-28px;top:5px;width:10px;height:10px;border-radius:50%;border:2px solid #38bdf8;background:#071426;box-sizing:border-box;z-index:1;box-shadow:0 0 8px rgba(56,189,248,.35)}" +
-      "#record-mask .record-item__title{margin:0 0 8px;font-size:14px;font-weight:500;color:rgba(240,253,250,.95);line-height:1.4}" +
-      "#record-mask .record-item__meta{font-size:12px;color:rgba(148,163,184,.95);line-height:1.55;margin:0}" +
-      "#record-mask .record-empty{text-align:center;color:rgba(148,163,184,.75);font-size:12px;padding:40px 0}";
+      "#record-mask.record-mask,#patrol-record-mask.record-mask{position:fixed;inset:0;z-index:110;display:none;align-items:center;justify-content:center;background:rgba(2,8,23,.72);padding:24px}" +
+      "#record-mask.record-mask.show,#patrol-record-mask.record-mask.show{display:flex}" +
+      "#record-mask .record-dialog,#patrol-record-mask .record-dialog{width:min(760px,96vw);max-height:min(86vh,720px);border-radius:8px;border:1px solid rgba(34,211,238,.24);background:#071426;color:rgba(226,245,255,.92);box-shadow:0 24px 80px rgba(0,0,0,.55),0 0 30px rgba(34,211,238,.12);display:flex;flex-direction:column;overflow:hidden}" +
+      "#record-mask .record-dialog__head,#patrol-record-mask .record-dialog__head{flex-shrink:0}" +
+      "#record-mask .record-list,#patrol-record-mask .record-list{flex:1 1 auto;overflow-y:auto;max-height:min(60vh,520px)}" +
+      "#record-mask .record-timeline,#patrol-record-mask .record-timeline{position:relative;padding-left:28px}" +
+      "#record-mask .record-timeline::before,#patrol-record-mask .record-timeline::before{content:'';position:absolute;left:11px;top:10px;bottom:10px;width:1px;background:rgba(34,211,238,.28)}" +
+      "#record-mask .record-item,#patrol-record-mask .record-item{position:relative;padding:0 0 22px;font-size:14px}" +
+      "#record-mask .record-item:last-child,#patrol-record-mask .record-item:last-child{padding-bottom:0}" +
+      "#record-mask .record-item::before,#patrol-record-mask .record-item::before{content:'';position:absolute;left:-28px;top:5px;width:10px;height:10px;border-radius:50%;border:2px solid #38bdf8;background:#071426;box-sizing:border-box;z-index:1;box-shadow:0 0 8px rgba(56,189,248,.35)}" +
+      "#record-mask .record-item__title,#patrol-record-mask .record-item__title{margin:0 0 8px;font-size:14px;font-weight:500;color:rgba(240,253,250,.95);line-height:1.4}" +
+      "#record-mask .record-item__meta,#patrol-record-mask .record-item__meta{font-size:12px;color:rgba(148,163,184,.95);line-height:1.55;margin:0}" +
+      "#record-mask .record-empty,#patrol-record-mask .record-empty{text-align:center;color:rgba(148,163,184,.75);font-size:12px;padding:40px 0}";
     document.head.appendChild(style);
   }
 

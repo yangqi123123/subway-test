@@ -44,6 +44,34 @@
     });
   }
 
+  /** 一行多项目时拆成列表，供每张素材单独展示一个项目名称 */
+  function resolveProjectNameList(projectName, projectNames) {
+    if (Array.isArray(projectNames) && projectNames.length) {
+      return projectNames
+        .map(function (n) {
+          return String(n || "").trim();
+        })
+        .filter(Boolean);
+    }
+    var s = String(projectName || "").trim();
+    if (!s) return ["—"];
+    if (/[、,，]/.test(s)) {
+      var parts = s
+        .split(/[、,，]+/)
+        .map(function (p) {
+          return p.trim();
+        })
+        .filter(Boolean);
+      if (parts.length) return parts;
+    }
+    return [s];
+  }
+
+  function projectLabelAt(names, index) {
+    if (!names.length) return "—";
+    return names[index % names.length];
+  }
+
   function hashStr(str) {
     var h = 0;
     var s = String(str || "");
@@ -111,14 +139,15 @@
     if (popoverEl) return popoverEl;
     document.body.insertAdjacentHTML(
       "beforeend",
-      '<div id="patrol-media-popover" class="patrol-media-popover" role="dialog" aria-modal="false">' +
+      '<div id="patrol-media-popover" class="patrol-media-popover" role="dialog" aria-modal="true" aria-hidden="true">' +
+        '<div class="patrol-media-popover__panel" role="document">' +
         '<div class="patrol-media-popover__head">' +
         '<div><h4 class="patrol-media-popover__title" id="patrol-media-popover-title"></h4>' +
         '<span class="patrol-media-popover__sub" id="patrol-media-popover-sub"></span></div>' +
         '<button type="button" class="wh-modal-close patrol-media-popover__close" id="patrol-media-popover-close" aria-label="关闭">×</button>' +
         "</div>" +
         '<div class="patrol-media-popover__body" id="patrol-media-popover-body"></div>' +
-        "</div>"
+        "</div></div>"
     );
     popoverEl = document.getElementById("patrol-media-popover");
     document.getElementById("patrol-media-popover-close").addEventListener("click", closePopover);
@@ -129,7 +158,8 @@
       "click",
       function (e) {
         if (!popoverEl || !popoverEl.classList.contains("is-open")) return;
-        if (popoverEl.contains(e.target)) return;
+        var panel = popoverEl.querySelector(".patrol-media-popover__panel");
+        if (panel && panel.contains(e.target)) return;
         if (openAnchor && (openAnchor === e.target || openAnchor.contains(e.target))) return;
         closePopover();
       },
@@ -182,6 +212,12 @@
         videos: SYSTEM_PATROL_VIDEOS,
       });
     });
+    ["项目1", "项目2", "项目3"].forEach(function (key, i) {
+      registerProjectMedia(key, {
+        photos: rotateList(photos, i % photos.length),
+        videos: SYSTEM_PATROL_VIDEOS,
+      });
+    });
   }
 
   function photoThumb(url) {
@@ -225,9 +261,14 @@
     var kind = options.kind === "video" ? "video" : "photo";
     var projectName = options.projectName || "";
     var rowKey = options.rowKey || projectName;
+    var nameList = resolveProjectNameList(projectName, options.projectNames);
     var stripHtml = renderStripHtml(kind, projectName, options.previewCount);
     var icon = kind === "video" ? "fa-clapperboard" : "fa-images";
     var label = kind === "video" ? "视频" : "照片";
+    var namesAttr =
+      nameList.length > 1
+        ? ' data-project-names="' + esc(JSON.stringify(nameList)) + '"'
+        : "";
 
     return (
       '<div class="patrol-media-cell">' +
@@ -240,7 +281,9 @@
       esc(rowKey) +
       '" data-project-name="' +
       esc(projectName) +
-      '" title="查看全部' +
+      '"' +
+      namesAttr +
+      ' title="查看全部' +
       label +
       '">' +
       '<i class="fa-solid ' +
@@ -249,37 +292,53 @@
     );
   }
 
-  function renderPopoverGrid(kind, projectName) {
+  function renderPopoverGrid(kind, projectName, projectNames) {
     var media = getProjectMedia(projectName);
     var list = kind === "video" ? media.videos || [] : media.photos || [];
     if (!list.length) {
       return '<div class="patrol-media-popover__empty">暂无' + (kind === "video" ? "视频" : "照片") + "</div>";
     }
+    var names = resolveProjectNameList(projectName, projectNames);
     return (
       '<div class="patrol-media-popover__grid">' +
       list
         .map(function (item, index) {
+          var itemLabel = projectLabelAt(names, index);
+          var cardHead =
+            '<div class="patrol-media-popover__card-head" title="' +
+            esc(itemLabel) +
+            '">' +
+            esc(itemLabel) +
+            "</div>";
           if (kind === "video") {
             var v = typeof item === "string" ? { url: item, poster: item, title: "视频 " + (index + 1) } : item;
             return (
+              '<article class="patrol-media-popover__card">' +
+              cardHead +
               '<button type="button" class="patrol-media-popover__item patrol-media-popover__item--video" data-patrol-media-item data-media-kind="video" data-media-index="' +
               index +
               '" data-project-name="' +
               esc(projectName) +
+              '" data-project-label="' +
+              esc(itemLabel) +
               '"><img src="' +
-              esc(normalizePhotoUrl(v.poster || v.url, 320)) +
-              '" alt="" /></button>'
+              esc(normalizePhotoUrl(v.poster || v.url, 480)) +
+              '" alt="" /></button></article>'
             );
           }
           var url = typeof item === "string" ? item : item.url;
           return (
+            '<article class="patrol-media-popover__card">' +
+            cardHead +
             '<button type="button" class="patrol-media-popover__item" data-patrol-media-item data-media-kind="photo" data-media-index="' +
             index +
             '" data-project-name="' +
             esc(projectName) +
+            '" data-project-label="' +
+            esc(itemLabel) +
             '"><img src="' +
-            esc(normalizePhotoUrl(url, 320)) +
-            '" alt="" /></button>'
+            esc(normalizePhotoUrl(url, 480)) +
+            '" alt="" /></button></article>'
           );
         })
         .join("") +
@@ -287,47 +346,50 @@
     );
   }
 
-  function positionPopover(anchor) {
-    if (!popoverEl || !anchor) return;
-    var rect = anchor.getBoundingClientRect();
-    var popRect = popoverEl.getBoundingClientRect();
-    var w = popRect.width || 400;
-    var h = popRect.height || 280;
-    var left = rect.right - w;
-    var top = rect.bottom + 8;
-    if (left < 12) left = 12;
-    if (left + w > window.innerWidth - 12) left = window.innerWidth - w - 12;
-    if (top + h > window.innerHeight - 12) top = rect.top - h - 8;
-    if (top < 12) top = 12;
-    popoverEl.style.left = left + "px";
-    popoverEl.style.top = top + "px";
+  function parseProjectNamesAttr(raw) {
+    if (!raw) return null;
+    try {
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : null;
+    } catch (e) {
+      return null;
+    }
   }
 
-  function openPopover(anchor, kind, projectName) {
+  function openPopover(anchor, kind, projectName, projectNames) {
     ensureStyles();
     ensurePopover();
     openAnchor = anchor;
     var label = kind === "video" ? "巡查视频" : "巡查照片";
+    var media = getProjectMedia(projectName);
+    var list = kind === "video" ? media.videos || [] : media.photos || [];
     document.getElementById("patrol-media-popover-title").textContent = label;
-    document.getElementById("patrol-media-popover-sub").textContent = projectName || "";
-    document.getElementById("patrol-media-popover-body").innerHTML = renderPopoverGrid(kind, projectName);
+    document.getElementById("patrol-media-popover-sub").textContent = "共 " + list.length + " 项";
+    document.getElementById("patrol-media-popover-body").innerHTML = renderPopoverGrid(
+      kind,
+      projectName,
+      projectNames
+    );
     popoverEl.classList.add("is-open");
-    positionPopover(anchor);
-    requestAnimationFrame(function () {
-      positionPopover(anchor);
-    });
+    popoverEl.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
   }
 
   function closePopover() {
-    if (popoverEl) popoverEl.classList.remove("is-open");
+    if (popoverEl) {
+      popoverEl.classList.remove("is-open");
+      popoverEl.setAttribute("aria-hidden", "true");
+    }
+    document.body.style.overflow = "";
     openAnchor = null;
   }
 
-  function openItemPreview(kind, projectName, index) {
+  function openItemPreview(kind, projectName, index, projectLabel) {
     var media = getProjectMedia(projectName);
     var list = kind === "video" ? media.videos || [] : media.photos || [];
     var item = list[index];
     if (!item) return;
+    var displayName = projectLabel || projectName || "";
     if (global.WHFlightReportModal && global.WHFlightReportModal.openMediaPreview) {
       if (kind === "video") {
         var v = typeof item === "string" ? { url: item, poster: item, title: "巡查视频" } : item;
@@ -335,14 +397,14 @@
           kind: "video",
           url: v.url,
           poster: v.poster,
-          title: v.title || "巡查视频",
+          title: displayName || v.title || "巡查视频",
         });
       } else {
         var url = typeof item === "string" ? item : item.url;
         WHFlightReportModal.openMediaPreview({
           kind: "image",
           url: normalizePhotoUrl(url, 1200),
-          title: "巡查照片",
+          title: displayName || "巡查照片",
         });
       }
       return;
@@ -359,10 +421,11 @@
         e.stopPropagation();
         var kind = expandBtn.getAttribute("data-media-kind") || "photo";
         var projectName = expandBtn.getAttribute("data-project-name") || "";
+        var projectNames = parseProjectNamesAttr(expandBtn.getAttribute("data-project-names"));
         if (popoverEl && popoverEl.classList.contains("is-open") && openAnchor === expandBtn) {
           closePopover();
         } else {
-          openPopover(expandBtn, kind, projectName);
+          openPopover(expandBtn, kind, projectName, projectNames);
         }
         return;
       }
@@ -372,7 +435,8 @@
         openItemPreview(
           itemBtn.getAttribute("data-media-kind"),
           itemBtn.getAttribute("data-project-name"),
-          Number(itemBtn.getAttribute("data-media-index"))
+          Number(itemBtn.getAttribute("data-media-index")),
+          itemBtn.getAttribute("data-project-label")
         );
       }
     });

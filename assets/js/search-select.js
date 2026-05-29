@@ -94,7 +94,13 @@
     }
 
     function setValue(val) {
-      hidden.value = val || "";
+      var next = val || "";
+      if (hidden.value !== next) {
+        hidden.value = next;
+        hidden.dispatchEvent(new Event("change", { bubbles: true }));
+      } else {
+        hidden.value = next;
+      }
       if (val) {
         valueEl.textContent = val;
         valueEl.classList.remove("is-placeholder");

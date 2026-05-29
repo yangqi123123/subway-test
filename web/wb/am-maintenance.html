@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
   <style>
     .mm-toolbar-btn { min-width: 88px; height: 32px; border-radius: 6px; font-size: 12px; font-weight: 600; }
     .mm-op-btn { color: #38bdf8; font-size: 12px; }
@@ -18,29 +19,31 @@
       inset: 0;
       background: rgba(2, 8, 23, 0.72);
       display: none;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      z-index: 80;
-      padding: 20px;
+      z-index: 1200;
+      padding: calc(var(--header-h, 64px) + 16px) 20px 32px;
       box-sizing: border-box;
-      overflow: hidden;
+      overflow-y: auto;
     }
     .mm-modal-mask.show { display: flex; }
     .mm-modal {
       width: min(960px, calc(100vw - 40px));
+      margin: 0 auto;
+      flex-shrink: 0;
       background: #071b33;
       border: 1px solid rgba(34, 211, 238, 0.22);
       border-radius: 10px;
       box-shadow: 0 18px 56px rgba(0, 0, 0, 0.45);
     }
     .mm-modal:not(.mm-modal--form) {
-      max-height: min(88vh, calc(100vh - 40px));
+      max-height: calc(100vh - var(--header-h, 64px) - 48px);
       overflow: auto;
     }
     .mm-modal--form {
       display: flex;
       flex-direction: column;
-      max-height: min(88vh, calc(100vh - 40px));
+      max-height: calc(100vh - var(--header-h, 64px) - 48px);
       overflow: hidden;
     }
     .mm-modal__head,
@@ -61,87 +64,166 @@
     .mm-label { display: block; margin-bottom: 6px; font-size: 12px; color: #9cc6df; }
     .mm-required::before { content: "*"; color: #fb7185; margin-right: 3px; }
     .mm-readonly { min-height: 34px; display: flex; align-items: center; padding: 0 12px; }
+    .disease-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+    .disease-layout__right { position: sticky; top: 72px; align-self: start; width: 300px; max-height: calc(100dvh - 88px); display: flex; flex-direction: column; gap: 10px; }
+    .disease-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .disease-stat-card { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.22); background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88)); }
+    .disease-stat-card__icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+    .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
+    .disease-filter-panel, .disease-quick-panel { display: flex; flex-direction: column; border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.2); background: rgba(8, 15, 35, 0.78); }
+    .disease-panel-title { font-size: 12px; font-weight: 600; color: #e2f5ff; margin: 0; padding: 8px 10px 7px; border-bottom: 1px solid rgba(34, 211, 238, 0.12); background: rgba(8, 15, 35, 0.92); }
+    .disease-panel-body { padding: 8px 10px 10px; }
+    .disease-filter-panel .disease-panel-body { display: flex; flex-direction: column; gap: 6px; }
+    .disease-filter-panel label { display: flex; flex-direction: column; gap: 3px; margin: 0; font-size: 10px; }
+    .disease-filter-panel label > span:first-child { color: #94a3b8; }
+    .disease-filter-panel .wh-input { height: 26px !important; min-height: 26px; font-size: 11px; padding: 0 6px; }
+    .disease-filter-actions { display: flex; gap: 6px; margin-top: 4px; padding-top: 6px; border-top: 1px solid rgba(34, 211, 238, 0.1); }
+    .disease-filter-actions button { flex: 1; padding-top: 4px; padding-bottom: 4px; font-size: 11px; }
+    .disease-list-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+    .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+    .disease-quick-link { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px; margin-bottom: 5px; border-radius: 6px; border: 1px solid rgba(34, 211, 238, 0.14); background: rgba(15, 23, 42, 0.45); color: #e2f5ff; font-size: 11px; text-decoration: none; }
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover { border-color: rgba(34, 211, 238, 0.4); background: rgba(34, 211, 238, 0.08); color: #fff; }
+    .disease-quick-link.is-active { border-color: rgba(34, 211, 238, 0.55); background: rgba(34, 211, 238, 0.12); color: #a5f3fc; }
+    .disease-quick-link i { width: 16px; text-align: center; color: #67e8f9; font-size: 12px; }
+    @media (max-width: 1400px) { .disease-layout { grid-template-columns: 1fr; } .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .disease-layout__right { position: static; width: 100%; max-height: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } }
+    @media (max-width: 768px) { .disease-stats { grid-template-columns: 1fr; } .disease-layout__right { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="am-maintenance" data-wb-view="page">
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
-    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
-      <span class="text-slate-600">/</span>
-      <span>我的工作台</span>
-      <span class="text-slate-600">/</span>
-      <span class="text-cyan-50 font-semibold tracking-wide">维护与检修记录</span>
-    </nav>
-
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
-      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">维护与检修列表</h1>
-      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">设备维修记录原型</span>
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">维修与检修记录</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">维修与检修面板</span>
     </div>
 
-    <section class="neon-panel neon-panel--tight p-3 mb-3">
-      <div class="flex flex-wrap items-end justify-between gap-3">
-        <div class="min-w-[320px] flex-1 max-w-[720px]">
-          <label class="wh-filter-label block mb-1">设备编号 / 设备名称 / 设备SN</label>
-          <input id="search-keyword" class="wh-input mm-search w-full px-3" placeholder="请输入设备编号/设备名称/维修内容关键词" />
-        </div>
-        <div class="min-w-[148px]">
-          <label class="wh-filter-label block mb-1">维护类型</label>
-          <select id="search-type" class="wh-input mm-search w-full px-2">
-            <option value="">全部</option>
-            <option>故障处理</option>
-            <option>定期检修</option>
-          </select>
-        </div>
-        <div class="min-w-[148px]">
-          <label class="wh-filter-label block mb-1">维护状态</label>
-          <select id="search-status" class="wh-input mm-search w-full px-2">
-            <option value="">全部</option>
-            <option>已完成</option>
-            <option>进行中</option>
-          </select>
-        </div>
-        <div class="flex gap-2">
-          <button id="search-btn" type="button" class="mm-toolbar-btn wh-btn-primary">搜索</button>
-          <button id="reset-btn" type="button" class="mm-toolbar-btn wh-btn-ghost">重置</button>
-          <button id="export-btn" type="button" class="mm-toolbar-btn wh-btn-ghost">导出</button>
-          <button id="add-btn" type="button" class="mm-toolbar-btn wh-btn-primary">新增</button>
-        </div>
-      </div>
-    </section>
+    <section id="maintenance-list-view">
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="维修与检修统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-clipboard-list"></i></div>
+              <div>
+                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">记录总数</div>
+                <div class="disease-stat-card__trend">当前列表</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-circle-check"></i></div>
+              <div>
+                <div id="stat-done" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">已完成</div>
+                <div class="disease-stat-card__trend">闭环记录</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-spinner"></i></div>
+              <div>
+                <div id="stat-progress" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">进行中</div>
+                <div class="disease-stat-card__trend">待完成</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+              <div>
+                <div id="stat-fault" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">故障处理</div>
+                <div class="disease-stat-card__trend">维修类型</div>
+              </div>
+            </div>
+          </div>
 
-    <section class="wh-table-shell bg-slate-950/35">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left">
-          <thead>
-            <tr>
-              <th class="px-3">记录编号</th>
-              <th class="px-3">关联设备</th>
-              <th class="px-3">维修类型</th>
-              <th class="px-3">维护内容摘要</th>
-              <th class="px-3">更换部件</th>
-              <th class="px-3">责任人</th>
-              <th class="px-3">开始维修时间</th>
-              <th class="px-3">完成维修时间</th>
-              <th class="px-3">状态</th>
-              <th class="px-3">操作</th>
-            </tr>
-          </thead>
-          <tbody id="table-body"></tbody>
-        </table>
-      </div>
-      <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
-        <span>共 <b id="total-count" class="text-cyan-200">0</b> 条</span>
-        <div class="flex items-center gap-2 flex-wrap">
-          <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-left"></i></button>
-          <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary" type="button">1</button>
-          <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-right"></i></button>
-          <select class="wh-input px-2 py-1 text-[11px]">
-            <option>10 条/页</option>
-          </select>
-          <span>跳至</span>
-          <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
-          <span>页</span>
+          <div class="disease-list-area">
+            <div class="disease-list-toolbar">
+              <button id="add-btn" type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary">
+                <i class="fa-solid fa-plus mr-1"></i>新增
+              </button>
+              <button id="export-btn" type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">
+                <i class="fa-solid fa-file-export mr-1"></i>导出
+              </button>
+            </div>
+            <div class="wh-table-shell bg-slate-950/35">
+              <div class="am-table-wrap overflow-x-auto">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr>
+                      <th class="px-3">记录编号</th>
+                      <th class="px-3">关联设备</th>
+                      <th class="px-3">维修类型</th>
+                      <th class="px-3">维护内容摘要</th>
+                      <th class="px-3">更换部件</th>
+                      <th class="px-3">责任人</th>
+                      <th class="px-3">开始维修时间</th>
+                      <th class="px-3">完成维修时间</th>
+                      <th class="px-3">状态</th>
+                      <th class="px-3 disease-col-actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-body"></tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+                <span>共 <b id="table-total" class="text-cyan-200">0</b> 条</span>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-left"></i></button>
+                  <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary" type="button">1</button>
+                  <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-right"></i></button>
+                  <select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select>
+                  <span>跳至</span>
+                  <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+                  <span>页</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label>
+                <span>设备编号 / 名称 / SN</span>
+                <input id="search-keyword" class="wh-input w-full" placeholder="请输入设备编号/设备名称/维修内容关键词" />
+              </label>
+              <label>
+                <span>维护类型</span>
+                <select id="search-type" class="wh-input w-full px-2">
+                  <option value="">全部</option>
+                  <option>故障处理</option>
+                  <option>定期检修</option>
+                </select>
+              </label>
+              <label>
+                <span>维护状态</span>
+                <select id="search-status" class="wh-input w-full px-2">
+                  <option value="">全部</option>
+                  <option>已完成</option>
+                  <option>进行中</option>
+                </select>
+              </label>
+              <div class="disease-filter-actions">
+                <button id="search-btn" type="button" class="wh-btn-primary">搜索</button>
+                <button id="reset-btn" type="button" class="wh-btn-ghost">重置</button>
+              </div>
+            </div>
+          </div>
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body">
+              <a class="disease-quick-link is-active" data-quick-href="wb/am-maintenance.html" href="am-maintenance.html"><i class="fa-solid fa-screwdriver-wrench"></i><span>维修与检修记录</span></a>
+              <a class="disease-quick-link" data-quick-href="wb/am-flight-log.html" href="am-flight-log.html"><i class="fa-solid fa-plane"></i><span>飞行日志记录</span></a>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
   </div>
@@ -393,10 +475,32 @@
       $(id).classList.remove("show");
     }
 
+    function updateMaintenanceStats(list) {
+      var done = 0, progress = 0, fault = 0;
+      list.forEach(function (item) {
+        if (item.status === "已完成") done++;
+        if (item.status === "进行中") progress++;
+        if (item.type === "故障处理") fault++;
+      });
+      $("stat-total").textContent = String(list.length);
+      $("stat-done").textContent = String(done);
+      $("stat-progress").textContent = String(progress);
+      $("stat-fault").textContent = String(fault);
+      var totalEl = $("table-total");
+      if (totalEl) totalEl.textContent = String(list.length);
+    }
+
+    function initQuickLinks() {
+      document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
+        var target = anchor.getAttribute("data-quick-href");
+        if (target && typeof whPageHref === "function") anchor.setAttribute("href", whPageHref(target));
+      });
+    }
+
     function renderTable() {
-      $("total-count").textContent = String(filtered.length);
+      updateMaintenanceStats(filtered);
       $("table-body").innerHTML = filtered.map((item, index) => `
-        <tr style="background:${index % 2 === 0 ? "rgba(12,24,48,0.45)" : "rgba(15,32,58,0.55)"}">
+        <tr data-id="${item.id}" style="background:${index % 2 === 0 ? "rgba(12,24,48,0.45)" : "rgba(15,32,58,0.55)"}">
           <td class="px-3 text-slate-100/95 font-mono">${item.id}</td>
           <td class="px-3 text-cyan-300 leading-5"><button type="button" class="mm-op-btn text-left" onclick="showDetail('${item.id}')">${item.device}</button></td>
           <td class="px-3 text-slate-100/95">${item.type}</td>
@@ -406,10 +510,12 @@
           <td class="px-3 text-slate-100/95 whitespace-nowrap">${item.start}</td>
           <td class="px-3 text-slate-100/95 whitespace-nowrap">${item.end || "--"}</td>
           <td class="px-3">${statusHtml(item.status)}</td>
-          <td class="px-3 whitespace-nowrap">
-            <button type="button" class="mm-op-btn mr-3" onclick="showDetail('${item.id}')">详情</button>
-            <button type="button" class="mm-op-btn mr-3" onclick="openEdit('${item.id}')">编辑</button>
+          <td class="px-3 disease-col-actions">
+            <div class="disease-op-actions">
+            <button type="button" class="mm-op-btn" onclick="showDetail('${item.id}')">详情</button>
+            <button type="button" class="mm-op-btn" onclick="openEdit('${item.id}')">编辑</button>
             <button type="button" class="mm-op-btn" onclick="askDelete('${item.id}')">删除</button>
+            </div>
           </td>
         </tr>
       `).join("");
@@ -632,6 +738,17 @@
     window.askDelete = askDelete;
 
     initUploaders();
+    initQuickLinks();
+    function setupMaintenanceRowClick() {
+      if (!window.WHTableRowClick) return window.setTimeout(setupMaintenanceRowClick, 40);
+      WHTableRowClick.bindById("table-body", {
+        onOpenByTr: function (tr) {
+          var id = tr.getAttribute("data-id");
+          if (id) showDetail(id);
+        }
+      });
+    }
+    setupMaintenanceRowClick();
     renderTable();
   </script>
 </body>

@@ -114,9 +114,77 @@
       id: "interval-zhongnan",
       area: "中南医院站-湖北日报站",
       startTime: "2026-03-05 08:14:49",
-      count: 4,
+      count: 5,
       expanded: true,
       projects: [
+        createProject({
+          id: 205,
+          projectName: "梨园站保护区无人机巡线",
+          alarmPosition: "里程 V20+072 左线外侧",
+          alarmArea: "中南医院站-湖北日报站",
+          startTime: "2026-05-13 11:22:18",
+          latestTime: "2026-05-13 11:28:46",
+          lastTime: "2026-05-13 11:28:46",
+          section: "中南医院站-湖北日报站",
+          location: "里程 V20+072 左线外侧",
+          source: "无人机",
+          line: "2号线",
+          flightLine: "2号线",
+          flightRoute: "梨园-中南医院演示航线",
+          flightAirport: "梨园机场",
+          flightDrone: "梨园巡检无人机 M30T",
+          handleMode: "AI",
+          workflowStatus: "未复核",
+          mistaken: "否",
+          type: "疑似机械施工",
+          code: "7.0.348.U",
+          detail: "",
+          locationNote: "无人机巡线识别保护区外侧疑似机械作业，待 AI 复核确认。",
+          latlng: [30.5868, 114.3145],
+          mapCenter: [30.5868, 114.3145],
+          aiAlertId: "UAV-20260513-205",
+          alertTime: "2026-05-13 11:22:18",
+          geoCoord: "114.3145, 30.5868",
+          position: "保护区范围内",
+          riskLevel: "严重",
+          warningMethod: "无人机巡线/全时全域",
+          image: DEFAULT_PHOTOS[2] || DEFAULT_PHOTOS[0],
+          approvalRecords: [
+            {
+              time: "2026-05-13 11:35:20",
+              text: "AI识别审批",
+              falseAlarm: "否",
+              illegalConstruction: "是",
+              riskLevel: "严重",
+              approvalContent: "无人机识别到保护区外侧疑似机械作业，已推送现场核查。",
+            },
+            {
+              time: "2026-05-13 14:20:08",
+              text: "值班员复核审批",
+              falseAlarm: "否",
+              illegalConstruction: "否",
+              riskLevel: "一般",
+              approvalContent: "现场复核为塔吊例行维保作业，已要求施工方加强降噪与围挡管控。",
+            },
+          ],
+          alarmRecord: {
+            code: "7.0.348.U",
+            startTime: "05-13 11:22:18",
+            endTime: "05-13 11:28:46",
+            duration: "6min",
+          },
+          disposalRecord: [
+            { time: "2026-05-13 11:22:18", type: "alarm", text: "无人机巡线识别风险，系统推送告警信息" },
+          ],
+          uavRecord: {
+            time: "2026-05-13 11:28:46",
+            user: "梨园巡检组",
+            mistaken: "否",
+            level: "严重",
+            situation: "无人机航拍可见保护区外侧机械作业面",
+            image: DEFAULT_PHOTOS[2] || DEFAULT_PHOTOS[0],
+          },
+        }),
         createProject({
           id: 201,
           projectName: "金融街六中北项目",
@@ -129,6 +197,7 @@
           location: "里程 V20+066 左线外侧",
           workflowStatus: "未复核",
           handleMode: "AI",
+          line: "2号线",
           detail: "",
           locationNote: "金融街T2北侧围挡外，破拆机械作业面，需持续盯控。",
           latlng: [30.5859, 114.3122],
@@ -578,21 +647,189 @@
     }
   }
 
+  var ALERT_FLIGHT_PREFILL_BY_LINE = {
+    "2号线": {
+      line: "2号线",
+      route: "梨园-中南医院演示航线",
+      airport: "梨园机场",
+      drone: "梨园巡检无人机 M30T",
+    },
+    "5号线": {
+      line: "5号线",
+      route: "青山站周期巡检航线",
+      airport: "青山机场",
+      drone: "青山巡检无人机 M350",
+    },
+    "8号线": {
+      line: "8号线",
+      route: "车辆段日常巡查航线",
+      airport: "车辆段机场",
+      drone: "车辆段无人机 M350",
+    },
+  };
+
+  var reviewProjectSelectInst = null;
+
+  function isUavSourceAlert(project) {
+    return project.source === "无人机";
+  }
+
+  function isAiClassSource(project) {
+    return project.source === "AI" || project.source === "AI+传统";
+  }
+
+  function usesReviewDropdown(project) {
+    return isAiClassSource(project);
+  }
+
+  function collectProjectNameOptions() {
+    var names = [];
+    allProjects().forEach(function (p) {
+      if (p.projectName && names.indexOf(p.projectName) < 0) names.push(p.projectName);
+    });
+    return names.sort(function (a, b) {
+      return a.localeCompare(b, "zh-CN");
+    });
+  }
+
+  function getReviewProjectSelect() {
+    if (!window.WHSearchSelect) return null;
+    if (!reviewProjectSelectInst) {
+      reviewProjectSelectInst = WHSearchSelect.mountById(
+        "review-project-name-select",
+        "请搜索或选择项目名称",
+        collectProjectNameOptions()
+      );
+    }
+    return reviewProjectSelectInst;
+  }
+
+  function resolveFlightPrefill(project) {
+    if (project.flightRoute) {
+      return {
+        line: project.flightLine || project.line || "2号线",
+        route: project.flightRoute,
+        airport: project.flightAirport,
+        drone: project.flightDrone,
+      };
+    }
+    var line = project.line || "2号线";
+    return ALERT_FLIGHT_PREFILL_BY_LINE[line] || ALERT_FLIGHT_PREFILL_BY_LINE["2号线"];
+  }
+
+  function buildAlertFlightPlanName(project) {
+    var time = project.latestTime || project.startTime || "";
+    return (project.projectName || "告警复核") + (time ? " " + time : "");
+  }
+
+  function restoreReviewMenu(menu) {
+    if (!menu || !menu._origParent) return;
+    menu.classList.remove("alert-review-menu--floating", "is-visible");
+    menu.style.left = "";
+    menu.style.top = "";
+    menu._origParent.appendChild(menu);
+  }
+
+  function positionFloatingReviewMenu(wrap) {
+    var menu = wrap.querySelector(".alert-review-menu");
+    var btn = wrap.querySelector('[data-action="review-menu"]');
+    if (!menu || !btn) return;
+    if (!menu._origParent) menu._origParent = wrap;
+    wrap._reviewMenuEl = menu;
+    document.body.appendChild(menu);
+    menu.classList.add("alert-review-menu--floating", "is-visible");
+    var rect = btn.getBoundingClientRect();
+    var gap = 4;
+    var menuW = menu.offsetWidth || 108;
+    var menuH = menu.offsetHeight || 72;
+    var left = rect.right - menuW;
+    var top = rect.bottom + gap;
+    if (top + menuH > window.innerHeight - 8) {
+      top = rect.top - menuH - gap;
+    }
+    left = Math.max(8, Math.min(left, window.innerWidth - menuW - 8));
+    top = Math.max(8, Math.min(top, window.innerHeight - menuH - 8));
+    menu.style.left = left + "px";
+    menu.style.top = top + "px";
+  }
+
+  function closeAllReviewMenus(exceptWrap) {
+    document.querySelectorAll("body > .alert-review-menu").forEach(function (menu) {
+      var parent = menu._origParent;
+      if (exceptWrap && parent === exceptWrap) return;
+      restoreReviewMenu(menu);
+    });
+    document.querySelectorAll(".alert-op-review-wrap.is-open").forEach(function (wrap) {
+      if (exceptWrap && wrap === exceptWrap) return;
+      wrap.classList.remove("is-open");
+      var menu = wrap._reviewMenuEl || wrap.querySelector(".alert-review-menu");
+      if (menu && menu.parentElement === document.body) restoreReviewMenu(menu);
+    });
+  }
+
+  function renderReviewAction(project) {
+    return (
+      '<span class="alert-op-review-wrap">' +
+      '<button type="button" class="alert-op-btn" data-action="review-menu" data-id="' +
+      project.id +
+      '">复核</button>' +
+      '<div class="alert-review-menu" role="menu">' +
+      '<button type="button" class="alert-review-menu__item" data-action="review-manual" data-id="' +
+      project.id +
+      '">人工复核</button>' +
+      '<button type="button" class="alert-review-menu__item" data-action="review-uav" data-id="' +
+      project.id +
+      '">无人机复核</button>' +
+      "</div></span>"
+    );
+  }
+
   function renderActions(project) {
     var s = project.workflowStatus;
+    var isUav = isUavSourceAlert(project);
     var btns = [];
     btns.push('<button type="button" class="alert-op-btn" data-action="detail" data-id="' + project.id + '">详情</button>');
-    if (s === "未复核") {
-      btns.push('<button type="button" class="alert-op-btn" data-action="review" data-id="' + project.id + '">复核</button>');
+    if (isUav || s === "未复核") {
+      if (usesReviewDropdown(project)) btns.push(renderReviewAction(project));
+      else btns.push('<button type="button" class="alert-op-btn" data-action="review" data-id="' + project.id + '">复核</button>');
     }
-    if (s === "已复核") {
+    if (!isUav && s === "已复核") {
       btns.push('<button type="button" class="alert-op-btn" data-action="audit" data-id="' + project.id + '">审核</button>');
     }
     btns.push('<button type="button" class="alert-op-btn" data-action="locate" data-id="' + project.id + '">定位</button>');
-    return btns.join("");
+    return '<div class="disease-op-actions">' + btns.join("") + "</div>";
+  }
+
+  function openAiReviewFor(project) {
+    var aiId = project.aiAlertId || "UAV-" + project.id;
+    var base = typeof whPageHref === "function" ? whPageHref("ai/ai.html") : "ai/ai.html";
+    window.location.href = base + "?id=" + encodeURIComponent(aiId) + "&from=alerts";
+  }
+
+  function openDroneReviewFor(project) {
+    var flight = resolveFlightPrefill(project);
+    var prefill = {
+      name: buildAlertFlightPlanName(project),
+      line: flight.line,
+      route: flight.route,
+      airport: flight.airport,
+      drone: flight.drone,
+      type: "告警复核",
+      lockType: true,
+      submitAudit: "审核通过",
+      submitExec: "未执行",
+      alertId: project.id,
+    };
+    try {
+      sessionStorage.setItem("whFlightPlanAlertPrefill", JSON.stringify(prefill));
+    } catch (e) {}
+    var base =
+      typeof whPageHref === "function" ? whPageHref("map/map-flight-plan.html") : "map-flight-plan.html";
+    window.location.href = base + "?create=1&fromAlert=1";
   }
 
   function renderTree() {
+    closeAllReviewMenus();
     var body = document.getElementById("alert-tree-body");
     if (!body) return;
     var rows = [];
@@ -625,7 +862,7 @@
           "<td><strong>" +
           visibleCount +
           "</strong></td>" +
-          "<td>—</td>" +
+          '<td class="disease-col-actions">—</td>' +
           "</tr>"
       );
 
@@ -673,7 +910,7 @@
             p.image +
             '" alt="" class="h-12 w-16 rounded object-cover border border-white/10" /></td>' +
             '<td class="alert-tree-count-hidden">—</td>' +
-            "<td>" +
+            '<td class="disease-col-actions">' +
             renderActions(p) +
             "</td>" +
             "</tr>"
@@ -699,6 +936,16 @@
       });
     });
 
+    document.querySelectorAll(".alert-tree-row--child").forEach(function (row) {
+      row.style.cursor = "pointer";
+      row.addEventListener("click", function (e) {
+        if (e.target.closest("[data-action], button, a, input, .disease-col-actions")) return;
+        var id = row.getAttribute("data-project-id");
+        var project = findProject(id);
+        if (project) showDetailView(project);
+      });
+    });
+
     document.querySelectorAll("[data-action]").forEach(function (btn) {
       btn.addEventListener("click", function (e) {
         e.stopPropagation();
@@ -707,11 +954,48 @@
         var project = findProject(id);
         if (!project) return;
         if (action === "detail") showDetailView(project);
-        if (action === "review") openReviewFor(project);
+        if (action === "review-menu") {
+          var wrap = btn.closest(".alert-op-review-wrap");
+          if (!wrap) return;
+          var willOpen = !wrap.classList.contains("is-open");
+          closeAllReviewMenus();
+          if (willOpen) {
+            wrap.classList.add("is-open");
+            positionFloatingReviewMenu(wrap);
+          }
+          return;
+        }
+        if (action === "review-manual") {
+          closeAllReviewMenus();
+          openManualReviewFor(project);
+          return;
+        }
+        if (action === "review-uav") {
+          closeAllReviewMenus();
+          openDroneReviewFor(project);
+          return;
+        }
+        if (action === "review") {
+          if (isUavSourceAlert(project)) openAiReviewFor(project);
+          else openReviewFor(project);
+        }
         if (action === "audit") openAuditFor(project);
         if (action === "locate") locateProject(project);
       });
     });
+
+    if (!bindTreeEvents.reviewMenuDocBound) {
+      bindTreeEvents.reviewMenuDocBound = true;
+      document.addEventListener("click", function (e) {
+        if (e.target.closest(".alert-review-menu") || e.target.closest(".alert-op-review-wrap")) return;
+        closeAllReviewMenus();
+      });
+      window.addEventListener("resize", closeAllReviewMenus);
+      var treeWrap = document.querySelector(".alert-tree-wrap");
+      if (treeWrap) treeWrap.addEventListener("scroll", closeAllReviewMenus);
+      var pageRoot = document.getElementById("page-root");
+      if (pageRoot) pageRoot.addEventListener("scroll", closeAllReviewMenus);
+    }
   }
 
   function locateProject(project) {
@@ -731,6 +1015,38 @@
     }
   }
 
+  function applyManualReviewSave(project, data, projectName) {
+    if (!window.WuhanExpertReviewModal) return;
+    var t = window.WuhanExpertReviewModal.nowStr();
+    if (projectName) project.projectName = projectName;
+    project.workflowStatus = "已复核";
+    project.mistaken = data.mistaken;
+    project.detail = data.scene || data.detail;
+    project.review = {
+      falseAlarm: data.falseAlarm,
+      levelAdjust: data.levelAdjust,
+      scene: data.scene,
+      photos: data.photos.slice(),
+      linkedProjectName: projectName || project.projectName,
+    };
+    project.uavRecord = Object.assign({}, project.uavRecord, {
+      time: t.slice(0, 16),
+      mistaken: data.mistaken,
+      level: data.levelAdjust,
+      situation: data.scene,
+      image: data.photos[0] || project.image,
+    });
+    project.image = data.photos[0] || project.image;
+    project.disposalRecord.push({
+      time: t,
+      type: "review",
+      text: (project.uavRecord.user || "值班人员") + "提交现场复核情况",
+      review: true,
+    });
+    renderTree();
+    if (currentAlert && currentAlert.id === project.id) fillDetail(project);
+  }
+
   function openReviewFor(project) {
     if (!window.WuhanExpertReviewModal) return;
     window.WuhanExpertReviewModal.openReview(
@@ -739,34 +1055,33 @@
         levelAdjust: project.review ? project.review.levelAdjust : "一级告警",
         scene: project.review ? project.review.scene : project.detail,
         photos: project.review && project.review.photos ? project.review.photos : [project.image],
+        showProjectSelect: false,
       },
       function (data) {
-        var t = window.WuhanExpertReviewModal.nowStr();
-        project.workflowStatus = "已复核";
-        project.mistaken = data.mistaken;
-        project.detail = data.scene || data.detail;
-        project.review = {
-          falseAlarm: data.falseAlarm,
-          levelAdjust: data.levelAdjust,
-          scene: data.scene,
-          photos: data.photos.slice(),
-        };
-        project.uavRecord = Object.assign({}, project.uavRecord, {
-          time: t.slice(0, 16),
-          mistaken: data.mistaken,
-          level: data.levelAdjust,
-          situation: data.scene,
-          image: data.photos[0] || project.image,
-        });
-        project.image = data.photos[0] || project.image;
-        project.disposalRecord.push({
-          time: t,
-          type: "review",
-          text: (project.uavRecord.user || "值班人员") + "提交现场复核情况",
-          review: true,
-        });
-        renderTree();
-        if (currentAlert && currentAlert.id === project.id) fillDetail(project);
+        applyManualReviewSave(project, data);
+      }
+    );
+  }
+
+  function openManualReviewFor(project) {
+    if (!window.WuhanExpertReviewModal) return;
+    window.WuhanExpertReviewModal.openReview(
+      {
+        falseAlarm: project.review ? project.review.falseAlarm : "非误报",
+        levelAdjust: project.review ? project.review.levelAdjust : "一级告警",
+        scene: project.review ? project.review.scene : project.detail,
+        photos: project.review && project.review.photos ? project.review.photos : [project.image],
+        showProjectSelect: true,
+        projectName: project.projectName,
+        onFormReady: function () {
+          var sel = getReviewProjectSelect();
+          if (sel) sel.setValue(project.projectName || "");
+        },
+      },
+      function (data) {
+        var sel = getReviewProjectSelect();
+        var picked = sel ? sel.getValue() : project.projectName;
+        applyManualReviewSave(project, data, picked);
       }
     );
   }
@@ -796,30 +1111,35 @@
     return '<div class="alert-disposal-empty">暂无处警记录</div>';
   }
 
-  function fillDetail(item) {
-    var noteText = (item.locationNote || "").trim();
-    document.getElementById("alert-detail-grid").innerHTML = [
-      ["项目名称", item.projectName || "—"],
-      ["报警类型", item.type],
-      ["报警区间", item.section],
-      ["位置", item.location],
-      ["测点编码", '<span class="alert-code-tag">' + item.code + "</span>"],
-      ["报警开始时间", item.startTime],
-      ["最新报警时间", item.lastTime],
-      ["处理状态", item.workflowStatus],
-      ["频谱图", "已生成"],
-      [
-        "频谱图操作",
-        '<span class="alert-detail-link">生成</span><a href="map/map-expert.html" class="alert-detail-link">查看</a><span class="alert-detail-link">典型事件标注</span>',
-      ],
-      [
-        "当前位置备注",
-        noteText
-          ? noteText
-          : '<span class="alert-detail-note-empty">暂无备注</span>',
-        "full",
-      ],
-    ]
+  function renderApprovalRecords(item) {
+    if (window.AlertDisposalTimeline && window.AlertDisposalTimeline.renderApproval) {
+      return AlertDisposalTimeline.renderApproval(item);
+    }
+    return '<div class="alert-disposal-empty">暂无审批记录</div>';
+  }
+
+  function buildExpertToolsHref(item) {
+    item = item || {};
+    var params = ["from=alerts"];
+    if (item.id != null) params.push("alertId=" + encodeURIComponent(item.id));
+    var loc = item.section || item.alarmArea || item.location || "";
+    if (loc) params.push("location=" + encodeURIComponent(loc));
+    var base =
+      typeof whPageHref === "function" ? whPageHref("map/map-expert.html") : "map-expert.html";
+    return base + (base.indexOf("?") >= 0 ? "&" : "?") + params.join("&");
+  }
+
+  function formatAlertGeoCoord(item) {
+    if (item.geoCoord) return item.geoCoord;
+    var ll = item.latlng;
+    if (ll && ll.length >= 2) {
+      return ll[1].toFixed(4) + ", " + ll[0].toFixed(4);
+    }
+    return "—";
+  }
+
+  function renderDetailGridRows(rows) {
+    return rows
       .map(function (pair) {
         var fullClass = pair[2] === "full" ? " alert-detail-item--full" : "";
         return (
@@ -833,6 +1153,67 @@
         );
       })
       .join("");
+  }
+
+  function setDetailSideLayout(isUavDetail) {
+    var alarmCard = document.getElementById("record-alarm-card");
+    var uavCard = document.getElementById("record-uav-card");
+    var disposalTitle = document.getElementById("record-disposal-title");
+    var detailShell = document.querySelector(".alert-detail-shell");
+    if (alarmCard) alarmCard.classList.toggle("hidden", !!isUavDetail);
+    if (uavCard) uavCard.classList.remove("hidden");
+    if (disposalTitle) disposalTitle.textContent = isUavDetail ? "审批记录" : "处警记录";
+    if (detailShell) detailShell.classList.toggle("alert-detail-shell--uav", !!isUavDetail);
+  }
+
+  function fillUavSourceDetail(item) {
+    document.getElementById("alert-detail-grid").innerHTML = renderDetailGridRows([
+      ["项目名称", item.projectName || "—"],
+      ["告警来源", item.source || "—"],
+      ["预警时间", item.alertTime || item.latestTime || item.startTime || "—"],
+      [
+        "地理坐标",
+        '<span class="text-[#f8ff4d]">' + formatAlertGeoCoord(item) + "</span>",
+      ],
+      ["位置", item.position || item.alarmArea || item.location || "—"],
+      ["等级", item.riskLevel || item.uavRecord.level || "—"],
+      ["预警方式", item.warningMethod || "无人机巡线/全时全域"],
+    ]);
+    document.getElementById("record-alarm").innerHTML = "";
+    document.getElementById("record-uav").innerHTML =
+      '<div class="alert-uav-shot"><img src="' +
+      ((item.uavRecord && item.uavRecord.image) || item.image) +
+      '" alt="无人机实拍记录" /></div>';
+    document.getElementById("record-disposal").innerHTML = renderApprovalRecords(item);
+  }
+
+  function fillTraditionalDetail(item) {
+    var noteText = (item.locationNote || "").trim();
+    document.getElementById("alert-detail-grid").innerHTML = renderDetailGridRows([
+      ["项目名称", item.projectName || "—"],
+      ["告警来源", item.source || "—"],
+      ["报警类型", item.type],
+      ["报警区间", item.section],
+      ["位置", item.location],
+      ["测点编码", '<span class="alert-code-tag">' + item.code + "</span>"],
+      ["报警开始时间", item.startTime],
+      ["最新报警时间", item.lastTime],
+      ["处理状态", item.workflowStatus],
+      ["频谱图", "已生成"],
+      [
+        "频谱图操作",
+        '<span class="alert-detail-link">生成</span><a href="' +
+          buildExpertToolsHref(item) +
+          '" class="alert-detail-link">查看</a><span class="alert-detail-link">典型事件标注</span>',
+      ],
+      [
+        "当前位置备注",
+        noteText
+          ? noteText
+          : '<span class="alert-detail-note-empty">暂无备注</span>',
+        "full",
+      ],
+    ]);
 
     var alarmRec = getAlarmRecordDisplay(item);
     document.getElementById("record-alarm").innerHTML =
@@ -853,6 +1234,13 @@
       (item.uavRecord.image || item.image) +
       '" alt="无人机实拍记录" /></div>';
     document.getElementById("record-disposal").innerHTML = renderDisposal(item);
+  }
+
+  function fillDetail(item) {
+    var isUavDetail = isUavSourceAlert(item);
+    setDetailSideLayout(isUavDetail);
+    if (isUavDetail) fillUavSourceDetail(item);
+    else fillTraditionalDetail(item);
   }
 
   function showListView() {
@@ -918,7 +1306,57 @@
     if (backBtn) backBtn.addEventListener("click", showListView);
   }
 
+  function closeDetailModal() {
+    var mask = document.getElementById("wh-alert-detail-modal-mask");
+    if (mask) {
+      mask.classList.remove("show");
+      mask.setAttribute("aria-hidden", "true");
+    }
+    if (detailMapApi && detailMapApi.map) {
+      detailMapApi.map.remove();
+      detailMapApi = null;
+    }
+    var mapEl = document.getElementById("alert-detail-map");
+    if (mapEl) mapEl.innerHTML = "";
+  }
+
+  function openDetailModal(item) {
+    if (!item) return false;
+    var mask = document.getElementById("wh-alert-detail-modal-mask");
+    if (!mask) {
+      if (document.getElementById("view-detail")) {
+        showDetailView(item);
+        return true;
+      }
+      return false;
+    }
+    currentAlert = item;
+    fillDetail(item);
+    mountDetailMap(item);
+    mask.classList.add("show");
+    mask.setAttribute("aria-hidden", "false");
+    setTimeout(function () {
+      if (detailMapApi && detailMapApi.map && detailMapApi.map.invalidateSize) {
+        detailMapApi.map.invalidateSize();
+      }
+    }, 80);
+    return true;
+  }
+
+  function initPortalDetailModal() {
+    var mask = document.getElementById("wh-alert-detail-modal-mask");
+    if (!mask) return;
+    mask.addEventListener("click", function (e) {
+      if (e.target === mask) closeDetailModal();
+    });
+    mask.querySelectorAll("[data-action='close-alert-detail-modal']").forEach(function (btn) {
+      btn.addEventListener("click", closeDetailModal);
+    });
+  }
+
   function init() {
+    initPortalDetailModal();
+    if (!document.getElementById("alert-tree-body")) return;
     initListFilters();
     renderTree();
     initSituationMap();
@@ -928,6 +1366,18 @@
     if (queryAlert && new URLSearchParams(window.location.search).get("view") === "detail") {
       showDetailView(queryAlert);
     }
+  }
+
+  var WHMapAlerts = {
+    openDetail: openDetailModal,
+    closeDetail: closeDetailModal,
+    findProject: findProject,
+    createProject: createProject,
+    fillDetail: fillDetail,
+  };
+
+  if (typeof window !== "undefined") {
+    window.WHMapAlerts = WHMapAlerts;
   }
 
   if (document.readyState === "loading") {

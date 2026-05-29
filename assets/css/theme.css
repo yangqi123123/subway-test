@@ -73,6 +73,7 @@ body {
 
 /* 顶栏：允许一级菜单下的绝对定位下拉溢出绘制 */
 .wh-header {
+  z-index: 1200;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(34, 211, 238, 0.12);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -772,4 +773,13 @@ body.wh-main-canvas > .login-shell {
   color: #f1f5f9;
   background: rgba(34, 211, 238, 0.12);
   border-color: rgba(34, 211, 238, 0.45);
+}
+
+/* 全站隐藏页面顶部面包屑 */
+.map-breadcrumb,
+nav.cockpit-crumb,
+nav.neon-panel--tight.map-breadcrumb,
+#page-root > nav.neon-panel--tight:first-child,
+#page-root > nav[data-embed-hide].neon-panel--tight {
+  display: none !important;
 }

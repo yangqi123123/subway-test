@@ -133,6 +133,51 @@
     return html;
   }
 
+  function detailValueHtml(value, multiline) {
+    var text = value === undefined || value === null || value === "" ? "—" : String(value);
+    var cls =
+      "wb-detail-value" +
+      (text === "—" ? " wb-detail-value--empty" : "") +
+      (multiline ? " wb-detail-value--multiline" : "");
+    return '<div class="' + cls + '">' + escapeHtml(text) + "</div>";
+  }
+
+  function detailRowHtml(label, value, full, multiline) {
+    return (
+      '<label class="wb-detail-form-item' +
+      (full ? " wb-detail-form-item--full" : "") +
+      '"><span class="wb-detail-form-label">' +
+      escapeHtml(label) +
+      "：</span>" +
+      detailValueHtml(value, multiline) +
+      "</label>"
+    );
+  }
+
+  function buildMsgTemplateDetailHtml(row) {
+    row = row || {};
+    var html = '<div class="wb-detail-form-grid">';
+    html += detailRowHtml("模板名称", row.templateName, true);
+    html += detailRowHtml("消息类型", row.msgType);
+    if (row.msgType === "空域许可消息") {
+      html += detailRowHtml(
+        "触发条件",
+        "当任意航线的空域许可结束前 " + (row.triggerDays || "—") + " 天时，发送提醒给相关人员",
+        true,
+        true
+      );
+    }
+    html += detailRowHtml("消息内容", row.msgContent, true, true);
+    html += detailRowHtml("创建人", row.createBy);
+    html += detailRowHtml("创建时间", row.createTime);
+    html +=
+      '<label class="wb-detail-form-item"><span class="wb-detail-form-label">启用/禁用：</span>' +
+      detailValueHtml(row.status ? "启用" : "禁用") +
+      "</label>";
+    html += "</div>";
+    return html;
+  }
+
   function syncMsgTemplateForm(forceDefaultContent) {
     var typeSelect = document.getElementById("wb-msg-type-select");
     var triggerWrap = document.getElementById("wb-msg-trigger-wrap");
@@ -202,6 +247,7 @@
     MSG_TYPES: MSG_TYPES,
     PRESETS: PRESETS,
     buildMsgTemplateFormHtml: buildMsgTemplateFormHtml,
+    buildMsgTemplateDetailHtml: buildMsgTemplateDetailHtml,
     mountMsgTemplateForm: mountMsgTemplateForm,
     validateMsgTemplateForm: validateMsgTemplateForm,
     collectMsgTemplateFormData: collectMsgTemplateFormData,

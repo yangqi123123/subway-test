@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/wb-system.css" />
   <link rel="stylesheet" href="../../assets/css/ops-topology-scene.css" />
   <style>
     .ops-page {
@@ -14,31 +15,13 @@
       --ops-border: rgba(34, 211, 238, 0.22);
       --ops-panel: rgba(5, 10, 26, 0.92);
     }
-    .ops-toolbar {
+    .disease-filter-dates {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      margin-bottom: 14px;
+      flex-direction: column;
+      gap: 6px;
     }
-    .ops-toolbar h1 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 600;
-      color: #f8fafc;
-      text-shadow: 0 0 20px rgba(34, 211, 238, 0.25);
-    }
-    .ops-server-select {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      color: #9cc6df;
-    }
-    .ops-server-select .wh-input {
-      min-width: 260px;
-      height: 34px;
+    .disease-filter-panel label.disease-filter-span-2 > span:first-child {
+      color: #94a3b8;
     }
     .ops-board {
       display: flex;
@@ -275,26 +258,14 @@
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="am-ops-metro" data-wb-view="page">
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full ops-page px-1 pb-4">
-    <nav class="neon-panel neon-panel--tight mb-3 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
-      <span class="text-slate-600">/</span>
-      <span>我的工作台</span>
-      <span class="text-slate-600">/</span>
-      <span class="text-cyan-50 font-semibold tracking-wide">资源监控</span>
-    </nav>
-
-    <div class="ops-toolbar">
-      <h1>资源监控</h1>
-      <div class="ops-server-select">
-        <label for="ops-server-select">选择服务器</label>
-        <select id="ops-server-select" class="wh-input px-3 text-sm">
-          <option value="metro">地铁信息系统</option>
-          <option value="fulltime">全时全域系统</option>
-          <option value="uav">无人机系统</option>
-        </select>
-      </div>
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">资源监控</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">资源监控面板</span>
     </div>
 
+    <section>
+      <div class="disease-layout">
+        <div class="disease-layout__left">
     <div class="ops-board">
       <div class="ops-board-top">
         <!-- 左上：服务器的拓扑图 -->
@@ -553,8 +524,35 @@
     </div>
 
     <div class="ops-footer">© 2020-2026 All Rights Reserved Wuhan</div>
+        </div>
+
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label class="disease-filter-span-2">
+                <span>时间范围</span>
+                <div class="disease-filter-dates">
+                  <input id="ops-filter-start" type="datetime-local" class="wh-input w-full px-2" value="2026-05-12T00:00" />
+                  <input id="ops-filter-end" type="datetime-local" class="wh-input w-full px-2" value="2026-05-19T23:59" />
+                </div>
+              </label>
+              <div class="disease-filter-actions">
+                <button type="button" id="ops-filter-search" class="wh-btn-primary">搜索</button>
+                <button type="button" id="ops-filter-reset" class="wh-btn-ghost">重置</button>
+              </div>
+            </div>
+          </div>
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body" id="ops-quick-links"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
   </div>
   <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/system-mgmt-quick-links.js"></script>
   <script src="../../assets/js/workbench-mega.js"></script>
   <script src="../../assets/js/shell.js"></script>
   <script>
@@ -624,9 +622,41 @@
         });
       }
 
-      document.getElementById("ops-server-select").addEventListener("change", function (e) {
-        applyServer(e.target.value);
+      function showOpsToast(message) {
+        var box = document.getElementById("ops-toast");
+        if (!box) {
+          box = document.createElement("div");
+          box.id = "ops-toast";
+          box.className =
+            "fixed bottom-5 right-5 z-[1300] hidden rounded bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg";
+          document.body.appendChild(box);
+        }
+        box.textContent = message;
+        box.classList.remove("hidden");
+        clearTimeout(showOpsToast._timer);
+        showOpsToast._timer = setTimeout(function () {
+          box.classList.add("hidden");
+        }, 1600);
+      }
+
+      var DEFAULT_FILTER = { start: "2026-05-12T00:00", end: "2026-05-19T23:59" };
+
+      document.getElementById("ops-filter-search").addEventListener("click", function () {
+        applyServer("metro");
+        showOpsToast("已按时间范围刷新监控数据");
       });
+
+      document.getElementById("ops-filter-reset").addEventListener("click", function () {
+        document.getElementById("ops-filter-start").value = DEFAULT_FILTER.start;
+        document.getElementById("ops-filter-end").value = DEFAULT_FILTER.end;
+        applyServer("metro");
+        showOpsToast("筛选条件已重置");
+      });
+
+      if (window.SystemMgmtQuickLinks) {
+        SystemMgmtQuickLinks.mount(document.getElementById("ops-quick-links"), "wb/am-ops-metro.html");
+      }
+
       applyServer("metro");
     })();
   </script>

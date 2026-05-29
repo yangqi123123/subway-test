@@ -2,11 +2,302 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0;url=in-project.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>项目巡查</title>
-  <script>location.replace("in-project.html");</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/wb-project-layout.css" />
+  <link rel="stylesheet" href="../../assets/css/map-gis.css" />
+  <link rel="stylesheet" href="../../assets/css/map-alerts.css" />
+  <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
+  <link rel="stylesheet" href="../../assets/css/alert-disposal-timeline.css" />
+  <style>
+    .confirm-pop { position:fixed; z-index:120; width:132px; padding:12px 12px 10px; border-radius:4px; background:#fff; box-shadow:0 8px 24px rgba(15,23,42,.28); color:#333; }
+    .confirm-pop.hidden { display:none; }
+    .confirm-pop::after { content:""; position:absolute; left:50%; bottom:-8px; width:14px; height:14px; background:#fff; transform:translateX(-50%) rotate(45deg); }
+    .record-mask { position:fixed; inset:0; z-index:110; display:none; align-items:center; justify-content:center; background:rgba(2,8,23,.72); padding:24px; }
+    .record-mask.show { display:flex; }
+    .patrol-toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(12px); opacity:0; pointer-events:none; z-index:130; padding:8px 16px; border-radius:6px; background:rgba(15,23,42,.92); border:1px solid rgba(34,211,238,.25); color:#e2f5ff; font-size:12px; transition:opacity .2s, transform .2s; }
+    .patrol-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    .patrol-type-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:4px; font-size:10px; border:1px solid rgba(34,211,238,.28); color:#a5f3fc; background:rgba(34,211,238,.08); }
+    .patrol-type-tag--uav { border-color:rgba(96,165,250,.35); color:#93c5fd; background:rgba(59,130,246,.1); }
+    .patrol-type-tag--alert { border-color:rgba(251,191,36,.35); color:#fcd34d; background:rgba(245,158,11,.1); }
+    .patrol-manual-form-dialog { width:min(900px,96vw); max-height:min(90vh,880px); border-radius:8px; background:linear-gradient(180deg,#071525,#020617); border:1px solid rgba(34,211,238,.18); overflow:hidden; display:flex; flex-direction:column; box-shadow:0 24px 80px rgba(0,0,0,.45); }
+    .patrol-manual-form-dialog__head { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid rgba(34,211,238,.12); flex-shrink:0; }
+    .patrol-manual-form-dialog__body { flex:1; min-height:0; overflow:auto; padding:20px 24px 16px; }
+    .patrol-manual-form-dialog__foot { flex-shrink:0; display:flex; justify-content:center; gap:12px; padding:14px 24px 18px; border-top:1px solid rgba(34,211,238,.1); }
+    .patrol-form-label { width:128px; flex:0 0 128px; text-align:right; color:rgba(226,245,255,.88); font-size:12px; line-height:32px; }
+    .patrol-form-label.required::before { content:"*"; color:#fb7185; margin-right:3px; }
+    .upload-tile { width:88px; height:88px; border:1px dashed rgba(34,211,238,.28); border-radius:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; color:#67e8f9; font-size:12px; cursor:pointer; background:rgba(2,8,23,.45); flex-shrink:0; }
+    .upload-tile:hover { border-color:#22d3ee; background:rgba(34,211,238,.08); }
+    .upload-tile input { display:none; }
+    .upload-hint { margin-top:6px; font-size:11px; color:#64748b; line-height:1.5; }
+    .wh-input--readonly { background:rgba(8,47,73,.55); color:#b8d4e8; cursor:not-allowed; }
+    .wh-alert-detail-modal-mask { position:fixed; inset:0; z-index:140; display:none; align-items:center; justify-content:center; padding:16px; background:rgba(2,8,23,.78); }
+    .wh-alert-detail-modal-mask.show { display:flex; }
+    .wh-alert-detail-modal { width:min(1280px,98vw); max-height:94vh; overflow:auto; border-radius:8px; border:1px solid rgba(34,211,238,.18); background:linear-gradient(180deg,#040914 0%,#091426 100%); box-shadow:0 24px 80px rgba(0,0,0,.5); }
+    .wh-alert-detail-modal__head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 18px; border-bottom:1px solid rgba(34,211,238,.12); }
+    .wh-alert-detail-modal__body { padding:16px; }
+    .alert-detail-shell { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:16px; }
+    .alert-detail-map-wrap { position:relative; border:1px solid rgba(148,163,184,.18); background:linear-gradient(180deg,rgba(9,18,36,.96) 0%,rgba(7,14,29,.96) 100%); }
+    .alert-detail-map { height:320px; }
+    .alert-flag { position:absolute; left:14px; top:14px; z-index:500; width:64px; padding:10px 8px 14px; background:#e14c3b; color:#fff; text-align:center; font-size:12px; font-weight:700; line-height:1.3; clip-path:polygon(0 0,100% 0,100% 82%,58% 82%,50% 100%,42% 82%,0 82%); }
+    .alert-side-card { min-height:100px; border:1px solid rgba(148,163,184,.18); background:linear-gradient(180deg,rgba(9,18,36,.96) 0%,rgba(7,14,29,.96) 100%); overflow:hidden; }
+    .alert-side-title { padding:12px 14px; border-bottom:1px solid rgba(34,211,238,.08); font-size:13px; font-weight:700; color:#ecfeff; }
+    .alert-side-title::before { content:""; display:inline-block; width:4px; height:14px; margin-right:8px; border-radius:999px; background:#2d8cf0; vertical-align:-2px; }
+    .alert-detail-block { border:1px solid rgba(148,163,184,.18); background:linear-gradient(180deg,rgba(9,18,36,.96) 0%,rgba(7,14,29,.96) 100%); overflow:hidden; }
+    .alert-detail-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px 20px; padding:16px; }
+    .alert-detail-key { font-size:12px; color:#9cc6df; }
+    .alert-detail-val { margin-top:6px; font-size:13px; color:#f8fafc; line-height:1.5; word-break:break-all; }
+    .alert-side-body { padding:14px; }
+    @media (max-width: 1024px) {
+      .alert-detail-shell { grid-template-columns:1fr; }
+      .alert-detail-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width: 768px) {
+      .alert-detail-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
-<body>
-  <p>正在跳转到项目管理…若未自动跳转，请打开 <a href="in-project.html">项目管理</a>，在列表中点击「巡查」。</p>
+<body data-shell="default" data-top="wb" data-sidebar-key="in-project" data-wb-view="page">
+  <script src="../../assets/js/page-embed-bootstrap.js"></script>
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <section id="patrol-list-view">
+      <div data-embed-hide class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+        <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">项目巡查</h1>
+        <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">项目巡查面板</span>
+      </div>
+
+      <div class="disease-layout disease-layout--fixed-sidebar">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="巡查统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-list-check"></i></div>
+              <div>
+                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">巡查总数</div>
+                <div class="disease-stat-card__trend">全部记录</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-person-walking"></i></div>
+              <div>
+                <div id="stat-manual" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">人工巡查</div>
+                <div class="disease-stat-card__trend">现场巡查</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-helicopter"></i></div>
+              <div>
+                <div id="stat-uav" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">无人机巡查</div>
+                <div class="disease-stat-card__trend">航线巡检</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <div>
+                <div id="stat-alert" class="disease-stat-card__value">0</div>
+                <div class="disease-stat-card__label">全时全域告警</div>
+                <div class="disease-stat-card__trend">AI 告警</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="disease-list-area">
+            <div class="wh-table-shell bg-slate-950/35">
+              <div class="project-table-wrap overflow-x-auto">
+                <table class="project-table min-w-[1280px] w-full text-left text-[11px]">
+                  <thead>
+                    <tr class="bg-slate-950/75">
+                      <th class="px-3 text-cyan-50/95">项目名称</th>
+                      <th class="px-3 text-cyan-50/95">巡查类型</th>
+                      <th class="px-3 text-cyan-50/95">项目进展</th>
+                      <th class="px-3 text-cyan-50/95">巡查照片</th>
+                      <th class="px-3 text-cyan-50/95">巡查视频</th>
+                      <th class="px-3 text-cyan-50/95">更新时间</th>
+                      <th class="px-3 text-cyan-50/95">巡查人/飞手</th>
+                      <th class="px-3 text-cyan-50/95 disease-col-actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="patrol-tbody"></tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-end gap-2 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+                <span>共 <b id="table-total" class="text-cyan-200">0</b> 条</span>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost text-slate-500">&lt;</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-primary">1</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">2</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">3</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">4</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">5</button>
+                <span>...</span>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">69</button>
+                <button type="button" class="min-w-[28px] h-7 rounded wh-btn-ghost">&gt;</button>
+                <select class="wh-input h-7 px-2"><option>10 条/页</option><option>20 条/页</option></select>
+                <span>跳至</span>
+                <input class="wh-input h-7 w-12 px-2 text-center" />
+                <span>页</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel project-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label class="disease-filter-span-2"><span>巡查类型</span>
+                <select id="filter-type" class="wh-input w-full px-2">
+                  <option value="">全部</option>
+                  <option value="人工巡查">人工巡查</option>
+                  <option value="无人机巡查">无人机巡查</option>
+                  <option value="全时全域告警">全时全域告警</option>
+                </select>
+              </label>
+              <label class="disease-filter-span-2"><span>更新时间</span>
+                <div class="disease-filter-dates">
+                  <input id="filter-time-start" type="datetime-local" class="wh-input w-full px-2" />
+                  <input id="filter-time-end" type="datetime-local" class="wh-input w-full px-2" />
+                </div>
+              </label>
+              <label class="disease-filter-span-2"><span>巡查人/飞手</span><input id="filter-operator" class="wh-input w-full px-2" placeholder="请输入巡查人或飞手" /></label>
+              <div class="disease-filter-actions">
+                <button type="button" id="filter-search" class="px-4 py-1.5 rounded text-xs wh-btn-primary flex-1">搜索</button>
+                <button type="button" id="filter-reset" class="px-4 py-1.5 rounded text-xs wh-btn-ghost flex-1">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body">
+              <a class="disease-quick-link" data-quick-href="wb/in-project.html" href="in-project.html"><i class="fa-solid fa-folder-tree"></i><span>项目管理</span></a>
+              <a class="disease-quick-link" data-quick-href="wb/in-project-done.html" href="in-project-done.html"><i class="fa-solid fa-circle-check"></i><span>完工项目</span></a>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <div id="patrol-confirm-pop" class="confirm-pop hidden">
+    <div class="text-[15px] text-slate-700 flex items-center gap-2 mb-3"><i id="patrol-confirm-icon" class="fa-solid fa-star text-amber-400"></i><span id="patrol-confirm-text">确定通过？</span></div>
+    <div class="flex items-center justify-end gap-2 relative z-[1]">
+      <button type="button" id="patrol-confirm-no" class="px-3 py-1.5 text-[13px] border border-slate-300 text-slate-700 bg-white">取消</button>
+      <button type="button" id="patrol-confirm-yes" class="px-3 py-1.5 text-[13px] text-white bg-[#ff5a5f]">确定</button>
+    </div>
+  </div>
+
+  <div id="patrol-record-mask" class="record-mask" aria-hidden="true">
+    <div class="record-dialog" role="dialog" aria-labelledby="patrol-record-title">
+      <div class="record-dialog__head h-12 px-5 flex items-center justify-between gap-3 border-b border-cyan-400/15">
+        <h3 id="patrol-record-title" class="text-base font-semibold text-white m-0">操作记录</h3>
+        <button type="button" class="text-slate-400 hover:text-white text-xl leading-none" data-action="close-patrol-record" aria-label="关闭">×</button>
+      </div>
+      <div id="patrol-record-body" class="record-list p-6"></div>
+    </div>
+  </div>
+
+  <div id="patrol-manual-form-mask" class="record-mask">
+    <div class="patrol-manual-form-dialog" role="dialog" aria-labelledby="patrol-manual-form-title">
+      <div class="patrol-manual-form-dialog__head">
+        <h3 id="patrol-manual-form-title" class="text-white font-semibold text-sm m-0">编辑人工巡查记录</h3>
+        <button type="button" class="text-slate-400 hover:text-white text-xl leading-none" data-action="close-manual-form" aria-label="关闭">×</button>
+      </div>
+      <div class="patrol-manual-form-dialog__body">
+        <div class="max-w-[820px] mx-auto space-y-4 text-xs">
+          <div class="flex items-center gap-4"><label class="patrol-form-label required">编号：</label><input id="pm-f-id" type="text" class="wh-input wh-input--readonly h-8 w-[320px] px-2" readonly tabindex="-1" placeholder="自动生成" /></div>
+          <div class="flex items-center gap-4"><label class="patrol-form-label required">所属线路：</label><select id="pm-f-line" class="wh-input h-8 w-[320px] px-2"><option value="">请选择</option><option value="8号线">8号线</option><option value="2号线">2号线</option><option value="7号线">7号线</option></select></div>
+          <div class="flex items-center gap-4"><label class="patrol-form-label required">上下行：</label><select id="pm-f-direction" class="wh-input h-8 w-[320px] px-2"><option value="">请选择</option><option value="上行">上行</option><option value="下行">下行</option></select></div>
+          <div class="flex items-center gap-4"><label class="patrol-form-label">所在区间：</label><select id="pm-f-section" class="wh-input h-8 w-[320px] px-2"><option value="">请选择</option><option value="水果湖-洪山路">水果湖-洪山路</option><option value="洪山路-小洪山">洪山路-小洪山</option><option value="洪山路~小洪山">洪山路~小洪山</option></select></div>
+          <div class="flex items-center gap-4"><label class="patrol-form-label">站点：</label><select id="pm-f-station" class="wh-input h-8 w-[320px] px-2"><option value="">请选择</option><option value="洪山路">洪山路</option><option value="小洪山">小洪山</option></select></div>
+          <div class="flex items-center gap-4"><label class="patrol-form-label required">所在项目：</label><select id="pm-f-project" class="wh-input h-8 flex-1 max-w-[560px] px-2"><option value="">请选择项目</option><option value="八一路102号水表改迁">八一路102号水表改迁</option><option value="新建商业文化设施项目">新建商业文化设施项目</option><option value="洪山路至小洪山商业公寓项目">洪山路至小洪山商业公寓项目</option></select></div>
+          <div class="flex items-center gap-4"><label class="patrol-form-label required">巡查日期：</label><input id="pm-f-patrol-date" class="wh-input h-8 w-[320px] px-2" placeholder="巡查日期" /></div>
+          <div class="flex items-start gap-4">
+            <label class="patrol-form-label pt-2">巡查照片：</label>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap gap-3 items-start">
+                <label class="upload-tile"><i class="fa-solid fa-plus text-lg"></i><span>上传</span><input id="pm-f-photo-input" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif" /></label>
+                <div id="pm-f-photo-list" class="flex flex-wrap gap-2 flex-1 min-w-0 text-[11px] text-slate-400">暂无上传</div>
+              </div>
+              <p class="upload-hint">支持 JPG、PNG、WEBP、GIF，最多上传 9 张，单张不超过 20MB</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <label class="patrol-form-label pt-2">巡查视频：</label>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap gap-3 items-start">
+                <label class="upload-tile"><i class="fa-solid fa-plus text-lg"></i><span>上传</span><input id="pm-f-video-input" type="file" multiple accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" /></label>
+                <div id="pm-f-video-list" class="flex flex-wrap gap-2 flex-1 min-w-0 text-[11px] text-slate-400">暂无上传</div>
+              </div>
+              <p class="upload-hint">支持 MP4、WEBM、MOV，最多上传 9 个，单个不超过 200MB</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4"><label class="patrol-form-label required">项目进展：</label><textarea id="pm-f-progress" class="wh-input min-h-[86px] flex-1 px-2 py-2" placeholder="请输入项目进展"></textarea></div>
+          <div class="flex items-start gap-4"><label class="patrol-form-label">协调情况及备注：</label><textarea id="pm-f-remark" class="wh-input min-h-[86px] flex-1 px-2 py-2" placeholder="协调情况及备注"></textarea></div>
+        </div>
+      </div>
+      <div class="patrol-manual-form-dialog__foot">
+        <button type="button" class="px-6 py-2 rounded text-xs wh-btn-primary" data-action="save-manual-form">保存</button>
+        <button type="button" class="px-6 py-2 rounded text-xs wh-btn-ghost" data-action="close-manual-form">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="wh-alert-detail-modal-mask" class="wh-alert-detail-modal-mask" aria-hidden="true">
+    <div class="wh-alert-detail-modal" role="dialog" aria-labelledby="wh-alert-detail-title">
+      <div class="wh-alert-detail-modal__head">
+        <h3 id="wh-alert-detail-title" class="text-white font-semibold text-sm m-0">告警详情</h3>
+        <button type="button" class="text-slate-400 hover:text-white text-xl leading-none" data-action="close-alert-detail-modal" aria-label="关闭">×</button>
+      </div>
+      <div class="wh-alert-detail-modal__body">
+        <div class="alert-detail-shell">
+          <div class="min-w-0">
+            <div class="alert-detail-map-wrap">
+              <div class="alert-flag"><i class="fa-solid fa-trophy block mb-2 text-[18px]"></i>疑似钻探<br />施工</div>
+              <div id="alert-detail-map" class="alert-detail-map"></div>
+            </div>
+            <div class="alert-detail-block mt-4">
+              <div class="alert-side-title">告警详情</div>
+              <div class="alert-detail-grid" id="alert-detail-grid"></div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-4" id="alert-detail-side">
+            <div class="alert-side-card" id="record-alarm-card">
+              <div class="alert-side-title">告警记录</div>
+              <div class="alert-side-body" id="record-alarm"></div>
+            </div>
+            <div class="alert-side-card" id="record-uav-card">
+              <div class="alert-side-title">无人机实拍记录</div>
+              <div class="alert-side-body" id="record-uav"></div>
+            </div>
+            <div class="alert-side-card" id="record-disposal-card">
+              <div class="alert-side-title" id="record-disposal-title">处警记录</div>
+              <div class="alert-side-body" id="record-disposal"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="patrol-toast" class="patrol-toast"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/shell.js"></script>
+  <script src="../../assets/js/map-gis.js"></script>
+  <script src="../../assets/js/map-situation-gis.js"></script>
+  <script src="../../assets/js/alert-disposal-timeline.js"></script>
+  <script src="../../assets/js/expert-review-modal.js"></script>
+  <script src="../../assets/js/patrol-media-gallery.js"></script>
+  <script src="../../assets/js/flight-report-modal.js"></script>
+  <script src="../../assets/js/project-operation-log.js"></script>
+  <script src="../../assets/js/in-project-patrol.js"></script>
+  <script src="../../assets/js/map-alerts.js"></script>
 </body>
 </html>

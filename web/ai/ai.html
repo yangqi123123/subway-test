@@ -86,34 +86,6 @@
         font-size: 13px;
         font-weight: 600;
       }
-      .ai-map-frame {
-        position: absolute;
-        inset: 16px;
-        border: 1px solid rgba(77, 231, 255, 0.65);
-        box-shadow: 0 0 20px rgba(77, 231, 255, 0.16), inset 0 0 12px rgba(77, 231, 255, 0.12);
-        pointer-events: none;
-      }
-      .ai-map-corner {
-        position: absolute;
-        width: 52px;
-        height: 14px;
-        border-top: 4px solid #69f5ff;
-      }
-      .ai-map-corner::after {
-        content: "";
-        position: absolute;
-        width: 14px;
-        height: 52px;
-        border-left: 4px solid #69f5ff;
-      }
-      .ai-map-corner.tl { left: -1px; top: -1px; }
-      .ai-map-corner.tl::after { left: 0; top: 0; }
-      .ai-map-corner.tr { right: -1px; top: -1px; transform: scaleX(-1); }
-      .ai-map-corner.tr::after { left: 0; top: 0; }
-      .ai-map-corner.bl { left: -1px; bottom: -1px; transform: scaleY(-1); }
-      .ai-map-corner.bl::after { left: 0; top: 0; }
-      .ai-map-corner.br { right: -1px; bottom: -1px; transform: scale(-1); }
-      .ai-map-corner.br::after { left: 0; top: 0; }
       .ai-media-tab {
         height: 36px;
         padding: 0 16px;
@@ -226,7 +198,7 @@
                 <div class="flex gap-3"><span class="ai-field-label">地理坐标</span><span id="detail-location" class="text-[#f8ff4d]">114.3052, 30.5928</span></div>
                 <div class="flex gap-3 items-center">
                   <span class="ai-field-label shrink-0">对应项目</span>
-                  <input type="text" id="detail-project" class="ai-input flex-1 h-8 px-2 text-sm" placeholder="请输入对应项目" />
+                  <div id="detail-project-select" class="wh-search-select flex-1 min-w-0" data-input-id="detail-project"></div>
                 </div>
                 <div class="flex gap-3"><span class="ai-field-label">位置</span><span id="detail-area">保护区范围内</span></div>
                 <div class="flex gap-3"><span class="ai-field-label">类型</span><span id="detail-type">挖机</span></div>
@@ -282,18 +254,11 @@
           </div>
 
           <div class="absolute inset-0">
-            <img id="risk-image" src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=80" class="w-full h-full object-cover" alt="风险图片" />
-            <img id="risk-video" src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=80" class="w-full h-full object-cover hidden" alt="风险视频" />
+            <img id="risk-image" src="../../assets/images/ai-risk-aerial.png" class="w-full h-full object-cover" alt="风险图片" />
+            <img id="risk-video" src="../../assets/images/ai-risk-aerial.png" class="w-full h-full object-cover hidden" alt="风险视频" />
 
-            <div class="ai-bbox" style="left: 46.8%; top: 47.6%; width: 2.4%; height: 4.3%;">
+            <div class="ai-bbox hidden" aria-hidden="true">
               <div class="ai-bbox-label">excavator: 71%</div>
-            </div>
-
-            <div class="ai-map-frame">
-              <span class="ai-map-corner tl"></span>
-              <span class="ai-map-corner tr"></span>
-              <span class="ai-map-corner bl"></span>
-              <span class="ai-map-corner br"></span>
             </div>
           </div>
         </main>
@@ -302,9 +267,23 @@
 
     <script src="../../assets/js/menu-config.js"></script>
     <script src="../../assets/js/shell.js"></script>
+    <script src="../../assets/js/search-select.js"></script>
     <script>
       (function () {
+        var riskMediaSrc = "../../assets/images/ai-risk-aerial.png";
         var alerts = [
+          {
+            id: "UAV-20260513-205",
+            project: "梨园站保护区无人机巡线",
+            time: "2026-05-13 11:22:18",
+            type: "挖机",
+            level: "严重",
+            levelClass: "ai-grade-2",
+            area: "保护区范围内",
+            location: "114.3145, 30.5868",
+            riskImage: riskMediaSrc,
+            riskVideo: riskMediaSrc,
+          },
           {
             id: "AI-20250407-001",
             project: "金融街六中北项目",
@@ -314,8 +293,8 @@
             levelClass: "ai-grade-1",
             area: "保护区范围内",
             location: "114.3052, 30.5928",
-            riskImage:
-              "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1800&q=80",
+            riskImage: riskMediaSrc,
+            riskVideo: riskMediaSrc,
           },
           {
             id: "AI-20250407-002",
@@ -326,8 +305,8 @@
             levelClass: "ai-grade-2",
             area: "保护区范围内",
             location: "114.3128, 30.6015",
-            riskImage:
-              "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1800&q=80",
+            riskImage: riskMediaSrc,
+            riskVideo: riskMediaSrc,
           },
           {
             id: "AI-20250407-003",
@@ -338,8 +317,8 @@
             levelClass: "ai-grade-3",
             area: "保护区范围外",
             location: "114.3186, 30.6082",
-            riskImage:
-              "https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=1800&q=80",
+            riskImage: riskMediaSrc,
+            riskVideo: riskMediaSrc,
           },
           {
             id: "AI-20250407-004",
@@ -350,8 +329,8 @@
             levelClass: "ai-grade-4",
             area: "保护区范围外",
             location: "114.2891, 30.6344",
-            riskImage:
-              "https://images.unsplash.com/photo-1599707254554-027aeb4deacd?auto=format&fit=crop&w=1800&q=80",
+            riskImage: riskMediaSrc,
+            riskVideo: riskMediaSrc,
           },
         ];
 
@@ -367,7 +346,8 @@
         var detailType = document.getElementById("detail-type");
         var detailLevel = document.getElementById("detail-level");
         var detailLocation = document.getElementById("detail-location");
-        var detailProject = document.getElementById("detail-project");
+        var detailProjectSelect = null;
+        var projectOptions = [];
         var mediaButtons = document.querySelectorAll("[data-media]");
         var riskImage = document.getElementById("risk-image");
         var riskVideo = document.getElementById("risk-video");
@@ -384,17 +364,58 @@
           return isNaN(t.getTime()) ? null : t.getTime();
         }
 
-        function initProjectFilter() {
+        function collectProjectOptions() {
           var names = [];
           alerts.forEach(function (a) {
             if (a.project && names.indexOf(a.project) < 0) names.push(a.project);
           });
-          names.forEach(function (name) {
+          [
+            "光谷广场综合体基坑项目",
+            "武昌滨江总部基地项目",
+            "后湖大道市政管廊项目",
+          ].forEach(function (name) {
+            if (names.indexOf(name) < 0) names.push(name);
+          });
+          return names.sort(function (a, b) {
+            return a.localeCompare(b, "zh-CN");
+          });
+        }
+
+        function initProjectFilter() {
+          projectOptions = collectProjectOptions();
+          projectOptions.forEach(function (name) {
             var opt = document.createElement("option");
             opt.value = name;
             opt.textContent = name;
             filterProject.appendChild(opt);
           });
+        }
+
+        function initDetailProjectSelect() {
+          detailProjectSelect = WHSearchSelect.mountById(
+            "detail-project-select",
+            "请搜索或选择对应项目",
+            projectOptions
+          );
+          var hidden = document.getElementById("detail-project");
+          if (hidden) {
+            hidden.addEventListener("change", function () {
+              var name = detailProjectSelect ? detailProjectSelect.getValue() : "";
+              if (!name || !activeId) return;
+              var current = findById(activeId);
+              if (!current) return;
+              current.project = name;
+              syncProjectToTable(name);
+            });
+          }
+        }
+
+        function syncProjectToTable(name) {
+          var cell = tbody.querySelector('tr[data-id="' + activeId + '"] .col-project');
+          if (cell) {
+            cell.textContent = name;
+            cell.title = name;
+          }
         }
 
         function applyFilter() {
@@ -473,9 +494,10 @@
         }
 
         function clearDetail() {
+          WHSearchSelect.closeAll(null);
           detailTime.textContent = "—";
           detailLocation.textContent = "—";
-          detailProject.value = "";
+          if (detailProjectSelect) detailProjectSelect.setValue("");
           detailArea.textContent = "—";
           detailType.textContent = "—";
           detailLevel.textContent = "—";
@@ -483,6 +505,7 @@
         }
 
         function activateById(id) {
+          WHSearchSelect.closeAll(null);
           var current = findById(id);
           if (!current) return;
           activeId = id;
@@ -491,24 +514,14 @@
           });
           detailTime.textContent = current.time;
           detailLocation.textContent = current.location;
-          detailProject.value = current.project || "";
+          if (detailProjectSelect) detailProjectSelect.setValue(current.project || "");
           detailArea.textContent = current.area;
           detailType.textContent = current.type;
           detailLevel.textContent = current.level;
           detailLevel.className = current.levelClass + " font-semibold";
           if (current.riskImage) riskImage.src = current.riskImage;
+          if (current.riskVideo) riskVideo.src = current.riskVideo || current.riskImage;
         }
-
-        detailProject.addEventListener("change", function () {
-          var current = findById(activeId);
-          if (!current) return;
-          current.project = detailProject.value.trim();
-          var cell = tbody.querySelector('tr[data-id="' + activeId + '"] .col-project');
-          if (cell) {
-            cell.textContent = current.project;
-            cell.title = current.project;
-          }
-        });
 
         tbody.addEventListener("click", function (e) {
           var tr = e.target.closest("tr[data-id]");
@@ -554,7 +567,19 @@
           showToast("已切换到下一条预警");
         });
 
+        function applyEntryFromQuery() {
+          var params = new URLSearchParams(window.location.search);
+          var entryId = params.get("id");
+          if (!entryId) return;
+          var match = alerts.find(function (r) {
+            return r.id === entryId;
+          });
+          if (match) activeId = match.id;
+        }
+
         initProjectFilter();
+        initDetailProjectSelect();
+        applyEntryFromQuery();
         filtered = alerts.slice();
         renderTable();
         if (activeId) activateById(activeId);

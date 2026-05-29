@@ -9,61 +9,102 @@
   <link rel="stylesheet" href="../../assets/css/theme.css" />
   <link rel="stylesheet" href="../../assets/css/dc-chart-toolbar.css" />
   <style>
-    .line-panel { border-radius: 14px; border: 1px solid rgba(34, 211, 238, .14); background: rgba(7, 20, 38, .9); padding: 18px 20px 22px; }
-    .line-chart-title { text-align: center; color: #f8fafc; font-size: 16px; font-weight: 700; }
-    .line-chart-sub { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 6px; }
-    .line-canvas { width: 100%; height: 430px; display: block; }
+    .stats-tab { height: 38px; padding: 0 4px; font-size: 13px; color: #cbd5e1; border-bottom: 2px solid transparent; cursor: pointer; background: transparent; border-top: none; border-left: none; border-right: none; }
+    .stats-tab.active { color: #60a5fa; border-bottom-color: #3b82f6; }
+    .line-panel, .sys-chart-panel { border-radius: 14px; border: 1px solid rgba(34, 211, 238, .14); background: rgba(7, 20, 38, .9); padding: 18px 20px 22px; }
+    .line-chart-title, .sys-chart-title { text-align: center; color: #f8fafc; font-size: 16px; font-weight: 700; }
+    .line-chart-sub, .sys-chart-sub { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 6px; }
+    .line-canvas, .sys-canvas { width: 100%; height: 430px; display: block; }
+    .stats-tab-panel.hidden { display: none; }
+    .stats-tabs-row { display: flex; flex-wrap: wrap; gap: 6px 20px; border-bottom: 1px solid rgba(34, 211, 238, 0.1); margin-bottom: 16px; padding: 0 2px 10px; }
+    .disease-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+    .disease-layout__right { position: sticky; top: 72px; align-self: start; width: 300px; max-height: calc(100dvh - 88px); display: flex; flex-direction: column; gap: 10px; }
+    .disease-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .disease-stat-card { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.22); background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88)); }
+    .disease-stat-card__icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+    .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
+    .disease-filter-panel, .disease-quick-panel { display: flex; flex-direction: column; border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.2); background: rgba(8, 15, 35, 0.78); }
+    .disease-panel-title { font-size: 12px; font-weight: 600; color: #e2f5ff; margin: 0; padding: 8px 10px 7px; border-bottom: 1px solid rgba(34, 211, 238, 0.12); background: rgba(8, 15, 35, 0.92); }
+    .disease-panel-body { padding: 8px 10px 10px; }
+    .disease-filter-panel .disease-panel-body { display: flex; flex-direction: column; gap: 6px; }
+    .disease-filter-panel label { display: flex; flex-direction: column; gap: 3px; margin: 0; font-size: 10px; }
+    .disease-filter-panel label > span:first-child { color: #94a3b8; }
+    .disease-filter-panel .wh-input { height: 26px !important; min-height: 26px; font-size: 11px; padding: 0 6px; }
+    .disease-filter-actions { display: flex; gap: 6px; margin-top: 4px; padding-top: 6px; border-top: 1px solid rgba(34, 211, 238, 0.1); }
+    .disease-filter-actions button { flex: 1; padding-top: 4px; padding-bottom: 4px; font-size: 11px; }
+    .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+    .disease-quick-link { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px; margin-bottom: 5px; border-radius: 6px; border: 1px solid rgba(34, 211, 238, 0.14); background: rgba(15, 23, 42, 0.45); color: #e2f5ff; font-size: 11px; text-decoration: none; }
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover { border-color: rgba(34, 211, 238, 0.4); background: rgba(34, 211, 238, 0.08); color: #fff; }
+    .disease-quick-link.is-active { border-color: rgba(34, 211, 238, 0.55); background: rgba(34, 211, 238, 0.12); color: #a5f3fc; }
+    .disease-quick-link i { width: 16px; text-align: center; color: #67e8f9; font-size: 12px; }
+    @media (max-width: 1400px) { .disease-layout { grid-template-columns: 1fr; } .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .disease-layout__right { position: static; width: 100%; max-height: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } }
+    @media (max-width: 768px) { .disease-stats { grid-template-columns: 1fr; } .disease-layout__right { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body data-shell="default" data-top="st" data-sidebar-key="dc-line-stats">
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
-    <nav class="neon-panel neon-panel--tight mb-4 px-4 py-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-      <span class="text-cyan-400"><i class="fa-solid fa-location-crosshairs"></i></span>
-      <span class="text-slate-600">/</span>
-      <span>数据统计</span>
-      <span class="text-slate-600">/</span>
-      <span class="text-cyan-50 font-semibold tracking-wide">线路项目统计</span>
-    </nav>
-
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
       <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">线路项目统计</h1>
       <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">线路项目统计面板</span>
     </div>
 
-    <section class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-6">
-      <div class="wh-kpi-card text-white flex gap-3 items-start">
-        <div class="wh-kpi-icon text-cyan-300 shrink-0"><i class="fa-solid fa-share-nodes"></i></div>
-        <div class="flex-1 min-w-0 relative z-[1]">
-          <div class="text-[11px] font-medium tracking-wide text-sky-200/75">线路数量</div>
-          <div class="text-2xl font-bold mt-1 leading-tight">12</div>
-        </div>
-      </div>
-      <div class="wh-kpi-card text-white flex gap-3 items-start">
-        <div class="wh-kpi-icon text-cyan-300 shrink-0"><i class="fa-solid fa-location-crosshairs"></i></div>
-        <div class="flex-1 min-w-0 relative z-[1]">
-          <div class="text-[11px] font-medium tracking-wide text-sky-200/75">站点数量</div>
-          <div class="text-2xl font-bold mt-1 leading-tight">317</div>
-        </div>
-      </div>
-      <div class="wh-kpi-card text-white flex gap-3 items-start">
-        <div class="wh-kpi-icon text-cyan-300 shrink-0"><i class="fa-solid fa-bezier-curve"></i></div>
-        <div class="flex-1 min-w-0 relative z-[1]">
-          <div class="text-[11px] font-medium tracking-wide text-sky-200/75">区间数量</div>
-          <div class="text-2xl font-bold mt-1 leading-tight">618</div>
-        </div>
-      </div>
-      <div class="wh-kpi-card text-white flex gap-3 items-start">
-        <div class="wh-kpi-icon text-cyan-300 shrink-0"><i class="fa-regular fa-rectangle-list"></i></div>
-        <div class="flex-1 min-w-0 relative z-[1]">
-          <div class="text-[11px] font-medium tracking-wide text-sky-200/75">项目数量</div>
-          <div class="text-2xl font-bold mt-1 leading-tight">680</div>
-        </div>
-      </div>
-    </section>
+    <section id="line-stats-list-view">
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="线路项目统计概览">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-share-nodes"></i></div>
+              <div>
+                <div id="stat-line" class="disease-stat-card__value">12</div>
+                <div class="disease-stat-card__label">线路数量</div>
+                <div class="disease-stat-card__trend">全网线路</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-location-crosshairs"></i></div>
+              <div>
+                <div id="stat-station" class="disease-stat-card__value">317</div>
+                <div class="disease-stat-card__label">站点数量</div>
+                <div class="disease-stat-card__trend">运营站点</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-bezier-curve"></i></div>
+              <div>
+                <div id="stat-section" class="disease-stat-card__value">618</div>
+                <div class="disease-stat-card__label">区间数量</div>
+                <div class="disease-stat-card__trend">保护区区间</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-regular fa-rectangle-list"></i></div>
+              <div>
+                <div id="stat-project" class="disease-stat-card__value">680</div>
+                <div class="disease-stat-card__label">项目数量</div>
+                <div class="disease-stat-card__trend">在管项目</div>
+              </div>
+            </div>
+          </div>
 
-    <div class="text-lg font-semibold text-white mb-6">Wed Apr 08 2026 15:09:32 GMT+0800 (中国标准时间)</div>
+          <nav class="stats-tabs-row" aria-label="统计图表标签">
+            <button type="button" class="stats-tab active" data-tab="lineProject">线路项目统计</button>
+            <button type="button" class="stats-tab" data-tab="projectType">项目类型</button>
+            <button type="button" class="stats-tab" data-tab="safety">安全协议</button>
+            <button type="button" class="stats-tab" data-tab="daily">当日巡查</button>
+            <button type="button" class="stats-tab" data-tab="weekly">当周巡查</button>
+            <button type="button" class="stats-tab" data-tab="risk">项目风险评估</button>
+            <button type="button" class="stats-tab" data-tab="techReply">技术回函</button>
+          </nav>
 
-    <section class="line-panel">
+          <div class="disease-list-area">
+    <section id="tab-panel-line" class="stats-tab-panel line-panel">
       <div class="dc-chart-toolbar-row">
         <div class="dc-chart-legend">
           <span class="dc-chart-legend-item"><span class="dc-chart-legend-dot" style="background:#2dd4bf"></span>一般项目</span>
@@ -80,6 +121,78 @@
         <div id="line-chart-table" class="dc-chart-table-wrap"></div>
       </div>
     </section>
+
+    <section id="tab-panel-system" class="stats-tab-panel sys-chart-panel hidden">
+      <div class="dc-chart-toolbar-row">
+        <div id="system-chart-legend" class="dc-chart-legend"></div>
+        <div class="dc-chart-tools-slot">
+          <div id="system-chart-tools"></div>
+        </div>
+      </div>
+      <div id="chart-title" class="sys-chart-title">项目类型图</div>
+      <div id="chart-sub" class="sys-chart-sub">总计701个项目</div>
+      <div class="dc-chart-stage">
+        <canvas id="system-chart" class="sys-canvas dc-chart-canvas" width="1680" height="430"></canvas>
+        <div id="system-chart-table" class="dc-chart-table-wrap"></div>
+      </div>
+    </section>
+          </div>
+        </div>
+
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label>
+                <span>所属线路</span>
+                <select id="filter-line" class="wh-input w-full px-2">
+                  <option value="">全部</option>
+                  <option>1号线</option><option>2号线</option><option>3号线</option><option>4号线</option>
+                  <option>5号线</option><option>6号线</option><option>7号线</option><option>8号线</option>
+                  <option>11号线</option><option>16号线</option><option>19号线</option><option>阳逻线</option>
+                </select>
+              </label>
+              <label>
+                <span>所属区间</span>
+                <select id="filter-section" class="wh-input w-full px-2">
+                  <option value="">全部</option>
+                  <option>洪山路~小洪山</option>
+                  <option>松槐路~天阳大道</option>
+                  <option>光谷五路~花山河</option>
+                  <option>武昌站~螃蟹岬</option>
+                  <option>青山站~武汉站东</option>
+                </select>
+              </label>
+              <label>
+                <span>所属站点</span>
+                <select id="filter-station" class="wh-input w-full px-2">
+                  <option value="">全部</option>
+                  <option>梨园站</option>
+                  <option>中南医院站</option>
+                  <option>车辆段站</option>
+                  <option>青山站</option>
+                  <option>光谷五路站</option>
+                  <option>花山河站</option>
+                </select>
+              </label>
+              <div class="disease-filter-actions">
+                <button type="button" id="filter-search-btn" class="wh-btn-primary">搜索</button>
+                <button type="button" id="filter-reset-btn" class="wh-btn-ghost">重置</button>
+              </div>
+            </div>
+          </div>
+          <div class="disease-quick-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
+            <div class="disease-panel-body">
+              <a class="disease-quick-link is-active" data-quick-href="stats/dc-line-stats.html" href="dc-line-stats.html"><i class="fa-solid fa-chart-line"></i><span>线路项目统计</span></a>
+              <a class="disease-quick-link" data-quick-href="stats/dc-drone-stats.html" href="dc-drone-stats.html"><i class="fa-solid fa-chart-pie"></i><span>无人机数据统计</span></a>
+              <a class="disease-quick-link" data-quick-href="stats/dc-system-stats.html" href="dc-system-stats.html"><i class="fa-solid fa-table"></i><span>全时全域数据统计报表</span></a>
+              <a class="disease-quick-link" data-quick-href="stats/dc-library.html" href="dc-library.html"><i class="fa-solid fa-database"></i><span>资料库</span></a>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
   </div>
 
   <script src="../../assets/js/menu-config.js"></script>
@@ -87,7 +200,14 @@
   <script src="../../assets/js/dc-chart-toolbar.js"></script>
   <script>
     (function () {
-      var lineChartConfig = {
+      function initQuickLinks() {
+        document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
+          var target = anchor.getAttribute("data-quick-href");
+          if (target && typeof whPageHref === "function") anchor.setAttribute("href", whPageHref(target));
+        });
+      }
+
+      var lineChartBase = {
         title: "线路项目统计图",
         sub: "一般项目456个，重点项目224个",
         axisLabel: "线路",
@@ -109,17 +229,260 @@
         ],
       };
 
-      document.getElementById("line-chart-tools").innerHTML = DCChartToolbar.createToolsHtml();
+      function cloneLineChartConfig(cfg) {
+        return {
+          title: cfg.title,
+          sub: cfg.sub,
+          axisLabel: cfg.axisLabel,
+          yLabel: cfg.yLabel,
+          max: cfg.max,
+          labels: cfg.labels.slice(),
+          series: cfg.series.map(function (s) {
+            var copy = Object.assign({}, s);
+            copy.values = s.values.slice();
+            return copy;
+          }),
+        };
+      }
 
-      new DCChartToolbar({
+      function getFilteredLineChartConfig() {
+        var cfg = cloneLineChartConfig(lineChartBase);
+        var line = (document.getElementById("filter-line") && document.getElementById("filter-line").value) || "";
+        var section = (document.getElementById("filter-section") && document.getElementById("filter-section").value) || "";
+        var station = (document.getElementById("filter-station") && document.getElementById("filter-station").value) || "";
+        var hints = [];
+        if (section) hints.push("区间：" + section);
+        if (station) hints.push("站点：" + station);
+        if (hints.length) cfg.sub = hints.join(" · ") + " · " + lineChartBase.sub;
+
+        if (line) {
+          var idx = cfg.labels.indexOf(line);
+          if (idx >= 0) {
+            cfg.labels = [line];
+            cfg.series = cfg.series.map(function (s) {
+              var copy = Object.assign({}, s);
+              copy.values = [s.values[idx]];
+              return copy;
+            });
+            var peak = 0;
+            cfg.series.forEach(function (s) {
+              s.values.forEach(function (v) {
+                if (v > peak) peak = v;
+              });
+            });
+            cfg.max = Math.max(40, Math.ceil(peak / 10) * 10 + 20);
+          }
+        }
+        return cfg;
+      }
+
+      function updateLineChartTitles(cfg) {
+        var titleEl = document.querySelector("#tab-panel-line .line-chart-title");
+        var subEl = document.querySelector("#tab-panel-line .line-chart-sub");
+        if (titleEl) titleEl.textContent = cfg.title;
+        if (subEl) subEl.textContent = cfg.sub;
+      }
+
+      function applyGeoFilter() {
+        var cfg = getFilteredLineChartConfig();
+        updateLineChartTitles(cfg);
+        if (document.getElementById("tab-panel-line") && !document.getElementById("tab-panel-line").classList.contains("hidden")) {
+          lineToolbar.render();
+        }
+      }
+
+      function resetGeoFilter() {
+        ["filter-line", "filter-section", "filter-station"].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.value = "";
+        });
+        updateLineChartTitles(lineChartBase);
+        if (document.getElementById("tab-panel-line") && !document.getElementById("tab-panel-line").classList.contains("hidden")) {
+          lineToolbar.render();
+        }
+      }
+
+      var chartConfigs = {
+        projectType: {
+          title: "项目类型图",
+          sub: "总计701个项目",
+          axisLabel: "工程类别",
+          yLabel: "项目数量",
+          max: 150,
+          labels: [
+            "施工项目", "轨土保护区", "地铁保护工程", "委外项目", "桥梁工程", "涉铁工程", "泵站", "检修工程",
+            "监测工程", "临铁施工工程", "拆除项目", "围栏封闭&机电工程", "桥改、扩建", "道路（跨）穿轨道路",
+            "占用道路工程", "零散劳务、站厅工程", "采空沉降工程",
+          ],
+          series: [
+            {
+              name: "项目数量",
+              values: [61, 41, 59, 83, 14, 148, 115, 12, 23, 13, 22, 24, 27, 31, 8, 18, 2],
+              colors: [
+                "#5a72c8", "#91cb74", "#f7c85a", "#f0625f", "#78c6df", "#44aa77", "#ff874d", "#a56cc1",
+                "#d36cc2", "#f0b93f", "#ff7a59", "#61a4b7", "#cd7b58", "#c9332e", "#3d566e", "#5870c4", "#8bc47c",
+              ],
+            },
+          ],
+        },
+        safety: {
+          title: "安全协议图",
+          sub: "总计701个项目",
+          axisLabel: "签订状态",
+          yLabel: "项目数量",
+          max: 400,
+          labels: ["签订协议", "未签订协议"],
+          series: [
+            { name: "项目数量", values: [303, 398], colors: ["#5a72c8", "#91cb74"] },
+          ],
+        },
+        daily: {
+          title: "日巡查统计图",
+          sub: "总计43次巡查记录",
+          axisLabel: "项目类型",
+          yLabel: "巡查数量",
+          max: 30,
+          defaultBarLayout: "stacked",
+          labels: ["一般项目", "重点项目"],
+          legend: [
+            { name: "无人机巡查", color: "#5a72c8" },
+            { name: "人工巡查", color: "#91cb74" },
+          ],
+          series: [
+            { name: "无人机巡查", values: [18, 10], color: "#5a72c8" },
+            { name: "人工巡查", values: [8, 7], color: "#91cb74" },
+          ],
+        },
+        weekly: {
+          title: "周巡查统计图",
+          sub: "总计462次巡查记录",
+          axisLabel: "项目类型",
+          yLabel: "巡查数量",
+          max: 250,
+          defaultBarLayout: "stacked",
+          labels: ["一般项目", "重点项目"],
+          legend: [
+            { name: "无人机巡查", color: "#5a72c8" },
+            { name: "人工巡查", color: "#91cb74" },
+          ],
+          series: [
+            { name: "无人机巡查", values: [140, 152], color: "#5a72c8" },
+            { name: "人工巡查", values: [86, 84], color: "#91cb74" },
+          ],
+        },
+        risk: {
+          title: "项目风险评估等级图",
+          sub: "总计701个项目",
+          axisLabel: "风险等级",
+          yLabel: "项目数量",
+          max: 600,
+          labels: ["一级", "二级", "三级", "四级", "特级", "无"],
+          series: [
+            {
+              name: "项目数量",
+              values: [31, 18, 28, 7, 66, 551],
+              colors: ["#5a72c8", "#8bc47c", "#f7c85a", "#f0625f", "#6bb2cf", "#44aa77"],
+            },
+          ],
+        },
+        techReply: {
+          title: "技术回函图",
+          sub: "总计701个项目",
+          axisLabel: "回函类型",
+          yLabel: "项目数量",
+          max: 400,
+          labels: ["OA流转回复意见", "书面回函"],
+          series: [
+            { name: "项目数量", values: [412, 289], colors: ["#5a72c8", "#91cb74"] },
+          ],
+        },
+      };
+
+      var activeSystemTab = "projectType";
+
+      document.getElementById("line-chart-tools").innerHTML = DCChartToolbar.createToolsHtml();
+      document.getElementById("system-chart-tools").innerHTML = DCChartToolbar.createToolsHtml();
+
+      var lineToolbar = new DCChartToolbar({
         canvas: document.getElementById("line-project-chart"),
         toolsEl: document.getElementById("line-chart-tools"),
         tableWrap: document.getElementById("line-chart-table"),
         fileName: "线路项目统计",
         getConfig: function () {
-          return lineChartConfig;
+          return getFilteredLineChartConfig();
         },
       });
+
+      var systemToolbar = new DCChartToolbar({
+        canvas: document.getElementById("system-chart"),
+        toolsEl: document.getElementById("system-chart-tools"),
+        tableWrap: document.getElementById("system-chart-table"),
+        fileName: "线路项目统计-全时全域",
+        getConfig: function () {
+          return chartConfigs[activeSystemTab];
+        },
+      });
+
+      function renderLegend(config) {
+        var legendEl = document.getElementById("system-chart-legend");
+        if (!legendEl) return;
+        if (!config.legend || !config.legend.length) {
+          legendEl.innerHTML = "";
+          return;
+        }
+        legendEl.innerHTML = config.legend
+          .map(function (item) {
+            return (
+              '<span class="dc-chart-legend-item">' +
+              '<span class="dc-chart-legend-dot" style="background:' + item.color + '"></span>' +
+              item.name +
+              "</span>"
+            );
+          })
+          .join("");
+      }
+
+      function activateSystemTab(key) {
+        activeSystemTab = key;
+        var config = chartConfigs[key];
+        document.getElementById("chart-title").textContent = config.title;
+        document.getElementById("chart-sub").textContent = config.sub;
+        if (config.defaultBarLayout) {
+          systemToolbar.state.barLayout = config.defaultBarLayout;
+          systemToolbar.state.chartType = "bar";
+        }
+        renderLegend(config);
+        systemToolbar.render();
+      }
+
+      function activateTab(key) {
+        var isLine = key === "lineProject";
+        document.querySelectorAll(".stats-tab").forEach(function (btn) {
+          btn.classList.toggle("active", btn.dataset.tab === key);
+        });
+        document.getElementById("tab-panel-line").classList.toggle("hidden", !isLine);
+        document.getElementById("tab-panel-system").classList.toggle("hidden", isLine);
+        if (isLine) {
+          applyGeoFilter();
+        } else {
+          activateSystemTab(key);
+        }
+      }
+
+      document.querySelectorAll(".stats-tab").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          activateTab(btn.dataset.tab);
+        });
+      });
+
+      var filterSearchBtn = document.getElementById("filter-search-btn");
+      var filterResetBtn = document.getElementById("filter-reset-btn");
+      if (filterSearchBtn) filterSearchBtn.addEventListener("click", applyGeoFilter);
+      if (filterResetBtn) filterResetBtn.addEventListener("click", resetGeoFilter);
+
+      initQuickLinks();
+      lineToolbar.render();
+      activateTab("lineProject");
     })();
   </script>
 </body>
