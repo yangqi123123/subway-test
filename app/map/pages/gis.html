@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="gis-mobile-html">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>全景地图</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../../assets/css/map-gis.css" />
+  <link rel="stylesheet" href="../../assets/css/map-gis-mobile.css" />
+</head>
+<body class="gis-mobile-page" data-module="map">
+  <div class="gis-mobile-shell">
+    <header class="miniapp-navbar miniapp-navbar--root">
+      <span class="miniapp-navbar__side" aria-hidden="true"></span>
+      <h1 class="miniapp-navbar__title">全景地图</h1>
+      <span class="miniapp-navbar__side" aria-hidden="true"></span>
+    </header>
+
+    <div class="gis-mobile-map-wrap">
+      <div id="page-root">
+        <div id="map-container" aria-label="GIS 地图"></div>
+
+        <div id="gis-mobile-overlay" class="gis-mobile-overlay" aria-hidden="true"></div>
+
+        <div class="gis-mobile-tools" role="toolbar" aria-label="地图快捷操作">
+          <button type="button" class="gis-mobile-fab" id="gis-mobile-base-btn" aria-label="切换底图" title="地图切换">
+            <i class="fa-solid fa-layer-group"></i>
+          </button>
+          <button type="button" class="gis-mobile-fab" id="gis-mobile-layer-btn" aria-label="图层筛选" aria-expanded="false" title="图层筛选">
+            <i class="fa-solid fa-sliders"></i>
+          </button>
+        </div>
+
+        <aside class="gis-filter-panel gis-mobile-sheet gis-mobile-drawer-closed" aria-label="图层筛选">
+          <div class="gis-panel-head gis-mobile-sheet-head">
+            <div class="gis-detail-title gis-panel-title">图层筛选</div>
+            <button type="button" class="gis-mobile-sheet-close gis-detail-close" data-mobile-drawer-close title="关闭" aria-label="关闭图层筛选">
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div class="gis-filter-search">
+            <div class="gis-sec-head">
+              <span class="gis-sec-title">快速搜索</span>
+            </div>
+            <div class="gis-search-row gis-search-row--open-page">
+              <input type="text" class="gis-input" data-action="search-input" placeholder="输入站点、项目等名称" autocomplete="off" readonly />
+              <button type="button" class="gis-btn-jump" data-action="search-jump">搜索</button>
+            </div>
+          </div>
+
+          <div class="gis-filter-scroll">
+            <section class="gis-sec">
+              <button type="button" class="gis-sec-head gis-sec-head--toggle" data-section-toggle>
+                <span class="gis-sec-title">地图标注</span>
+                <span class="gis-head-switch is-on" data-batch-switch="anno">
+                  <span class="gis-head-switch__text">全部显示</span>
+                  <span class="gis-head-switch__track"><span class="gis-head-switch__thumb"></span></span>
+                  <span class="gis-head-switch__text gis-head-switch__text--off">不显示</span>
+                </span>
+                <i class="fa-solid fa-chevron-down gis-sec-arrow"></i>
+              </button>
+              <div class="gis-sec-body">
+                <div class="gis-tag-row">
+                  <button type="button" class="gis-toggle gis-toggle--on gis-c--station" data-anno="stations">站点</button>
+                  <button type="button" class="gis-toggle gis-toggle--on gis-c--project" data-anno="projects">项目</button>
+                  <button type="button" class="gis-toggle gis-toggle--on gis-c--staff" data-anno="staff">人员</button>
+                  <button type="button" class="gis-toggle gis-toggle--on gis-c--alarm" data-anno="alarms">告警点</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="gis-sec">
+              <button type="button" class="gis-sec-head gis-sec-head--toggle" data-section-toggle>
+                <span class="gis-sec-title">机场与无人机</span>
+                <i class="fa-solid fa-chevron-down gis-sec-arrow"></i>
+              </button>
+              <div class="gis-sec-body">
+                <div class="gis-subblock">
+                  <div class="gis-subtitle">机场</div>
+                  <div class="gis-tag-row gis-tag-row--2">
+                    <button type="button" class="gis-toggle gis-toggle--on gis-c--show" data-airport="show">显示</button>
+                    <button type="button" class="gis-toggle gis-c--hide" data-airport="hide">隐藏</button>
+                  </div>
+                </div>
+                <div class="gis-subblock">
+                  <div class="gis-subtitle">无人机</div>
+                  <div class="gis-tag-row gis-tag-row--2">
+                    <button type="button" class="gis-toggle gis-toggle--on gis-c--show" data-drone="show">显示</button>
+                    <button type="button" class="gis-toggle gis-c--hide" data-drone="hide">隐藏</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="gis-sec">
+              <button type="button" class="gis-sec-head gis-sec-head--toggle" data-section-toggle>
+                <span class="gis-sec-title">巡查区域</span>
+                <span class="gis-head-switch is-on" data-batch-switch="patrol">
+                  <span class="gis-head-switch__text">全部显示</span>
+                  <span class="gis-head-switch__track"><span class="gis-head-switch__thumb"></span></span>
+                  <span class="gis-head-switch__text gis-head-switch__text--off">不显示</span>
+                </span>
+                <i class="fa-solid fa-chevron-down gis-sec-arrow"></i>
+              </button>
+              <div class="gis-sec-body">
+                <div class="gis-tag-row">
+                  <button type="button" class="gis-toggle gis-toggle--on gis-c--patrolled" data-patrol="done">已巡查</button>
+                  <button type="button" class="gis-toggle gis-toggle--on gis-c--topatrol" data-patrol="todo">待巡查</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="gis-sec">
+              <button type="button" class="gis-sec-head gis-sec-head--toggle" data-section-toggle>
+                <span class="gis-sec-title">地铁线路</span>
+                <span class="gis-head-switch is-on" data-batch-switch="metro">
+                  <span class="gis-head-switch__text">全部显示</span>
+                  <span class="gis-head-switch__track"><span class="gis-head-switch__thumb"></span></span>
+                  <span class="gis-head-switch__text gis-head-switch__text--off">不显示</span>
+                </span>
+                <i class="fa-solid fa-chevron-down gis-sec-arrow"></i>
+              </button>
+              <div class="gis-sec-body">
+                <div class="gis-grid-4">
+                  <button type="button" class="gis-line-btn gis-line-btn--active gis-l1" data-metro="l1">1号线</button>
+                  <button type="button" class="gis-line-btn gis-line-btn--active gis-l2" data-metro="l2">2号线</button>
+                  <button type="button" class="gis-line-btn gis-line-btn--active gis-l3" data-metro="l3">3号线</button>
+                  <button type="button" class="gis-line-btn gis-line-btn--active gis-l4" data-metro="l4">4号线</button>
+                  <button type="button" class="gis-line-btn gis-line-btn--active gis-l5" data-metro="l5">5号线</button>
+                  <button type="button" class="gis-line-btn gis-line-btn--active gis-l6" data-metro="l6">6号线</button>
+                  <button type="button" class="gis-line-btn gis-line-btn--active gis-l7" data-metro="l7">7号线</button>
+                  <button type="button" class="gis-line-btn gis-line-btn--active gis-l8" data-metro="l8">8号线</button>
+                  <button type="button" class="gis-line-btn gis-line-btn--active gis-l11" data-metro="l11">11号线</button>
+                  <button type="button" class="gis-line-btn gis-line-btn--active gis-l16" data-metro="l16">16号线</button>
+                  <button type="button" class="gis-line-btn gis-line-btn--active gis-l19" data-metro="l19">19号线</button>
+                  <button type="button" class="gis-line-btn gis-line-btn--active gis-lyl" data-metro="lyl">阳逻线</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="gis-sec gis-sec--collapsed">
+              <button type="button" class="gis-sec-head gis-sec-head--toggle" data-section-toggle>
+                <span class="gis-sec-title">应急资源</span>
+                <span class="gis-head-switch" data-batch-switch="emergency">
+                  <span class="gis-head-switch__text">全部显示</span>
+                  <span class="gis-head-switch__track"><span class="gis-head-switch__thumb"></span></span>
+                  <span class="gis-head-switch__text gis-head-switch__text--off">不显示</span>
+                </span>
+                <i class="fa-solid fa-chevron-down gis-sec-arrow"></i>
+              </button>
+              <div class="gis-sec-body">
+                <div class="gis-grid-2x4">
+                  <button type="button" class="gis-em-btn gis-e1" data-emergency="e1">道岔挤岔</button>
+                  <button type="button" class="gis-em-btn gis-e2" data-emergency="e2">钢轨折断</button>
+                  <button type="button" class="gis-em-btn gis-e3" data-emergency="e3">雨水倒灌</button>
+                  <button type="button" class="gis-em-btn gis-e4" data-emergency="e4">胀轨</button>
+                  <button type="button" class="gis-em-btn gis-e5" data-emergency="e5">道床变形</button>
+                  <button type="button" class="gis-em-btn gis-e6" data-emergency="e6">隧道结构</button>
+                  <button type="button" class="gis-em-btn gis-e7" data-emergency="e7">其他</button>
+                  <button type="button" class="gis-em-btn gis-e8" data-emergency="e8">土建</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </aside>
+
+        <div id="gis-wh-panel" class="gis-wh-panel gis-mobile-sheet hidden" aria-live="polite">
+          <div class="gis-detail-head gis-mobile-sheet-head">
+            <div class="gis-detail-title" id="gis-wh-title">仓库列表</div>
+            <button type="button" class="gis-mobile-sheet-close gis-detail-close" id="gis-wh-close" aria-label="关闭">
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="gis-detail-body gis-mobile-sheet-body" id="gis-wh-body"></div>
+        </div>
+
+        <!-- 供 map-gis.js 底图切换，界面隐藏 -->
+        <div class="gis-toolbar" hidden aria-hidden="true">
+          <button type="button" class="gis-toolbar__btn" data-tool="base" title="地图切换">
+            <i class="fa-solid fa-layer-group" data-base-icon></i>
+            <span>地图切换</span>
+          </button>
+        </div>
+
+        <div id="gis-detail-panel" class="gis-detail-panel gis-mobile-sheet hidden" aria-live="polite">
+          <div class="gis-detail-head gis-mobile-sheet-head">
+            <div class="gis-detail-title" id="gis-detail-title">详情</div>
+            <button type="button" class="gis-mobile-sheet-close gis-detail-close" id="gis-detail-close" aria-label="关闭">
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="gis-detail-body gis-mobile-sheet-body" id="gis-detail-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="../../assets/js/gis-assets-base.js"></script>
+  <script src="../../assets/js/gis-page-boot.js"></script>
+  <script src="../../assets/js/map-gis-mobile.js"></script>
+</body>
+</html>

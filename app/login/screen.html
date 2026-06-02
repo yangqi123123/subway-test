@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>登录</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../assets/css/miniapp.css" />
+  <style>
+    .login-page {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      background: var(--mp-bg);
+    }
+    .login-logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: var(--mp-primary-light);
+      color: var(--mp-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+    .login-title {
+      margin: 0 0 4px;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--mp-text);
+    }
+    .login-sub {
+      margin: 0 0 28px;
+      font-size: 12px;
+      color: var(--mp-text-muted);
+    }
+    .login-form {
+      width: 100%;
+      max-width: 300px;
+    }
+    .login-field {
+      margin-bottom: 14px;
+    }
+    .login-field label {
+      display: block;
+      font-size: 12px;
+      color: var(--mp-text-muted);
+      margin-bottom: 6px;
+    }
+    .login-field input {
+      width: 100%;
+      height: 44px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid var(--mp-border);
+      font-size: 14px;
+      color: var(--mp-text);
+      background: var(--mp-bg);
+    }
+    .login-field input:focus {
+      outline: none;
+      border-color: var(--mp-primary);
+      box-shadow: 0 0 0 3px var(--mp-primary-light);
+    }
+    .login-submit {
+      width: 100%;
+      height: 44px;
+      margin-top: 8px;
+      border: none;
+      border-radius: 10px;
+      background: var(--mp-primary);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .login-submit:active {
+      background: var(--mp-primary-dark);
+    }
+    .login-hint {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--mp-text-muted);
+    }
+  </style>
+</head>
+<body class="miniapp-page">
+  <div class="login-page">
+    <div class="login-logo"><i class="fa-solid fa-train-subway"></i></div>
+    <h1 class="login-title">武汉地铁保护区</h1>
+    <p class="login-sub">移动端 · 原型登录</p>
+    <form class="login-form" id="login-form" action="../index.html" method="get">
+      <div class="login-field">
+        <label for="login-user">账号</label>
+        <input id="login-user" type="text" placeholder="请输入账号" value="admin" autocomplete="username" />
+      </div>
+      <div class="login-field">
+        <label for="login-pwd">密码</label>
+        <input id="login-pwd" type="password" placeholder="请输入密码" value="••••••" autocomplete="current-password" />
+      </div>
+      <button type="submit" class="login-submit">登 录</button>
+    </form>
+    <p class="login-hint">演示账号，点击登录进入小程序</p>
+  </div>
+  <script>
+    document.getElementById("login-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      window.top.location.href = "../index.html";
+    });
+  </script>
+</body>
+</html>

@@ -39,7 +39,12 @@
       var d = whWebPageDepth();
       return d === 0 ? "../" : "../".repeat(d + 1);
     }
-    if (/\/app(\/|$)/i.test(path)) return "../";
+    if (/\/app(\/|$)/i.test(path)) {
+      var am = path.match(/\/app\/(.+)/i);
+      if (!am) return "../";
+      var appDepth = am[1].split("/").filter(Boolean).length;
+      return "../".repeat(appDepth);
+    }
     return "";
   }
 
@@ -85,6 +90,7 @@
   "in-disease.html": "patrol/in-disease.html",
   "in-manual.html": "patrol/in-manual.html",
   "in-night.html": "patrol/in-night.html",
+  "in-patrol-results.html": "patrol/in-patrol-results.html",
   "in-uav-report.html": "patrol/in-uav-report.html",
   "dc-drone-stats.html": "stats/dc-drone-stats.html",
   "dc-library.html": "stats/dc-library.html",
@@ -173,6 +179,7 @@
         children: [
           { key: "in-uav-report", label: "无人机巡查记录", href: "patrol/in-uav-report.html" },
           { key: "in-manual", label: "人工巡查记录", href: "patrol/in-manual.html" },
+          { key: "in-patrol-results", label: "巡检成果", href: "patrol/in-patrol-results.html" },
         ],
       },
     ],
@@ -234,6 +241,7 @@
             { key: "in-night", label: "夜班作业", href: "patrol/in-night.html" },
             { key: "in-manual", label: "人工巡检记录", href: "patrol/in-manual.html" },
             { key: "in-uav-report", label: "无人机巡检记录", href: "patrol/in-uav-report.html" },
+            { key: "in-patrol-results", label: "巡检成果", href: "patrol/in-patrol-results.html" },
           ],
         },
         {

@@ -1,0 +1,667 @@
+/* 移动端全景 GIS — 布局 + 小程序白底蓝主色风格（业务逻辑仍用 map-gis.js） */
+
+html.gis-mobile-html,
+html.gis-mobile-html body.gis-mobile-page {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body.gis-mobile-page {
+  background: var(--mp-bg, #ffffff);
+  color: var(--mp-text, #1a2332);
+  font-family: "PingFang SC", "PingFang TC", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.gis-mobile-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: var(--mp-bg-subtle, #f4f7fc);
+}
+
+.gis-mobile-shell .miniapp-navbar {
+  flex-shrink: 0;
+  z-index: 1100;
+}
+
+.gis-mobile-map-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.gis-mobile-map-wrap #page-root {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  min-height: 200px;
+  background: var(--mp-bg-subtle, #f4f7fc);
+}
+
+/* 必须显式定高：页面未引入 Tailwind，不能依赖 absolute/inset-0 工具类 */
+body.gis-mobile-page #map-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  z-index: 0;
+}
+
+body.gis-mobile-page #map-container .leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  background: #e8ecf1;
+}
+
+/* 隐藏非核心 */
+body.gis-mobile-page .gis-toolbar,
+body.gis-mobile-page .gis-coord-panel,
+body.gis-mobile-page .gis-hud,
+body.gis-mobile-page .gis-fab,
+body.gis-mobile-page #page-root > .absolute {
+  display: none !important;
+}
+
+:root {
+  --gis-mobile-sheet-h: min(72vh, 520px);
+}
+
+/* 右上角：地图切换 + 图层 */
+.gis-mobile-tools {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1030;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.gis-mobile-fab {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--mp-primary-border, rgba(35, 106, 255, 0.22));
+  background: #fff;
+  color: var(--mp-primary, #236aff);
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--mp-shadow-card, 0 4px 16px rgba(15, 35, 80, 0.06));
+  cursor: pointer;
+  transition: transform 0.2s var(--mp-ease-out, ease), background 0.2s ease, color 0.2s ease;
+}
+
+.gis-mobile-fab:active {
+  transform: scale(0.94);
+}
+
+.gis-mobile-fab[aria-expanded="true"] {
+  background: var(--mp-primary, #236aff);
+  color: #fff;
+  border-color: var(--mp-primary, #236aff);
+  box-shadow: 0 6px 16px rgba(35, 106, 255, 0.32);
+}
+
+/* 底部弹窗：图层 / 详情 / 仓库 — 统一位置与高度 */
+body.gis-mobile-page .gis-mobile-sheet {
+  position: absolute;
+  top: auto !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: var(--gis-mobile-sheet-h) !important;
+  max-height: var(--gis-mobile-sheet-h) !important;
+  border-radius: 16px 16px 0 0;
+  border: 1px solid var(--mp-border-light, #eef2f8);
+  border-bottom: none;
+  background: #fff;
+  box-shadow: 0 -8px 32px rgba(35, 106, 255, 0.12);
+  z-index: 1060;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.28s var(--mp-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+body.gis-mobile-page .gis-mobile-sheet.gis-mobile-drawer-closed,
+body.gis-mobile-page .gis-detail-panel.hidden,
+body.gis-mobile-page .gis-wh-panel.hidden {
+  display: flex !important;
+  transform: translateY(100%);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+body.gis-mobile-page .gis-mobile-sheet:not(.gis-mobile-drawer-closed):not(.hidden) {
+  transform: translateY(0);
+  visibility: visible;
+  pointer-events: auto;
+  animation: gis-mobile-sheet-in 0.28s var(--mp-ease-out, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+body.gis-mobile-page .gis-mobile-sheet-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--mp-border-light, #eef2f8);
+  background: #fff;
+}
+
+body.gis-mobile-page .gis-mobile-sheet-head .gis-detail-title,
+body.gis-mobile-page .gis-mobile-sheet-head .gis-panel-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--mp-text, #1a2332);
+}
+
+body.gis-mobile-page .gis-mobile-sheet-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px 20px;
+  color: var(--mp-text-secondary, #4b5563);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 图层面板：搜索固定，仅下方滚动 */
+body.gis-mobile-page .gis-filter-panel {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+body.gis-mobile-page .gis-filter-search {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--mp-border-light, #eef2f8);
+  background: #fff;
+}
+
+body.gis-mobile-page .gis-filter-search .gis-sec-head {
+  margin-bottom: 8px;
+}
+
+body.gis-mobile-page .gis-search-row--open-page .gis-input[readonly] {
+  cursor: pointer;
+  caret-color: transparent;
+}
+
+body.gis-mobile-page .gis-search-row--open-page .gis-btn-jump {
+  background: var(--mp-gradient-brand, linear-gradient(135deg, #236aff 0%, #1a52cc 100%));
+  border-color: transparent;
+  color: #fff;
+  font-weight: 500;
+}
+
+body.gis-mobile-page .gis-search-results {
+  margin-top: 8px;
+  max-height: min(36vh, 220px);
+  overflow-y: auto;
+  border-radius: 10px;
+  border: 1px solid var(--mp-border-light, #eef2f8);
+  background: var(--mp-bg-subtle, #f4f7fc);
+}
+
+body.gis-mobile-page .gis-search-results__empty {
+  padding: 12px;
+  font-size: 13px;
+  color: var(--mp-text-muted, #6b7280);
+  text-align: center;
+}
+
+body.gis-mobile-page .gis-search-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--mp-border-light, #eef2f8);
+  background: #fff;
+  color: var(--mp-text, #1a2332);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+body.gis-mobile-page .gis-search-result:last-child {
+  border-bottom: 0;
+}
+
+body.gis-mobile-page .gis-search-result:active {
+  background: var(--mp-primary-light, rgba(35, 106, 255, 0.08));
+}
+
+body.gis-mobile-page .gis-search-result__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+body.gis-mobile-page .gis-search-result__type {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--mp-text-muted, #6b7280);
+}
+
+body.gis-mobile-page .gis-filter-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px 16px;
+  font-size: 12px;
+}
+
+/* 底部弹窗关闭按钮（统一） */
+body.gis-mobile-page .gis-mobile-sheet-close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--mp-border, #e4e9f2);
+  border-radius: 50%;
+  background: var(--mp-bg-subtle, #f4f7fc);
+  color: var(--mp-text-muted, #6b7280);
+  font-size: 14px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+body.gis-mobile-page .gis-mobile-sheet-close:active {
+  background: var(--mp-primary-light, rgba(35, 106, 255, 0.12));
+  border-color: var(--mp-primary-border, rgba(35, 106, 255, 0.22));
+  color: var(--mp-primary, #236aff);
+}
+
+body.gis-mobile-page .gis-sec {
+  border-bottom-color: var(--mp-border-light, #eef2f8);
+  margin-bottom: 12px;
+}
+
+body.gis-mobile-page .gis-sec-title {
+  color: var(--mp-text-secondary, #4b5563);
+  font-size: 13px;
+}
+
+body.gis-mobile-page .gis-sec-arrow {
+  color: var(--mp-text-caption, #9ca3af);
+}
+
+body.gis-mobile-page .gis-subtitle {
+  color: var(--mp-text-muted, #6b7280);
+}
+
+body.gis-mobile-page .gis-input {
+  border: 1px solid var(--mp-border, #e4e9f2);
+  background: #fff;
+  color: var(--mp-text, #1a2332);
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+body.gis-mobile-page .gis-input::placeholder {
+  color: var(--mp-text-caption, #9ca3af);
+}
+
+body.gis-mobile-page .gis-input:focus {
+  border-color: var(--mp-primary, #236aff);
+  box-shadow: 0 0 0 3px var(--mp-primary-light, rgba(35, 106, 255, 0.1));
+}
+
+body.gis-mobile-page .gis-btn-jump {
+  border: none;
+  background: var(--mp-gradient-brand, linear-gradient(135deg, #236aff 0%, #4d88ff 50%, #1a52cc 100%));
+  color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(35, 106, 255, 0.28);
+}
+
+body.gis-mobile-page .gis-head-switch {
+  border: 1px solid var(--mp-border, #e4e9f2);
+  background: var(--mp-bg-subtle, #f4f7fc);
+}
+
+body.gis-mobile-page .gis-head-switch__text,
+body.gis-mobile-page .gis-head-switch__text--off {
+  color: var(--mp-text-muted, #6b7280);
+}
+
+body.gis-mobile-page .gis-head-switch__track {
+  background: #e2e8f0;
+  border-color: var(--mp-border, #e4e9f2);
+}
+
+body.gis-mobile-page .gis-head-switch__thumb {
+  background: #fff;
+}
+
+body.gis-mobile-page .gis-head-switch.is-on .gis-head-switch__track {
+  background: rgba(35, 106, 255, 0.35);
+  border-color: rgba(35, 106, 255, 0.4);
+}
+
+body.gis-mobile-page .gis-head-switch.is-on .gis-head-switch__thumb {
+  background: var(--mp-primary, #236aff);
+}
+
+body.gis-mobile-page .gis-head-switch.is-on .gis-head-switch__text:first-child {
+  color: var(--mp-primary-dark, #1a52cc);
+}
+
+body.gis-mobile-page .gis-toggle,
+body.gis-mobile-page .gis-line-btn,
+body.gis-mobile-page .gis-em-btn {
+  border: 1px solid var(--mp-border-light, #eef2f8);
+  background: #fff;
+  color: var(--mp-text-secondary, #4b5563);
+  border-radius: 10px;
+  box-shadow: var(--mp-shadow-sm, 0 2px 8px rgba(35, 106, 255, 0.04));
+  font-weight: 500;
+}
+
+body.gis-mobile-page .gis-toggle:hover,
+body.gis-mobile-page .gis-line-btn:hover,
+body.gis-mobile-page .gis-em-btn:hover {
+  border-color: var(--mp-primary-border, rgba(35, 106, 255, 0.22));
+  box-shadow: var(--mp-shadow-card, 0 4px 16px rgba(15, 35, 80, 0.06));
+}
+
+body.gis-mobile-page .gis-toggle--on,
+body.gis-mobile-page .gis-line-btn.gis-line-btn--active,
+body.gis-mobile-page .gis-line-btn.gis-toggle--on,
+body.gis-mobile-page .gis-em-btn.gis-toggle--on {
+  border-color: var(--mp-primary, #236aff) !important;
+  background: var(--mp-primary-light, rgba(35, 106, 255, 0.1)) !important;
+  color: var(--mp-primary-dark, #1a52cc) !important;
+  box-shadow: 0 2px 10px rgba(35, 106, 255, 0.15) !important;
+}
+
+/* 保留线路/应急类型色点，降低饱和度 */
+body.gis-mobile-page .gis-c--station.gis-toggle--on { color: #2563eb; }
+body.gis-mobile-page .gis-c--project.gis-toggle--on { color: #ea580c; }
+body.gis-mobile-page .gis-c--staff.gis-toggle--on { color: #2563eb; }
+body.gis-mobile-page .gis-c--alarm.gis-toggle--on { color: #dc2626; }
+
+.gis-mobile-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1040;
+  background: rgba(26, 35, 50, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.gis-mobile-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@keyframes gis-mobile-sheet-in {
+  from {
+    transform: translateY(100%);
+    opacity: 0.85;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+body.gis-mobile-page .gis-detail-close,
+body.gis-mobile-page .wh-modal-close {
+  color: var(--mp-text-muted, #6b7280);
+}
+
+body.gis-mobile-page .gis-detail-label {
+  color: var(--mp-text-caption, #9ca3af);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+body.gis-mobile-page .gis-detail-value {
+  color: var(--mp-text, #1a2332);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 仓库列表 / 仓库信息 — 与详情弹窗一致 */
+body.gis-mobile-page .gis-wh-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+body.gis-mobile-page .gis-wh-material {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mp-text, #1a2332);
+  line-height: 1.5;
+}
+
+body.gis-mobile-page .gis-wh-item {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 8px 0 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--mp-text-secondary, #4b5563);
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+body.gis-mobile-page .gis-wh-item:active {
+  color: var(--mp-primary, #236aff);
+}
+
+body.gis-mobile-page .gis-detail-btn {
+  border-radius: 10px;
+  background: var(--mp-gradient-brand, linear-gradient(135deg, #236aff 0%, #4d88ff 50%, #1a52cc 100%));
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(35, 106, 255, 0.28);
+}
+
+body.gis-mobile-page .gis-detail-btn:hover {
+  filter: brightness(1.05);
+}
+
+body.gis-mobile-page .gis-detail-list {
+  border: 1px solid var(--mp-border-light, #eef2f8);
+  border-radius: 10px;
+  background: var(--mp-bg-subtle, #f4f7fc);
+}
+
+body.gis-mobile-page .gis-detail-list-row {
+  border-bottom-color: var(--mp-border-light, #eef2f8);
+  color: var(--mp-text-secondary, #4b5563);
+}
+
+/* 人员轨迹 / 无人机轨迹 — 与仓库信息字段一致 */
+body.gis-mobile-page .gis-track-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.gis-mobile-page .gis-track-card .gis-detail-label,
+body.gis-mobile-page .gis-track-range-field .gis-detail-label {
+  color: var(--mp-text-caption, #9ca3af);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+body.gis-mobile-page .gis-track-card .gis-detail-value {
+  color: var(--mp-text, #1a2332);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+body.gis-mobile-page .gis-track-range-input {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--mp-text, #1a2332);
+  border: 1px solid var(--mp-border, #e4e9f2);
+  border-radius: 8px;
+  background: #fff;
+}
+
+body.gis-mobile-page .gis-track-range-input:focus {
+  outline: none;
+  border-color: var(--mp-primary, #236aff);
+  box-shadow: 0 0 0 3px var(--mp-primary-light, rgba(35, 106, 255, 0.1));
+}
+
+body.gis-mobile-page .gis-track-range-sep {
+  font-size: 12px;
+  color: var(--mp-text-muted, #6b7280);
+}
+
+body.gis-mobile-page .gis-track-list-empty {
+  color: var(--mp-text-muted, #6b7280);
+  font-size: 14px;
+  text-align: center;
+}
+
+body.gis-mobile-page .gis-track-row-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--mp-text, #1a2332);
+  line-height: 1.5;
+}
+
+body.gis-mobile-page .gis-track-row-time {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--mp-text-caption, #9ca3af);
+  line-height: 1.45;
+}
+
+/* 机场及关联无人机 */
+body.gis-mobile-page .gis-airport-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.gis-mobile-page .gis-airport-card {
+  padding: 14px;
+  border: 1px solid var(--mp-border-light, #eef2f8);
+  background: var(--mp-bg-subtle, #f4f7fc);
+  border-radius: var(--mp-radius-md, 12px);
+}
+
+body.gis-mobile-page .gis-airport-card__row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+body.gis-mobile-page .gis-airport-card__label {
+  color: var(--mp-text-caption, #9ca3af);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+body.gis-mobile-page .gis-airport-card__value,
+body.gis-mobile-page .gis-airport-card__row--plan .gis-airport-card__value {
+  color: var(--mp-text, #1a2332);
+  font-size: 14px;
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
+}
+
+body.gis-mobile-page .gis-airport-status {
+  color: var(--mp-text, #1a2332);
+  font-size: 14px;
+}
+
+body.gis-mobile-page .gis-airport-card__value.is-ready {
+  color: #16a34a;
+}
+
+body.gis-mobile-page .gis-airport-card__value.is-not-ready {
+  color: #dc2626;
+}
+
+body.gis-mobile-page .gis-alarm-section__title {
+  color: var(--mp-primary-dark, #1a52cc);
+}
+
+body.gis-mobile-page .gis-alarm-tooltip {
+  background: #fff;
+  border: 1px solid var(--mp-border, #e4e9f2);
+  color: var(--mp-text, #1a2332);
+  box-shadow: var(--mp-shadow-sm, 0 2px 8px rgba(35, 106, 255, 0.1));
+}
+
+body.gis-mobile-page #map-container .leaflet-top.leaflet-left {
+  top: auto;
+  bottom: 20px;
+  left: 8px;
+}
+
+body.gis-mobile-page #map-container .leaflet-control-zoom a {
+  border-radius: 8px;
+  color: var(--mp-primary, #236aff);
+}
+
+body.gis-mobile-page #map-container .leaflet-control-zoom {
+  border: none;
+  box-shadow: var(--mp-shadow-card, 0 4px 16px rgba(15, 35, 80, 0.08));
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.gis-mobile-page .gis-mobile-sheet:not(.gis-mobile-drawer-closed):not(.hidden) {
+    animation: none;
+  }
+  body.gis-mobile-page .gis-mobile-sheet {
+    transition: none;
+  }
+}

@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/card-grid-pager.css" />
   <style>
     .lib-layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; min-height: calc(100vh - 220px); }
     @media (max-width: 960px) { .lib-layout { grid-template-columns: 1fr; } }
@@ -192,6 +193,7 @@
                     <span>共 <b id="lib-result-count" class="text-cyan-200">0</b> 条资料</span>
                   </div>
                   <div id="lib-card-grid" class="lib-card-grid"></div>
+                  <div id="lib-card-pager"></div>
                 </section>
               </div>
             </section>
@@ -354,6 +356,7 @@
 
   <div id="lib-toast" class="hidden"></div>
 
+  <script src="../../assets/js/card-grid-pager.js"></script>
   <script src="../../assets/js/dc-library.js"></script>
   <script src="../../assets/js/menu-config.js"></script>
   <script src="../../assets/js/workbench-mega.js"></script>

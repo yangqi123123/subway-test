@@ -2,11 +2,13 @@
  * 态势感知 / 专家工具 共用 GIS：浅色底图 + 全线告警点（与全景地图图标一致）
  */
 (function () {
+  var SOURCE_AI = "全时全域·AI";
+  var SOURCE_TRADITIONAL = "全时全域·传统";
   var ALARM_ROWS = [
     {
       location: "省博湖北日报-中南医院 V20+065",
       time: "2026-03-05 08:27:27",
-      source: "AI",
+      source: SOURCE_AI,
       status: "已复核",
       lat: 30.5878,
       lng: 114.3004,
@@ -14,7 +16,7 @@
     {
       location: "中南医院-省博湖北日报 V20+066",
       time: "2026-03-05 08:27:07",
-      source: "AI",
+      source: SOURCE_AI,
       status: "已复核",
       lat: 30.5859,
       lng: 114.3122,
@@ -22,7 +24,7 @@
     {
       location: "省博湖北日报-中南医院 V20+030",
       time: "2026-03-05 08:21:36",
-      source: "AI",
+      source: SOURCE_AI,
       status: "已复核",
       lat: 30.5842,
       lng: 114.3188,
@@ -30,7 +32,7 @@
     {
       location: "岳家嘴-梨园 Y16+581",
       time: "2026-03-05 05:55:29",
-      source: "传统",
+      source: SOURCE_TRADITIONAL,
       status: "已复核",
       lat: 30.5677,
       lng: 114.3651,
@@ -38,7 +40,7 @@
     {
       location: "黄浦路-赵家条 Z8+689",
       time: "2026-03-05 00:14:51",
-      source: "传统",
+      source: SOURCE_TRADITIONAL,
       status: "未复核",
       lat: 30.6201,
       lng: 114.3039,
@@ -49,7 +51,7 @@
   var EXPERT_ALARM_ROW = {
     location: "中南医院站-湖北日报站",
     time: "2026-03-05 08:27:07",
-    source: "AI",
+    source: SOURCE_AI,
     status: "已复核",
     lat: 30.5859,
     lng: 114.3122,

@@ -202,7 +202,19 @@
     var halfWidth = opts.halfWidthM == null ? 45 : opts.halfWidthM;
     var segmentsPerLeg = opts.segmentsPerLeg == null ? 16 : opts.segmentsPerLeg;
     var registerFeature = opts.registerFeature;
+    var onSearchItem = opts.onSearchItem;
     var makeIcon = opts.makePhotoDropIcon || GIS.makePhotoDropIcon;
+
+    function pushSearchItem(item) {
+      if (!item || !item.ll || item.ll.length < 2) return;
+      if (typeof onSearchItem === "function") onSearchItem(item);
+    }
+
+    function latLngFromLayer(layer) {
+      if (!layer || !layer.getBounds) return null;
+      var c = layer.getBounds().getCenter();
+      return [c.lat, c.lng];
+    }
 
     activeZoneDefs().forEach(function (def) {
       var anchors = metroPaths[def.lineKey];
@@ -238,6 +250,13 @@
           if (typeof registerFeature === "function") {
             registerFeature(rightPoly, layers.patrolTodo, "patrolTodo", def.lineFilter);
           }
+          pushSearchItem({
+            name: def.popupRight || "待巡查区域",
+            typeLabel: "待巡查",
+            ll: latLngFromLayer(rightPoly),
+            category: "patrolTodo",
+            marker: rightPoly,
+          });
         }
         return;
       }
@@ -256,6 +275,13 @@
       if (typeof registerFeature === "function") {
         registerFeature(poly, layerGroup, category, def.lineFilter);
       }
+      pushSearchItem({
+        name: def.popup || (isDone ? "已巡查区域" : "待巡查区域"),
+        typeLabel: isDone ? "已巡查" : "待巡查",
+        ll: latLngFromLayer(poly),
+        category: category,
+        marker: poly,
+      });
     });
 
     if (opts.showPhotos !== false && typeof makeIcon === "function") {
@@ -290,6 +316,13 @@
             opts.onPhotoClick(drop);
           });
         }
+        pushSearchItem({
+          name: drop.name,
+          typeLabel: "巡查照片",
+          ll: pos.point,
+          category: "patrolPhotos",
+          marker: marker,
+        });
       });
     }
 

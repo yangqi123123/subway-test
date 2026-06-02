@@ -12,6 +12,13 @@
       ? window.WuhanExpertReviewModal.DEFAULT_PHOTOS
       : FALLBACK_PHOTOS;
 
+  /** 告警来源 / 处理状态（全时全域） */
+  var ALERT_SOURCE_AI = "全时全域·AI";
+  var ALERT_SOURCE_TRADITIONAL = "全时全域·传统";
+  var ALERT_SOURCE_MIXED = "全时全域·传统+AI";
+  var ALERT_SOURCE_UAV = "无人机";
+  var ALERT_HANDLE_MODE_OPTIONS = [ALERT_SOURCE_AI, ALERT_SOURCE_TRADITIONAL, ALERT_SOURCE_MIXED];
+
   function createProject(base) {
     return Object.assign(
       {
@@ -21,8 +28,8 @@
         alarmArea: "",
         startTime: "",
         latestTime: "",
-        source: "AI",
-        handleMode: "AI",
+        source: ALERT_SOURCE_AI,
+        handleMode: ALERT_SOURCE_AI,
         workflowStatus: "未复核",
         mistaken: "否",
         detail: "",
@@ -127,13 +134,13 @@
           lastTime: "2026-05-13 11:28:46",
           section: "中南医院站-湖北日报站",
           location: "里程 V20+072 左线外侧",
-          source: "无人机",
+          source: ALERT_SOURCE_UAV,
           line: "2号线",
           flightLine: "2号线",
           flightRoute: "梨园-中南医院演示航线",
           flightAirport: "梨园机场",
           flightDrone: "梨园巡检无人机 M30T",
-          handleMode: "AI",
+          handleMode: ALERT_SOURCE_AI,
           workflowStatus: "未复核",
           mistaken: "否",
           type: "疑似机械施工",
@@ -196,7 +203,7 @@
           section: "中南医院站-湖北日报站",
           location: "里程 V20+066 左线外侧",
           workflowStatus: "未复核",
-          handleMode: "AI",
+          handleMode: ALERT_SOURCE_AI,
           line: "2号线",
           detail: "",
           locationNote: "金融街T2北侧围挡外，破拆机械作业面，需持续盯控。",
@@ -241,8 +248,8 @@
           section: "中南医院站-湖北日报站",
           location: "里程 V20+058 右线外侧",
           workflowStatus: "已复核",
-          handleMode: "AI+传统",
-          source: "AI+传统",
+          handleMode: ALERT_SOURCE_MIXED,
+          source: ALERT_SOURCE_MIXED,
           mistaken: "否",
           detail: "现场有破拆机械挖掘施工，动静比较大",
           image: "https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=220&q=80",
@@ -275,6 +282,7 @@
             },
           ],
         }),
+        /* 演示数据暂隐藏：审核通过
         createProject({
           id: 203,
           projectName: "轨道交通配套施工",
@@ -286,8 +294,8 @@
           section: "中南医院站-湖北日报站",
           location: "里程 V20+040 左线外侧",
           workflowStatus: "审核通过",
-          handleMode: "AI",
-          source: "传统",
+          handleMode: ALERT_SOURCE_AI,
+          source: ALERT_SOURCE_TRADITIONAL,
           mistaken: "否",
           detail: "现场复核属实，已督促降噪",
           latlng: [30.5878, 114.3004],
@@ -326,6 +334,7 @@
             },
           ],
         }),
+        演示数据暂隐藏：审核不通过
         createProject({
           id: 204,
           projectName: "市政道路改造工程",
@@ -337,8 +346,8 @@
           section: "中南医院站-湖北日报站",
           location: "里程 V20+030 左线外侧",
           workflowStatus: "审核不通过",
-          handleMode: "传统",
-          source: "AI+传统",
+          handleMode: ALERT_SOURCE_TRADITIONAL,
+          source: ALERT_SOURCE_MIXED,
           mistaken: "否",
           detail: "现场照片不清晰，需补充复核",
           latlng: [30.5835, 114.3055],
@@ -369,6 +378,7 @@
             },
           ],
         }),
+        */
       ],
     },
     {
@@ -388,8 +398,8 @@
           lastTime: "2026-03-05 05:55:29",
           section: "岳家嘴-梨园",
           location: "里程 Y16+581",
-          source: "传统",
-          handleMode: "传统",
+          source: ALERT_SOURCE_TRADITIONAL,
+          handleMode: ALERT_SOURCE_TRADITIONAL,
           workflowStatus: "未复核",
           latlng: [30.5677, 114.3651],
           mapCenter: [30.5677, 114.3651],
@@ -671,11 +681,11 @@
   var reviewProjectSelectInst = null;
 
   function isUavSourceAlert(project) {
-    return project.source === "无人机";
+    return project.source === ALERT_SOURCE_UAV;
   }
 
   function isAiClassSource(project) {
-    return project.source === "AI" || project.source === "AI+传统";
+    return project.source === ALERT_SOURCE_AI || project.source === ALERT_SOURCE_MIXED;
   }
 
   function usesReviewDropdown(project) {
@@ -794,7 +804,7 @@
       else btns.push('<button type="button" class="alert-op-btn" data-action="review" data-id="' + project.id + '">复核</button>');
     }
     if (!isUav && s === "已复核") {
-      btns.push('<button type="button" class="alert-op-btn" data-action="audit" data-id="' + project.id + '">审核</button>');
+      // btns.push('<button type="button" class="alert-op-btn" data-action="audit" data-id="' + project.id + '">审核</button>');
     }
     btns.push('<button type="button" class="alert-op-btn" data-action="locate" data-id="' + project.id + '">定位</button>');
     return '<div class="disease-op-actions">' + btns.join("") + "</div>";
@@ -816,7 +826,6 @@
       drone: flight.drone,
       type: "告警复核",
       lockType: true,
-      submitAudit: "审核通过",
       submitExec: "未执行",
       alertId: project.id,
     };
@@ -825,7 +834,7 @@
     } catch (e) {}
     var base =
       typeof whPageHref === "function" ? whPageHref("map/map-flight-plan.html") : "map-flight-plan.html";
-    window.location.href = base + "?create=1&fromAlert=1";
+    window.location.href = base + "?create=1&fromAlert=1&alertId=" + encodeURIComponent(String(project.id));
   }
 
   function renderTree() {
@@ -1354,9 +1363,52 @@
     });
   }
 
+  function applyAlertFlightPlanSubmission() {
+    var raw;
+    try {
+      raw = sessionStorage.getItem("whAlertFlightPlanSubmitted");
+      if (!raw) return;
+      sessionStorage.removeItem("whAlertFlightPlanSubmitted");
+    } catch (e) {
+      return;
+    }
+    var payload;
+    try {
+      payload = JSON.parse(raw);
+    } catch (e2) {
+      return;
+    }
+    var project = findProject(payload.alertId);
+    if (!project) return;
+    project.flightPlanAudit = payload.audit || "-";
+    project.linkedFlightPlanName = payload.planName || "";
+    if (payload.planId != null) project.linkedFlightPlanId = payload.planId;
+    if (window.WuhanGIS && window.WuhanGIS.getFlightPlanForAlert) {
+      var stored = window.WuhanGIS.getFlightPlanForAlert(payload.alertId);
+      if (stored) {
+        project.linkedFlightPlanId = stored.id;
+        project.linkedFlightPlanName = stored.name || project.linkedFlightPlanName;
+      }
+    }
+    var t =
+      window.WuhanExpertReviewModal && window.WuhanExpertReviewModal.nowStr
+        ? window.WuhanExpertReviewModal.nowStr()
+        : new Date().toISOString().slice(0, 19).replace("T", " ");
+    if (!project.disposalRecord) project.disposalRecord = [];
+    project.disposalRecord.push({
+      time: t,
+      type: "flight-plan",
+      text: "已提交无人机复核飞行计划（" + (payload.planName || "") + "）",
+      auditStatus: payload.audit || "-",
+    });
+    renderTree();
+    if (currentAlert && currentAlert.id === project.id) fillDetail(project);
+  }
+
   function init() {
     initPortalDetailModal();
     if (!document.getElementById("alert-tree-body")) return;
+    applyAlertFlightPlanSubmission();
     initListFilters();
     renderTree();
     initSituationMap();
@@ -1374,6 +1426,11 @@
     findProject: findProject,
     createProject: createProject,
     fillDetail: fillDetail,
+    ALERT_SOURCE_AI: ALERT_SOURCE_AI,
+    ALERT_SOURCE_TRADITIONAL: ALERT_SOURCE_TRADITIONAL,
+    ALERT_SOURCE_MIXED: ALERT_SOURCE_MIXED,
+    ALERT_SOURCE_UAV: ALERT_SOURCE_UAV,
+    ALERT_HANDLE_MODE_OPTIONS: ALERT_HANDLE_MODE_OPTIONS,
   };
 
   if (typeof window !== "undefined") {

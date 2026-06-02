@@ -2,13 +2,16 @@
  * 告警信息统计 — 与 map-alerts 示例数据对齐
  */
 (function (global) {
-  var SOURCE_ORDER = ["AI", "传统", "AI+传统", "无人机"];
-  var SOURCE_COLORS = {
-    AI: "#22d3ee",
-    传统: "#91cb74",
-    "AI+传统": "#a78bfa",
-    无人机: "#f97316",
-  };
+  var SOURCE_AI = "全时全域·AI";
+  var SOURCE_TRADITIONAL = "全时全域·传统";
+  var SOURCE_MIXED = "全时全域·传统+AI";
+  var SOURCE_UAV = "无人机";
+  var SOURCE_ORDER = [SOURCE_AI, SOURCE_TRADITIONAL, SOURCE_MIXED, SOURCE_UAV];
+  var SOURCE_COLORS = {};
+  SOURCE_COLORS[SOURCE_AI] = "#22d3ee";
+  SOURCE_COLORS[SOURCE_TRADITIONAL] = "#91cb74";
+  SOURCE_COLORS[SOURCE_MIXED] = "#a78bfa";
+  SOURCE_COLORS[SOURCE_UAV] = "#f97316";
   var STATUS_ORDER = ["未复核", "已复核"];
   var STATUS_COLORS = ["#f59e0b", "#38bdf8"];
   var RISK_ORDER = ["一般", "严重", "较重", "特别严重"];
@@ -27,7 +30,7 @@
       alarmArea: "中南医院站-湖北日报站",
       line: "2号线",
       station: "梨园站",
-      source: "无人机",
+      source: SOURCE_UAV,
       workflowStatus: "未复核",
       riskLevel: "严重",
       startTime: "2026-05-13 11:22:18",
@@ -38,7 +41,7 @@
       alarmArea: "中南医院站-湖北日报站",
       line: "2号线",
       station: "中南医院站",
-      source: "AI",
+      source: SOURCE_AI,
       workflowStatus: "未复核",
       riskLevel: "一般",
       startTime: "2026-03-05 08:14:49",
@@ -49,7 +52,7 @@
       alarmArea: "中南医院站-湖北日报站",
       line: "2号线",
       station: "中南医院站",
-      source: "AI+传统",
+      source: SOURCE_MIXED,
       workflowStatus: "已复核",
       riskLevel: "较重",
       startTime: "2026-03-05 09:02:11",
@@ -60,7 +63,7 @@
       alarmArea: "中南医院站-湖北日报站",
       line: "2号线",
       station: "中南医院站",
-      source: "传统",
+      source: SOURCE_TRADITIONAL,
       workflowStatus: "审核通过",
       riskLevel: "较重",
       startTime: "2026-03-04 11:52:14",
@@ -71,7 +74,7 @@
       alarmArea: "中南医院站-湖北日报站",
       line: "2号线",
       station: "中南医院站",
-      source: "AI+传统",
+      source: SOURCE_MIXED,
       workflowStatus: "审核不通过",
       riskLevel: "特别严重",
       startTime: "2026-03-04 11:55:14",
@@ -82,7 +85,7 @@
       alarmArea: "岳家嘴-梨园",
       line: "2号线",
       station: "梨园站",
-      source: "传统",
+      source: SOURCE_TRADITIONAL,
       workflowStatus: "未复核",
       riskLevel: "一般",
       startTime: "2026-03-05 05:55:29",
@@ -91,9 +94,9 @@
 
   function normalizeSource(row) {
     if (row.source) return row.source;
-    if (row.handleMode === "传统") return "传统";
-    if (row.handleMode === "AI+传统") return "AI+传统";
-    return "AI";
+    if (row.handleMode === SOURCE_TRADITIONAL) return SOURCE_TRADITIONAL;
+    if (row.handleMode === SOURCE_MIXED) return SOURCE_MIXED;
+    return SOURCE_AI;
   }
 
   function normalizeWorkflowStatus(row) {
@@ -143,7 +146,7 @@
 
   function isFulltimeSource(row) {
     var s = normalizeSource(row);
-    return s === "AI" || s === "传统" || s === "AI+传统";
+    return s === SOURCE_AI || s === SOURCE_TRADITIONAL || s === SOURCE_MIXED;
   }
 
   function filterAlerts(filters) {
@@ -167,7 +170,7 @@
       }).length,
       fulltime: alerts.filter(isFulltimeSource).length,
       uav: alerts.filter(function (r) {
-        return normalizeSource(r) === "无人机";
+        return normalizeSource(r) === SOURCE_UAV;
       }).length,
     };
   }
@@ -246,7 +249,7 @@
       projectAlert: buildProjectChartConfig(alerts),
       alertSource: {
         title: "告警来源统计图",
-        sub: "AI / 传统 / AI+传统 / 无人机 · 共" + total + "条告警",
+        sub: "全时全域·AI / 全时全域·传统 / 全时全域·传统+AI / 无人机 · 共" + total + "条告警",
         axisLabel: "告警来源",
         yLabel: "告警条数",
         max: calcMaxFromValues(sourceAgg.values),

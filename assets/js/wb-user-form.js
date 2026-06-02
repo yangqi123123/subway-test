@@ -3,6 +3,7 @@
  */
 (function (global) {
   var LINE_OPTIONS = ["1号线", "2号线", "3号线", "4号线", "7号线", "8号线", "11号线", "19号线"];
+  var USER_TYPE_OPTIONS = ["内部", "外部"];
   var SECTION_BY_LINE = {
     "1号线": ["循礼门-友谊路", "友谊路-利济北路"],
     "2号线": ["光谷广场-杨家湾", "街道口-中南路"],
@@ -138,6 +139,7 @@
         isEdit ? "留空则不修改密码" : "请输入登录密码"
       ) +
       inputField("nickName", "用户昵称", row.nickName, true) +
+      selectField("userType", "用户类型", USER_TYPE_OPTIONS, row.userType || "内部", true) +
       selectField("deptName", "所属部门", deptOptions, row.deptName, true) +
       selectField("roleName", "角色", roleOptions, row.roleName, true) +
       inputField("postName", "岗位", row.postName || "", false) +
@@ -332,6 +334,12 @@
   }
 
   function applyUserFormData(row, data) {
+    if (!data.userType || USER_TYPE_OPTIONS.indexOf(data.userType) < 0) {
+      if (global.WBSystem && global.WBSystem.toast) {
+        global.WBSystem.toast("请选择用户类型");
+      }
+      return false;
+    }
     if (!data.sectionStart || !data.sectionEnd) {
       if (global.WBSystem && global.WBSystem.toast) {
         global.WBSystem.toast("请选择起始区间与终点区间站点");
@@ -347,6 +355,7 @@
     var patch = {
       userName: (data.userName || "").trim(),
       nickName: (data.nickName || "").trim(),
+      userType: data.userType,
       deptName: data.deptName,
       roleName: data.roleName,
       postName: (data.postName || "").trim(),
@@ -502,7 +511,7 @@
     parseSectionFields: parseSectionFields,
     openUserImportModal: openUserImportModal,
     openResetPasswordModal: openResetPasswordModal,
-    LINE_OPTIONS: LINE_OPTIONS,
+    USER_TYPE_OPTIONS: USER_TYPE_OPTIONS,
     SECTION_BY_LINE: SECTION_BY_LINE,
     STATION_BY_LINE: STATION_BY_LINE,
     STATION_PLACEHOLDER: STATION_PLACEHOLDER,

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>图层搜索</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/gis-layer-search.css" />
+</head>
+<body class="gis-search-page">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" id="gis-search-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+    </button>
+    <h1 class="miniapp-navbar__title">图层搜索</h1>
+  </header>
+
+  <main class="gis-search-page__main">
+    <div class="gis-search-page__bar">
+      <i class="fa-solid fa-magnifying-glass gis-search-page__icon" aria-hidden="true"></i>
+      <input
+        type="search"
+        id="gis-search-input"
+        class="gis-search-page__input"
+        placeholder="输入站点、项目等名称"
+        autocomplete="off"
+        enterkeyhint="search"
+      />
+      <button type="button" class="gis-search-page__clear" id="gis-search-clear" hidden aria-label="清空">
+        <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <p class="gis-search-page__hint" id="gis-search-hint">支持模糊搜索，点击结果将返回地图并定位</p>
+
+    <div id="gis-search-list" class="gis-search-page__list" role="listbox" aria-label="搜索结果"></div>
+  </main>
+
+  <script src="../../assets/js/gis-layer-search-page.js"></script>
+</body>
+</html>

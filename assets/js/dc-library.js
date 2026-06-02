@@ -65,6 +65,7 @@
 
   var selectedCategoryId = null;
   var expandedIds = { 1: true, 3: true };
+  var pageState = { page: 1, pageSize: 12 };
   var editingCategoryId = null;
   var addingCategoryParentId = null;
   var editingMaterialId = null;
@@ -298,8 +299,13 @@
     });
   }
 
+  function resetPage() {
+    pageState.page = 1;
+  }
+
   function renderCards() {
     var grid = $("lib-card-grid");
+    var pagerEl = $("lib-card-pager");
     var countEl = $("lib-result-count");
     if (!grid) return;
     var list = getFilteredMaterials();
@@ -309,10 +315,14 @@
     if (!list.length) {
       grid.innerHTML =
         '<div class="lib-empty col-span-full"><i class="fa-regular fa-folder-open text-3xl text-cyan-400/50 mb-3"></i><p>暂无资料</p></div>';
+      if (pagerEl) pagerEl.innerHTML = "";
       return;
     }
 
-    grid.innerHTML = list
+    var pager = window.WHCardGridPager;
+    var meta = pager ? pager.paginate(list, pageState) : { rows: list, total: list.length, page: 1, pages: 1, pageSize: list.length };
+
+    grid.innerHTML = meta.rows
       .map(function (m) {
         var cover = m.coverUrl || defaultCover();
         return (
@@ -347,6 +357,10 @@
         );
       })
       .join("");
+
+    if (pager && pagerEl) {
+      pager.mountPager(pagerEl, meta, pageState, renderCards, { pageSizes: [12, 20, 40] });
+    }
   }
 
   function openModal(maskId) {
@@ -647,6 +661,7 @@
 
       if (action === "select-all-cat") {
         selectedCategoryId = null;
+        resetPage();
         renderTree();
         renderCards();
       }
@@ -658,6 +673,7 @@
         var row = t.closest(".lib-tree-row");
         if (row.dataset.id) {
           selectedCategoryId = Number(row.dataset.id);
+          resetPage();
           renderTree();
           renderCards();
         }
@@ -669,11 +685,15 @@
       if (action === "close-cat-modal") closeModal("cat-modal-mask");
       if (action === "save-cat") saveCategory();
 
-      if (action === "search-lib") renderCards();
+      if (action === "search-lib") {
+        resetPage();
+        renderCards();
+      }
       if (action === "reset-lib-search") {
         $("lib-search-title").value = "";
         $("lib-search-start").value = "";
         $("lib-search-end").value = "";
+        resetPage();
         renderCards();
       }
       if (action === "upload-material") openMaterialModal("new");

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登录 — 武汉地铁保护区移动端</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/miniapp.css" />
+  <style>
+    .app-login-escape {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 1000;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 18px;
+      border: 1px solid var(--mp-border);
+      background: var(--mp-bg);
+      color: var(--mp-text);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .app-login-escape:hover {
+      border-color: var(--mp-primary-border);
+      color: var(--mp-primary);
+    }
+    .app-login-escape i {
+      font-size: 12px;
+      color: var(--mp-primary);
+    }
+    body.miniapp-device-root--login .device-screen--login iframe {
+      flex: 1;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"PingFang SC"', '"PingFang TC"', '-apple-system', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="miniapp-device-root miniapp-device-root--login">
+  <a href="../index.html" class="app-login-escape" title="返回平台入口">
+    <i class="fa-solid fa-arrow-left"></i>
+    <span>平台入口</span>
+  </a>
+
+  <div class="device-iphone15" aria-label="iPhone 15 登录预览">
+    <div class="device-screen device-screen--login">
+      <div class="device-status" aria-hidden="true">
+        <span class="device-status__time" id="device-time">9:41</span>
+        <span class="device-status__icons">
+          <i class="fa-solid fa-signal"></i>
+          <i class="fa-solid fa-wifi"></i>
+          <i class="fa-solid fa-battery-full"></i>
+        </span>
+      </div>
+      <iframe id="app-frame" title="登录" src="login/screen.html"></iframe>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var el = document.getElementById("device-time");
+      if (el) {
+        var d = new Date();
+        el.textContent = d.getHours() + ":" + String(d.getMinutes()).padStart(2, "0");
+      }
+    })();
+  </script>
+</body>
+</html>

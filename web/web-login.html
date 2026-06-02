@@ -18,9 +18,42 @@
         width: 100%;
         max-width: 400px;
       }
+      .login-escape {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 1000;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 36px;
+        padding: 0 14px;
+        border-radius: 8px;
+        border: 1px solid rgba(34, 211, 238, 0.28);
+        background: rgba(8, 15, 35, 0.92);
+        color: #e2f5ff;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        transition: border-color 0.15s, color 0.15s, background 0.15s;
+      }
+      .login-escape:hover {
+        border-color: rgba(34, 211, 238, 0.55);
+        color: #a5f3fc;
+        background: rgba(34, 211, 238, 0.1);
+      }
+      .login-escape i {
+        font-size: 12px;
+        color: #67e8f9;
+      }
     </style>
   </head>
   <body class="wh-main-canvas text-slate-100">
+    <a href="../index.html" class="login-escape" title="返回平台入口">
+      <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      <span>平台入口</span>
+    </a>
     <div class="login-shell">
       <div class="login-card neon-panel neon-panel--tight p-8 md:p-10">
         <div class="text-center mb-8">

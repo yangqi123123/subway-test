@@ -1,30 +1,70 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>移动端 — 武汉地铁保护区</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
-    <link rel="stylesheet" href="../assets/css/theme.css" />
-    <style>
-      .m-login { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-      .m-card { width: 100%; max-width: 360px; }
-    </style>
-  </head>
-  <body class="wh-main-canvas text-slate-100">
-    <div class="m-login">
-      <div class="m-card neon-panel neon-panel--tight p-6">
-        <div class="text-center mb-6">
-          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl border border-cyan-400/35 bg-black/25 text-xl text-cyan-300 mb-3">
-            <i class="fa-solid fa-train-subway" aria-hidden="true"></i>
-          </div>
-          <h1 class="text-lg font-semibold text-white">移动端原型</h1>
-          <p class="text-[11px] text-slate-500 mt-1">武汉地铁保护区管理平台</p>
-        </div>
-        <p class="text-center text-sm text-slate-400 mb-4">移动端页面将在此目录（app/）中扩展。</p>
-        <a href="../index.html" class="block w-full py-2.5 text-center text-sm font-semibold wh-btn-primary rounded">返回入口</a>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>武汉地铁保护区 — 移动端原型</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/miniapp.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"PingFang SC"', '"PingFang TC"', '-apple-system', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="miniapp-device-root">
+  <div class="device-iphone15" aria-label="iPhone 15 原型预览">
+    <div class="device-screen">
+      <div class="device-status" aria-hidden="true">
+        <span class="device-status__time" id="device-time">9:41</span>
+        <span class="device-status__icons">
+          <i class="fa-solid fa-signal"></i>
+          <i class="fa-solid fa-wifi"></i>
+          <i class="fa-solid fa-battery-full"></i>
+        </span>
       </div>
+      <iframe id="app-frame" title="小程序内容" src="map/pages/gis.html"></iframe>
+      <nav class="device-tabbar" aria-label="主导航">
+        <button type="button" class="device-tabbar__item is-active" data-tab-id="map">
+          <i class="fa-solid fa-map"></i>
+          <span>全景地图</span>
+        </button>
+        <button type="button" class="device-tabbar__item" data-tab-id="patrol">
+          <i class="fa-solid fa-clipboard-check"></i>
+          <span>巡检</span>
+        </button>
+        <button type="button" class="device-tabbar__item" data-tab-id="asset">
+          <i class="fa-solid fa-cubes"></i>
+          <span>资产</span>
+        </button>
+        <button type="button" class="device-tabbar__item" data-tab-id="stats">
+          <i class="fa-solid fa-chart-simple"></i>
+          <span>数据统计</span>
+        </button>
+        <button type="button" class="device-tabbar__item" data-tab-id="mine">
+          <i class="fa-solid fa-user"></i>
+          <span>我的</span>
+        </button>
+      </nav>
     </div>
-  </body>
+  </div>
+  <script src="assets/js/miniapp-config.js"></script>
+  <script src="assets/js/miniapp-ui.js"></script>
+  <script>
+    (function () {
+      var el = document.getElementById("device-time");
+      if (el) {
+        var d = new Date();
+        el.textContent = d.getHours() + ":" + String(d.getMinutes()).padStart(2, "0");
+      }
+    })();
+  </script>
+</body>
 </html>

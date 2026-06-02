@@ -321,8 +321,8 @@
       if (base) {
         return Object.assign({}, base, {
           projectName: row.projectName || base.projectName,
-          source: base.source || "AI",
-          handleMode: base.handleMode || "AI",
+          source: base.source || (global.WHMapAlerts && WHMapAlerts.ALERT_SOURCE_AI) || "全时全域·AI",
+          handleMode: base.handleMode || (global.WHMapAlerts && WHMapAlerts.ALERT_SOURCE_AI) || "全时全域·AI",
         });
       }
     }

@@ -1,0 +1,42 @@
+.card-grid-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-top: 1px solid rgba(34, 211, 238, 0.14);
+  background: rgba(2, 6, 23, 0.45);
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.card-grid-pager__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.card-grid-pager__right .wh-input {
+  height: 28px;
+  min-height: 28px;
+}
+
+.card-grid-pager__btn {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.card-grid-pager__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.card-grid-pager__page-num.is-active {
+  pointer-events: none;
+}

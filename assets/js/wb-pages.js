@@ -41,11 +41,11 @@
   ];
 
   var userRows = [
-    { userId: "1", userName: "admin", nickName: "系统管理员", deptName: "系统管理部", roleName: "超级管理员", postName: "平台负责人", lineName: "8号线", sectionStart: "洪山路", sectionEnd: "小洪山", sectionName: "洪山路-小洪山", phone: "13800001111", email: "admin@metro.com", sex: "男", status: true, createTime: "2026-05-01 09:12", deptId: "101", remark: "平台超级管理员", pilotCertName: "" },
-    { userId: "2", userName: "zhangsan", nickName: "张三", deptName: "平台运维组", roleName: "系统管理员", postName: "运维工程师", lineName: "8号线", sectionStart: "洪山路", sectionEnd: "徐家棚", sectionName: "洪山路-徐家棚", phone: "13800002222", email: "zhangsan@metro.com", sex: "男", status: true, createTime: "2026-05-03 10:18", deptId: "1011", remark: "负责日常运维", pilotCertName: "" },
-    { userId: "3", userName: "lisi", nickName: "李四", deptName: "人工巡检组", roleName: "业务审核员", postName: "巡检员", lineName: "7号线", sectionStart: "武昌火车站", sectionEnd: "小东门", sectionName: "武昌火车站-小东门", phone: "13800003333", email: "lisi@metro.com", sex: "女", status: false, createTime: "2026-05-04 13:02", deptId: "1021", remark: "待启用", pilotCertName: "李四-飞手证.pdf" },
-    { userId: "4", userName: "wangwu", nickName: "王五", deptName: "无人机巡检组", roleName: "业务审核员", postName: "飞手", lineName: "8号线", sectionStart: "徐家棚", sectionEnd: "徐东", sectionName: "徐家棚-徐东", phone: "13800004444", email: "wangwu@metro.com", sex: "男", status: true, createTime: "2026-05-05 16:26", deptId: "1022", remark: "无人机审批员", pilotCertName: "王五-飞手证.pdf", avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&q=80" },
-    { userId: "5", userName: "zhaoliu", nickName: "赵六", deptName: "资料管理组", roleName: "系统管理员", postName: "", lineName: "19号线", sectionStart: "花山河", sectionEnd: "光谷五路", sectionName: "花山河-光谷五路", phone: "13800005555", email: "zhaoliu@metro.com", sex: "", status: true, createTime: "2026-05-06 08:41", deptId: "1031", remark: "资料库维护", pilotCertName: "" },
+    { userId: "1", userName: "admin", nickName: "系统管理员", userType: "内部", deptName: "系统管理部", roleName: "超级管理员", postName: "平台负责人", lineName: "8号线", sectionStart: "洪山路", sectionEnd: "小洪山", sectionName: "洪山路-小洪山", phone: "13800001111", email: "admin@metro.com", sex: "男", status: true, createTime: "2026-05-01 09:12", deptId: "101", remark: "平台超级管理员", pilotCertName: "" },
+    { userId: "2", userName: "zhangsan", nickName: "张三", userType: "内部", deptName: "平台运维组", roleName: "系统管理员", postName: "运维工程师", lineName: "8号线", sectionStart: "洪山路", sectionEnd: "徐家棚", sectionName: "洪山路-徐家棚", phone: "13800002222", email: "zhangsan@metro.com", sex: "男", status: true, createTime: "2026-05-03 10:18", deptId: "1011", remark: "负责日常运维", pilotCertName: "" },
+    { userId: "3", userName: "lisi", nickName: "李四", userType: "内部", deptName: "人工巡检组", roleName: "业务审核员", postName: "巡检员", lineName: "7号线", sectionStart: "武昌火车站", sectionEnd: "小东门", sectionName: "武昌火车站-小东门", phone: "13800003333", email: "lisi@metro.com", sex: "女", status: false, createTime: "2026-05-04 13:02", deptId: "1021", remark: "待启用", pilotCertName: "李四-飞手证.pdf" },
+    { userId: "4", userName: "wangwu", nickName: "王五", userType: "外部", deptName: "无人机巡检组", roleName: "业务审核员", postName: "飞手", lineName: "8号线", sectionStart: "徐家棚", sectionEnd: "徐东", sectionName: "徐家棚-徐东", phone: "13800004444", email: "wangwu@metro.com", sex: "男", status: true, createTime: "2026-05-05 16:26", deptId: "1022", remark: "无人机审批员", pilotCertName: "王五-飞手证.pdf", avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&q=80" },
+    { userId: "5", userName: "zhaoliu", nickName: "赵六", userType: "外部", deptName: "资料管理组", roleName: "系统管理员", postName: "", lineName: "19号线", sectionStart: "花山河", sectionEnd: "光谷五路", sectionName: "花山河-光谷五路", phone: "13800005555", email: "zhaoliu@metro.com", sex: "", status: true, createTime: "2026-05-06 08:41", deptId: "1031", remark: "资料库维护", pilotCertName: "" },
   ];
 
   var deptRows = [
@@ -401,6 +401,7 @@
         title: "用户管理",
         filters: [
           { key: "userName", label: "用户名称" },
+          { key: "userType", label: "用户类型", type: "select", options: ["内部", "外部"] },
           { key: "phone", label: "手机号码" },
           { key: "statusText", label: "状态", type: "select", options: ["启用", "停用"] },
           { key: "createTime", label: "创建时间" },
@@ -418,6 +419,7 @@
           { key: "userId", label: "用户编号" },
           { key: "userName", label: "用户名称" },
           { key: "nickName", label: "用户昵称" },
+          { key: "userType", label: "用户类型" },
           { key: "deptName", label: "部门" },
           { key: "roleName", label: "角色" },
           { key: "lineName", label: "所属线路" },
