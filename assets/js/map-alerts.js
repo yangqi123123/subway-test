@@ -154,7 +154,6 @@
           geoCoord: "114.3145, 30.5868",
           position: "保护区范围内",
           riskLevel: "严重",
-          warningMethod: "无人机巡线/全时全域",
           image: DEFAULT_PHOTOS[2] || DEFAULT_PHOTOS[0],
           approvalRecords: [
             {
@@ -1186,7 +1185,6 @@
       ],
       ["位置", item.position || item.alarmArea || item.location || "—"],
       ["等级", item.riskLevel || item.uavRecord.level || "—"],
-      ["预警方式", item.warningMethod || "无人机巡线/全时全域"],
     ]);
     document.getElementById("record-alarm").innerHTML = "";
     document.getElementById("record-uav").innerHTML =

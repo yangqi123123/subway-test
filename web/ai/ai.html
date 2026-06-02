@@ -203,7 +203,7 @@
                 <div class="flex gap-3"><span class="ai-field-label">位置</span><span id="detail-area">保护区范围内</span></div>
                 <div class="flex gap-3"><span class="ai-field-label">类型</span><span id="detail-type">挖机</span></div>
                 <div class="flex gap-3"><span class="ai-field-label">等级</span><span id="detail-level" class="ai-grade-1 font-semibold">特别严重</span></div>
-                <div class="flex gap-3"><span class="ai-field-label">预警方式</span><span>无人机巡线/全时全域</span></div>
+                <div class="flex gap-3"><span class="ai-field-label">告警来源</span><span id="detail-source">无人机</span></div>
               </div>
 
               <div class="mb-4 text-cyan-200 font-semibold">填写审批信息</div>
@@ -346,6 +346,7 @@
         var detailType = document.getElementById("detail-type");
         var detailLevel = document.getElementById("detail-level");
         var detailLocation = document.getElementById("detail-location");
+        var detailSource = document.getElementById("detail-source");
         var detailProjectSelect = null;
         var projectOptions = [];
         var mediaButtons = document.querySelectorAll("[data-media]");
@@ -502,6 +503,7 @@
           detailType.textContent = "—";
           detailLevel.textContent = "—";
           detailLevel.className = "font-semibold";
+          if (detailSource) detailSource.textContent = "—";
         }
 
         function activateById(id) {
@@ -519,6 +521,7 @@
           detailType.textContent = current.type;
           detailLevel.textContent = current.level;
           detailLevel.className = current.levelClass + " font-semibold";
+          if (detailSource) detailSource.textContent = current.source || "无人机";
           if (current.riskImage) riskImage.src = current.riskImage;
           if (current.riskVideo) riskVideo.src = current.riskVideo || current.riskImage;
         }
