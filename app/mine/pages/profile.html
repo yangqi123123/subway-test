@@ -2,14 +2,84 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>个人资料</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/mine-mobile.css" />
 </head>
-<body data-miniapp="profile" data-module="mine" data-base="../">
+<body class="mp-disease-page mp-mine-page mp-project-page miniapp-page">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title">个人资料</h1>
+  </header>
+
+  <div id="profile-app" class="mp-disease-app mp-project-app">
+    <section id="profile-form-view" class="mp-detail-view">
+      <form id="profile-form" class="mp-disease-form-scroll">
+        <div class="mp-profile-avatar-row">
+          <img id="profile-avatar-preview" src="" alt="头像" />
+          <button type="button" data-action="pick-avatar">更换头像</button>
+          <input id="profile-avatar-input" type="file" accept="image/*" hidden />
+        </div>
+
+        <div class="mp-form-grid" id="profile-form-root">
+          <div class="mp-form-row">
+            <label class="project-form-label">账号</label>
+            <input id="profile-account" class="wh-input mp-field" readonly />
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label project-required">昵称</label>
+            <input id="profile-nickname" class="wh-input mp-field" placeholder="请输入昵称" />
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label">邮箱</label>
+            <input id="profile-email" type="email" class="wh-input mp-field" placeholder="请输入邮箱" />
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label project-required">手机号</label>
+            <input id="profile-phone" type="tel" class="wh-input mp-field" placeholder="请输入手机号" inputmode="tel" />
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label">性别</label>
+            <select id="profile-gender" class="wh-input mp-field">
+              <option value="男">男</option>
+              <option value="女">女</option>
+              <option value="保密">保密</option>
+            </select>
+          </div>
+          <div class="mp-form-row mp-form-row--full">
+            <label class="project-form-label">飞手证</label>
+            <div class="mp-pilot-upload">
+              <img id="profile-pilot-preview" alt="飞手证预览" hidden />
+              <button type="button" class="mp-pilot-upload__btn" data-action="pick-pilot">
+                <i class="fa-solid fa-cloud-arrow-up"></i>上传飞手证图片
+              </button>
+              <input id="profile-pilot-input" type="file" accept="image/*" hidden />
+            </div>
+          </div>
+        </div>
+      </form>
+      <footer class="mp-detail-footer">
+        <button type="submit" form="profile-form" class="mp-detail-footer__btn mp-detail-footer__btn--primary">保存</button>
+      </footer>
+    </section>
+  </div>
+
+  <div id="profile-toast" aria-live="polite"></div>
+
   <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+  <script src="../../../assets/js/wb-profile-page.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/mine-page-boot.js"></script>
+  <script>
+    WHProfilePage.bootProfile();
+    MinePageBoot.start();
+  </script>
 </body>
 </html>

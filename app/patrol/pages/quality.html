@@ -1,15 +1,124 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>统计分析</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/quality-mobile.css" />
 </head>
-<body data-miniapp="placeholder" data-module="patrol" data-title="统计分析" data-base="../" data-desc="对接后台「统计分析」模块，当前为页面框架占位。">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-quality-page mp-project-page miniapp-page" data-miniapp="page" data-module="patrol" data-title="统计分析" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title" id="quality-nav-title">统计分析</h1>
+  </header>
+
+  <div id="quality-app" class="mp-quality-app mp-project-app">
+    <section id="quality-list-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-project-stats">
+          <div class="mp-stat-card mp-stat-card--total">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-share-nodes"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-key-today">0/0</div>
+              <div class="mp-stat-card__label">今日重点项目巡查</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--key">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-crosshairs"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-normal-today">0/0</div>
+              <div class="mp-stat-card__label">今日一般项目巡查</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--general">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-object-group"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-key-week">0</div>
+              <div class="mp-stat-card__label">本周重点项目巡查</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--month">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-terminal"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-key-month">0</div>
+              <div class="mp-stat-card__label">本月重点项目巡查</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mp-project-searchbar">
+          <div class="mp-search-input-wrap" data-action="open-quality-search" role="button" tabindex="0" aria-label="搜索统计分析">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="text" id="quality-search-trigger" class="mp-search-input" placeholder="搜索项目名称 / 序号" readonly />
+            <button type="button" class="mp-search-clear" id="quality-search-clear" hidden aria-label="清空搜索">
+              <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+          </div>
+          <button type="button" class="mp-filter-text-btn" data-action="open-quality-filter">筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i></button>
+        </div>
+
+        <div id="quality-mobile-list" class="mp-project-list" role="list"></div>
+      </div>
+    </section>
+
+    <tbody id="quality-table-body" hidden aria-hidden="true"></tbody>
+  </div>
+
+  <div id="quality-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-quality-filter"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-quality-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field mp-filter-field--full"><span>所属线路</span>
+          <select id="filter-line" class="wh-input w-full px-2">
+            <option value="">全部</option>
+            <option value="2号线">2号线</option>
+            <option value="7号线">7号线</option>
+            <option value="11号线">11号线</option>
+          </select>
+        </label>
+        <label class="mp-filter-field mp-filter-field--full"><span>项目类型</span>
+          <select id="filter-type" class="wh-input w-full px-2">
+            <option value="">全部</option>
+            <option value="重点项目">重点项目</option>
+            <option value="一般项目">一般项目</option>
+          </select>
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-quality-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-quality">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mp-picker-sheet" class="mp-picker-sheet" aria-hidden="true">
+    <div class="mp-picker-sheet__mask" data-action="mp-picker-mask-close"></div>
+    <div class="mp-picker-sheet__panel" role="dialog">
+      <div class="mp-picker-sheet__head">
+        <button type="button" class="mp-picker-sheet__btn" data-action="mp-picker-cancel">取消</button>
+        <h3 id="mp-picker-title" class="mp-picker-sheet__title">请选择</h3>
+        <button type="button" class="mp-picker-sheet__btn mp-picker-sheet__btn--ok" data-action="mp-picker-confirm">确定</button>
+      </div>
+      <div id="mp-picker-body" class="mp-picker-sheet__body"></div>
+    </div>
+  </div>
+
+  <div class="project-toast" id="quality-toast" aria-live="polite"></div>
+
+  <script src="../../../assets/js/in-quality-stats-data.js"></script>
+  <script src="../../../assets/js/in-project-mobile.js"></script>
+  <script src="../../../assets/js/in-quality-stats-page.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/quality-page-boot.js"></script>
 </body>
 </html>

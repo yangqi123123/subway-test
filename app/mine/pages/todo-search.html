@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>搜索待办</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/project-search.css" />
+</head>
+<body class="mp-project-search-page miniapp-page" data-miniapp="page" data-module="mine" data-title="搜索待办" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" id="wb-search-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title">搜索待办</h1>
+  </header>
+
+  <main class="mp-project-search-main">
+    <div class="mp-project-search-bar">
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      <input
+        type="text"
+        id="wb-search-input"
+        class="mp-project-search-bar__input"
+        placeholder="输入标题关键词"
+        autocomplete="off"
+        enterkeyhint="search"
+      />
+      <button type="button" class="mp-project-search-bar__clear" id="wb-search-clear" hidden aria-label="清空">
+        <i class="fa-solid fa-circle-xmark"></i>
+      </button>
+      <button type="button" class="mp-project-search-bar__submit" id="wb-search-submit">搜索</button>
+    </div>
+    <p class="mp-project-search-hint" id="wb-search-hint">输入标题关键词后点击搜索，将返回待办列表展示筛选结果</p>
+  </main>
+
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/wb-todo-search-page.js"></script>
+  <script>
+    if (window.MiniAppFrame && window.MiniAppFrame.syncTabbar) window.MiniAppFrame.syncTabbar();
+  </script>
+</body>
+</html>

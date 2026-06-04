@@ -238,21 +238,52 @@
     );
   }
 
-  function renderStripHtml(kind, projectName, previewCount) {
+  function renderStripHtml(kind, projectName, previewCount, clickable, projectNames) {
     var media = getProjectMedia(projectName);
     var list = kind === "video" ? media.videos || [] : media.photos || [];
     var n = Math.min(list.length, Math.max(1, previewCount || 2));
     if (!list.length) {
       return '<span class="text-[10px] text-slate-500">—</span>';
     }
+    var names = resolveProjectNameList(projectName, projectNames);
     return list
       .slice(0, n)
-      .map(function (item) {
-        if (kind === "video") return videoThumb(item);
-        var url = typeof item === "string" ? item : item.url;
-        return photoThumb(url);
+      .map(function (item, index) {
+        var inner;
+        if (kind === "video") inner = videoThumb(item);
+        else {
+          var url = typeof item === "string" ? item : item.url;
+          inner = photoThumb(url);
+        }
+        if (!clickable) return inner;
+        var itemLabel = projectLabelAt(names, index);
+        return (
+          '<button type="button" class="patrol-media-strip__item" data-patrol-media-item data-media-kind="' +
+          kind +
+          '" data-media-index="' +
+          index +
+          '" data-project-name="' +
+          esc(projectName) +
+          '" data-project-label="' +
+          esc(itemLabel) +
+          '">' +
+          inner +
+          "</button>"
+        );
       })
       .join("");
+  }
+
+  function renderDetailGrid(options) {
+    ensureStyles();
+    options = options || {};
+    var kind = options.kind === "video" ? "video" : "photo";
+    var projectName = options.projectName || "";
+    return (
+      '<div class="patrol-media-cell patrol-media-cell--direct patrol-media-cell--detail-grid">' +
+      renderPopoverGrid(kind, projectName, options.projectNames) +
+      "</div>"
+    );
   }
 
   function renderCell(options) {
@@ -262,33 +293,41 @@
     var projectName = options.projectName || "";
     var rowKey = options.rowKey || projectName;
     var nameList = resolveProjectNameList(projectName, options.projectNames);
-    var stripHtml = renderStripHtml(kind, projectName, options.previewCount);
+    var directPreview = !!options.directPreview;
+    var stripHtml = renderStripHtml(kind, projectName, options.previewCount, directPreview, nameList);
     var icon = kind === "video" ? "fa-clapperboard" : "fa-images";
     var label = kind === "video" ? "视频" : "照片";
     var namesAttr =
       nameList.length > 1
         ? ' data-project-names="' + esc(JSON.stringify(nameList)) + '"'
         : "";
+    var expandBtn = directPreview
+      ? ""
+      : '<button type="button" class="patrol-media-expand" data-patrol-media-expand data-media-kind="' +
+        kind +
+        '" data-row-key="' +
+        esc(rowKey) +
+        '" data-project-name="' +
+        esc(projectName) +
+        '"' +
+        namesAttr +
+        ' title="查看全部' +
+        label +
+        '">' +
+        '<i class="fa-solid ' +
+        icon +
+        '"></i></button>';
+    var cellClass = directPreview ? " patrol-media-cell--direct" : "";
 
     return (
-      '<div class="patrol-media-cell">' +
+      '<div class="patrol-media-cell' +
+      cellClass +
+      '">' +
       '<div class="patrol-media-strip">' +
       stripHtml +
       "</div>" +
-      '<button type="button" class="patrol-media-expand" data-patrol-media-expand data-media-kind="' +
-      kind +
-      '" data-row-key="' +
-      esc(rowKey) +
-      '" data-project-name="' +
-      esc(projectName) +
-      '"' +
-      namesAttr +
-      ' title="查看全部' +
-      label +
-      '">' +
-      '<i class="fa-solid ' +
-      icon +
-      '"></i></button></div>'
+      expandBtn +
+      "</div>"
     );
   }
 
@@ -384,12 +423,38 @@
     openAnchor = null;
   }
 
+  function isMiniAppPage() {
+    return !!(global.document.body && global.document.body.classList.contains("miniapp-page"));
+  }
+
   function openItemPreview(kind, projectName, index, projectLabel) {
     var media = getProjectMedia(projectName);
     var list = kind === "video" ? media.videos || [] : media.photos || [];
     var item = list[index];
     if (!item) return;
     var displayName = projectLabel || projectName || "";
+    if (isMiniAppPage() && global.WHProjectMobile && global.WHProjectMobile.openFilePreview) {
+      if (kind === "video") {
+        var videoItem = typeof item === "string" ? { url: item, poster: item, title: "巡查视频" } : item;
+        WHProjectMobile.openFilePreview({
+          url: videoItem.url,
+          title: displayName || videoItem.title || "巡查视频",
+          name: displayName || videoItem.title || "巡查视频",
+          kind: "video",
+          mimeType: "video/mp4",
+        });
+      } else {
+        var photoUrl = typeof item === "string" ? item : item.url;
+        WHProjectMobile.openFilePreview({
+          url: normalizePhotoUrl(photoUrl, 1200),
+          title: displayName || "巡查照片",
+          name: displayName || "巡查照片",
+          kind: "image",
+          mimeType: "image/jpeg",
+        });
+      }
+      return;
+    }
     if (global.WHFlightReportModal && global.WHFlightReportModal.openMediaPreview) {
       if (kind === "video") {
         var v = typeof item === "string" ? { url: item, poster: item, title: "巡查视频" } : item;
@@ -405,6 +470,28 @@
           kind: "image",
           url: normalizePhotoUrl(url, 1200),
           title: displayName || "巡查照片",
+        });
+      }
+      return;
+    }
+    if (global.WHProjectMobile && global.WHProjectMobile.openFilePreview) {
+      if (kind === "video") {
+        var fallbackVideo = typeof item === "string" ? { url: item, poster: item, title: "巡查视频" } : item;
+        WHProjectMobile.openFilePreview({
+          url: fallbackVideo.url,
+          title: displayName || fallbackVideo.title || "巡查视频",
+          name: displayName || fallbackVideo.title || "巡查视频",
+          kind: "video",
+          mimeType: "video/mp4",
+        });
+      } else {
+        var fallbackPhotoUrl = typeof item === "string" ? item : item.url;
+        WHProjectMobile.openFilePreview({
+          url: normalizePhotoUrl(fallbackPhotoUrl, 1200),
+          title: displayName || "巡查照片",
+          name: displayName || "巡查照片",
+          kind: "image",
+          mimeType: "image/jpeg",
         });
       }
       return;
@@ -446,6 +533,7 @@
 
   global.WHPatrolMediaGallery = {
     renderCell: renderCell,
+    renderDetailGrid: renderDetailGrid,
     registerProjectMedia: registerProjectMedia,
     getProjectMedia: getProjectMedia,
     getSystemPhotoList: getSystemPhotoList,

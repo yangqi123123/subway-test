@@ -250,6 +250,14 @@
     );
   }
 
+  function isGisMobilePage() {
+    return !!(
+      typeof document !== "undefined" &&
+      document.body &&
+      document.body.classList.contains("gis-mobile-page")
+    );
+  }
+
   function buildDetailNavHtml(url) {
     if (!url) return "";
     return (
@@ -258,6 +266,23 @@
       String(url).replace(/"/g, "&quot;") +
       '">前往详情页</button></div>'
     );
+  }
+
+  function buildCockpitNavHtml() {
+    if (isGisMobilePage()) return "";
+    return (
+      '<div class="gis-detail-action">' +
+      '<button type="button" class="gis-detail-btn gis-detail-btn--block" data-cockpit-url="cockpit/map-cockpit-prep.html">前往虚拟座舱</button></div>'
+    );
+  }
+
+  function buildAirportCardActionsHtml(item, options) {
+    options = options || {};
+    if (isGisMobilePage()) return "";
+    if (options.hideCockpitNav) {
+      return buildDetailNavHtml(airportDetailUrl(item.airportName));
+    }
+    return buildCockpitNavHtml() + buildDetailNavHtml(airportDetailUrl(item.airportName));
   }
 
   function trackPersonDetailUrl(deviceCode) {
@@ -807,12 +832,7 @@
                 item.distance +
                 "</span></div>"
               : "") +
-            (options.hideCockpitNav
-              ? buildDetailNavHtml(airportDetailUrl(item.airportName))
-              : '<div class="gis-detail-action">' +
-                '<button type="button" class="gis-detail-btn gis-detail-btn--block" data-cockpit-url="cockpit/map-cockpit-prep.html">前往虚拟座舱</button>' +
-                "</div>" +
-                buildDetailNavHtml(airportDetailUrl(item.airportName))) +
+            buildAirportCardActionsHtml(item, options) +
             "</div>"
           );
         })
@@ -1780,49 +1800,7 @@
     }
 
     function renderAirportDronePanel(items) {
-      return (
-        '<div class="gis-airport-panel' + (items.length === 1 ? " gis-airport-panel--single" : "") + '">' +
-        items
-          .map(function (item) {
-            return (
-              '<div class="gis-airport-card">' +
-              '<div class="gis-airport-card__row"><span class="gis-airport-card__label">机场名称:</span><span class="gis-airport-card__value">' +
-              item.airportName +
-              "</span></div>" +
-              gisAirportCardFlightPlanRow(item) +
-              '<div class="gis-airport-card__row"><span class="gis-airport-card__label">当前状态:</span><span class="gis-airport-status"><i class="fa-solid fa-circle"></i>' +
-              item.airportStatus +
-              "</span></div>" +
-              '<div class="gis-airport-card__spacer"></div>' +
-              '<div class="gis-airport-card__row"><span class="gis-airport-card__label">无人机名称:</span><span class="gis-airport-card__value">' +
-              item.droneName +
-              "</span></div>" +
-              '<div class="gis-airport-card__row"><span class="gis-airport-card__label">当前状态:</span><span class="gis-airport-status"><i class="fa-solid fa-circle"></i>' +
-              item.droneStatus +
-              "</span></div>" +
-              '<div class="gis-airport-card__row"><span class="gis-airport-card__label">电量:</span><span class="gis-airport-card__value">' +
-              item.battery +
-              "</span></div>" +
-              '<div class="gis-airport-card__row"><span class="gis-airport-card__label">是否满足起飞条件:</span><span class="gis-airport-card__value ' +
-              (item.ready ? "is-ready" : "is-not-ready") +
-              '">' +
-              item.readyText +
-              "</span></div>" +
-            (item.distance
-              ? '<div class="gis-airport-card__row"><span class="gis-airport-card__label">与该报警点之间的距离:</span><span class="gis-airport-card__value ' +
-                (item.ready ? "" : "is-not-ready") +
-                '">' +
-                item.distance +
-                "</span></div>"
-              : "") +
-            '<div class="gis-detail-action"><button type="button" class="gis-detail-btn gis-detail-btn--block" data-cockpit-url="cockpit/map-cockpit-prep.html">前往虚拟座舱</button></div>' +
-            buildDetailNavHtml(airportDetailUrl(item.airportName)) +
-            "</div>"
-          );
-        })
-        .join("") +
-        "</div>"
-      );
+      return buildAirportDronePanelHtml(items, { hideCockpitNav: false });
     }
 
     function getProjectLatestPhoto(item) {
@@ -1966,7 +1944,7 @@
             { label: "长度", value: item.length },
             { label: "经度", value: item.lng },
             { label: "纬度", value: item.lat },
-          ]) + buildDetailNavHtml(stationDetailUrl(item))
+          ]) + (isGisMobilePage() ? "" : buildDetailNavHtml(stationDetailUrl(item)))
         );
       });
       addSearchEntry({ name: item.name, typeLabel: "站点", ll: item.ll, category: "stations", marker: marker });
@@ -2109,7 +2087,7 @@
       }).addTo(layers.staff);
       registerFeature(marker, layers.staff, "staff", staffLineKeys[staffIdx % staffLineKeys.length]);
       marker.on("click", function () {
-        openDetailPanel("人员轨迹", renderTrackPanel(item, trackPersonDetailUrl(item.deviceCode)));
+        openDetailPanel("人员轨迹", renderTrackPanel(item, isGisMobilePage() ? null : trackPersonDetailUrl(item.deviceCode)));
       });
       addSearchEntry({
         name: item.deviceCode,
@@ -2197,7 +2175,7 @@
       var marker = L.marker(item.ll, { icon: makeBadgeIcon("#2563eb", "fa-solid fa-helicopter-symbol", 28) }).addTo(layers.drones);
       registerFeature(marker, layers.drones, "drones", droneIdx === 0 ? "l2" : "l8");
       marker.on("click", function () {
-        openDetailPanel("无人机详情", renderTrackPanel(item, flightLogDetailUrl(item.deviceCode)));
+        openDetailPanel("无人机详情", renderTrackPanel(item, isGisMobilePage() ? null : flightLogDetailUrl(item.deviceCode)));
       });
       addSearchEntry({
         name: item.deviceCode,

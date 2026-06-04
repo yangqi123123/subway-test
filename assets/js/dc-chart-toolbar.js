@@ -3,6 +3,7 @@
  */
 (function (global) {
   function DCChartToolbar(options) {
+    this.options = options || {};
     this.canvas = options.canvas;
     this.ctx = this.canvas.getContext("2d");
     this.toolsEl = options.toolsEl;
@@ -15,9 +16,139 @@
       chartType: "bar",
     };
     this._downloadMenu = null;
+    this._hitRegions = [];
+    this._lastConfig = null;
+    this._lastLayout = null;
     this._bindTools();
+    this._bindPointerEvents();
     this.render();
   }
+
+  DCChartToolbar.prototype._isCompact = function () {
+    if (this.options.compact) return true;
+    return !!(this.canvas && this.canvas.closest && this.canvas.closest(".mp-line-stats-page"));
+  };
+
+  DCChartToolbar.prototype._theme = function () {
+    var compact = this._isCompact();
+    return {
+      axisFont: compact ? "14px sans-serif" : "12px sans-serif",
+      axisColor: compact ? "#64748b" : "#94a3b8",
+      gridColor: compact ? "rgba(100,116,139,.22)" : "rgba(148,163,184,.18)",
+    };
+  };
+
+  DCChartToolbar.prototype._ensureTooltip = function () {
+    var stage = this.canvas && this.canvas.parentElement;
+    if (!stage) return null;
+    if (!this._tooltip) {
+      var tip = stage.querySelector(".dc-chart-tooltip");
+      if (!tip) {
+        tip = document.createElement("div");
+        tip.className = "dc-chart-tooltip";
+        tip.setAttribute("role", "tooltip");
+        stage.appendChild(tip);
+      }
+      this._tooltip = tip;
+    }
+    return this._tooltip;
+  };
+
+  DCChartToolbar.prototype._hideTooltip = function () {
+    if (this._tooltip) this._tooltip.classList.remove("is-visible");
+  };
+
+  DCChartToolbar.prototype._showTooltip = function (region, clientX, clientY) {
+    var tip = this._ensureTooltip();
+    if (!tip || !region) return;
+    var lines = ['<div class="dc-chart-tooltip__title">' + region.label + "</div>"];
+    (region.series || []).forEach(function (item) {
+      lines.push(
+        '<div class="dc-chart-tooltip__row"><span>' +
+          item.name +
+          '</span><b>' +
+          item.value +
+          "</b></div>"
+      );
+    });
+    tip.innerHTML = lines.join("");
+    tip.classList.add("is-visible");
+    var stage = this.canvas.parentElement;
+    var stageRect = stage.getBoundingClientRect();
+    var tipRect = tip.getBoundingClientRect();
+    var left = clientX - stageRect.left + 12;
+    var top = clientY - stageRect.top - tipRect.height - 12;
+    if (left + tipRect.width > stageRect.width - 8) {
+      left = clientX - stageRect.left - tipRect.width - 12;
+    }
+    if (left < 8) left = 8;
+    if (top < 8) top = clientY - stageRect.top + 12;
+    tip.style.left = left + "px";
+    tip.style.top = top + "px";
+  };
+
+  DCChartToolbar.prototype._canvasPoint = function (event) {
+    var rect = this.canvas.getBoundingClientRect();
+    var clientX = event.clientX;
+    var clientY = event.clientY;
+    if (event.touches && event.touches[0]) {
+      clientX = event.touches[0].clientX;
+      clientY = event.touches[0].clientY;
+    }
+    var scaleX = this.canvas.width / rect.width;
+    var scaleY = this.canvas.height / rect.height;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+      clientX: clientX,
+      clientY: clientY,
+    };
+  };
+
+  DCChartToolbar.prototype._bindPointerEvents = function () {
+    var self = this;
+    if (!this.canvas || this.canvas._dcPointerBound) return;
+    this.canvas._dcPointerBound = true;
+    this.canvas.style.touchAction = "pan-y";
+
+    function handlePointer(event) {
+      if (self.state.viewMode === "table") return;
+      var point = self._canvasPoint(event);
+      var hit = self._hitRegions.find(function (region) {
+        return (
+          point.x >= region.x &&
+          point.x <= region.x + region.w &&
+          point.y >= region.y &&
+          point.y <= region.y + region.h
+        );
+      });
+      if (hit) self._showTooltip(hit, point.clientX, point.clientY);
+      else self._hideTooltip();
+    }
+
+    this.canvas.addEventListener("mousemove", handlePointer);
+    this.canvas.addEventListener("mouseleave", function () {
+      self._hideTooltip();
+    });
+    this.canvas.addEventListener("touchstart", handlePointer, { passive: true });
+    this.canvas.addEventListener("touchmove", handlePointer, { passive: true });
+    this.canvas.addEventListener("touchend", function () {
+      self._hideTooltip();
+    });
+  };
+
+  DCChartToolbar.prototype._registerHit = function (region) {
+    this._hitRegions.push(region);
+  };
+
+  DCChartToolbar.prototype._seriesValuesAt = function (layout, index) {
+    return (layout.series || []).map(function (series) {
+      return {
+        name: series.name || "数值",
+        value: (series.values || [])[index] || 0,
+      };
+    });
+  };
 
   DCChartToolbar.prototype._bindTools = function () {
     var self = this;
@@ -79,15 +210,36 @@
 
   DCChartToolbar.prototype.render = function () {
     var config = this.getConfig();
-    if (!config || !config.labels || !config.series) {
+    if (!config || !config.series) {
       return;
     }
+    this._lastConfig = config;
+    this._hitRegions = [];
+    this._hideTooltip();
     this._updateToolStates(config);
     if (this.state.viewMode === "table") {
+      if (!config.labels || !config.labels.length) {
+        if (this.tableWrap) {
+          this.tableWrap.innerHTML = '<div class="dc-chart-empty">暂无数据</div>';
+          this.tableWrap.classList.add("is-visible");
+        }
+        this.canvas.style.display = "none";
+        return;
+      }
       this._showTable(config);
       return;
     }
     this._showCanvas();
+    if (!config.labels || !config.labels.length) {
+      var ctx = this.ctx;
+      ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      ctx.font = this._theme().axisFont;
+      ctx.fillStyle = this._theme().axisColor;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("暂无数据", this.canvas.width / 2, this.canvas.height / 2);
+      return;
+    }
     if (this.state.chartType === "line") this._drawLine(config);
     else if (this.state.barLayout === "grouped") this._drawGrouped(config);
     else this._drawStacked(config);
@@ -131,11 +283,13 @@
   };
 
   DCChartToolbar.prototype._measureText = function (text, font) {
-    this.ctx.font = font || "12px sans-serif";
+    var theme = this._theme();
+    this.ctx.font = font || theme.axisFont;
     return this.ctx.measureText(text || "").width;
   };
 
   DCChartToolbar.prototype._layout = function (config) {
+    var compact = this._isCompact();
     var w = this.canvas.width;
     var h = this.canvas.height;
     var labels = config.labels || [];
@@ -146,13 +300,14 @@
       maxLabelW = Math.max(maxLabelW, this._measureText(label));
     }, this);
     var right = Math.max(48, Math.ceil(axisLabelW) + 24, Math.ceil(maxLabelW * 0.35));
-    var bottom = labels.length > 8 ? 88 : labels.length > 4 ? 72 : 64;
+    var bottom =
+      labels.length > 8 ? (compact ? 96 : 88) : labels.length > 4 ? (compact ? 80 : 72) : compact ? 72 : 64;
     return {
       w: w,
       h: h,
-      left: 78,
+      left: compact ? 90 : 78,
       right: right,
-      top: 40,
+      top: compact ? 44 : 40,
       bottom: bottom,
       max: config.max || 100,
       labels: labels,
@@ -163,6 +318,8 @@
 
   DCChartToolbar.prototype._drawGrid = function (layout, yLabel, axisLabel) {
     var ctx = this.ctx;
+    var theme = this._theme();
+    var compact = this._isCompact();
     var w = layout.w;
     var h = layout.h;
     var left = layout.left;
@@ -171,9 +328,9 @@
     var bottom = layout.bottom;
     var categoryLabel = axisLabel || layout.axisLabel || "";
     ctx.clearRect(0, 0, w, h);
-    ctx.font = "12px sans-serif";
-    ctx.fillStyle = "#94a3b8";
-    ctx.strokeStyle = "rgba(148,163,184,.18)";
+    ctx.font = theme.axisFont;
+    ctx.fillStyle = theme.axisColor;
+    ctx.strokeStyle = theme.gridColor;
     var gridCount = 6;
     for (var i = 0; i <= gridCount; i++) {
       var value = Math.round((layout.max / gridCount) * i);
@@ -182,15 +339,16 @@
       ctx.moveTo(left, y);
       ctx.lineTo(w - right, y);
       ctx.stroke();
-      ctx.fillText(String(value), 34, y + 4);
+      ctx.fillText(String(value), compact ? 38 : 34, y + 4);
     }
     ctx.textAlign = "left";
-    ctx.fillText(yLabel || "数量", 22, top - 10);
+    ctx.fillText(yLabel || "数量", compact ? 24 : 22, top - 10);
     if (categoryLabel) {
       ctx.textAlign = "right";
       ctx.fillText(categoryLabel, w - 14, h - 14);
       ctx.textAlign = "left";
     }
+    this._lastLayout = layout;
     return layout;
   };
 
@@ -228,23 +386,27 @@
           ctx.fillStyle = this._barColor(series, i);
         }
         ctx.fillRect(x, y, barW, barH);
-        if (value > 0 && barH > 14) {
-          ctx.fillStyle = "#fff";
-          ctx.font = "bold 11px sans-serif";
-          ctx.fillText(String(value), x + Math.max(6, barW / 2 - 10), y + barH / 2 + 4);
-        }
         stackBase = y;
       }, this);
+      this._registerHit({
+        x: left + slot * i,
+        y: top,
+        w: slot,
+        h: h - top - bottom,
+        label: label,
+        series: this._seriesValuesAt(layout, i),
+      });
       this._drawXLabel(label, x + barW / 2, h, bottom, layout.labels.length);
     }, this);
   };
 
   DCChartToolbar.prototype._drawXLabel = function (label, centerX, h, bottom, labelCount) {
     var ctx = this.ctx;
+    var theme = this._theme();
     var rotate = labelCount > 8;
     var y = h - (rotate ? 36 : 22);
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "12px sans-serif";
+    ctx.fillStyle = theme.axisColor;
+    ctx.font = theme.axisFont;
     ctx.save();
     ctx.translate(centerX, y);
     if (rotate) {
@@ -289,12 +451,15 @@
           ctx.fillStyle = this._barColor(series, i);
         }
         ctx.fillRect(x, y, barW, barH);
-        if (value > 0 && barH > 12) {
-          ctx.fillStyle = "#fff";
-          ctx.font = "bold 10px sans-serif";
-          ctx.fillText(String(value), x + 2, y - 4);
-        }
       }, this);
+      this._registerHit({
+        x: left + slot * i,
+        y: top,
+        w: slot,
+        h: h - top - bottom,
+        label: label,
+        series: this._seriesValuesAt(layout, i),
+      });
       this._drawXLabel(label, gx + groupW / 2, h, bottom, layout.labels.length);
     }, this);
   };
@@ -331,25 +496,96 @@
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = "#e2f5ff";
-        ctx.font = "bold 11px sans-serif";
-        ctx.fillText(String(value), x + 6, y - 6);
         ctx.fillStyle = color;
       });
     });
+
+    layout.labels.forEach(
+      function (label, i) {
+        var x = left + slot * i;
+        this._registerHit({
+          x: x - Math.max(14, slot / 2),
+          y: top,
+          w: Math.max(28, slot),
+          h: h - top - bottom,
+          label: label,
+          series: this._seriesValuesAt(layout, i),
+        });
+        this._drawXLabel(label, x, h, bottom, layout.labels.length);
+      }.bind(this)
+    );
   };
 
   DCChartToolbar.prototype._showCanvas = function () {
     this.canvas.classList.remove("is-hidden");
-    if (this.tableWrap) this.tableWrap.classList.remove("is-visible");
+    if (this.tableWrap) {
+      this.tableWrap.classList.remove("is-visible");
+      this.tableWrap.classList.remove("dc-chart-table-wrap--split");
+    }
   };
 
-  DCChartToolbar.prototype._showTable = function (config) {
-    this.canvas.classList.add("is-hidden");
+  DCChartToolbar.prototype._applyTableColgroup = function (table, widths, tableWidth) {
+    var existing = table.querySelector("colgroup");
+    if (existing) existing.remove();
+    var cg = document.createElement("colgroup");
+    widths.forEach(function (w) {
+      var col = document.createElement("col");
+      col.style.width = w + "px";
+      cg.appendChild(col);
+    });
+    table.insertBefore(cg, table.firstChild);
+    table.style.tableLayout = "fixed";
+    table.style.width = tableWidth + "px";
+    table.style.minWidth = "100%";
+  };
+
+  DCChartToolbar.prototype._fitSplitTableColumns = function () {
     if (!this.tableWrap) return;
-    this.tableWrap.classList.add("is-visible");
-    var series = config.series || [];
-    var head =
+    var split = this.tableWrap.querySelector(".dc-chart-table-split");
+    if (!split) return;
+    var headTable = split.querySelector(".dc-chart-table--head");
+    var bodyTable = split.querySelector(".dc-chart-table--body");
+    if (!headTable || !bodyTable) return;
+
+    var headRow = headTable.querySelector("thead tr");
+    var bodyRows = bodyTable.querySelectorAll("tbody tr");
+    if (!headRow) return;
+
+    headTable.querySelectorAll("colgroup").forEach(function (node) {
+      node.remove();
+    });
+    bodyTable.querySelectorAll("colgroup").forEach(function (node) {
+      node.remove();
+    });
+    headTable.style.width = "auto";
+    bodyTable.style.width = "auto";
+    headTable.style.tableLayout = "auto";
+    bodyTable.style.tableLayout = "auto";
+
+    var colCount = headRow.cells.length;
+    var widths = [];
+
+    for (var c = 0; c < colCount; c++) {
+      var maxW = headRow.cells[c].scrollWidth;
+      for (var r = 0; r < bodyRows.length; r++) {
+        var cell = bodyRows[r].cells[c];
+        if (cell) maxW = Math.max(maxW, cell.scrollWidth);
+      }
+      widths.push(Math.max(maxW, c === 0 ? 80 : 64));
+    }
+
+    var tableW = widths.reduce(function (sum, w) {
+      return sum + w;
+    }, 0);
+    var wrapW = this.tableWrap.clientWidth || tableW;
+    var finalW = Math.max(tableW, wrapW);
+
+    this._applyTableColgroup(headTable, widths, finalW);
+    this._applyTableColgroup(bodyTable, widths, finalW);
+  };
+
+  DCChartToolbar.prototype._buildTableHeadRow = function (config, series) {
+    return (
       "<tr><th>" +
       (config.axisLabel || "分类") +
       "</th>" +
@@ -358,8 +594,12 @@
           return "<th>" + (s.name || "数值") + "</th>";
         })
         .join("") +
-      "<th>合计</th></tr>";
-    var rows = config.labels
+      "<th>合计</th></tr>"
+    );
+  };
+
+  DCChartToolbar.prototype._buildTableBodyRows = function (config, series) {
+    return (config.labels || [])
       .map(function (label, i) {
         var sum = 0;
         var cells = series
@@ -372,6 +612,55 @@
         return "<tr><td>" + label + "</td>" + cells + "<td>" + sum + "</td></tr>";
       })
       .join("");
+  };
+
+  DCChartToolbar.prototype._syncSplitTableScroll = function () {
+    if (!this.tableWrap) return;
+    var split = this.tableWrap.querySelector(".dc-chart-table-split");
+    if (!split) return;
+    var head = split.querySelector(".dc-chart-table-head");
+    var body = split.querySelector(".dc-chart-table-body");
+    if (!head || !body) return;
+    body.addEventListener(
+      "scroll",
+      function () {
+        head.scrollLeft = body.scrollLeft;
+      },
+      { passive: true }
+    );
+  };
+
+  DCChartToolbar.prototype._showTable = function (config) {
+    this.canvas.classList.add("is-hidden");
+    if (!this.tableWrap) return;
+    this.tableWrap.classList.add("is-visible");
+    var series = config.series || [];
+    var head = this._buildTableHeadRow(config, series);
+    var rows = this._buildTableBodyRows(config, series);
+
+    if (this._isCompact()) {
+      var self = this;
+      this.tableWrap.classList.add("dc-chart-table-wrap--split");
+      this.tableWrap.innerHTML =
+        '<div class="dc-chart-table-split">' +
+        '<div class="dc-chart-table-head" aria-hidden="false">' +
+        '<table class="dc-chart-table dc-chart-table--head"><thead>' +
+        head +
+        "</thead></table></div>" +
+        '<div class="dc-chart-table-body">' +
+        '<table class="dc-chart-table dc-chart-table--body"><tbody>' +
+        rows +
+        "</tbody></table></div></div>";
+      this._syncSplitTableScroll();
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          self._fitSplitTableColumns();
+        });
+      });
+      return;
+    }
+
+    this.tableWrap.classList.remove("dc-chart-table-wrap--split");
     this.tableWrap.innerHTML =
       '<table class="dc-chart-table"><thead>' + head + "</thead><tbody>" + rows + "</tbody></table>";
   };

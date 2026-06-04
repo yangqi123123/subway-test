@@ -488,277 +488,46 @@
   </div>
 
   <script src="../../assets/js/search-select.js"></script>
+  <script src="../../assets/js/am-emergency-staff-data.js"></script>
+  <script src="../../assets/js/am-emergency-staff-page.js"></script>
+  <script src="../../assets/js/table-row-open.js"></script>
   <script>
     (function () {
-      var deptSelect = WHSearchSelect.mountById("staff-dept-select", "请搜索或选择部门", WHSearchSelect.DEPT_OPTIONS);
-
-      var rows = [
-        { name:"王强", dept:"应急中心", no:"E1029", post:"应急主管", line:"7号线", phone:"13800001001", address:"洪山区民族大道 188 号", lng:"114.4035", lat:"30.5112", remark:"夜间值守" },
-        { name:"李倩", dept:"巡检部", no:"E1038", post:"巡检专员", line:"2号线", phone:"13800001002", address:"江汉区常青一路 56 号", lng:"114.2418", lat:"30.6492", remark:"常备无人机证照" },
-        { name:"刘凯", dept:"调度部", no:"E1046", post:"调度员", line:"5号线", phone:"13800001003", address:"武昌区白沙洲大道 78 号", lng:"114.3141", lat:"30.5078", remark:"白班" },
-        { name:"赵敏", dept:"应急中心", no:"E1052", post:"联络员", line:"11号线", phone:"13800001004", address:"东湖高新区高新大道 99 号", lng:"114.4498", lat:"30.4853", remark:"节假日待命" },
-        { name:"陈涛", dept:"巡检部", no:"E1059", post:"设备员", line:"7号线", phone:"13800001005", address:"洪山区雄楚大道 120 号", lng:"114.3782", lat:"30.5071", remark:"设备维护" }
-      ];
-
-      var displayRows = rows.slice();
-      var editIndex = -1;
-      var deleteNo = "";
-      var tableBody = document.getElementById("staff-table-body");
-      var tableTotal = document.getElementById("table-total");
-      var modalMask = document.getElementById("staff-modal-mask");
-      var confirmMask = document.getElementById("confirm-mask");
-      var modalTitle = document.getElementById("staff-modal-title");
-      var detailMask = document.getElementById("staff-detail-mask");
-      var detailBody = document.getElementById("staff-detail-body");
-      var detailSubtitle = document.getElementById("staff-detail-subtitle");
-
-      function escHtml(value) {
-        return String(value || "").replace(/[&<>"']/g, function (char) {
-          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
-        });
-      }
-      function detailValue(value) {
-        var text = value === undefined || value === null || value === "" ? "—" : String(value);
-        return '<div class="detail-value' + (text === "—" ? " detail-value--empty" : "") + '">' + escHtml(text) + "</div>";
-      }
-      function detailRow(label, value) {
-        return '<label class="staff-form-item"><span class="staff-form-label">' + escHtml(label) + "：</span>" + detailValue(value) + "</label>";
-      }
-      function buildDetailHtml(row) {
-        return (
-          '<div class="staff-form-grid">' +
-          detailRow("姓名", row.name) +
-          detailRow("部门", row.dept) +
-          detailRow("工号", row.no) +
-          detailRow("岗位", row.post) +
-          detailRow("所属线路", row.line) +
-          detailRow("联系方式", row.phone) +
-          detailRow("常驻地址", row.address) +
-          detailRow("地址经度", row.lng) +
-          detailRow("地址纬度", row.lat) +
-          detailRow("备注", row.remark) +
-          "</div>"
-        );
-      }
-      function openDetailRow(row) {
-        if (!row || !detailMask || !detailBody) return;
-        if (detailSubtitle) detailSubtitle.textContent = row.name || "应急人员详情";
-        detailBody.innerHTML = buildDetailHtml(row);
-        detailMask.classList.add("show");
-        detailMask.setAttribute("aria-hidden", "false");
-      }
-      function openDetail(displayIndex) {
-        openDetailRow(displayRows[displayIndex]);
-      }
-      function closeDetail() {
-        if (!detailMask) return;
-        detailMask.classList.remove("show");
-        detailMask.setAttribute("aria-hidden", "true");
-      }
-
-      function openDetailFromQuery() {
-        var params = new URLSearchParams(location.search);
-        if (params.get("view") !== "detail") return;
-        var name = params.get("name");
-        var no = params.get("no");
-        if (!name && !no) return;
-        var idx = displayRows.findIndex(function (row) {
-          return (no && row.no === no) || (name && row.name === name);
-        });
-        if (idx >= 0) {
-          openDetail(idx);
-          return;
+      document.addEventListener("DOMContentLoaded", function () {
+        if (typeof WHSearchSelect !== "undefined") {
+          window.__WHStaffDeptSelect = WHSearchSelect.mountById(
+            "staff-dept-select",
+            "请搜索或选择部门",
+            WHSearchSelect.DEPT_OPTIONS
+          );
         }
-        openDetailRow({
-          name: name || "—",
-          dept: params.get("dept") || "—",
-          no: no || "—",
-          post: params.get("post") || "—",
-          line: params.get("line") || "—",
-          phone: params.get("phone") || "—",
-          address: params.get("address") || "—",
-          lng: params.get("lng") || "—",
-          lat: params.get("lat") || "—",
-          remark: params.get("remark") || "—",
-        });
-      }
-
-      function findRowIndex(no) {
-        return rows.findIndex(function (row) { return row.no === no; });
-      }
-
-      function updateStaffStats(data) {
-        var list = data || [];
-        var depts = {};
-        var lines = {};
-        var emergency = 0;
-        list.forEach(function (row) {
-          depts[row.dept] = true;
-          lines[row.line] = true;
-          if (row.dept === "应急中心") emergency += 1;
-        });
-        document.getElementById("stat-total").textContent = String(list.length);
-        document.getElementById("stat-dept").textContent = String(Object.keys(depts).length);
-        document.getElementById("stat-lines").textContent = String(Object.keys(lines).length);
-        document.getElementById("stat-emergency").textContent = String(emergency);
-        if (tableTotal) tableTotal.textContent = String(list.length);
-      }
-
-      function initQuickLinks() {
+        if (window.WHEmergencyStaffPage) {
+          WHEmergencyStaffPage.boot({
+            mobile: false,
+            deptSelect: window.__WHStaffDeptSelect || null,
+          });
+        }
         document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
           var target = anchor.getAttribute("data-quick-href");
           if (target && typeof whPageHref === "function") anchor.setAttribute("href", whPageHref(target));
         });
-      }
-
-      function renderRows() {
-        tableBody.innerHTML = displayRows.map(function (row, index) {
-          return '<tr class="wh-row-open ' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '" data-row-index="' + index + '">' +
-            '<td class="px-4">' + row.name + '</td>' +
-            '<td class="px-4">' + row.dept + '</td>' +
-            '<td class="px-4">' + row.no + '</td>' +
-            '<td class="px-4">' + row.post + '</td>' +
-            '<td class="px-4">' + row.line + '</td>' +
-            '<td class="px-4">' + row.phone + '</td>' +
-            '<td class="px-4">' + row.address + '</td>' +
-            '<td class="px-4">' + row.lng + '</td>' +
-            '<td class="px-4">' + row.lat + '</td>' +
-            '<td class="px-4">' + row.remark + '</td>' +
-            '<td class="px-4 disease-col-actions"><div class="disease-op-actions">' +
-              '<span class="staff-action text-amber-300" data-action="edit-staff" data-staff-no="' + row.no + '"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
-              '<span class="staff-action text-rose-300" data-action="delete-staff" data-staff-no="' + row.no + '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
-            '</div></td>' +
-          '</tr>';
-        }).join("");
-        updateStaffStats(displayRows);
-      }
-
-      function applyFilter() {
-        var name = document.getElementById("filter-name").value.trim();
-        var dept = document.getElementById("filter-dept").value;
-        var no = document.getElementById("filter-no").value.trim();
-        var line = document.getElementById("filter-line").value;
-        displayRows = rows.filter(function (row) {
-          if (name && row.name.indexOf(name) === -1) return false;
-          if (dept && row.dept !== dept) return false;
-          if (no && row.no.indexOf(no) === -1) return false;
-          if (line && row.line !== line) return false;
-          return true;
-        });
-        renderRows();
-      }
-
-      function resetFilters() {
-        document.getElementById("filter-name").value = "";
-        document.getElementById("filter-dept").value = "";
-        document.getElementById("filter-no").value = "";
-        document.getElementById("filter-line").value = "";
-        displayRows = rows.slice();
-        renderRows();
-      }
-
-      function openModal(mode, index) {
-        WHSearchSelect.closeAll(null);
-        editIndex = mode === "edit" ? index : -1;
-        modalTitle.textContent = mode === "edit" ? "编辑应急人员" : "新增应急人员";
-        var row = index > -1 ? rows[index] : null;
-        document.getElementById("staff-name").value = row ? row.name : "";
-        if (deptSelect) deptSelect.setValue(row ? row.dept : "");
-        document.getElementById("staff-no").value = row ? row.no : "";
-        document.getElementById("staff-post").value = row ? row.post : "";
-        document.getElementById("staff-line").value = row ? row.line : "2号线";
-        document.getElementById("staff-phone").value = row ? row.phone : "";
-        document.getElementById("staff-address").value = row ? row.address : "";
-        document.getElementById("staff-lng").value = row ? row.lng : "";
-        document.getElementById("staff-lat").value = row ? row.lat : "";
-        document.getElementById("staff-remark").value = row ? row.remark : "";
-        modalMask.classList.add("show");
-      }
-
-      function closeModal() {
-        modalMask.classList.remove("show");
-      }
-
-      function saveStaff() {
-        var name = document.getElementById("staff-name").value.trim();
-        var no = document.getElementById("staff-no").value.trim();
-        var phone = document.getElementById("staff-phone").value.trim();
-        var dept = deptSelect ? deptSelect.getValue() : "";
-        if (!name || !no || !phone) {
-          alert("请完善必填项：姓名、工号、联系方式");
-          return;
-        }
-        if (!dept) {
-          alert("请选择部门");
-          return;
-        }
-        var row = {
-          name: name,
-          dept: dept,
-          no: no,
-          post: document.getElementById("staff-post").value.trim() || "-",
-          line: document.getElementById("staff-line").value,
-          phone: phone,
-          address: document.getElementById("staff-address").value.trim() || "-",
-          lng: document.getElementById("staff-lng").value.trim() || "-",
-          lat: document.getElementById("staff-lat").value.trim() || "-",
-          remark: document.getElementById("staff-remark").value.trim() || "-"
-        };
-        if (editIndex > -1) rows[editIndex] = row;
-        else rows.unshift(row);
-        closeModal();
-        applyFilter();
-      }
-
-      document.getElementById("btn-search").addEventListener("click", applyFilter);
-      document.getElementById("btn-reset").addEventListener("click", resetFilters);
-      document.getElementById("btn-export-template").addEventListener("click", function () { alert("模板导出（原型演示）"); });
-      document.getElementById("btn-import").addEventListener("click", function () { alert("导入人员（原型演示）"); });
-      initQuickLinks();
-      function setupListRowClick() {
-        if (!window.WHTableRowClick) return window.setTimeout(setupListRowClick, 40);
-        WHTableRowClick.bindById("staff-table-body", {
-          getRows: function () { return displayRows; },
-          onOpen: function (row, index) { openDetail(index); }
-        });
-      }
-      setupListRowClick();
-      displayRows = rows.slice();
-      renderRows();
-      setTimeout(openDetailFromQuery, 80);
-
-      document.addEventListener("click", function (event) {
-        var trigger = event.target.closest("[data-action]");
-        if (!trigger) return;
-        var action = trigger.getAttribute("data-action");
-        var staffNo = trigger.getAttribute("data-staff-no");
-        var index = staffNo ? findRowIndex(staffNo) : -1;
-        if (action === "new-staff") openModal("new");
-        if (action === "edit-staff" && index > -1) openModal("edit", index);
-        if (action === "delete-staff" && staffNo) {
-          deleteNo = staffNo;
-          confirmMask.classList.add("show");
-        }
-        if (action === "close-staff-modal") closeModal();
-        if (action === "close-staff-detail") closeDetail();
-        if (action === "save-staff") saveStaff();
-        if (action === "cancel-delete") {
-          deleteNo = "";
-          confirmMask.classList.remove("show");
-        }
-        if (action === "confirm-delete") {
-          var deleteIndex = deleteNo ? findRowIndex(deleteNo) : -1;
-          if (deleteIndex > -1) rows.splice(deleteIndex, 1);
-          deleteNo = "";
-          confirmMask.classList.remove("show");
-          applyFilter();
-        }
+        setTimeout(function () {
+          var params = new URLSearchParams(location.search);
+          if (params.get("view") !== "detail") return;
+          var name = params.get("name");
+          var no = params.get("no");
+          if (!name && !no) return;
+          var list = window.WH_EMERGENCY_STAFF_ROWS || [];
+          var idx = list.findIndex(function (row) {
+            return (no && row.no === no) || (name && row.name === name);
+          });
+          if (idx >= 0) {
+            var tbody = document.getElementById("staff-table-body");
+            var tr = tbody && tbody.querySelector('[data-row-index="' + idx + '"]');
+            if (tr) tr.click();
+          }
+        }, 200);
       });
-      if (detailMask) {
-        detailMask.addEventListener("click", function (event) {
-          if (event.target === detailMask) closeDetail();
-        });
-      }
     })();
   </script>
   <script src="../../assets/js/menu-config.js"></script>

@@ -1,0 +1,98 @@
+/* 移动端应急人员 */
+body.mp-staff-page #staff-list-view:not(.hidden),
+body.mp-staff-page #staff-detail-view:not(.hidden),
+body.mp-staff-page #staff-form-view:not(.hidden) {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-staff-page #staff-detail-view:not(.hidden),
+body.mp-staff-page #staff-form-view:not(.hidden) {
+  z-index: 20;
+}
+
+body.mp-staff-page #staff-list-view.hidden,
+body.mp-staff-page #staff-detail-view.hidden,
+body.mp-staff-page #staff-form-view.hidden {
+  display: none !important;
+}
+
+body.mp-staff-page #staff-list-view .mp-detail-footer {
+  flex-shrink: 0;
+  position: relative;
+}
+
+body.mp-staff-page #staff-form-view .mp-detail-footer {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+body.mp-staff-page .mp-staff-card__meta {
+  grid-template-columns: 1fr;
+}
+
+body.mp-staff-page .mp-filter-sheet__body.project-filter-panel {
+  grid-template-columns: 1fr;
+}
+
+body.mp-staff-page .mp-filter-sheet__body .mp-filter-field {
+  grid-column: 1 / -1;
+}
+
+body.mp-staff-page .mp-staff-dept-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mp-primary);
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+body.mp-staff-page .mp-staff-card__actions {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.mp-staff-page .mp-staff-card__actions .mp-project-action {
+  flex: 1 1 calc(33.33% - 6px);
+  min-width: 72px;
+  justify-content: center;
+}
+
+body.mp-scroll-locked #staff-app,
+body.mp-scroll-locked .mp-staff-page .mp-list-scroll,
+body.mp-scroll-locked .mp-staff-page .mp-disease-detail-scroll,
+body.mp-scroll-locked .mp-staff-page .mp-disease-form-scroll {
+  overflow: hidden !important;
+}
+
+body.mp-staff-page #staff-toast.project-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 13px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+body.mp-staff-page #staff-toast.project-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

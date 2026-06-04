@@ -12,12 +12,34 @@
       ? window.WuhanExpertReviewModal.DEFAULT_PHOTOS
       : FALLBACK_PHOTOS;
 
+  function patrolEventImageUrl() {
+    var root = typeof window !== "undefined" ? window : typeof globalThis !== "undefined" ? globalThis : {};
+    if (root.WHPatrolPreviewAssets && root.WHPatrolPreviewAssets.eventUrl) {
+      return root.WHPatrolPreviewAssets.eventUrl();
+    }
+    if (typeof root.whAsset === "function") return root.whAsset("assets/images/flight-report-event.png");
+    return DEFAULT_PHOTOS[0];
+  }
+
   /** 告警来源 / 处理状态（全时全域） */
   var ALERT_SOURCE_AI = "全时全域·AI";
   var ALERT_SOURCE_TRADITIONAL = "全时全域·传统";
   var ALERT_SOURCE_MIXED = "全时全域·传统+AI";
   var ALERT_SOURCE_UAV = "无人机";
+  var ALERT_SOURCE_FULLTIME = "全时全域";
   var ALERT_HANDLE_MODE_OPTIONS = [ALERT_SOURCE_AI, ALERT_SOURCE_TRADITIONAL, ALERT_SOURCE_MIXED];
+
+  function isFulltimeAlertSource(source) {
+    if (source == null || source === "") return false;
+    if (source === ALERT_SOURCE_UAV) return false;
+    return String(source).indexOf("全时全域") >= 0;
+  }
+
+  function formatAlertSourceDisplay(source) {
+    if (source == null || source === "") return "—";
+    if (isFulltimeAlertSource(source)) return ALERT_SOURCE_FULLTIME;
+    return String(source);
+  }
 
   function createProject(base) {
     return Object.assign(
@@ -233,8 +255,9 @@
             mistaken: "否",
             level: "一级告警",
             situation: "金融街T2大楼破拆机拆除",
-            image: DEFAULT_PHOTOS[0],
+            image: patrolEventImageUrl(),
           },
+          image: patrolEventImageUrl(),
         }),
         createProject({
           id: 202,
@@ -531,7 +554,11 @@
   function projectMatchesListFilters(project, interval, filters) {
     if (!projectIntervalInRange(project, interval, filters)) return false;
     if (filters.handleMode && project.handleMode !== filters.handleMode) return false;
-    if (filters.source && project.source !== filters.source) return false;
+    if (filters.source) {
+      if (filters.source === ALERT_SOURCE_FULLTIME) {
+        if (!isFulltimeAlertSource(project.source)) return false;
+      } else if (project.source !== filters.source) return false;
+    }
     var projectTime = parseAlertTime(project.startTime);
     if (filters.timeStart) {
       var rangeStart = parseAlertTime(filters.timeStart);
@@ -587,7 +614,7 @@
             p.alarmArea,
             p.startTime,
             p.latestTime,
-            p.source,
+            formatAlertSourceDisplay(p.source),
             p.handleMode,
             p.workflowStatus,
             p.mistaken || "—",
@@ -901,7 +928,7 @@
             p.latestTime +
             "</td>" +
             "<td>" +
-            p.source +
+            formatAlertSourceDisplay(p.source) +
             "</td>" +
             '<td><span class="alert-wf-status ' +
             statusClass(p.workflowStatus) +
@@ -1112,8 +1139,19 @@
     });
   }
 
+  function isPatrolMobileAlertPage() {
+    return !!(
+      document.body &&
+      (document.body.classList.contains("mp-patrol-page") ||
+        document.body.classList.contains("mp-todo-page"))
+    );
+  }
+
   function renderDisposal(item) {
     if (window.AlertDisposalTimeline) {
+      if (isPatrolMobileAlertPage() && AlertDisposalTimeline.renderAsRecordLog) {
+        return AlertDisposalTimeline.renderAsRecordLog(item);
+      }
       return AlertDisposalTimeline.render(item);
     }
     return '<div class="alert-disposal-empty">暂无处警记录</div>';
@@ -1121,20 +1159,129 @@
 
   function renderApprovalRecords(item) {
     if (window.AlertDisposalTimeline && window.AlertDisposalTimeline.renderApproval) {
+      if (isPatrolMobileAlertPage() && AlertDisposalTimeline.renderApprovalAsRecordLog) {
+        return AlertDisposalTimeline.renderApprovalAsRecordLog(item);
+      }
       return AlertDisposalTimeline.renderApproval(item);
     }
     return '<div class="alert-disposal-empty">暂无审批记录</div>';
   }
 
-  function buildExpertToolsHref(item) {
+  function escHtml(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch];
+    });
+  }
+
+  function buildExpertToolsHref(item, extraParams) {
     item = item || {};
     var params = ["from=alerts"];
     if (item.id != null) params.push("alertId=" + encodeURIComponent(item.id));
     var loc = item.section || item.alarmArea || item.location || "";
     if (loc) params.push("location=" + encodeURIComponent(loc));
+    if (extraParams && extraParams.length) params = params.concat(extraParams);
     var base =
       typeof whPageHref === "function" ? whPageHref("map/map-expert.html") : "map-expert.html";
     return base + (base.indexOf("?") >= 0 ? "&" : "?") + params.join("&");
+  }
+
+  function shouldNavigateSpectrumInTop() {
+    return (
+      document.documentElement.classList.contains("wh-embed-mode") ||
+      document.body.getAttribute("data-shell") === "embed" ||
+      window.self !== window.top
+    );
+  }
+
+  function resolveAbsoluteHref(href) {
+    try {
+      return new URL(href, window.location.href).href;
+    } catch (e) {
+      return href;
+    }
+  }
+
+  function navigateSpectrumExternal(href) {
+    var url = resolveAbsoluteHref(href);
+    if (shouldNavigateSpectrumInTop()) {
+      try {
+        window.top.location.href = url;
+        return;
+      } catch (e) {
+        /* ignore cross-origin */
+      }
+    }
+    window.location.href = url;
+  }
+
+  function renderSpectrumOpsHtml(item) {
+    return (
+      '<span class="alert-detail-link" data-spectrum-action="generate" role="button" tabindex="0">生成</span>' +
+      '<a href="' +
+      escHtml(buildExpertToolsHref(item)) +
+      '" class="alert-detail-link" data-spectrum-action="view" target="_top" rel="noopener noreferrer">查看</a>' +
+      '<a href="' +
+      escHtml(buildExpertToolsHref(item, ["annotate=1"])) +
+      '" class="alert-detail-link" data-spectrum-action="annotate" target="_top" rel="noopener noreferrer">典型事件标注</a>'
+    );
+  }
+
+  function showAlertDetailToast(msg) {
+    if (window.WuhanExpertReviewModal && window.WuhanExpertReviewModal.showToast) {
+      window.WuhanExpertReviewModal.showToast(msg);
+      return;
+    }
+    var el = document.getElementById("patrol-toast") || document.getElementById("expert-toast");
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(showAlertDetailToast._t);
+    showAlertDetailToast._t = setTimeout(function () {
+      el.classList.remove("show");
+    }, 1800);
+  }
+
+  function refreshSpectrumStatusCell() {
+    var grid = document.getElementById("alert-detail-grid");
+    if (!grid || !currentAlert) return;
+    grid.querySelectorAll(".alert-detail-item").forEach(function (node) {
+      var key = node.querySelector(".alert-detail-key");
+      if (!key || key.textContent !== "频谱图") return;
+      var val = node.querySelector(".alert-detail-val");
+      if (val) val.textContent = currentAlert.moment || "已生成";
+    });
+  }
+
+  function initAlertDetailSpectrumOps() {
+    if (initAlertDetailSpectrumOps.bound) return;
+    initAlertDetailSpectrumOps.bound = true;
+    document.addEventListener("click", function (e) {
+      var actionEl = e.target.closest("[data-spectrum-action]");
+      if (!actionEl || !actionEl.closest("#alert-detail-grid")) return;
+      var action = actionEl.getAttribute("data-spectrum-action");
+      if (action === "view" || action === "annotate") {
+        if (!shouldNavigateSpectrumInTop()) return;
+        var href = actionEl.getAttribute("href");
+        if (!href) return;
+        e.preventDefault();
+        navigateSpectrumExternal(href);
+        return;
+      }
+      e.preventDefault();
+      if (!currentAlert) return;
+      if (action === "generate") {
+        currentAlert.moment = "已生成";
+        refreshSpectrumStatusCell();
+        showAlertDetailToast("频谱图已生成");
+      }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      var actionEl = e.target.closest('[data-spectrum-action="generate"]');
+      if (!actionEl || !actionEl.closest("#alert-detail-grid")) return;
+      e.preventDefault();
+      actionEl.click();
+    });
   }
 
   function formatAlertGeoCoord(item) {
@@ -1174,31 +1321,97 @@
     if (detailShell) detailShell.classList.toggle("alert-detail-shell--uav", !!isUavDetail);
   }
 
-  function fillUavSourceDetail(item) {
-    document.getElementById("alert-detail-grid").innerHTML = renderDetailGridRows([
+  function isPortalDetailMode() {
+    return !document.getElementById("record-alarm");
+  }
+
+  function fillDetailPortal(item) {
+    var grid = document.getElementById("alert-detail-grid");
+    if (!grid || !item) return;
+    var disposalHost = document.getElementById("patrol-alert-disposal");
+    var isUav = isUavSourceAlert(item);
+
+    if (isUav) {
+      grid.innerHTML = renderDetailGridRows([
+        ["项目名称", item.projectName || "—"],
+        ["告警来源", formatAlertSourceDisplay(item.source)],
+        ["预警时间", item.alertTime || item.latestTime || item.startTime || "—"],
+        ["地理坐标", formatAlertGeoCoord(item)],
+        ["位置", item.position || item.alarmArea || item.location || "—"],
+        ["等级", item.riskLevel || (item.uavRecord && item.uavRecord.level) || "—"],
+      ]);
+      if (disposalHost) {
+        var uavImg =
+          (item.uavRecord && item.uavRecord.image) || item.image
+            ? '<div class="alert-uav-shot"><img src="' +
+              ((item.uavRecord && item.uavRecord.image) || item.image) +
+              '" alt="无人机实拍记录" /></div>'
+            : "";
+        disposalHost.innerHTML =
+          uavImg + '<div class="mp-patrol-alert-disposal__section"><h4>审批记录</h4>' + renderApprovalRecords(item) + "</div>";
+      }
+      return;
+    }
+
+    var noteText = (item.locationNote || "").trim();
+    grid.innerHTML = renderDetailGridRows([
       ["项目名称", item.projectName || "—"],
-      ["告警来源", item.source || "—"],
-      ["预警时间", item.alertTime || item.latestTime || item.startTime || "—"],
+      ["告警来源", formatAlertSourceDisplay(item.source || item.handleMode)],
+      ["报警类型", item.type || "—"],
+      ["报警区间", item.section || "—"],
+      ["位置", item.location || item.alarmPosition || "—"],
+      ["测点编码", item.code || "—"],
+      ["报警开始时间", item.startTime || "—"],
+      ["最新报警时间", item.lastTime || item.latestTime || "—"],
+      ["处理状态", item.workflowStatus || "—"],
+      ["频谱图", item.moment || "已生成"],
+      ["频谱图操作", renderSpectrumOpsHtml(item)],
       [
-        "地理坐标",
-        '<span class="text-[#f8ff4d]">' + formatAlertGeoCoord(item) + "</span>",
+        "当前位置备注",
+        noteText ? noteText : "暂无备注",
+        "full",
       ],
-      ["位置", item.position || item.alarmArea || item.location || "—"],
-      ["等级", item.riskLevel || item.uavRecord.level || "—"],
     ]);
-    document.getElementById("record-alarm").innerHTML = "";
-    document.getElementById("record-uav").innerHTML =
-      '<div class="alert-uav-shot"><img src="' +
-      ((item.uavRecord && item.uavRecord.image) || item.image) +
-      '" alt="无人机实拍记录" /></div>';
-    document.getElementById("record-disposal").innerHTML = renderApprovalRecords(item);
+    if (disposalHost) {
+      disposalHost.innerHTML =
+        '<div class="mp-patrol-alert-disposal__section"><h4>处警记录</h4>' + renderDisposal(item) + "</div>";
+    }
+  }
+
+  function fillUavSourceDetail(item) {
+    var grid = document.getElementById("alert-detail-grid");
+    if (grid) {
+      grid.innerHTML = renderDetailGridRows([
+        ["项目名称", item.projectName || "—"],
+        ["告警来源", formatAlertSourceDisplay(item.source)],
+        ["预警时间", item.alertTime || item.latestTime || item.startTime || "—"],
+        [
+          "地理坐标",
+          '<span class="text-[#f8ff4d]">' + formatAlertGeoCoord(item) + "</span>",
+        ],
+        ["位置", item.position || item.alarmArea || item.location || "—"],
+        ["等级", item.riskLevel || (item.uavRecord && item.uavRecord.level) || "—"],
+      ]);
+    }
+    var recordAlarm = document.getElementById("record-alarm");
+    if (recordAlarm) recordAlarm.innerHTML = "";
+    var recordUav = document.getElementById("record-uav");
+    if (recordUav) {
+      recordUav.innerHTML =
+        '<div class="alert-uav-shot"><img src="' +
+        ((item.uavRecord && item.uavRecord.image) || item.image) +
+        '" alt="无人机实拍记录" /></div>';
+    }
+    var recordDisposal = document.getElementById("record-disposal");
+    if (recordDisposal) recordDisposal.innerHTML = renderApprovalRecords(item);
   }
 
   function fillTraditionalDetail(item) {
     var noteText = (item.locationNote || "").trim();
-    document.getElementById("alert-detail-grid").innerHTML = renderDetailGridRows([
+    var grid = document.getElementById("alert-detail-grid");
+    if (grid) grid.innerHTML = renderDetailGridRows([
       ["项目名称", item.projectName || "—"],
-      ["告警来源", item.source || "—"],
+      ["告警来源", formatAlertSourceDisplay(item.source)],
       ["报警类型", item.type],
       ["报警区间", item.section],
       ["位置", item.location],
@@ -1206,13 +1419,8 @@
       ["报警开始时间", item.startTime],
       ["最新报警时间", item.lastTime],
       ["处理状态", item.workflowStatus],
-      ["频谱图", "已生成"],
-      [
-        "频谱图操作",
-        '<span class="alert-detail-link">生成</span><a href="' +
-          buildExpertToolsHref(item) +
-          '" class="alert-detail-link">查看</a><span class="alert-detail-link">典型事件标注</span>',
-      ],
+      ["频谱图", item.moment || "已生成"],
+      ["频谱图操作", renderSpectrumOpsHtml(item)],
       [
         "当前位置备注",
         noteText
@@ -1223,27 +1431,60 @@
     ]);
 
     var alarmRec = getAlarmRecordDisplay(item);
-    document.getElementById("record-alarm").innerHTML =
-      '<div class="flex items-center justify-center gap-3 mb-3">' +
-      '<span class="alert-dot"></span>' +
-      '<span class="alert-code-tag">' +
-      alarmRec.code +
-      "</span>" +
-      '<span class="alert-duration-pill">持续时间：' +
-      alarmRec.duration +
-      "</span></div>" +
-      '<div class="text-center text-[18px] text-slate-500">' +
-      alarmRec.range +
-      "</div>";
+    var recordAlarm = document.getElementById("record-alarm");
+    if (recordAlarm) {
+      var alarmHeadClass = isPatrolMobileAlertPage()
+        ? "mp-alert-record__head flex items-center justify-center gap-3 mb-3"
+        : "flex items-center justify-center gap-3 mb-3";
+      var rangeClass = isPatrolMobileAlertPage()
+        ? "mp-alert-record__range"
+        : "text-center text-[18px] text-slate-500";
+      recordAlarm.innerHTML =
+        '<div class="' +
+        alarmHeadClass +
+        '">' +
+        '<span class="alert-dot"></span>' +
+        '<span class="alert-code-tag">' +
+        alarmRec.code +
+        "</span>" +
+        '<span class="alert-duration-pill">持续时间：' +
+        alarmRec.duration +
+        "</span></div>" +
+        '<p class="' +
+        rangeClass +
+        '">' +
+        alarmRec.range +
+        "</p>";
+    }
 
-    document.getElementById("record-uav").innerHTML =
-      '<div class="alert-uav-shot"><img src="' +
-      (item.uavRecord.image || item.image) +
-      '" alt="无人机实拍记录" /></div>';
-    document.getElementById("record-disposal").innerHTML = renderDisposal(item);
+    var recordUav = document.getElementById("record-uav");
+    if (recordUav) {
+      recordUav.innerHTML =
+        '<div class="alert-uav-shot"><img src="' +
+        ((item.uavRecord && item.uavRecord.image) || item.image) +
+        '" alt="无人机实拍记录" /></div>';
+    }
+    var recordDisposal = document.getElementById("record-disposal");
+    if (recordDisposal) recordDisposal.innerHTML = renderDisposal(item);
+  }
+
+  function updateAlertDetailFlag(item) {
+    var flag = document.getElementById("patrol-alert-flag");
+    if (!flag || !item) return;
+    var label = String(item.type || "疑似钻探施工");
+    if (label.length > 4) {
+      var mid = Math.ceil(label.length / 2);
+      flag.innerHTML = label.slice(0, mid) + "<br />" + label.slice(mid);
+    } else {
+      flag.textContent = label;
+    }
   }
 
   function fillDetail(item) {
+    if (isPortalDetailMode()) {
+      fillDetailPortal(item);
+      return;
+    }
     var isUavDetail = isUavSourceAlert(item);
     setDetailSideLayout(isUavDetail);
     if (isUavDetail) fillUavSourceDetail(item);
@@ -1338,6 +1579,7 @@
       return false;
     }
     currentAlert = item;
+    updateAlertDetailFlag(item);
     fillDetail(item);
     mountDetailMap(item);
     mask.classList.add("show");
@@ -1351,6 +1593,9 @@
   }
 
   function initPortalDetailModal() {
+    initAlertDetailSpectrumOps();
+    if (initPortalDetailModal.bound) return;
+    initPortalDetailModal.bound = true;
     var mask = document.getElementById("wh-alert-detail-modal-mask");
     if (!mask) return;
     mask.addEventListener("click", function (e) {
@@ -1405,6 +1650,7 @@
 
   function init() {
     initPortalDetailModal();
+    initAlertDetailSpectrumOps();
     if (!document.getElementById("alert-tree-body")) return;
     applyAlertFlightPlanSubmission();
     initListFilters();
@@ -1421,13 +1667,21 @@
   var WHMapAlerts = {
     openDetail: openDetailModal,
     closeDetail: closeDetailModal,
+    initPortalDetailModal: initPortalDetailModal,
+    fillDetailPortal: fillDetailPortal,
+    updateAlertDetailFlag: updateAlertDetailFlag,
     findProject: findProject,
     createProject: createProject,
     fillDetail: fillDetail,
+    openManualReview: openManualReviewFor,
+    openDroneReview: openDroneReviewFor,
     ALERT_SOURCE_AI: ALERT_SOURCE_AI,
     ALERT_SOURCE_TRADITIONAL: ALERT_SOURCE_TRADITIONAL,
     ALERT_SOURCE_MIXED: ALERT_SOURCE_MIXED,
     ALERT_SOURCE_UAV: ALERT_SOURCE_UAV,
+    ALERT_SOURCE_FULLTIME: ALERT_SOURCE_FULLTIME,
+    formatAlertSourceDisplay: formatAlertSourceDisplay,
+    isFulltimeAlertSource: isFulltimeAlertSource,
     ALERT_HANDLE_MODE_OPTIONS: ALERT_HANDLE_MODE_OPTIONS,
   };
 

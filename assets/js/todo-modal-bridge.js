@@ -168,6 +168,15 @@
     });
   }
 
+  function formatAlarmSource(source) {
+    if (global.WHMapAlerts && global.WHMapAlerts.formatAlertSourceDisplay) {
+      return WHMapAlerts.formatAlertSourceDisplay(source);
+    }
+    if (source == null || source === "") return "—";
+    if (String(source).indexOf("全时全域") >= 0 && source !== "无人机") return "全时全域";
+    return String(source);
+  }
+
   function showMask(id) {
     var el = document.getElementById(id);
     if (el) el.classList.add("show");
@@ -281,7 +290,7 @@
     var note = (item.locationNote || "").trim();
     var grid = [
       ["项目名称", item.projectName],
-      ["告警来源", item.source || "—"],
+      ["告警来源", formatAlarmSource(item.source)],
       ["报警类型", item.type],
       ["报警区间", item.section],
       ["位置", item.location],
@@ -351,6 +360,15 @@
   }
 
   function getAlarmProject(alertId, row) {
+    if (global.WHMapAlerts && WHMapAlerts.findProject) {
+      var live = WHMapAlerts.findProject(alertId);
+      if (live) {
+        if (row && (row.workflowStatus || row.status)) {
+          live.workflowStatus = row.workflowStatus || row.status;
+        }
+        return live;
+      }
+    }
     var p = ALARM_PROJECTS[alertId];
     if (!p) return null;
     if (row && row.workflowStatus) {
@@ -400,9 +418,82 @@
       alert("未找到关联告警");
       return;
     }
+    if (global.WHMapAlerts && WHMapAlerts.openDetail) {
+      WHMapAlerts.openDetail(project);
+      return;
+    }
     var body = document.getElementById("todo-alarm-detail-body");
     if (body) body.innerHTML = buildAlarmDetailHtml(project);
     showMask("todo-alarm-detail-mask");
+  }
+
+  function openDroneAlarmReview(alertId, row) {
+    var project = getAlarmProject(alertId, row);
+    if (!project) {
+      alert("未找到关联告警");
+      return;
+    }
+    if (global.WHMapAlerts && WHMapAlerts.openDroneReview) {
+      WHMapAlerts.openDroneReview(project);
+      return;
+    }
+    alert("无人机复核模块未加载");
+  }
+
+  function collectAlarmProjectNames() {
+    if (global.WHMapAlerts && WHMapAlerts.findProject) {
+      var names = [];
+      [201, 202, 205].forEach(function (id) {
+        var p = WHMapAlerts.findProject(id);
+        if (p && p.projectName && names.indexOf(p.projectName) < 0) names.push(p.projectName);
+      });
+      if (names.length) {
+        return names.sort(function (a, b) {
+          return a.localeCompare(b, "zh-CN");
+        });
+      }
+    }
+    return Object.keys(ALARM_PROJECTS)
+      .map(function (id) {
+        return ALARM_PROJECTS[id] && ALARM_PROJECTS[id].projectName;
+      })
+      .filter(Boolean)
+      .filter(function (name, idx, arr) {
+        return arr.indexOf(name) === idx;
+      })
+      .sort(function (a, b) {
+        return a.localeCompare(b, "zh-CN");
+      });
+  }
+
+  function applyAlarmReviewData(alertId, row, data) {
+    var project = getAlarmProject(alertId, row);
+    if (!project) return null;
+    var t = global.WuhanExpertReviewModal ? global.WuhanExpertReviewModal.nowStr() : "";
+    project.workflowStatus = "已复核";
+    project.mistaken = data.mistaken;
+    if (data.projectName) project.projectName = data.projectName;
+    project.detail = data.scene || data.detail || project.detail;
+    project.review = {
+      projectName: data.projectName,
+      falseAlarm: data.falseAlarm,
+      levelAdjust: data.levelAdjust,
+      scene: data.scene,
+      photos: (data.photos || []).slice(),
+    };
+    project.disposalRecord = project.disposalRecord || [];
+    project.disposalRecord.push({
+      time: t,
+      type: "review",
+      text: (project.uavRecord && project.uavRecord.user ? project.uavRecord.user : "值班人员") + "提交现场复核情况",
+      review: true,
+      falseAlarm: data.falseAlarm,
+      levelAdjust: data.levelAdjust,
+      scene: data.scene,
+    });
+    ALARM_PROJECTS[alertId] = project;
+    syncAlarmRow(row, project);
+    return project;
   }
 
   function openAlarmReview(alertId, row, onDone) {
@@ -411,38 +502,33 @@
       alert("复核弹窗未加载");
       return;
     }
+    var projectSelectInst = null;
     global.WuhanExpertReviewModal.openReview(
       {
+        projectName: project.projectName || "",
+        projectNameOptions: collectAlarmProjectNames(),
+        showProjectSelect: true,
         falseAlarm: project.review ? project.review.falseAlarm : "非误报",
         levelAdjust: project.review ? project.review.levelAdjust : "一级告警",
         scene: project.review ? project.review.scene : project.detail,
         photos: project.review && project.review.photos ? project.review.photos : [project.image],
+        onFormReady: function () {
+          if (!global.WHSearchSelect) return;
+          projectSelectInst = WHSearchSelect.mountById(
+            "review-project-name-select",
+            "请搜索或选择项目名称",
+            collectAlarmProjectNames()
+          );
+          if (projectSelectInst) projectSelectInst.setValue(project.projectName || "");
+        },
       },
       function (data) {
-        var t = global.WuhanExpertReviewModal.nowStr();
-        project.workflowStatus = "已复核";
-        project.mistaken = data.mistaken;
-        project.detail = data.scene || data.detail;
-        project.review = {
-          falseAlarm: data.falseAlarm,
-          levelAdjust: data.levelAdjust,
-          scene: data.scene,
-          photos: data.photos.slice(),
-        };
-        project.disposalRecord = project.disposalRecord || [];
-        project.disposalRecord.push({
-          time: t,
-          type: "review",
-          text: (project.uavRecord.user || "值班人员") + "提交现场复核情况",
-          review: true,
-          falseAlarm: data.falseAlarm,
-          levelAdjust: data.levelAdjust,
-          scene: data.scene,
-        });
-        ALARM_PROJECTS[alertId] = project;
-        syncAlarmRow(row, project);
-        if (typeof onDone === "function") onDone(project);
-        global.WuhanExpertReviewModal.showToast("复核情况已保存");
+        if (projectSelectInst && projectSelectInst.getValue) {
+          var picked = projectSelectInst.getValue();
+          if (picked) data.projectName = picked;
+        }
+        var updated = applyAlarmReviewData(alertId, row, data);
+        if (typeof onDone === "function") onDone(updated ? data : null, data);
       }
     );
   }
@@ -467,8 +553,58 @@
       });
       ALARM_PROJECTS[alertId] = project;
       syncAlarmRow(row, project);
-      if (typeof onDone === "function") onDone(project);
+      if (typeof onDone === "function") onDone(project, decision);
     });
+  }
+
+  function flightPlanDetailPairs(planId) {
+    var p = findPlan(planId);
+    if (!p) return null;
+    return [
+      ["计划名称", p.name],
+      ["飞行航线", p.route],
+      ["适用机场", p.airport],
+      ["适用航空器", p.drone],
+      ["飞行策略", p.strategy],
+      ["执行时间", p.planTime],
+      ["计划类型", p.type],
+      ["所属线路", p.line],
+      ["申请人", p.applicant],
+      ["提交时间", p.submit],
+      ["审核状态", p.audit],
+      ["执行状态", p.exec],
+      ["空域许可", p.airspaceValid !== false ? "有效期内" : "不在有效期内"],
+    ];
+  }
+
+  function alarmDetailPairs(alertId, row) {
+    var item = getAlarmProject(alertId, row);
+    if (!item) return null;
+    var note = (item.locationNote || "").trim();
+    return [
+      ["项目名称", item.projectName],
+      ["告警来源", formatAlarmSource(item.source)],
+      ["报警类型", item.type],
+      ["报警区间", item.section],
+      ["位置", item.location],
+      ["测点编码", item.code],
+      ["报警开始时间", item.startTime],
+      ["最新报警时间", item.lastTime],
+      ["处理状态", item.workflowStatus],
+      ["当前位置备注", note || "暂无备注"],
+    ];
+  }
+
+  function todoPlanFromRow(row) {
+    var name =
+      row && row.title && row.title.indexOf("飞行计划审批 ") === 0
+        ? row.title.slice("飞行计划审批 ".length)
+        : row && row.title;
+    return { name: name || (row && row.title) || "飞行计划", audit: "审核中" };
+  }
+
+  function approvalRecordsForPlan(plan) {
+    return approvalRecords(plan || { audit: "审核中" });
   }
 
   global.TodoModalBridge = {
@@ -476,7 +612,20 @@
     openFlightPlanDetail: openFlightPlanDetail,
     openAlarmDetail: openAlarmDetail,
     openAlarmReview: openAlarmReview,
+    openDroneAlarmReview: openDroneAlarmReview,
+    applyAlarmReviewData: applyAlarmReviewData,
+    collectAlarmProjectNames: collectAlarmProjectNames,
     openAlarmAudit: openAlarmAudit,
     findPlan: findPlan,
+    getAlarmProject: getAlarmProject,
+    flightPlanDetailPairs: flightPlanDetailPairs,
+    alarmDetailPairs: alarmDetailPairs,
+    todoPlanFromRow: todoPlanFromRow,
+    approvalRecordsForPlan: approvalRecordsForPlan,
+    buildFlightPlanDetailHtml: buildFlightPlanDetailHtml,
+    buildAlarmDetailHtml: buildAlarmDetailHtml,
+    syncAlarmRow: syncAlarmRow,
+    FLIGHT_PLANS: FLIGHT_PLANS,
+    ALARM_PROJECTS: ALARM_PROJECTS,
   };
 })(window);

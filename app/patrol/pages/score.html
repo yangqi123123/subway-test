@@ -1,15 +1,123 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>巡查打分</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/score-mobile.css" />
 </head>
-<body data-miniapp="placeholder" data-module="patrol" data-title="巡查打分" data-base="../" data-desc="对接后台「巡查打分」模块，当前为页面框架占位。">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-score-page mp-project-page miniapp-page" data-miniapp="page" data-module="patrol" data-title="巡查打分" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title" id="score-nav-title">巡查打分</h1>
+  </header>
+
+  <div id="score-app" class="mp-score-app mp-project-app">
+    <section id="score-list-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-project-stats">
+          <div class="mp-stat-card mp-stat-card--total">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-clipboard-list"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-total">0</div>
+              <div class="mp-stat-card__label">评分记录</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--key">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-users"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-people">0</div>
+              <div class="mp-stat-card__label">巡查人员</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--general">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-avg">0</div>
+              <div class="mp-stat-card__label">平均最低分</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--month">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-low">0</div>
+              <div class="mp-stat-card__label">低分预警</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mp-project-searchbar">
+          <div class="mp-search-input-wrap" data-action="open-score-search" role="button" tabindex="0" aria-label="搜索巡查打分">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="text" id="score-search-trigger" class="mp-search-input" placeholder="搜索账号 / 人员 / 线路 / 设备" readonly />
+            <button type="button" class="mp-search-clear" id="score-search-clear" hidden aria-label="清空搜索">
+              <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+          </div>
+          <button type="button" class="mp-filter-text-btn" data-action="open-score-filter">筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i></button>
+        </div>
+
+        <div id="score-mobile-list" class="mp-project-list" role="list"></div>
+        <span id="table-total" hidden aria-hidden="true">0</span>
+      </div>
+    </section>
+
+    <section id="score-detail-view" class="hidden mp-detail-view">
+      <span id="detail-score-title" hidden aria-hidden="true"></span>
+      <div class="mp-score-detail-scroll">
+        <section class="mp-score-section">
+          <div class="mp-score-section__head">
+            <h2 class="mp-score-section__title">汇总信息</h2>
+          </div>
+          <div id="score-detail-summary" class="mp-score-summary"></div>
+        </section>
+
+        <section class="mp-score-section">
+          <div class="mp-score-section__head">
+            <h2 class="mp-score-section__title">区间评分明细</h2>
+          </div>
+          <div id="score-detail-list" class="mp-score-detail-list"></div>
+        </section>
+      </div>
+    </section>
+
+    <tbody id="score-table-body" hidden aria-hidden="true"></tbody>
+  </div>
+
+  <div id="score-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-score-filter"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-score-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field mp-filter-field--full"><span>开始时间</span>
+          <input id="filter-date-start" type="datetime-local" class="wh-input w-full px-2" />
+        </label>
+        <label class="mp-filter-field mp-filter-field--full"><span>结束时间</span>
+          <input id="filter-date-end" type="datetime-local" class="wh-input w-full px-2" />
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-score-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-score">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="project-toast" id="score-toast" aria-live="polite"></div>
+
+  <script src="../../../assets/js/in-score-data.js"></script>
+  <script src="../../../assets/js/in-project-mobile.js"></script>
+  <script src="../../../assets/js/in-score-page.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/score-page-boot.js"></script>
 </body>
 </html>

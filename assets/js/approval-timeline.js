@@ -189,11 +189,45 @@
     );
   }
 
+  function renderApprovalRecordsMobile(records) {
+    records = records || [];
+    if (global.ProjectOperationLog && global.ProjectOperationLog.ensureStyles) {
+      global.ProjectOperationLog.ensureStyles();
+    }
+    if (!records.length) {
+      return '<div class="record-empty">暂无审批记录</div>';
+    }
+    return (
+      '<div class="record-timeline">' +
+      records
+        .map(function (r) {
+          return (
+            '<div class="record-item">' +
+            '<p class="record-item__title">' +
+            esc(r.person || "—") +
+            "</p>" +
+            '<p class="record-item__meta">状态：' +
+            esc(r.status || "—") +
+            "</p>" +
+            '<p class="record-item__meta">日期：' +
+            esc(r.time || "—") +
+            "</p>" +
+            '<p class="record-item__meta">审批意见：' +
+            esc(r.opinion || "—") +
+            "</p></div>"
+          );
+        })
+        .join("") +
+      "</div>"
+    );
+  }
+
   global.ApprovalTimeline = {
     esc: esc,
     statusBadge: statusBadge,
     renderItem: renderItem,
     renderApprovalRecords: renderApprovalRecords,
+    renderApprovalRecordsMobile: renderApprovalRecordsMobile,
     renderDisposalRecords: renderDisposalRecords,
     prepareDisposalRecords: prepareDisposalRecords,
     approvalNodeClass: approvalNodeClass,

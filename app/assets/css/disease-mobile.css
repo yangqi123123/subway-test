@@ -1,0 +1,435 @@
+/* 移动端病害巡查 */
+body.mp-disease-page {
+  margin: 0;
+  min-height: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--mp-bg-subtle);
+  color: var(--mp-text);
+  font-size: 14px;
+}
+
+.mp-disease-app {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+body.mp-disease-page #disease-list-view:not(.hidden),
+body.mp-disease-page #disease-detail-view:not(.hidden),
+body.mp-disease-page #disease-form-view:not(.hidden) {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-disease-page #disease-detail-view:not(.hidden),
+body.mp-disease-page #disease-form-view:not(.hidden) {
+  z-index: 20;
+}
+
+body.mp-disease-page #disease-list-view.hidden,
+body.mp-disease-page #disease-detail-view.hidden,
+body.mp-disease-page #disease-form-view.hidden {
+  display: none !important;
+}
+
+body.mp-disease-page .mp-project-stats {
+  margin: 12px 14px 0;
+}
+
+body.mp-disease-page .mp-list-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 14px 12px;
+}
+
+body.mp-disease-page #disease-list-view .mp-detail-footer {
+  flex-shrink: 0;
+  position: relative;
+}
+
+body.mp-disease-page .mp-project-searchbar {
+  margin: 12px 0;
+}
+
+body.mp-disease-page .mp-disease-progress {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.12);
+}
+
+body.mp-disease-page .mp-disease-progress--pending {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
+}
+
+body.mp-disease-page .mp-disease-progress--reject {
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+body.mp-disease-page .mp-disease-progress--review {
+  color: #0e7490;
+  background: rgba(6, 182, 212, 0.12);
+}
+
+body.mp-disease-page .mp-disease-progress--done {
+  color: #166534;
+  background: rgba(34, 197, 94, 0.12);
+}
+
+body.mp-disease-page .mp-disease-card__meta {
+  grid-template-columns: 1fr 1fr;
+}
+
+body.mp-disease-page .mp-disease-card__meta .mp-disease-card__date {
+  grid-column: 1 / -1;
+}
+
+body.mp-disease-page .mp-disease-card__meta .mp-disease-card__date dd,
+body.mp-disease-page .mp-disease-card__meta .mp-project-card__meta-nowrap dd {
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+body.mp-disease-page .mp-disease-card__meta .mp-project-card__meta-full {
+  grid-column: 1 / -1;
+}
+
+body.mp-disease-page .mp-disease-card__actions {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.mp-disease-page .mp-disease-card__actions .mp-project-action {
+  flex: 1 1 calc(33.33% - 6px);
+  min-width: 72px;
+  justify-content: center;
+}
+
+body.mp-disease-page .mp-disease-detail-scroll,
+body.mp-disease-page .mp-disease-form-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 14px calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+body.mp-disease-page .mp-disease-detail-body {
+  border-radius: 12px;
+  border: 1px solid var(--mp-border-light);
+  background: #fff;
+  padding: 14px;
+}
+
+body.mp-disease-page .mp-disease-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin: 0;
+}
+
+body.mp-disease-page .mp-disease-detail-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+body.mp-disease-page .mp-disease-detail-grid__full {
+  grid-column: 1 / -1;
+}
+
+body.mp-disease-page .mp-disease-detail-grid dt {
+  margin: 0;
+  font-size: 11px;
+  color: var(--mp-text-muted);
+}
+
+body.mp-disease-page .mp-disease-detail-grid dd {
+  margin: 0;
+  font-size: 13px;
+  color: var(--mp-text);
+  word-break: break-word;
+}
+
+body.mp-disease-page .mp-disease-upload-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+body.mp-disease-page .mp-disease-upload-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+body.mp-disease-page .mp-disease-upload-tile {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 88px;
+  height: 88px;
+  border: 1px dashed var(--mp-border-light);
+  border-radius: 10px;
+  color: var(--mp-primary);
+  background: rgba(37, 99, 235, 0.04);
+  cursor: pointer;
+}
+
+body.mp-disease-page .mp-disease-upload-tile.is-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+body.mp-disease-page .mp-disease-upload-tile input {
+  display: none;
+}
+
+body.mp-disease-page .mp-disease-upload-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--mp-text-muted);
+  line-height: 1.5;
+}
+
+body.mp-disease-page .mp-disease-upload-preview {
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+
+body.mp-disease-page .mp-disease-upload-preview img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--mp-border-light);
+}
+
+body.mp-disease-page .mp-disease-upload-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+}
+
+body.mp-disease-page .mp-disease-upload-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--mp-border-light);
+  background: #fff;
+  font-size: 11px;
+}
+
+body.mp-disease-page .mp-disease-upload-chip button {
+  border: none;
+  background: transparent;
+  color: #ef4444;
+}
+
+body.mp-disease-page .mp-field--textarea {
+  min-height: 86px;
+  resize: vertical;
+}
+
+body.mp-disease-page #disease-form-view .mp-detail-footer {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+body.mp-disease-page .mp-disease-media-empty {
+  color: var(--mp-text-muted);
+  font-size: 12px;
+}
+
+body.mp-disease-page .mp-disease-detail-grid .patrol-media-cell {
+  display: block;
+  margin: 0;
+}
+
+body.mp-disease-page .mp-disease-detail-grid .patrol-media-cell .patrol-media-thumb,
+body.mp-disease-page .mp-disease-detail-grid .patrol-media-cell .patrol-video-thumb {
+  width: 72px;
+  height: 72px;
+  min-width: 72px;
+  min-height: 72px;
+  border-radius: 8px;
+}
+
+/* 操作记录弹窗 — 对齐项目管理 */
+body.mp-disease-page #disease-record-mask {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 300 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  background: rgba(15, 23, 42, 0.45) !important;
+}
+
+body.mp-disease-page #disease-record-mask.show {
+  display: flex !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+}
+
+body.mp-disease-page #disease-record-mask .mp-record-modal {
+  width: 100% !important;
+  max-width: none !important;
+  background: var(--mp-bg) !important;
+  border: none !important;
+  border-radius: 16px 16px 0 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 85vh !important;
+  overflow: hidden !important;
+  box-shadow: 0 -12px 40px rgba(15, 35, 80, 0.15) !important;
+}
+
+body.mp-disease-page #disease-record-mask .mp-project-modal__head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--mp-border-light);
+}
+
+body.mp-disease-page #disease-record-mask .mp-project-modal__title {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--mp-text);
+}
+
+body.mp-disease-page #disease-record-mask .mp-record-modal__body,
+body.mp-disease-page #disease-record-mask .record-list {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 16px !important;
+  font-size: 14px !important;
+  line-height: 1.55 !important;
+  color: var(--mp-text) !important;
+}
+
+body.mp-disease-page #disease-record-mask .record-timeline {
+  position: relative;
+  padding-left: 28px;
+}
+
+body.mp-disease-page #disease-record-mask .record-timeline::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 10px;
+  bottom: 10px;
+  width: 1px;
+  background: var(--mp-border) !important;
+}
+
+body.mp-disease-page #disease-record-mask .record-item {
+  position: relative;
+  padding: 0 0 22px;
+  font-size: 14px !important;
+}
+
+body.mp-disease-page #disease-record-mask .record-item:last-child {
+  padding-bottom: 0;
+}
+
+body.mp-disease-page #disease-record-mask .record-item::before {
+  content: "";
+  position: absolute;
+  left: -28px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--mp-primary) !important;
+  background: #fff !important;
+  box-sizing: border-box;
+  z-index: 1;
+  box-shadow: none !important;
+}
+
+body.mp-disease-page #disease-record-mask .record-item__title {
+  margin: 0 0 6px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: var(--mp-text) !important;
+  line-height: 1.4;
+}
+
+body.mp-disease-page #disease-record-mask .record-item__meta {
+  font-size: 12px !important;
+  color: var(--mp-text-muted) !important;
+  line-height: 1.55 !important;
+  margin: 0;
+}
+
+body.mp-disease-page #disease-record-mask .record-empty {
+  text-align: center;
+  font-size: 13px !important;
+  color: var(--mp-text-caption) !important;
+  padding: 16px 0;
+}
+
+body.mp-scroll-locked .mp-disease-app,
+body.mp-scroll-locked .mp-disease-page .mp-list-scroll,
+body.mp-scroll-locked .mp-disease-page .mp-disease-detail-scroll,
+body.mp-scroll-locked .mp-disease-page .mp-disease-form-scroll {
+  overflow: hidden !important;
+}
+
+body.mp-scroll-locked #disease-record-mask.show {
+  overflow: hidden !important;
+}
+
+body.mp-scroll-locked #disease-record-mask .mp-record-modal__body {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain;
+}

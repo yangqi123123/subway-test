@@ -2,14 +2,273 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>待办</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="../../../assets/css/map-gis.css" />
+  <link rel="stylesheet" href="../../../assets/css/map-alerts.css" />
+  <link rel="stylesheet" href="../../assets/css/project-patrol-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/mine-mobile.css" />
 </head>
-<body data-miniapp="list" data-module="mine" data-title="待办" data-base="../" data-list="todo">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-disease-page mp-mine-page mp-project-page mp-patrol-page mp-todo-page miniapp-page" data-wb-page="wb-todo">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title-wrap">
+      <span id="wb-nav-title">待办</span>
+    </h1>
+  </header>
+
+  <div id="wb-app" class="mp-disease-app mp-project-app">
+    <section id="wb-list-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-project-stats mp-project-stats--quad">
+          <div class="mp-stat-card mp-stat-card--total">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-total">0</div>
+              <div class="mp-stat-card__label">待办总数</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--key">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-file-signature"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-approval">0</div>
+              <div class="mp-stat-card__label">审批待办</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--general">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-bell"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-alert">0</div>
+              <div class="mp-stat-card__label">告警待办</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--month">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-calendar-days"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-month">0</div>
+              <div class="mp-stat-card__label">本月待办</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="wb-tab-bar" class="mp-wb-tabbar" role="tablist" aria-label="待办分类"></div>
+
+        <div class="mp-project-searchbar">
+          <div class="mp-search-input-wrap" data-action="open-wb-search" role="button" tabindex="0" aria-label="搜索标题">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="text" id="wb-search-trigger" class="mp-search-input" placeholder="搜索标题" readonly />
+            <button type="button" class="mp-search-clear" id="wb-search-clear" data-action="wb-search-clear" hidden aria-label="清空搜索">
+              <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+          </div>
+          <button type="button" class="mp-filter-text-btn" data-action="open-wb-filter">筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i></button>
+        </div>
+
+        <div id="wb-mobile-list" class="mp-project-list" role="list"></div>
+      </div>
+      <footer class="mp-detail-footer" id="wb-todo-list-footer">
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--primary" data-action="wb-batch-approve">批量审批</button>
+      </footer>
+    </section>
+
+    <section id="wb-detail-view" class="hidden mp-detail-view">
+      <span id="detail-wb-title" hidden aria-hidden="true"></span>
+      <div class="mp-disease-detail-scroll">
+        <div id="wb-detail-body" class="mp-disease-detail-body"></div>
+      </div>
+    </section>
+
+    <section id="wb-approval-view" class="hidden mp-detail-view">
+      <div class="mp-disease-detail-scroll">
+        <div id="wb-approval-body" class="mp-disease-detail-body mp-todo-approval-body"></div>
+      </div>
+      <footer class="mp-detail-footer mp-detail-footer--split" id="wb-approval-footer-split">
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--ghost" data-action="wb-reject-submit">驳回</button>
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--primary" data-action="wb-approve-submit">审批通过</button>
+      </footer>
+      <footer class="mp-detail-footer hidden" id="wb-approval-footer-save">
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--primary" data-action="wb-batch-review-save">保存</button>
+      </footer>
+    </section>
+  </div>
+
+  <div id="wb-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-wb-filter"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-wb-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field"><span>开始时间</span>
+          <input id="wb-filter-start" type="date" class="wh-input w-full px-2" />
+        </label>
+        <label class="mp-filter-field"><span>结束时间</span>
+          <input id="wb-filter-end" type="date" class="wh-input w-full px-2" />
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-wb-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-wb-filter">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="expert-review-modal-mask" class="expert-modal-mask mp-todo-sheet-mask" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="mp-project-modal mp-todo-sheet">
+      <div class="mp-project-modal__head">
+        <h3 class="mp-project-modal__title">编辑复核情况</h3>
+        <button type="button" class="mp-icon-btn" data-action="close-review-modal" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="expert-review-form" class="mp-project-modal__body mp-modal-form">
+        <div class="mp-form-row mp-form-row--full" id="review-project-name-row">
+          <label class="project-form-label" for="review-project-name-select">项目名称</label>
+          <select id="review-project-name-select" class="wh-input mp-field mp-select-native">
+            <option value="">请选择项目名称</option>
+          </select>
+        </div>
+        <div class="mp-form-row mp-form-row--full">
+          <label class="project-form-label">是否误报</label>
+          <div class="mp-todo-radio-group">
+            <label><input type="radio" name="review-false-alarm" value="非误报" checked /> 非误报</label>
+            <label><input type="radio" name="review-false-alarm" value="误报" /> 误报</label>
+          </div>
+        </div>
+        <div class="mp-form-row mp-form-row--full" data-review-field-group="detail">
+          <label class="project-form-label" for="review-level-adjust">报警级别调整</label>
+          <select id="review-level-adjust" class="wh-input mp-field">
+            <option value="一级告警">一级告警</option>
+            <option value="二级告警">二级告警</option>
+            <option value="三级告警">三级告警</option>
+          </select>
+        </div>
+        <div class="mp-form-row mp-form-row--full" data-review-field-group="detail">
+          <label class="project-form-label" for="review-scene">现场情况</label>
+          <textarea id="review-scene" class="wh-input mp-field mp-field--textarea" placeholder="请填写现场复核情况"></textarea>
+        </div>
+        <div class="mp-form-row mp-form-row--full" data-review-field-group="detail">
+          <label class="project-form-label">现场照片</label>
+          <div id="review-modal-photos" class="mp-todo-photo-grid"></div>
+          <input id="review-photo-input" type="file" accept="image/*" multiple hidden />
+          <button type="button" class="mp-todo-photo-upload-btn" data-action="pick-review-photo" data-photo-scope="modal">+ 添加照片</button>
+        </div>
+      </form>
+      <div class="mp-project-modal__foot">
+        <button type="button" class="mp-project-modal__btn mp-project-modal__btn--ghost" data-action="close-review-modal">取消</button>
+        <button type="button" class="mp-project-modal__btn mp-project-modal__btn--primary" data-action="save-review-modal">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="alert-audit-modal-mask" class="expert-modal-mask mp-todo-sheet-mask" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="mp-project-modal mp-todo-sheet">
+      <div class="mp-project-modal__head">
+        <h3 class="mp-project-modal__title">告警审核</h3>
+        <button type="button" class="mp-icon-btn" data-action="close-audit-modal" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-project-modal__body mp-modal-form">
+        <div class="mp-form-row mp-form-row--full">
+          <label class="project-form-label" for="audit-opinion">审批意见</label>
+          <textarea id="audit-opinion" class="wh-input mp-field mp-field--textarea" placeholder="请填写审批意见"></textarea>
+        </div>
+      </div>
+      <div class="mp-project-modal__foot mp-project-modal__foot--audit">
+        <button type="button" class="mp-project-modal__btn mp-project-modal__btn--ghost mp-project-modal__btn--danger" data-action="audit-reject">驳回</button>
+        <button type="button" class="mp-project-modal__btn mp-project-modal__btn--primary" data-action="audit-pass">审批通过</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="review-photo-preview-sheet" class="mp-photo-preview-sheet" aria-hidden="true">
+    <div class="mp-photo-preview-sheet__mask" data-action="close-review-photo-preview"></div>
+    <div class="mp-photo-preview-sheet__panel" role="dialog">
+      <div class="mp-photo-preview-sheet__head">
+        <h3 class="mp-photo-preview-sheet__title">照片预览</h3>
+        <button type="button" class="mp-icon-btn" data-action="close-review-photo-preview" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-photo-preview-sheet__body">
+        <img id="review-photo-preview-img" class="mp-photo-preview-sheet__img" alt="" />
+      </div>
+    </div>
+  </div>
+
+  <div id="mp-picker-sheet" class="mp-picker-sheet" aria-hidden="true">
+    <div class="mp-picker-sheet__mask" data-action="mp-picker-mask-close"></div>
+    <div class="mp-picker-sheet__panel" role="dialog">
+      <div class="mp-picker-sheet__head">
+        <button type="button" class="mp-picker-sheet__btn" data-action="mp-picker-cancel">取消</button>
+        <h3 id="mp-picker-title" class="mp-picker-sheet__title">请选择</h3>
+        <button type="button" class="mp-picker-sheet__btn mp-picker-sheet__btn--ok" data-action="mp-picker-confirm">确定</button>
+      </div>
+      <div id="mp-picker-body" class="mp-picker-sheet__body"></div>
+    </div>
+  </div>
+
+  <div id="wh-alert-detail-modal-mask" class="project-modal-mask wh-alert-detail-modal-mask" aria-hidden="true">
+    <div class="project-modal mp-project-modal mp-patrol-alert-modal" role="dialog" aria-labelledby="wh-alert-detail-title">
+      <div class="mp-project-modal__head">
+        <h3 id="wh-alert-detail-title" class="mp-project-modal__title">告警详情</h3>
+        <button type="button" class="gis-mobile-sheet-close mp-modal-close" data-action="close-alert-detail-modal" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="mp-project-modal__body mp-patrol-alert-modal__body">
+        <div class="mp-patrol-alert-shell">
+          <div class="mp-patrol-alert-map-wrap alert-detail-map-wrap">
+            <div class="alert-flag" id="patrol-alert-flag">疑似钻探<br />施工</div>
+            <div id="alert-detail-map" class="alert-detail-map"></div>
+          </div>
+          <section class="mp-patrol-alert-section">
+            <h4 class="mp-patrol-alert-section__title">告警详情</h4>
+            <div class="mp-patrol-alert-grid alert-detail-grid" id="alert-detail-grid"></div>
+          </section>
+          <section class="mp-patrol-alert-section" id="record-alarm-card">
+            <h4 class="mp-patrol-alert-section__title">告警记录</h4>
+            <div class="mp-patrol-alert-section__body" id="record-alarm"></div>
+          </section>
+          <section class="mp-patrol-alert-section" id="record-uav-card">
+            <h4 class="mp-patrol-alert-section__title">无人机实拍记录</h4>
+            <div class="mp-patrol-alert-section__body" id="record-uav"></div>
+          </section>
+          <section class="mp-patrol-alert-section" id="record-disposal-card">
+            <h4 class="mp-patrol-alert-section__title" id="record-disposal-title">处警记录</h4>
+            <div class="mp-patrol-alert-section__body" id="record-disposal"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="expert-toast" class="expert-toast" role="status"></div>
+  <div id="wb-mobile-toast" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="../../assets/js/gis-assets-base.js"></script>
+  <script src="../../../assets/js/patrol-preview-assets.js"></script>
+  <script src="../../../assets/js/map-situation-gis.js"></script>
+  <script src="../../../assets/js/map-alerts.js"></script>
+  <script src="../../../assets/js/menu-config.js"></script>
+  <script src="../../../assets/js/workbench-module.js"></script>
+  <script src="../../../assets/js/wb-todo-flow.js"></script>
+  <script src="../../../assets/js/approval-timeline.js"></script>
+  <script src="../../../assets/js/project-operation-log.js"></script>
+  <script src="../../../assets/js/alert-disposal-timeline.js"></script>
+  <script src="../../../assets/js/expert-review-modal.js"></script>
+  <script src="../../../assets/js/todo-modal-bridge.js"></script>
+  <script src="../../../assets/js/wb-todo-mobile-page.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/mine-page-boot.js"></script>
+  <script>
+    WBTodoMobilePage.boot();
+    MinePageBoot.start({ navTitle: "待办" });
+  </script>
 </body>
 </html>

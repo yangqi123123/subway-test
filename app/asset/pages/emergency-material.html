@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>应急物资</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/emergency-material-mobile.css" />
+</head>
+<body class="mp-disease-page mp-material-page mp-project-page miniapp-page" data-miniapp="page" data-module="asset" data-title="应急物资" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title" id="material-nav-title">应急物资</h1>
+  </header>
+
+  <div id="material-app" class="mp-disease-app mp-project-app">
+    <section id="material-list-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <p id="material-warehouse-subtitle" class="mp-material-warehouse-banner" aria-live="polite">所属仓库：—</p>
+
+        <div class="mp-project-searchbar">
+          <div class="mp-search-input-wrap" data-action="open-material-search" role="button" tabindex="0" aria-label="搜索应急物资">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="text" id="material-search-trigger" class="mp-search-input" placeholder="搜索物资名称" readonly />
+            <button type="button" class="mp-search-clear" id="material-search-clear" data-action="material-search-clear" hidden aria-label="清空搜索">
+              <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+          </div>
+          <button type="button" class="mp-filter-text-btn" data-action="open-material-filter">筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i></button>
+        </div>
+
+        <div id="material-mobile-list" class="mp-project-list" role="list"></div>
+        <span id="material-table-total" hidden aria-hidden="true">0</span>
+      </div>
+      <footer class="mp-detail-footer" id="mp-material-list-footer">
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--primary" data-action="new-material">新建应急物资</button>
+      </footer>
+    </section>
+
+    <section id="material-detail-view" class="hidden mp-detail-view">
+      <span id="detail-material-title" hidden aria-hidden="true"></span>
+      <div class="mp-disease-detail-scroll">
+        <div id="material-detail-body" class="mp-disease-detail-body"></div>
+      </div>
+    </section>
+
+    <section id="material-form-view" class="hidden mp-detail-view">
+      <span id="material-form-title" hidden aria-hidden="true">新增应急物资</span>
+      <div class="mp-disease-form-scroll">
+        <div class="mp-form-grid" id="material-form-root">
+          <div class="mp-form-row">
+            <label class="project-form-label project-required">名称</label>
+            <input id="material-name" class="wh-input mp-field" placeholder="请输入名称" />
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label project-required">型号</label>
+            <input id="material-model" class="wh-input mp-field" placeholder="请输入型号" />
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label project-required">数量</label>
+            <input id="material-qty" class="wh-input mp-field" placeholder="请输入数量" inputmode="numeric" />
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label">所属仓库</label>
+            <input id="material-warehouse" class="wh-input mp-field mp-field--readonly" readonly tabindex="-1" />
+          </div>
+          <div class="mp-form-row mp-form-row--full">
+            <label class="project-form-label">备注</label>
+            <textarea id="material-remark" class="wh-input mp-field mp-field--textarea" placeholder="请输入备注"></textarea>
+          </div>
+        </div>
+      </div>
+      <footer class="mp-detail-footer">
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--ghost" data-action="cancel-material-form">取消</button>
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--primary" data-action="save-material-form">保存</button>
+      </footer>
+    </section>
+  </div>
+
+  <div id="material-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-material-filter"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-material-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field mp-filter-field--full"><span>型号</span>
+          <input id="filter-model" class="wh-input w-full px-2" placeholder="请输入型号" />
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-material-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-material">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="material-confirm-mask" class="mp-confirm-mask" aria-hidden="true">
+    <div class="mp-confirm-mask__panel" role="alertdialog" aria-labelledby="material-confirm-title">
+      <h3 id="material-confirm-title" class="mp-confirm-mask__title">删除确认</h3>
+      <p id="material-confirm-msg" class="mp-confirm-mask__msg">确认删除当前物资记录吗？</p>
+      <div class="mp-confirm-mask__actions">
+        <button type="button" class="mp-confirm-mask__btn" data-action="material-confirm-cancel">取消</button>
+        <button type="button" class="mp-confirm-mask__btn mp-confirm-mask__btn--danger" data-action="material-confirm-ok">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="project-toast" id="material-toast" aria-live="polite"></div>
+
+  <script src="../../../assets/js/am-emergency-material-data.js"></script>
+  <script src="../../../assets/js/am-emergency-material-page.js"></script>
+  <script src="../../../assets/js/in-project-mobile.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/emergency-material-page-boot.js"></script>
+</body>
+</html>

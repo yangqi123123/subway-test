@@ -243,3 +243,32 @@
   background: rgba(0, 0, 0, 0.28);
   pointer-events: none;
 }
+
+/* 移动端详情：缩略图直接点击预览，无「查看全部」按钮 */
+.patrol-media-cell.patrol-media-cell--direct {
+  max-width: none;
+  min-width: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+}
+
+.patrol-media-cell.patrol-media-cell--direct .patrol-media-strip {
+  max-width: none;
+  flex-wrap: wrap;
+}
+
+.patrol-media-strip__item {
+  display: block;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  line-height: 0;
+  border-radius: 4px;
+}
+
+.patrol-media-strip__item:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.55);
+  outline-offset: 2px;
+}

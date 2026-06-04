@@ -75,15 +75,20 @@
 
     function render() {
       if (!listEl) return;
+      if (kind === "photo" || kind === "video") {
+        listEl.classList.add("mp-upload-grid");
+      }
       listEl.innerHTML = store
         .map(function (file, idx) {
           if (kind === "photo" && file._url) {
             return (
-              '<div class="relative">' +
-              '<img class="upload-preview" src="' +
+              '<div class="mp-upload-thumb-wrap">' +
+              '<img class="upload-preview mp-upload-thumb" src="' +
               file._url +
-              '" alt="" />' +
-              '<button type="button" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] leading-4" data-wh-upload-remove data-idx="' +
+              '" alt="" data-action="mp-media-preview" data-src="' +
+              file._url +
+              '" />' +
+              '<button type="button" class="mp-upload-thumb-remove" data-wh-upload-remove data-idx="' +
               idx +
               '">×</button></div>'
             );

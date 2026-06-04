@@ -19,6 +19,72 @@
 
   var DOC_LABEL_NOWRAP_CATEGORIES = ["项目专项施工方案及专家意见", "项目第三方监测方案及专家意见"];
 
+  function getFileExt(name) {
+    var parts = String(name || "")
+      .split(".")
+      .pop();
+    return parts ? parts.toLowerCase() : "";
+  }
+
+  function isEmptyFileLabel(name) {
+    return !name || name === "未选择文件" || name === "未上传资料" || name === "未上传文件" || name === "未上传";
+  }
+
+  function inferMimeFromFileName(name) {
+    var ext = getFileExt(name);
+    var map = {
+      pdf: "application/pdf",
+      doc: "application/msword",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      xls: "application/vnd.ms-excel",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      gif: "image/gif",
+      webp: "image/webp",
+      mp4: "video/mp4",
+      webm: "video/webm",
+      mov: "video/quicktime"
+    };
+    return map[ext] || "";
+  }
+
+  function inferPreviewKind(mimeType, fileName) {
+    mimeType = mimeType || inferMimeFromFileName(fileName);
+    if (mimeType.indexOf("image/") === 0) return "image";
+    if (mimeType.indexOf("video/") === 0) return "video";
+    var ext = getFileExt(fileName);
+    if (["jpg", "jpeg", "png", "gif", "webp", "bmp"].indexOf(ext) >= 0) return "image";
+    if (["mp4", "webm", "mov"].indexOf(ext) >= 0) return "video";
+    return "file";
+  }
+
+  function resolveDemoFileUrl(fileName) {
+    if (global.ProjectPreviewMock && global.ProjectPreviewMock.resolveMockPreviewUrl) {
+      return global.ProjectPreviewMock.resolveMockPreviewUrl(fileName, "");
+    }
+    if (isEmptyFileLabel(fileName)) return "";
+    return "";
+  }
+
+  function resolveFilePreviewUrl(fileName, explicitUrl, mimeType) {
+    if (explicitUrl && global.ProjectPreviewMock && global.ProjectPreviewMock.isRemoteBlockedUrl(explicitUrl)) {
+      explicitUrl = "";
+    }
+    if (global.ProjectPreviewMock && global.ProjectPreviewMock.resolveMockPreviewUrl) {
+      return global.ProjectPreviewMock.resolveMockPreviewUrl(fileName, explicitUrl);
+    }
+    if (explicitUrl) return explicitUrl;
+    if (isEmptyFileLabel(fileName)) return "";
+    return resolveDemoFileUrl(fileName);
+  }
+
+  function resolveFilePreviewMime(fileName, explicitMime) {
+    if (explicitMime) return explicitMime;
+    return inferMimeFromFileName(fileName) || "application/octet-stream";
+  }
+
   /** 与新增弹窗一致的展示字段（两列布局） */
   var DOC_FIELD_SCHEMAS = {
     "项目告知单": [
@@ -218,8 +284,9 @@
         payload.mimeType = item.mimeType || "";
       }
       if (!payload.name) payload.name = docPreviewLabel(item, "");
-      if (!payload.url) payload.url = docPreviewUrl(item);
-      if (!payload.mimeType) payload.mimeType = docPreviewMime(item);
+      if (!payload.url) payload.url = resolveFilePreviewUrl(payload.name, payload.url, payload.mimeType);
+      if (!payload.mimeType) payload.mimeType = resolveFilePreviewMime(payload.name, payload.mimeType);
+      payload.kind = inferPreviewKind(payload.mimeType, payload.name);
       payload.tip = payload.name || "资料文件预览";
       return payload;
     }
@@ -230,10 +297,19 @@
       existingDoc = existingDoc || {};
       var input = document.getElementById(prefix + "-input");
       var picked = input && input.files && input.files[0] ? input.files[0] : null;
+      var hiddenUrl = document.getElementById(prefix + "-url");
+      var hiddenMime = document.getElementById(prefix + "-mime");
       var out = {};
       out[fieldKeys.name] = picked ? picked.name : (existingDoc[fieldKeys.name] || "");
-      out[fieldKeys.url] = picked ? URL.createObjectURL(picked) : (existingDoc[fieldKeys.url] || "");
-      out[fieldKeys.mime] = picked ? picked.type : (existingDoc[fieldKeys.mime] || "");
+      out[fieldKeys.url] = picked
+        ? URL.createObjectURL(picked)
+        : (hiddenUrl && hiddenUrl.value) || existingDoc[fieldKeys.url] || "";
+      out[fieldKeys.mime] = picked
+        ? picked.type
+        : (hiddenMime && hiddenMime.value) || existingDoc[fieldKeys.mime] || inferMimeFromFileName(out[fieldKeys.name]);
+      if (!out[fieldKeys.url] && out[fieldKeys.name]) {
+        out[fieldKeys.url] = resolveDemoFileUrl(out[fieldKeys.name]);
+      }
       return out;
     }
 
@@ -275,11 +351,16 @@
     }
 
     function docPreviewUrl(item) {
-      return item.fileUrl || item.fileUrlDigital || item.fileUrlScan || "";
+      var url = item.fileUrl || item.fileUrlDigital || item.fileUrlScan || "";
+      if (url) return url;
+      var name = item.fileName || item.fileNameDigital || item.fileNameScan || "";
+      return resolveDemoFileUrl(name);
     }
 
     function docPreviewMime(item) {
-      return item.mimeType || item.mimeTypeDigital || item.mimeTypeScan || "";
+      var mime = item.mimeType || item.mimeTypeDigital || item.mimeTypeScan || "";
+      if (mime) return mime;
+      return inferMimeFromFileName(item.fileName || item.fileNameDigital || item.fileNameScan || "");
     }
 
     function selectOptions(list, selected) {
@@ -568,7 +649,7 @@
             noticeNo: val("doc-notice-no"),
             issuer: val("doc-notice-issuer"),
             issueDate: val("doc-notice-issue-date"),
-            signUnit: selects[0] ? selects[0].getValue() : "",
+            signUnit: (selects[0] ? selects[0].getValue() : "") || val("doc-notice-sign-unit"),
             signPerson: val("doc-notice-sign-person"),
             signPhone: val("doc-notice-sign-phone")
           },
@@ -579,10 +660,10 @@
         return Object.assign(
           {
             letterName: val("doc-ops-name"),
-            primaryUnit: selects[0] ? selects[0].getValue() : "",
+            primaryUnit: (selects[0] ? selects[0].getValue() : "") || val("doc-primary-unit"),
             primaryContact: val("doc-primary-contact"),
             primaryPhone: val("doc-primary-phone"),
-            ccUnit: selects[1] ? selects[1].getValue() : "",
+            ccUnit: (selects[1] ? selects[1].getValue() : "") || val("doc-cc-unit"),
             letterDate: val("doc-ops-date")
           },
           readDocFilePart("doc-file", existingDoc)
@@ -592,7 +673,7 @@
         return Object.assign(
           {
             letterName: val("doc-ext-name"),
-            fromUnit: selects[0] ? selects[0].getValue() : "",
+            fromUnit: (selects[0] ? selects[0].getValue() : "") || val("doc-from-unit"),
             fromContact: val("doc-ext-contact"),
             fromPhone: val("doc-ext-phone"),
             letterDate: val("doc-ext-date")
@@ -771,14 +852,17 @@
     }
 
     function buildPreviewPayload(category, item) {
+      var name = docPreviewLabel(item, category);
+      var mimeType = docPreviewMime(item);
+      var url = docPreviewUrl(item);
       return {
-        kind: "file",
+        kind: inferPreviewKind(mimeType, name),
         title: "文件预览",
         category: category,
-        name: docPreviewLabel(item, category),
+        name: name,
         date: docDisplayDate(item, category),
-        url: docPreviewUrl(item),
-        mimeType: docPreviewMime(item),
+        url: url,
+        mimeType: mimeType,
         tip: docDisplayName(item, category) || "资料文件预览"
       };
     }
@@ -808,6 +892,11 @@
 
   global.ProjectDocShared = {
     DOC_CATEGORY_LIST: DOC_CATEGORY_LIST,
-    createHandlers: createHandlers
+    createHandlers: createHandlers,
+    resolveFilePreviewUrl: resolveFilePreviewUrl,
+    resolveFilePreviewMime: resolveFilePreviewMime,
+    inferPreviewKind: inferPreviewKind,
+    resolveDemoFileUrl: resolveDemoFileUrl,
+    inferMimeFromFileName: inferMimeFromFileName
   };
 })(typeof window !== "undefined" ? window : global);

@@ -107,14 +107,37 @@
   function getUserProfile(mod) {
     if (userProfile) return userProfile;
     var p = (mod && mod.profile) || {};
+    var stored = null;
+    try {
+      var raw = localStorage.getItem("wh-mobile-user-profile");
+      if (raw) stored = JSON.parse(raw);
+    } catch (e) {}
+    var merged = Object.assign({}, p, stored || {});
     userProfile = {
-      avatar: p.avatar || "",
-      name: p.name || "用户",
-      account: p.account || "",
-      phone: p.phone || "",
-      dept: p.dept || "",
+      avatar: merged.avatar || p.avatar || "",
+      name: merged.nickname || merged.name || p.name || "用户",
+      account: merged.account || p.account || "",
+      phone: merged.phone || p.phone || "",
+      dept: merged.dept || p.dept || "",
     };
     return userProfile;
+  }
+
+  function mineCellBadgeCount(item) {
+    var badges = global.WHHeaderBadges;
+    if (!item || !item.list) return 0;
+    if (item.list === "todo" && badges && badges.todoPendingCount) {
+      return badges.todoPendingCount();
+    }
+    if (item.list === "notify" && badges) return badges.notifyUnreadCount();
+    return 0;
+  }
+
+  function mineCellBadgeHtml(item) {
+    var count = mineCellBadgeCount(item);
+    if (!count) return '<span class="miniapp-cell__badge" hidden></span>';
+    var text = count > 99 ? "99+" : String(count);
+    return '<span class="miniapp-cell__badge" aria-label="' + text + '">' + text + "</span>";
   }
 
   function renderMineHub(mod) {
@@ -128,11 +151,15 @@
         return (
           '<a class="miniapp-cell" href="' +
           esc(resolveHref(item.href)) +
-          '"><i class="fa-solid ' +
+          '"' +
+          (item.list ? ' data-list="' + esc(item.list) + '"' : "") +
+          '><i class="fa-solid ' +
           esc(item.icon) +
           '"></i><span>' +
           esc(item.label) +
-          '</span><i class="fa-solid fa-chevron-right miniapp-cell__arrow"></i></a>'
+          "</span>" +
+          mineCellBadgeHtml(item) +
+          '<i class="fa-solid fa-chevron-right miniapp-cell__arrow"></i></a>'
         );
       })
       .join("");
@@ -168,6 +195,19 @@
       "</main>";
 
     bindActions();
+    if (global.MiniAppFrame && global.MiniAppFrame.syncTabbar) {
+      global.MiniAppFrame.syncTabbar();
+    }
+    if (global.WHHeaderBadges && global.WHHeaderBadges.refreshMineHubBadges) {
+      global.WHHeaderBadges.refreshMineHubBadges();
+    }
+    global.addEventListener("pageshow", function onMineHubPageShow() {
+      if (global.document.body.getAttribute("data-module") !== "mine") return;
+      if (!global.document.querySelector(".miniapp-cell-group")) return;
+      if (global.WHHeaderBadges && global.WHHeaderBadges.refreshMineHubBadges) {
+        global.WHHeaderBadges.refreshMineHubBadges();
+      }
+    });
   }
 
   function renderProfileEdit(mod) {
@@ -312,6 +352,9 @@
       "</main>";
 
     bindActions();
+    if (global.MiniAppFrame && global.MiniAppFrame.syncTabbar) {
+      global.MiniAppFrame.syncTabbar();
+    }
   }
 
   function renderPlaceholder(options) {
@@ -451,6 +494,21 @@
     var tabs = document.querySelectorAll("[data-tab-id]");
     if (!frame || !tabs.length) return;
 
+    function syncShellTabbar(hidden) {
+      var bar = global.document.querySelector(".device-tabbar");
+      if (bar) bar.classList.toggle("is-hidden", !!hidden);
+    }
+
+    function syncTabbarFromFrame() {
+      try {
+        var path = frame.contentWindow.location.pathname;
+        var isRoot = cfg.isTabbarRootPath && cfg.isTabbarRootPath(path);
+        syncShellTabbar(!isRoot);
+      } catch (e) {
+        /* ignore */
+      }
+    }
+
     function setTab(id) {
       var item = (cfg.TAB_ITEMS || []).find(function (t) {
         return t.id === id;
@@ -468,12 +526,21 @@
       });
     });
 
+    frame.addEventListener("load", syncTabbarFromFrame);
+
     setTab("map");
+
+    global.addEventListener("message", function (event) {
+      var data = event.data;
+      if (!data || data.type !== "wh-miniapp-tabbar") return;
+      syncShellTabbar(!!data.hidden);
+    });
   }
 
   global.MiniApp = {
     toast: toast,
     goBack: goBack,
+    navigateToLogin: navigateToAppLogin,
     renderHub: renderHub,
     renderMineHub: renderMineHub,
     renderProfileEdit: renderProfileEdit,

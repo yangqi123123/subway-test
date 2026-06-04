@@ -338,418 +338,47 @@
     </div>
   </div>
 
-  <script src="../../assets/js/menu-config.js"></script>
-  <script src="../../assets/js/workbench-mega.js"></script>
-  <script src="../../assets/js/shell.js"></script>
+
+  <script src="../../assets/js/am-maintenance-data.js"></script>
+  <script src="../../assets/js/am-maintenance-page.js"></script>
   <script src="../../assets/js/search-select.js"></script>
   <script src="../../assets/js/upload-widget.js"></script>
   <script>
-    const SAMPLE_PHOTOS = [
-      "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=520&q=80",
-      "https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=520&q=80"
-    ];
-    const SAMPLE_VIDEO_URL = "https://www.w3schools.com/html/mov_bbb.mp4";
-
-    const DEVICE_CATALOG = [
-      { type: "drone", label: "UAV-MR-001 / 8号线车辆段无人机" },
-      { type: "drone", label: "UAV-MR-002 / 梨园巡检无人机" },
-      { type: "drone", label: "UAV-MR-004 / 长江新区无人机" },
-      { type: "drone", label: "UAV-MR-005 / 青山巡检无人机" },
-      { type: "airport", label: "AP-MR-001 / 8号线车辆段机场" },
-      { type: "airport", label: "AP-MR-002 / 青山机场" },
-      { type: "airport", label: "AP-MR-003 / 长江新区机场" }
-    ];
-    const DEVICE_TYPE_LABEL = { drone: "无人机", airport: "机场" };
-
-    const records = [
-      {
-        id: "WX20251119001",
-        deviceType: "drone",
-        device: "UAV-MR-001 / 8号线车辆段无人机",
-        type: "故障处理",
-        summary: "云台自检异常，完成返厂检测并重新校准。",
-        parts: "云台减震球",
-        owner: "张工",
-        start: "2025-11-19 11:12:45",
-        end: "2025-11-27 17:30:00",
-        status: "已完成",
-        docs: [{ name: "云台检测报告.pdf" }, { name: "返厂校准记录.xlsx" }],
-        photos: SAMPLE_PHOTOS,
-        videos: [{ name: "维修过程记录.mp4", url: SAMPLE_VIDEO_URL }]
-      },
-      {
-        id: "WX20251119002",
-        deviceType: "drone",
-        device: "UAV-MR-002 / 梨园巡检无人机",
-        type: "定期检修",
-        summary: "完成电池循环检测、固件升级与机身外观检查。",
-        parts: "桨叶组件",
-        owner: "王晨",
-        start: "2025-11-19 11:12:45",
-        end: "",
-        status: "进行中",
-        docs: [{ name: "电池循环检测表.pdf" }],
-        photos: [SAMPLE_PHOTOS[0]],
-        videos: []
-      }
-    ];
-    let filtered = [...records];
-    let editingId = null;
-    let deletingId = null;
-    let deviceSelect = null;
-    let docUploader = null;
-    let photoUploader = null;
-    let videoUploader = null;
-
-    const $ = id => document.getElementById(id);
-
-    function deviceOptionsByType(deviceType) {
-      if (!deviceType) return [];
-      return DEVICE_CATALOG.filter(function (item) {
-        return item.type === deviceType;
-      }).map(function (item) {
-        return item.label;
-      });
-    }
-
-    function inferDeviceType(item) {
-      if (item && item.deviceType) return item.deviceType;
-      if (item && /机场/.test(item.device || "")) return "airport";
-      return "drone";
-    }
-
-    function initUploaders() {
-      docUploader = window.WHUpload.createDocUploader({
-        inputId: "f-doc-input",
-        listId: "f-doc-list",
-        tileId: "f-doc-tile",
-        hintId: "f-doc-hint"
-      });
-      photoUploader = window.WHUpload.createPhotoUploader({
-        inputId: "f-photo-input",
-        listId: "f-photo-list",
-        tileId: "f-photo-tile",
-        hintId: "f-photo-hint"
-      });
-      videoUploader = window.WHUpload.createVideoUploader({
-        inputId: "f-video-input",
-        listId: "f-video-list",
-        tileId: "f-video-tile",
-        hintId: "f-video-hint"
-      });
-    }
-
-    function clearUploaders() {
-      if (docUploader) docUploader.clear();
-      if (photoUploader) photoUploader.clear();
-      if (videoUploader) videoUploader.clear();
-    }
-
-    function loadUploaders(item) {
-      docUploader.setFromItems(item?.docs || []);
-      photoUploader.setFromItems(item?.photos || []);
-      videoUploader.setFromItems(item?.videos || []);
-    }
-
-    function mountDeviceSelect(deviceType, selected) {
-      var wrap = $("f-device-wrap");
-      if (!wrap) return;
-      wrap.innerHTML = "";
-      var options = deviceOptionsByType(deviceType);
-      deviceSelect = window.WHSearchSelect.create(wrap, options, deviceType ? "请搜索或选择关联设备" : "请先选择设备类型");
-      if (selected) deviceSelect.setValue(selected);
-    }
-
-    function statusHtml(status) {
-      if (status === "已完成") {
-        return '<span class="inline-flex items-center gap-2 text-emerald-200"><span class="mm-dot bg-emerald-400"></span>已完成</span>';
-      }
-      return '<span class="inline-flex items-center gap-2 text-amber-200"><span class="mm-dot bg-amber-400"></span>进行中</span>';
-    }
-
-    function openModal(id) {
-      $(id).classList.add("show");
-    }
-
-    function closeModal(id) {
-      $(id).classList.remove("show");
-    }
-
-    function updateMaintenanceStats(list) {
-      var done = 0, progress = 0, fault = 0;
-      list.forEach(function (item) {
-        if (item.status === "已完成") done++;
-        if (item.status === "进行中") progress++;
-        if (item.type === "故障处理") fault++;
-      });
-      $("stat-total").textContent = String(list.length);
-      $("stat-done").textContent = String(done);
-      $("stat-progress").textContent = String(progress);
-      $("stat-fault").textContent = String(fault);
-      var totalEl = $("table-total");
-      if (totalEl) totalEl.textContent = String(list.length);
-    }
-
-    function initQuickLinks() {
-      document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
-        var target = anchor.getAttribute("data-quick-href");
-        if (target && typeof whPageHref === "function") anchor.setAttribute("href", whPageHref(target));
-      });
-    }
-
-    function renderTable() {
-      updateMaintenanceStats(filtered);
-      $("table-body").innerHTML = filtered.map((item, index) => `
-        <tr data-id="${item.id}" style="background:${index % 2 === 0 ? "rgba(12,24,48,0.45)" : "rgba(15,32,58,0.55)"}">
-          <td class="px-3 text-slate-100/95 font-mono">${item.id}</td>
-          <td class="px-3 text-cyan-300 leading-5"><button type="button" class="mm-op-btn text-left" onclick="showDetail('${item.id}')">${item.device}</button></td>
-          <td class="px-3 text-slate-100/95">${item.type}</td>
-          <td class="px-3 text-slate-100/95">${item.summary}</td>
-          <td class="px-3 text-slate-100/95">${item.parts || "--"}</td>
-          <td class="px-3 text-slate-100/95">${item.owner}</td>
-          <td class="px-3 text-slate-100/95 whitespace-nowrap">${item.start}</td>
-          <td class="px-3 text-slate-100/95 whitespace-nowrap">${item.end || "--"}</td>
-          <td class="px-3">${statusHtml(item.status)}</td>
-          <td class="px-3 disease-col-actions">
-            <div class="disease-op-actions">
-            <button type="button" class="mm-op-btn" onclick="showDetail('${item.id}')">详情</button>
-            <button type="button" class="mm-op-btn" onclick="openEdit('${item.id}')">编辑</button>
-            <button type="button" class="mm-op-btn" onclick="askDelete('${item.id}')">删除</button>
-            </div>
-          </td>
-        </tr>
-      `).join("");
-    }
-
-    function applySearch() {
-      const keyword = $("search-keyword").value.trim();
-      const type = $("search-type").value;
-      const status = $("search-status").value;
-      filtered = records.filter(item => {
-        const matchKeyword = !keyword || [item.id, item.device, item.summary].some(text => text.includes(keyword));
-        const matchType = !type || item.type === type;
-        const matchStatus = !status || item.status === status;
-        return matchKeyword && matchType && matchStatus;
-      });
-      renderTable();
-    }
-
-    function resetSearch() {
-      $("search-keyword").value = "";
-      $("search-type").value = "";
-      $("search-status").value = "";
-      filtered = [...records];
-      renderTable();
-    }
-
-    function fillForm(item) {
-      var deviceType = item ? inferDeviceType(item) : "";
-      $("f-device-type").value = deviceType;
-      mountDeviceSelect(deviceType, item?.device || "");
-      $("f-type").value = item?.type || "故障处理";
-      $("f-owner").value = item?.owner || "";
-      $("f-parts").value = item?.parts || "";
-      $("f-start").value = item?.start ? item.start.replace(" ", "T") : "";
-      $("f-end").value = item?.end ? item.end.replace(" ", "T") : "";
-      $("f-status").value = item?.status || "进行中";
-      $("f-summary").value = item?.summary || "";
-      loadUploaders(item);
-    }
-
-    function openAdd() {
-      editingId = null;
-      $("form-title").textContent = "新增维修记录";
-      fillForm();
-      openModal("form-modal");
-    }
-
-    function openEdit(id) {
-      const item = records.find(row => row.id === id);
-      if (!item) return;
-      editingId = id;
-      $("form-title").textContent = "编辑维修记录";
-      fillForm(item);
-      openModal("form-modal");
-    }
-
-    function saveForm() {
-      const deviceType = $("f-device-type").value;
-      const device = deviceSelect ? deviceSelect.getValue().trim() : "";
-      const type = $("f-type").value;
-      const owner = $("f-owner").value.trim();
-      const start = $("f-start").value;
-      const summary = $("f-summary").value.trim();
-      const end = $("f-end").value;
-      const status = $("f-status").value;
-      const parts = $("f-parts").value.trim();
-
-      if (!deviceType) return showToast("请选择设备类型");
-      if (!device) return showToast("请选择关联设备");
-      if (!type) return showToast("请选择维修类型");
-      if (!owner) return showToast("请填写责任人");
-      if (!start) return showToast("请选择开始维修时间");
-      if (!summary) return showToast("请填写维护内容摘要");
-
-      const payload = {
-        deviceType,
-        device,
-        type,
-        owner,
-        parts,
-        summary,
-        status,
-        start: start.replace("T", " "),
-        end: end ? end.replace("T", " ") : "",
-        docs: docUploader.serialize(),
-        photos: photoUploader.getPhotoUrls(),
-        videos: videoUploader.serialize()
-      };
-
-      if (editingId) {
-        const target = records.find(row => row.id === editingId);
-        Object.assign(target, payload);
-      } else {
-        records.unshift({
-          id: "WX" + Date.now().toString().slice(-11),
-          ...payload
+    (function () {
+      document.addEventListener("DOMContentLoaded", function () {
+        var uploaders = {};
+        if (window.WHUpload) {
+          uploaders.doc = WHUpload.createDocUploader({
+            inputId: "f-doc-input",
+            listId: "f-doc-list",
+            tileId: "f-doc-tile",
+            hintId: "f-doc-hint",
+          });
+          uploaders.photo = WHUpload.createPhotoUploader({
+            inputId: "f-photo-input",
+            listId: "f-photo-list",
+            tileId: "f-photo-tile",
+            hintId: "f-photo-hint",
+          });
+          uploaders.video = WHUpload.createVideoUploader({
+            inputId: "f-video-input",
+            listId: "f-video-list",
+            tileId: "f-video-tile",
+            hintId: "f-video-hint",
+          });
+        }
+        if (window.WHMaintenancePage) {
+          WHMaintenancePage.boot({ mobile: false, uploaders: uploaders });
+        }
+        document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
+          var target = anchor.getAttribute("data-quick-href");
+          if (target && typeof whPageHref === "function") anchor.setAttribute("href", whPageHref(target));
         });
-      }
-      filtered = [...records];
-      renderTable();
-      closeModal("form-modal");
-      clearUploaders();
-      showToast("维修记录已保存");
-    }
-
-    function renderDetailDocs(docs) {
-      if (!docs || !docs.length) return '<span class="text-slate-400">暂无维修资料</span>';
-      return '<div class="flex flex-wrap gap-2">' + docs.map(function (d) {
-        var name = typeof d === "string" ? d : d.name;
-        return '<span class="upload-chip"><i class="fa-regular fa-file-lines text-cyan-300 mr-1"></i><span>' + name + '</span></span>';
-      }).join("") + "</div>";
-    }
-
-    function renderDetailPhotos(photos) {
-      if (!photos || !photos.length) return '<span class="text-slate-400">暂无维修照片</span>';
-      return '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">' + photos.map(function (src, i) {
-        return '<div class="mm-detail-photo"><img src="' + src + '" alt="维修照片' + (i + 1) + '" loading="lazy" /></div>';
-      }).join("") + "</div>";
-    }
-
-    function renderDetailVideos(videos) {
-      if (!videos || !videos.length) return '<span class="text-slate-400">暂无维修视频</span>';
-      return '<div class="flex flex-wrap gap-3">' + videos.map(function (v, i) {
-        var name = v.name || "视频" + (i + 1);
-        if (v.url) {
-          return '<div class="mm-detail-video"><video src="' + v.url + '" controls preload="metadata"></video><div class="px-2 py-1 text-[11px] text-slate-400">' + name + "</div></div>";
-        }
-        return '<span class="upload-chip"><i class="fa-solid fa-film text-cyan-300 mr-1"></i><span>' + name + "</span></span>";
-      }).join("") + "</div>";
-    }
-
-    function showDetail(id) {
-      const item = records.find(row => row.id === id);
-      if (!item) return;
-      $("detail-body").innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 text-sm">
-          ${[
-            ["记录编号", item.id],
-            ["设备类型", DEVICE_TYPE_LABEL[inferDeviceType(item)] || "--"],
-            ["关联设备", item.device],
-            ["维修类型", item.type],
-            ["责任人", item.owner],
-            ["开始维修时间", item.start],
-            ["完成维修时间", item.end || "--"],
-            ["状态", item.status],
-            ["更换部件", item.parts || "--"]
-          ].map(([label, value]) => `
-            <div class="rounded border border-cyan-400/15 bg-slate-900/30 p-3">
-              <div class="text-cyan-300 text-xs mb-1">${label}</div>
-              <div class="text-slate-100 leading-6">${value}</div>
-            </div>
-          `).join("")}
-          <div class="md:col-span-2 xl:col-span-3 rounded border border-cyan-400/15 bg-slate-900/30 p-3">
-            <div class="text-cyan-300 text-xs mb-1">维护内容摘要</div>
-            <div class="text-slate-100 leading-7">${item.summary}</div>
-          </div>
-          <div class="md:col-span-2 xl:col-span-3 rounded border border-cyan-400/15 bg-slate-900/30 p-3">
-            <div class="text-cyan-300 text-xs mb-2">维修资料</div>
-            ${renderDetailDocs(item.docs)}
-          </div>
-          <div class="md:col-span-2 xl:col-span-3 rounded border border-cyan-400/15 bg-slate-900/30 p-3">
-            <div class="text-cyan-300 text-xs mb-2">维修照片</div>
-            ${renderDetailPhotos(item.photos)}
-          </div>
-          <div class="md:col-span-2 xl:col-span-3 rounded border border-cyan-400/15 bg-slate-900/30 p-3">
-            <div class="text-cyan-300 text-xs mb-2">维修视频</div>
-            ${renderDetailVideos(item.videos)}
-          </div>
-        </div>
-      `;
-      openModal("detail-modal");
-    }
-
-    function askDelete(id) {
-      deletingId = id;
-      openModal("delete-modal");
-    }
-
-    function confirmDelete() {
-      const index = records.findIndex(row => row.id === deletingId);
-      if (index < 0) return;
-      records.splice(index, 1);
-      filtered = [...records];
-      renderTable();
-      closeModal("delete-modal");
-      showToast("维修记录已删除");
-    }
-
-    function showToast(text) {
-      const existing = document.getElementById("toast-box");
-      if (existing) existing.remove();
-      const toast = document.createElement("div");
-      toast.id = "toast-box";
-      toast.className = "fixed right-5 bottom-5 z-[100] rounded bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg";
-      toast.textContent = text;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 1800);
-    }
-
-    document.querySelectorAll("[data-close]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        if (btn.dataset.close === "form-modal") clearUploaders();
-        closeModal(btn.dataset.close);
       });
-    });
-
-    $("f-device-type").addEventListener("change", function () {
-      mountDeviceSelect($("f-device-type").value, "");
-    });
-
-    $("add-btn").addEventListener("click", openAdd);
-    $("export-btn").addEventListener("click", () => showToast("已按示例数据导出"));
-    $("search-btn").addEventListener("click", applySearch);
-    $("reset-btn").addEventListener("click", resetSearch);
-    $("save-btn").addEventListener("click", saveForm);
-    $("confirm-delete-btn").addEventListener("click", confirmDelete);
-
-    window.showDetail = showDetail;
-    window.openEdit = openEdit;
-    window.askDelete = askDelete;
-
-    initUploaders();
-    initQuickLinks();
-    function setupMaintenanceRowClick() {
-      if (!window.WHTableRowClick) return window.setTimeout(setupMaintenanceRowClick, 40);
-      WHTableRowClick.bindById("table-body", {
-        onOpenByTr: function (tr) {
-          var id = tr.getAttribute("data-id");
-          if (id) showDetail(id);
-        }
-      });
-    }
-    setupMaintenanceRowClick();
-    renderTable();
+    })();
   </script>
+  <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/workbench-mega.js"></script>
+  <script src="../../assets/js/shell.js"></script>
 </body>
 </html>

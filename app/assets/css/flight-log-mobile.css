@@ -1,0 +1,162 @@
+/* 移动端飞行日志 */
+body.mp-flight-log-page #flight-log-list-view:not(.hidden),
+body.mp-flight-log-page #flight-log-detail-view:not(.hidden) {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-flight-log-page #flight-log-detail-view:not(.hidden) {
+  z-index: 20;
+}
+
+body.mp-flight-log-page #flight-log-list-view.hidden,
+body.mp-flight-log-page #flight-log-detail-view.hidden {
+  display: none !important;
+}
+
+body.mp-flight-log-page .mp-flight-log-card__meta {
+  grid-template-columns: 1fr;
+}
+
+body.mp-flight-log-page .mp-flight-log-card__meta > div {
+  grid-column: 1 / -1;
+}
+
+body.mp-flight-log-page .mp-flight-status-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+body.mp-flight-log-page .mp-flight-status-tag--ok {
+  color: #059669;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+body.mp-flight-log-page .mp-flight-status-tag--warn {
+  color: #d97706;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+}
+
+body.mp-flight-log-page .mp-flight-status-tag--fail {
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+}
+
+body.mp-flight-log-page .mp-flight-status--ok {
+  color: #059669;
+  font-weight: 600;
+}
+
+body.mp-flight-log-page .mp-flight-status--warn {
+  color: #d97706;
+  font-weight: 600;
+}
+
+body.mp-flight-log-page .mp-flight-status--fail {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+body.mp-flight-log-page .mp-flight-landing-warn {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+body.mp-flight-log-page .mp-flight-log-card__actions {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.mp-flight-log-page .mp-flight-log-card__actions .mp-project-action {
+  flex: 1 1 calc(50% - 6px);
+  min-width: 96px;
+  justify-content: center;
+}
+
+body.mp-flight-log-page .mp-flight-log-map-block {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--mp-border-subtle);
+}
+
+body.mp-flight-log-page .mp-flight-log-map-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+body.mp-flight-log-page .mp-flight-log-map-head h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mp-text-primary);
+}
+
+body.mp-flight-log-page .mp-flight-log-map-actions {
+  display: flex;
+  gap: 6px;
+}
+
+body.mp-flight-log-page .mp-flight-log-map {
+  width: 100%;
+  height: 220px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--mp-border-subtle);
+  background: #e8ecf1;
+}
+
+body.mp-flight-log-page .mp-flight-log-map-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--mp-text-muted);
+}
+
+body.mp-flight-log-page .mp-flight-log-map-meta b {
+  color: var(--mp-text-primary);
+  font-weight: 600;
+}
+
+body.mp-scroll-locked #flight-log-app,
+body.mp-scroll-locked .mp-flight-log-page .mp-list-scroll,
+body.mp-scroll-locked .mp-flight-log-page .mp-disease-detail-scroll {
+  overflow: hidden !important;
+}
+
+body.mp-flight-log-page #flight-log-toast.project-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 13px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+body.mp-flight-log-page #flight-log-toast.project-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

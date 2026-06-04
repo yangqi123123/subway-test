@@ -112,33 +112,33 @@
             <div class="disease-stat-card disease-stat-card--blue">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-list"></i></div>
               <div>
-                <div id="stat-records" class="disease-stat-card__value">4</div>
-                <div class="disease-stat-card__label">使用记录</div>
-                <div class="disease-stat-card__trend">当前列表</div>
+                <div id="stat-records" class="disease-stat-card__value">12</div>
+                <div class="disease-stat-card__label">本月新增违规项目</div>
+                <div class="disease-stat-card__trend">当月累计</div>
               </div>
             </div>
             <div class="disease-stat-card disease-stat-card--cyan">
-              <div class="disease-stat-card__icon"><i class="fa-solid fa-plane"></i></div>
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-hard-hat"></i></div>
               <div>
-                <div id="stat-airports" class="disease-stat-card__value">4</div>
-                <div class="disease-stat-card__label">机场数量</div>
-                <div class="disease-stat-card__trend">已接入</div>
+                <div id="stat-airports" class="disease-stat-card__value">2</div>
+                <div class="disease-stat-card__label">本月平均每次飞行无人机发现的施工数量</div>
+                <div class="disease-stat-card__trend">次均发现</div>
               </div>
             </div>
             <div class="disease-stat-card disease-stat-card--green">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-plane"></i></div>
               <div>
-                <div id="stat-devices" class="disease-stat-card__value">4</div>
-                <div class="disease-stat-card__label">设备数量</div>
-                <div class="disease-stat-card__trend">在册设备</div>
+                <div id="stat-devices" class="disease-stat-card__value">3</div>
+                <div class="disease-stat-card__label">本月无人机飞行趟次</div>
+                <div class="disease-stat-card__trend">当月累计</div>
               </div>
             </div>
             <div class="disease-stat-card disease-stat-card--amber">
-              <div class="disease-stat-card__icon"><i class="fa-solid fa-user"></i></div>
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-clock"></i></div>
               <div>
-                <div id="stat-operators" class="disease-stat-card__value">4</div>
-                <div class="disease-stat-card__label">操作员</div>
-                <div class="disease-stat-card__trend">参与记录</div>
+                <div id="stat-operators" class="disease-stat-card__value">18.5h</div>
+                <div class="disease-stat-card__label">本月无人机飞行总时间</div>
+                <div class="disease-stat-card__trend">累计时长</div>
               </div>
             </div>
           </div>
@@ -146,29 +146,14 @@
     <section class="mb-6">
       <div class="dc-overview-head">
         <div class="dc-overview-head__title">资源使用概览</div>
-        <label class="flex items-center gap-2 text-[11px] text-slate-400">
-          <span class="text-cyan-100/70">线路切换</span>
-          <select id="overview-line-select" class="wh-input dc-line-select px-2">
-            <option value="all">全部线路</option>
-            <option value="1">1号线</option>
-            <option value="2">2号线</option>
-            <option value="3">3号线</option>
-            <option value="4">4号线</option>
-            <option value="7">7号线</option>
-            <option value="8" selected>8号线</option>
-            <option value="11">11号线</option>
-            <option value="19">19号线</option>
-          </select>
-        </label>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div class="dc-panel dc-chart-shell">
           <div class="flex items-center justify-between mb-2">
-            <div class="dc-chart-title">资源使用情况及效果概览</div>
+            <div class="dc-chart-title">月度新增违规项目统计</div>
             <div class="dc-chart-note">单位：个</div>
           </div>
-          <div class="dc-chart-subtitle">月度新增违规项目统计图</div>
           <canvas id="violation-month-chart" class="dc-canvas" width="420" height="214"></canvas>
           <div class="dc-legend">
             <span class="dc-legend-item"><span class="dc-dot bg-[#22d3ee]"></span>基于无人机监测的月度新增违规项目数量</span>
@@ -215,7 +200,7 @@
     <section class="disease-list-area">
       <div class="disease-list-toolbar">
         <div class="text-sm font-semibold text-white">使用记录明细</div>
-        <button type="button" class="dc-filter-btn wh-btn-gold"><i class="fa-solid fa-download mr-1"></i>导出</button>
+        <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost"><i class="fa-solid fa-file-export mr-1"></i>导出</button>
       </div>
       <div class="wh-table-shell bg-slate-950/35">
         <div class="overflow-x-auto max-h-[min(520px,calc(100vh-300px))]">
@@ -261,6 +246,20 @@
             <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
             <div class="disease-panel-body">
               <label>
+                <span>所属线路</span>
+                <select id="filter-line" class="wh-input w-full px-2">
+                  <option value="">全部线路</option>
+                  <option value="1">1号线</option>
+                  <option value="2">2号线</option>
+                  <option value="3">3号线</option>
+                  <option value="4">4号线</option>
+                  <option value="7">7号线</option>
+                  <option value="8" selected>8号线</option>
+                  <option value="11">11号线</option>
+                  <option value="19">19号线</option>
+                </select>
+              </label>
+              <label>
                 <span>所属机场</span>
                 <select id="filter-airport" class="wh-input w-full px-2">
                   <option value="">全部机场</option>
@@ -281,31 +280,12 @@
                 </select>
               </label>
               <label>
-                <span>操作员</span>
-                <select id="filter-operator" class="wh-input w-full px-2">
-                  <option value="">全部</option>
-                  <option value="张三">张三</option>
-                  <option value="李四">李四</option>
-                  <option value="王五">王五</option>
-                  <option value="赵六">赵六</option>
-                </select>
-              </label>
-              <label>
                 <span>开始时间</span>
-                <input id="filter-time-start" class="wh-input w-full" value="2023/05/16 14:10:20" />
+                <input id="filter-time-start" type="date" class="wh-input w-full" />
               </label>
               <label>
                 <span>结束时间</span>
-                <input id="filter-time-end" class="wh-input w-full" value="2023/05/16 14:10:22" />
-              </label>
-              <label>
-                <span>任务状态</span>
-                <select id="filter-status" class="wh-input w-full px-2">
-                  <option value="">全部</option>
-                  <option>已完成</option>
-                  <option>进行中</option>
-                  <option>失败</option>
-                </select>
+                <input id="filter-time-end" type="date" class="wh-input w-full" />
               </label>
               <div class="disease-filter-actions">
                 <button type="button" id="usage-filter-search" class="wh-btn-primary">查询</button>
@@ -335,10 +315,12 @@
         id: "FL20251225001",
         device: "A区巡检机01",
         airport: "车辆段机场",
+        line: "8",
         taskType: "自动执行计划",
         takeoff: "2025-12-25 10:00",
         landing: "2025-12-25 18:15",
         duration: "6分15秒",
+        discovered: 2,
         maxHeight: "128.6",
         battery: "35%",
         operator: "张三",
@@ -347,10 +329,12 @@
         id: "FL20251224008",
         device: "青山巡检无人机",
         airport: "青山机场",
+        line: "8",
         taskType: "临时任务",
         takeoff: "2025-12-24 09:12",
         landing: "2025-12-24 09:48",
         duration: "36分02秒",
+        discovered: 3,
         maxHeight: "96.2",
         battery: "42%",
         operator: "李四",
@@ -359,10 +343,12 @@
         id: "FL20251223015",
         device: "DJI-M300E-01",
         airport: "光谷广场机场",
+        line: "7",
         taskType: "自动执行计划",
         takeoff: "2025-12-23 14:20",
         landing: "2025-12-23 15:05",
         duration: "45分18秒",
+        discovered: 1,
         maxHeight: "110.0",
         battery: "28%",
         operator: "王五",
@@ -371,15 +357,90 @@
         id: "FL20251222003",
         device: "徐家棚巡检机02",
         airport: "徐家棚机场",
+        line: "8",
         taskType: "临时任务",
         takeoff: "2025-12-22 08:30",
         landing: "2025-12-22 09:02",
         duration: "32分10秒",
+        discovered: 2,
         maxHeight: "88.5",
         battery: "51%",
         operator: "赵六",
       },
     ];
+
+    function formatDateInput(d) {
+      var pad = function (n) {
+        return n < 10 ? "0" + n : String(n);
+      };
+      return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+    }
+
+    function getDefaultDateRange() {
+      var end = new Date();
+      var start = new Date();
+      start.setDate(end.getDate() - 6);
+      return { start: formatDateInput(start), end: formatDateInput(end) };
+    }
+
+    function alignUsageRecordDates() {
+      var today = new Date();
+      usageRecords.forEach(function (row, index) {
+        var d = new Date(today);
+        d.setDate(today.getDate() - index);
+        var timePart = (row.takeoff || "10:00").slice(11).trim() || "10:00";
+        row.takeoff = formatDateInput(d) + " " + timePart;
+        var landTime = (row.landing || "11:00").slice(11).trim() || "11:00";
+        row.landing = formatDateInput(d) + " " + landTime;
+      });
+    }
+
+    alignUsageRecordDates();
+
+    function parseDurationSeconds(text) {
+      var str = String(text || "");
+      var hourMatch = str.match(/(\d+)小时/);
+      var minMatch = str.match(/(\d+)分/);
+      var secMatch = str.match(/(\d+)秒/);
+      var hours = hourMatch ? parseInt(hourMatch[1], 10) : 0;
+      var mins = minMatch ? parseInt(minMatch[1], 10) : 0;
+      var secs = secMatch ? parseInt(secMatch[1], 10) : 0;
+      return hours * 3600 + mins * 60 + secs;
+    }
+
+    function formatFlightHours(totalSeconds) {
+      var hours = totalSeconds / 3600;
+      if (hours >= 10) return hours.toFixed(1) + "h";
+      if (hours >= 1) return hours.toFixed(1) + "h";
+      var mins = Math.round(totalSeconds / 60);
+      return mins + "min";
+    }
+
+    function getSelectedLineKey() {
+      var lineEl = document.getElementById("filter-line");
+      var value = lineEl ? lineEl.value : "";
+      return value || "all";
+    }
+
+    function getMonthUsageRecords(lineKey) {
+      var now = new Date();
+      var month = now.getMonth() + 1;
+      var monthPrefix = now.getFullYear() + "-" + (month < 10 ? "0" + month : String(month));
+      return usageRecords.filter(function (row) {
+        if (lineKey !== "all" && row.line !== lineKey) return false;
+        return (row.takeoff || "").slice(0, 7) === monthPrefix;
+      });
+    }
+
+    function applyDefaultFilters() {
+      var defaults = getDefaultDateRange();
+      var lineEl = document.getElementById("filter-line");
+      var startEl = document.getElementById("filter-time-start");
+      var endEl = document.getElementById("filter-time-end");
+      if (lineEl && !lineEl.value) lineEl.value = "8";
+      if (startEl) startEl.value = defaults.start;
+      if (endEl) endEl.value = defaults.end;
+    }
 
     function flightLogDetailUrl(logId) {
       return "../wb/am-flight-log.html?detail=" + encodeURIComponent(logId);
@@ -392,30 +453,33 @@
       });
     }
 
-    function updateDroneStats(list) {
+    function updateDroneStats(lineKey) {
+      lineKey = lineKey || getSelectedLineKey();
+      var monthFlights = getMonthUsageRecords(lineKey);
+      var flightCount = monthFlights.length;
+      var totalDiscovered = monthFlights.reduce(function (sum, row) {
+        return sum + (row.discovered || 0);
+      }, 0);
+      var totalSeconds = monthFlights.reduce(function (sum, row) {
+        return sum + parseDurationSeconds(row.duration);
+      }, 0);
+      var avgPerFlight = flightCount ? totalDiscovered / flightCount : 0;
+
       var recordsEl = document.getElementById("stat-records");
-      if (recordsEl) recordsEl.textContent = String(list.length);
-      var airports = {};
-      var devices = {};
-      var operators = {};
-      list.forEach(function (row) {
-        airports[row.airport] = true;
-        devices[row.device] = true;
-        operators[row.operator] = true;
-      });
-      var airportEl = document.getElementById("stat-airports");
+      var avgEl = document.getElementById("stat-airports");
       var deviceEl = document.getElementById("stat-devices");
-      var operatorEl = document.getElementById("stat-operators");
-      if (airportEl) airportEl.textContent = String(Object.keys(airports).length);
-      if (deviceEl) deviceEl.textContent = String(Object.keys(devices).length);
-      if (operatorEl) operatorEl.textContent = String(Object.keys(operators).length);
+      var timeEl = document.getElementById("stat-operators");
+
+      if (recordsEl) recordsEl.textContent = String(totalDiscovered);
+      if (avgEl) avgEl.textContent = String(flightCount ? Math.round(avgPerFlight) : 0);
+      if (deviceEl) deviceEl.textContent = String(flightCount);
+      if (timeEl) timeEl.textContent = formatFlightHours(totalSeconds);
     }
 
     function renderUsageRecords(list) {
       var body = document.getElementById("usage-record-body");
       var totalEl = document.getElementById("usage-record-total");
       if (!body) return;
-      updateDroneStats(list);
       if (totalEl) totalEl.textContent = String(list.length);
       body.innerHTML = list
         .map(function (row, index) {
@@ -464,28 +528,43 @@
         .join("");
     }
 
-    function applyUsageFilter() {
+    function filterUsageRecords() {
       var airport = (document.getElementById("filter-airport") || {}).value || "";
-      var list = usageRecords.filter(function (row) {
-        return !airport || row.airport === airport;
+      var device = (document.getElementById("filter-device") || {}).value || "";
+      var line = (document.getElementById("filter-line") || {}).value || "";
+      var start = (document.getElementById("filter-time-start") || {}).value || "";
+      var end = (document.getElementById("filter-time-end") || {}).value || "";
+      return usageRecords.filter(function (row) {
+        if (airport && row.airport !== airport) return false;
+        if (device && row.device !== device) return false;
+        if (line && row.line !== line) return false;
+        var day = (row.takeoff || "").slice(0, 10);
+        if (start && day && day < start) return false;
+        if (end && day && day > end) return false;
+        return true;
       });
-      renderUsageRecords(list);
+    }
+
+    function applyUsageFilter() {
+      var lineKey = getSelectedLineKey();
+      renderUsageRecords(filterUsageRecords());
+      updateDroneStats(lineKey);
+      refreshOverviewByLine();
     }
 
     function resetUsageFilter() {
       var airportSel = document.getElementById("filter-airport");
       var deviceSel = document.getElementById("filter-device");
-      var operatorSel = document.getElementById("filter-operator");
-      var statusSel = document.getElementById("filter-status");
+      var lineSel = document.getElementById("filter-line");
       var timeStart = document.getElementById("filter-time-start");
       var timeEnd = document.getElementById("filter-time-end");
+      var defaults = getDefaultDateRange();
       if (airportSel) airportSel.value = "";
       if (deviceSel) deviceSel.value = "";
-      if (operatorSel) operatorSel.value = "";
-      if (statusSel) statusSel.value = "";
-      if (timeStart) timeStart.value = "2023/05/16 14:10:20";
-      if (timeEnd) timeEnd.value = "2023/05/16 14:10:22";
-      renderUsageRecords(usageRecords);
+      if (lineSel) lineSel.value = "8";
+      if (timeStart) timeStart.value = defaults.start;
+      if (timeEnd) timeEnd.value = defaults.end;
+      applyUsageFilter();
     }
 
     function drawTrendChart() {
@@ -764,20 +843,21 @@
     }
 
     function refreshOverviewByLine() {
-      var lineKey = document.getElementById("overview-line-select").value;
+      var lineKey = getSelectedLineKey();
       var data = getLineData(lineKey);
       drawViolationMonthChart(data.monthly);
       drawViolationPieChart(data.pie);
+      updateDroneStats(lineKey);
     }
 
     drawTrendChart();
     drawDurationChart();
-    refreshOverviewByLine();
 
-    document.getElementById("overview-line-select").addEventListener("change", refreshOverviewByLine);
-
+    applyDefaultFilters();
     initQuickLinks();
-    renderUsageRecords(usageRecords);
+    applyUsageFilter();
+
+    document.getElementById("filter-line").addEventListener("change", applyUsageFilter);
     document.getElementById("usage-filter-search").addEventListener("click", applyUsageFilter);
     document.getElementById("usage-filter-reset").addEventListener("click", resetUsageFilter);
   </script>

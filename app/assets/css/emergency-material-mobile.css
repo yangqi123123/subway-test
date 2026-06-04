@@ -1,0 +1,118 @@
+/* 移动端应急物资 */
+body.mp-material-page #material-list-view:not(.hidden),
+body.mp-material-page #material-detail-view:not(.hidden),
+body.mp-material-page #material-form-view:not(.hidden) {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-material-page #material-detail-view:not(.hidden),
+body.mp-material-page #material-form-view:not(.hidden) {
+  z-index: 20;
+}
+
+body.mp-material-page #material-list-view.hidden,
+body.mp-material-page #material-detail-view.hidden,
+body.mp-material-page #material-form-view.hidden {
+  display: none !important;
+}
+
+body.mp-material-page .mp-material-warehouse-banner {
+  margin: 0 0 10px;
+  padding: 0;
+  font-size: 12px;
+  color: var(--mp-text-muted, #64748b);
+}
+
+body.mp-material-page #material-app {
+  top: 0;
+}
+
+body.mp-material-page #material-list-view .mp-detail-footer {
+  flex-shrink: 0;
+  position: relative;
+}
+
+body.mp-material-page #material-form-view .mp-detail-footer {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+body.mp-material-page .mp-field--readonly {
+  background: rgba(241, 245, 249, 0.9);
+  color: #64748b;
+}
+
+body.mp-material-page .mp-material-card__meta {
+  grid-template-columns: 1fr;
+}
+
+body.mp-material-page .mp-material-model-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mp-primary);
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+body.mp-material-page .mp-material-qty-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0f766e;
+  background: rgba(20, 184, 166, 0.08);
+  border: 1px solid rgba(20, 184, 166, 0.18);
+}
+
+body.mp-material-page .mp-material-card__actions {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.mp-material-page .mp-material-card__actions .mp-project-action {
+  flex: 1 1 calc(33.33% - 6px);
+  min-width: 72px;
+  justify-content: center;
+}
+
+body.mp-scroll-locked #material-app,
+body.mp-scroll-locked .mp-material-page .mp-list-scroll,
+body.mp-scroll-locked .mp-material-page .mp-disease-detail-scroll,
+body.mp-scroll-locked .mp-material-page .mp-disease-form-scroll {
+  overflow: hidden !important;
+}
+
+body.mp-material-page #material-toast.project-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 13px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+body.mp-material-page #material-toast.project-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

@@ -1,0 +1,98 @@
+/* 移动端应急仓库 */
+body.mp-warehouse-page #warehouse-list-view:not(.hidden),
+body.mp-warehouse-page #warehouse-detail-view:not(.hidden),
+body.mp-warehouse-page #warehouse-form-view:not(.hidden) {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-warehouse-page #warehouse-detail-view:not(.hidden),
+body.mp-warehouse-page #warehouse-form-view:not(.hidden) {
+  z-index: 20;
+}
+
+body.mp-warehouse-page #warehouse-list-view.hidden,
+body.mp-warehouse-page #warehouse-detail-view.hidden,
+body.mp-warehouse-page #warehouse-form-view.hidden {
+  display: none !important;
+}
+
+body.mp-warehouse-page #warehouse-list-view .mp-detail-footer {
+  flex-shrink: 0;
+  position: relative;
+}
+
+body.mp-warehouse-page #warehouse-form-view .mp-detail-footer {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+body.mp-warehouse-page .mp-warehouse-card__meta {
+  grid-template-columns: 1fr;
+}
+
+body.mp-warehouse-page .mp-filter-sheet__body.project-filter-panel {
+  grid-template-columns: 1fr;
+}
+
+body.mp-warehouse-page .mp-filter-sheet__body .mp-filter-field {
+  grid-column: 1 / -1;
+}
+
+body.mp-warehouse-page .mp-warehouse-dept-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mp-primary);
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+body.mp-warehouse-page .mp-warehouse-card__actions {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.mp-warehouse-page .mp-warehouse-card__actions .mp-project-action {
+  flex: 1 1 calc(50% - 6px);
+  min-width: 72px;
+  justify-content: center;
+}
+
+body.mp-scroll-locked #warehouse-app,
+body.mp-scroll-locked .mp-warehouse-page .mp-list-scroll,
+body.mp-scroll-locked .mp-warehouse-page .mp-disease-detail-scroll,
+body.mp-scroll-locked .mp-warehouse-page .mp-disease-form-scroll {
+  overflow: hidden !important;
+}
+
+body.mp-warehouse-page #warehouse-toast.project-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 13px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+body.mp-warehouse-page #warehouse-toast.project-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

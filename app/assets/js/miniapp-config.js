@@ -94,15 +94,20 @@
       profile: {
         avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80",
         name: "张三",
+        nickname: "张三",
         account: "zhangsan",
+        email: "zhangsan@whmetro.com",
         phone: "13800138000",
+        gender: "男",
         dept: "保护区运管部",
+        pilotCert: "",
       },
       cells: [
         { label: "设置", icon: "fa-gear", href: "pages/settings.html" },
         { label: "待办", icon: "fa-list-check", href: "pages/todo.html", list: "todo" },
         { label: "系统通知", icon: "fa-bell", href: "pages/notify.html", list: "notify" },
         { label: "已处理事项", icon: "fa-circle-check", href: "pages/done.html" },
+        { label: "修改密码", icon: "fa-lock", href: "pages/change-password.html" },
       ],
       logoutHref: "app-login.html",
     },
@@ -116,8 +121,21 @@
     { id: "mine", label: "我的", icon: "fa-user", home: "mine/home.html" },
   ];
 
+  var TAB_ROOT_HOMES = TAB_ITEMS.map(function (item) {
+    return item.home;
+  });
+
+  function isTabbarRootPath(path) {
+    path = String(path || "").replace(/\\/g, "/");
+    return TAB_ROOT_HOMES.some(function (home) {
+      return path.indexOf(home) >= 0;
+    });
+  }
+
   global.MiniAppConfig = {
     MODULES: MODULES,
     TAB_ITEMS: TAB_ITEMS,
+    TAB_ROOT_HOMES: TAB_ROOT_HOMES,
+    isTabbarRootPath: isTabbarRootPath,
   };
 })(window);

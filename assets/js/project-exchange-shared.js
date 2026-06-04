@@ -22,6 +22,33 @@
       }
     }
     if (!record.videos) record.videos = [];
+    record.photos = record.photos.map(function (item) {
+      item = item || {};
+      if (global.ProjectPreviewMock) {
+        if (global.ProjectPreviewMock.isRemoteBlockedUrl(item.url)) item.url = "";
+        if (!item.url && item.name) item.url = global.ProjectPreviewMock.resolveMockPreviewUrl(item.name, "");
+      }
+      return item;
+    });
+    record.videos = record.videos.map(function (item) {
+      item = item || {};
+      if (global.ProjectPreviewMock) {
+        if (global.ProjectPreviewMock.isRemoteBlockedUrl(item.url)) item.url = "";
+        if (!item.url && item.name) item.url = global.ProjectPreviewMock.resolveMockPreviewUrl(item.name, "");
+      }
+      return item;
+    });
+    if (global.ProjectPreviewMock) {
+      if (global.ProjectPreviewMock.isRemoteBlockedUrl(record.attachmentUrl)) record.attachmentUrl = "";
+      if (!record.attachmentUrl && record.attachment) {
+        record.attachmentUrl = global.ProjectPreviewMock.resolveMockPreviewUrl(record.attachment, "");
+      }
+      if (!record.attachmentMimeType && record.attachment && global.ProjectDocShared) {
+        record.attachmentMimeType = global.ProjectDocShared.inferMimeFromFileName(record.attachment);
+      }
+    } else if (!record.attachmentUrl && record.attachment && global.ProjectDocShared && global.ProjectDocShared.resolveDemoFileUrl) {
+      record.attachmentUrl = global.ProjectDocShared.resolveDemoFileUrl(record.attachment);
+    }
     return record;
   }
 
@@ -248,6 +275,8 @@
         exchangeFileInput && exchangeFileInput.files && exchangeFileInput.files[0]
           ? exchangeFileInput.files[0]
           : null;
+      var hiddenUrl = document.getElementById("exchange-file-url");
+      var hiddenMime = document.getElementById("exchange-file-mime");
       return {
         date: val("exchange-date"),
         unit: val("exchange-unit"),
@@ -258,8 +287,10 @@
         attachment: pickedAttachment ? pickedAttachment.name : existing.attachment || "",
         attachmentUrl: pickedAttachment
           ? URL.createObjectURL(pickedAttachment)
-          : existing.attachmentUrl || "",
-        attachmentMimeType: pickedAttachment ? pickedAttachment.type : existing.attachmentMimeType || ""
+          : (hiddenUrl && hiddenUrl.value) || existing.attachmentUrl || "",
+        attachmentMimeType: pickedAttachment
+          ? pickedAttachment.type
+          : (hiddenMime && hiddenMime.value) || existing.attachmentMimeType || ""
       };
     }
 
@@ -274,14 +305,15 @@
     function buildPhotoPreviewPayload(record, mediaIndex) {
       record = normalizeRecord(record);
       var item = record.photos[mediaIndex] || {};
+      var mime = inferMimeFromFileName(item.name);
       return {
         kind: "image",
         title: "图片预览",
         name: item.name || "现场照片",
         unit: record.unit,
         date: record.date,
-        url: item.url || "",
-        mimeType: "",
+        url: item.url || (global.ProjectPreviewMock ? global.ProjectPreviewMock.resolveMockPreviewUrl(item.name, "") : ""),
+        mimeType: mime,
         tip: "交涉现场照片预览"
       };
     }
@@ -289,30 +321,41 @@
     function buildVideoPreviewPayload(record, mediaIndex) {
       record = normalizeRecord(record);
       var item = record.videos[mediaIndex] || {};
+      var mime = inferMimeFromFileName(item.name);
       return {
         kind: "video",
         title: "视频预览",
         name: item.name || "现场视频",
         unit: record.unit,
         date: record.date,
-        url: item.url || "",
-        mimeType: "",
+        url: item.url || (global.ProjectPreviewMock ? global.ProjectPreviewMock.resolveMockPreviewUrl(item.name, "") : ""),
+        mimeType: mime,
         tip: "交涉现场视频预览"
       };
     }
 
     function buildFilePreviewPayload(record) {
       record = normalizeRecord(record);
+      var mime = record.attachmentMimeType || inferMimeFromFileName(record.attachment);
       return {
-        kind: "file",
+        kind: global.ProjectDocShared ? global.ProjectDocShared.inferPreviewKind(mime, record.attachment) : "file",
         title: "文件预览",
         name: record.attachment || "交涉资料",
         unit: record.unit,
         date: record.date,
-        url: record.attachmentUrl || "",
-        mimeType: record.attachmentMimeType || "",
+        url:
+          record.attachmentUrl ||
+          (global.ProjectPreviewMock ? global.ProjectPreviewMock.resolveMockPreviewUrl(record.attachment, "") : ""),
+        mimeType: mime,
         tip: "交涉资料预览"
       };
+    }
+
+    function inferMimeFromFileName(name) {
+      if (global.ProjectDocShared && global.ProjectDocShared.inferMimeFromFileName) {
+        return global.ProjectDocShared.inferMimeFromFileName(name);
+      }
+      return "";
     }
 
     function val(id) {

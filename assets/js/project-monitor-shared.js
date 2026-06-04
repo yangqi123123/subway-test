@@ -47,6 +47,45 @@
     );
   }
 
+  function mobileInputRow(label, id, value, type, required, extraClass) {
+    type = type || "text";
+    extraClass = extraClass || "";
+    var safe = escHtml(value);
+    var control =
+      type === "textarea"
+        ? '<textarea id="' +
+          id +
+          '" class="wh-input mp-field mp-field--area">' +
+          safe +
+          "</textarea>"
+        : '<input id="' +
+          id +
+          '" type="' +
+          (type === "date" ? "date" : "text") +
+          '" class="wh-input mp-field" value="' +
+          safe +
+          '" />';
+    return (
+      '<div class="mp-form-row' +
+      (extraClass ? " " + extraClass : "") +
+      '"><label class="project-form-label' +
+      (required ? " project-required" : "") +
+      '">' +
+      label.replace(/：$/g, "") +
+      "</label>" +
+      control +
+      "</div>"
+    );
+  }
+
+  function mobileTitleRow(label) {
+    return (
+      '<div class="mp-form-row mp-form-row--title"><label class="project-form-label">' +
+      label.replace(/：$/g, "") +
+      "</label></div>"
+    );
+  }
+
   function createHandlers(ctx) {
     function ensureStyles() {
       if (document.getElementById("project-monitor-style")) return;
@@ -74,7 +113,76 @@
       document.head.appendChild(style);
     }
 
+    function mountMobilePanel(data) {
+      var root = document.getElementById(ctx.panelRootId);
+      if (!root) return;
+      var summaryText = (data && data.summary && data.summary.text) || "";
+      var base = (data && data.base) || {};
+      var plan = (data && data.plan) || {};
+      root.innerHTML =
+        '<div class="mp-monitor-panel">' +
+        '<section class="proj-monitor-section">' +
+        '<h3 class="proj-monitor-section__title">基础信息</h3>' +
+        '<div class="mp-form-grid">' +
+        mobileInputRow("项目名称", "mon-project-name", base.projectName) +
+        mobileInputRow("监测区间/车站里程范围", "mon-range", base.range) +
+        mobileInputRow("基准点数量", "mon-benchmark-count", base.benchmarkCount) +
+        mobileInputRow("基准点布设位置及对应里程", "mon-benchmark-location", base.benchmarkLocation) +
+        mobileInputRow("预警值", "mon-warning-value", base.warningValue) +
+        mobileInputRow("①控制值", "mon-control-1", base.control1) +
+        mobileInputRow("②评估报告控制值", "mon-control-2", base.control2) +
+        mobileInputRow("建设单位及联系人（或总承包单位）", "mon-builder-contact", base.builderContact) +
+        mobileInputRow("施工单位及联系人", "mon-constructor-contact", base.constructorContact) +
+        mobileInputRow("第三方监测单位及联系人", "mon-third-contact", base.thirdContact) +
+        mobileInputRow(
+          "施工监测单位及联系人（集团内部项目）",
+          "mon-internal-contact",
+          base.internalContact,
+          "text",
+          false,
+          "mp-form-row--full"
+        ) +
+        mobileInputRow("施工类型及影响等级", "mon-type-level", base.typeLevel) +
+        mobileInputRow("与地铁结构最近距离", "mon-min-distance", base.minDistance) +
+        mobileInputRow("项目跟进人", "mon-follower", base.follower) +
+        mobileInputRow("施工主要风险期", "mon-risk-period", base.riskPeriod) +
+        mobileInputRow("监测开始时间", "mon-start-time", base.startTime, "date") +
+        mobileInputRow("监测停测时间", "mon-stop-time", base.stopTime, "date") +
+        "</div></section>" +
+        '<section class="proj-monitor-section">' +
+        '<h3 class="proj-monitor-section__title">专项监测方案</h3>' +
+        '<div class="mp-form-grid">' +
+        mobileInputRow("①专家评审会时间", "mon-expert-time", plan.expertTime, "date") +
+        mobileInputRow("②人工及自动化监测设备型号", "mon-equipment", plan.equipment) +
+        mobileInputRow("③测点间距", "mon-point-spacing", plan.pointSpacing) +
+        mobileInputRow("④联测频次", "mon-joint-frequency", plan.jointFrequency) +
+        mobileTitleRow("⑤各施工阶段对应的监测频次及监测方式") +
+        mobileInputRow("施工阶段一", "mon-stage-one", plan.stageOne) +
+        mobileInputRow("施工阶段二", "mon-stage-two", plan.stageTwo) +
+        mobileInputRow("基准点联测时间", "mon-benchmark-joint-time", plan.benchmarkJointTime, "date") +
+        "</div></section>" +
+        '<section class="proj-monitor-section">' +
+        '<h3 class="proj-monitor-section__title">项目情况简介</h3>' +
+        '<div class="mp-form-grid">' +
+        mobileInputRow("工程概括", "mon-summary", summaryText, "textarea", false, "mp-form-row--full") +
+        "</div></section>" +
+        '<section class="proj-monitor-section">' +
+        '<h3 class="proj-monitor-section__title">第三方监测日志（含基准点复测数据、初始状态调查、监测总结等）</h3>' +
+        '<div class="flex justify-end mb-3">' +
+        '<button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary project-hidden-when-readonly" data-action="' +
+        ctx.openLogAction +
+        '"><i class="fa-solid fa-plus mr-1"></i>新增</button></div>' +
+        '<div id="' +
+        ctx.listId +
+        '" class="mp-monitor-log-list"></div></section></div>';
+      renderLogRows();
+    }
+
     function mountPanel(data) {
+      if (ctx.isMobile) {
+        mountMobilePanel(data);
+        return;
+      }
       ensureStyles();
       var root = document.getElementById(ctx.panelRootId);
       if (!root) return;
@@ -186,6 +294,39 @@
       };
     }
 
+    function renderMobileLogCard(row, index) {
+      var fields =
+        '<div class="proj-doc-field"><span class="proj-doc-field__label">日期：</span><span class="proj-doc-field__value">' +
+        ctx.escapeHtml(row.date || "-") +
+        "</span></div>" +
+        '<div class="proj-doc-field"><span class="proj-doc-field__label">监测报告期数：</span><span class="proj-doc-field__value">' +
+        ctx.escapeHtml(row.reportPeriod || "-") +
+        "</span></div>" +
+        '<div class="proj-doc-field"><span class="proj-doc-field__label">监测数据：</span><span class="proj-doc-field__value">' +
+        ctx.escapeHtml(row.monitorData || "-") +
+        "</span></div>" +
+        '<div class="proj-doc-field"><span class="proj-doc-field__label">是否超预警：</span><span class="proj-doc-field__value">' +
+        ctx.escapeHtml(row.overWarning || "-") +
+        "</span></div>";
+      return (
+        '<article class="proj-doc-card mp-monitor-log-card">' +
+        '<div class="proj-doc-card__main"><div class="proj-doc-card__grid">' +
+        fields +
+        "</div></div>" +
+        '<div class="proj-doc-card__actions">' +
+        '<span class="unit-inline-action project-hidden-when-readonly" data-action="' +
+        ctx.editLogAction +
+        '" data-index="' +
+        index +
+        '">编辑</span>' +
+        '<span class="unit-inline-action unit-inline-action--danger project-hidden-when-readonly" data-action="' +
+        ctx.deleteLogAction +
+        '" data-index="' +
+        index +
+        '">删除</span></div></article>'
+      );
+    }
+
     function renderLogRows() {
       var listEl = document.getElementById(ctx.listId);
       if (!listEl) return;
@@ -193,6 +334,17 @@
       if (!logs.length) {
         listEl.innerHTML =
           '<div class="project-empty"><i class="fa-regular fa-folder-open text-2xl mb-1"></i>暂无监测日志</div>';
+        return;
+      }
+      if (ctx.isMobile) {
+        listEl.innerHTML =
+          '<div class="proj-doc-cards mp-monitor-log-cards">' +
+          logs
+            .map(function (row, index) {
+              return renderMobileLogCard(row, index);
+            })
+            .join("") +
+          "</div>";
         return;
       }
       listEl.innerHTML =

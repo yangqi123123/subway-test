@@ -1,0 +1,214 @@
+/* 移动端人工巡检记录 — 复用病害巡查布局，补充 manual 专用选择器 */
+body.mp-manual-page #manual-list-view:not(.hidden),
+body.mp-manual-page #manual-detail-view:not(.hidden),
+body.mp-manual-page #manual-form-view:not(.hidden) {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-manual-page #manual-detail-view:not(.hidden),
+body.mp-manual-page #manual-form-view:not(.hidden) {
+  z-index: 20;
+}
+
+body.mp-manual-page #manual-list-view.hidden,
+body.mp-manual-page #manual-detail-view.hidden,
+body.mp-manual-page #manual-form-view.hidden {
+  display: none !important;
+}
+
+body.mp-manual-page #manual-list-view .mp-detail-footer {
+  flex-shrink: 0;
+  position: relative;
+}
+
+body.mp-manual-page #manual-form-view .mp-detail-footer {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+body.mp-manual-page .mp-manual-card__meta {
+  grid-template-columns: 1fr 1fr;
+}
+
+body.mp-manual-page .mp-manual-card__meta .mp-project-card__meta-full {
+  grid-column: 1 / -1;
+}
+
+body.mp-manual-page .mp-manual-card__meta .mp-project-card__meta-full.mp-project-card__meta-nowrap {
+  grid-template-columns: auto 1fr;
+}
+
+body.mp-manual-page .mp-manual-card__meta .mp-project-card__meta-nowrap dt {
+  white-space: nowrap;
+}
+
+body.mp-manual-page .mp-manual-card__meta .mp-project-card__meta-nowrap dd {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: keep-all;
+}
+
+body.mp-manual-page .mp-manual-card__actions {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.mp-manual-page .mp-manual-card__actions .mp-project-action {
+  flex: 1 1 calc(33.33% - 6px);
+  min-width: 72px;
+  justify-content: center;
+}
+
+/* 操作记录弹窗 */
+body.mp-manual-page #manual-record-mask {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 300 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  background: rgba(15, 23, 42, 0.45) !important;
+}
+
+body.mp-manual-page #manual-record-mask.show {
+  display: flex !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+}
+
+body.mp-manual-page #manual-record-mask .mp-record-modal {
+  width: 100% !important;
+  max-width: none !important;
+  background: var(--mp-bg) !important;
+  border: none !important;
+  border-radius: 16px 16px 0 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 85vh !important;
+  overflow: hidden !important;
+  box-shadow: 0 -12px 40px rgba(15, 35, 80, 0.15) !important;
+}
+
+body.mp-manual-page #manual-record-mask .mp-project-modal__head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--mp-border-light);
+}
+
+body.mp-manual-page #manual-record-mask .mp-project-modal__title {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--mp-text);
+}
+
+body.mp-manual-page #manual-record-mask .mp-record-modal__body,
+body.mp-manual-page #manual-record-mask .record-list {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 16px !important;
+  font-size: 14px !important;
+  line-height: 1.55 !important;
+  color: var(--mp-text) !important;
+}
+
+body.mp-manual-page #manual-record-mask .record-timeline {
+  position: relative;
+  padding-left: 28px;
+}
+
+body.mp-manual-page #manual-record-mask .record-timeline::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 10px;
+  bottom: 10px;
+  width: 1px;
+  background: var(--mp-border) !important;
+}
+
+body.mp-manual-page #manual-record-mask .record-item {
+  position: relative;
+  padding: 0 0 22px;
+  font-size: 14px !important;
+}
+
+body.mp-manual-page #manual-record-mask .record-item:last-child {
+  padding-bottom: 0;
+}
+
+body.mp-manual-page #manual-record-mask .record-item::before {
+  content: "";
+  position: absolute;
+  left: -28px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--mp-primary) !important;
+  background: #fff !important;
+  box-sizing: border-box;
+  z-index: 1;
+  box-shadow: none !important;
+}
+
+body.mp-manual-page #manual-record-mask .record-item__title {
+  margin: 0 0 6px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: var(--mp-text) !important;
+  line-height: 1.4;
+}
+
+body.mp-manual-page #manual-record-mask .record-item__meta {
+  font-size: 12px !important;
+  color: var(--mp-text-muted) !important;
+  line-height: 1.55 !important;
+  margin: 0;
+}
+
+body.mp-manual-page #manual-record-mask .record-empty {
+  text-align: center;
+  font-size: 13px !important;
+  color: var(--mp-text-caption) !important;
+  padding: 16px 0;
+}
+
+body.mp-scroll-locked #manual-app,
+body.mp-scroll-locked .mp-manual-page .mp-list-scroll,
+body.mp-scroll-locked .mp-manual-page .mp-disease-detail-scroll,
+body.mp-scroll-locked .mp-manual-page .mp-disease-form-scroll {
+  overflow: hidden !important;
+}
+
+body.mp-scroll-locked #manual-record-mask.show {
+  overflow: hidden !important;
+}
+
+body.mp-scroll-locked #manual-record-mask .mp-record-modal__body {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain;
+}

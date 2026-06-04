@@ -1,15 +1,180 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>人员轨迹</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../../assets/css/map-gis.css" />
+  <link rel="stylesheet" href="../../assets/css/track-person-mobile.css" />
 </head>
-<body data-miniapp="placeholder" data-module="patrol" data-title="人员轨迹" data-base="../" data-desc="对接后台「人员轨迹」模块，当前为页面框架占位。">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-track-page mp-project-page miniapp-page" data-miniapp="page" data-module="patrol" data-title="人员轨迹" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title" id="track-nav-title">人员轨迹</h1>
+  </header>
+
+  <div id="track-app" class="mp-track-app mp-project-app">
+    <section id="track-list-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-project-stats">
+          <div class="mp-stat-card mp-stat-card--total">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-users"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-total">0</div>
+              <div class="mp-stat-card__label">人员总数</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--key">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-signal"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-online">0</div>
+              <div class="mp-stat-card__label">在线</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--general">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-power-off"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-offline">0</div>
+              <div class="mp-stat-card__label">离线</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--month">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-route"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-points">0</div>
+              <div class="mp-stat-card__label">轨迹点位</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mp-project-searchbar">
+          <div class="mp-search-input-wrap" data-action="open-track-search" role="button" tabindex="0" aria-label="搜索人员轨迹">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="text" id="track-search-trigger" class="mp-search-input" placeholder="搜索人员姓名 / 设备编号" readonly />
+            <button type="button" class="mp-search-clear" id="track-search-clear" hidden aria-label="清空搜索">
+              <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+          </div>
+          <button type="button" class="mp-filter-text-btn" data-action="open-track-filter">筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i></button>
+        </div>
+
+        <div id="track-mobile-list" class="mp-project-list" role="list"></div>
+        <span id="table-total" hidden aria-hidden="true">0</span>
+      </div>
+    </section>
+
+    <section id="track-detail-view" class="hidden mp-detail-view">
+      <span id="detail-person-name" hidden aria-hidden="true"></span>
+      <div class="mp-track-detail-scroll">
+        <div class="mp-track-map-section track-map-shell">
+          <div class="mp-track-map-toolbar">
+            <button type="button" class="mp-track-map-btn" data-action="play-track"><i class="fa-solid fa-play"></i>播放</button>
+            <button type="button" class="mp-track-map-btn" data-action="reset-track-map"><i class="fa-solid fa-location-crosshairs"></i>重置</button>
+          </div>
+          <div id="person-track-map"></div>
+          <div class="mp-track-map-panel">
+            <div class="mp-track-map-panel__row">
+              <span class="mp-track-map-panel__label">轨迹状态</span>
+              <span class="mp-track-map-panel__val" id="map-status-text">待播放</span>
+            </div>
+            <div class="mp-track-map-panel__row">
+              <span class="mp-track-map-panel__label">当前位置</span>
+              <span class="mp-track-map-panel__val" id="map-current-name">—</span>
+            </div>
+            <div class="mp-track-map-panel__row">
+              <span class="mp-track-map-panel__label">定位时间</span>
+              <span class="mp-track-map-panel__val" id="map-current-time">—</span>
+            </div>
+          </div>
+        </div>
+
+        <section class="mp-track-section">
+          <div class="mp-track-section__head">
+            <h2 class="mp-track-section__title">基础信息</h2>
+            <span id="detail-status-badge" class="mp-track-status mp-track-status--online">在线</span>
+          </div>
+          <dl class="mp-track-info-grid" id="detail-base-grid"></dl>
+        </section>
+
+        <section class="mp-track-section">
+          <div class="mp-track-section__head">
+            <h2 class="mp-track-section__title">轨迹记录</h2>
+          </div>
+          <div id="track-record-list" class="mp-track-record-list"></div>
+        </section>
+      </div>
+    </section>
+
+    <tbody id="track-table-body" hidden aria-hidden="true"></tbody>
+  </div>
+
+  <div id="track-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-track-filter"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-track-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field mp-filter-field--full"><span>所属线路</span>
+          <select id="filter-line" class="wh-input w-full px-2">
+            <option value="">全部</option>
+            <option value="2号线">2号线</option>
+            <option value="5号线">5号线</option>
+            <option value="8号线">8号线</option>
+          </select>
+        </label>
+        <label class="mp-filter-field mp-filter-field--full"><span>所属部门</span>
+          <select id="filter-dept" class="wh-input w-full px-2">
+            <option value="">全部</option>
+            <option value="巡检一部">巡检一部</option>
+            <option value="巡检二部">巡检二部</option>
+            <option value="应急中心">应急中心</option>
+          </select>
+        </label>
+        <label class="mp-filter-field mp-filter-field--full"><span>开始日期</span>
+          <input id="filter-date-start" type="date" class="wh-input w-full px-2" />
+        </label>
+        <label class="mp-filter-field mp-filter-field--full"><span>结束日期</span>
+          <input id="filter-date-end" type="date" class="wh-input w-full px-2" />
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-track-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-track">筛选</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mp-picker-sheet" class="mp-picker-sheet" aria-hidden="true">
+    <div class="mp-picker-sheet__mask" data-action="mp-picker-mask-close"></div>
+    <div class="mp-picker-sheet__panel" role="dialog">
+      <div class="mp-picker-sheet__head">
+        <button type="button" class="mp-picker-sheet__btn" data-action="mp-picker-cancel">取消</button>
+        <h3 id="mp-picker-title" class="mp-picker-sheet__title">请选择</h3>
+        <button type="button" class="mp-picker-sheet__btn mp-picker-sheet__btn--ok" data-action="mp-picker-confirm">确定</button>
+      </div>
+      <div id="mp-picker-body" class="mp-picker-sheet__body"></div>
+    </div>
+  </div>
+
+  <div class="project-toast" id="track-toast" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="../../assets/js/gis-assets-base.js"></script>
+  <script src="../../../assets/js/map-gis.js"></script>
+  <script src="../../../assets/js/track-playback.js"></script>
+  <script src="../../../assets/js/in-track-person-data.js"></script>
+  <script src="../../../assets/js/in-project-mobile.js"></script>
+  <script src="../../../assets/js/in-track-person-page.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/track-person-page-boot.js"></script>
 </body>
 </html>

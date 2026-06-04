@@ -10,7 +10,7 @@
       activeTab: "approval",
       toolbar: ["批量审批"],
       filters: [
-        { id: "status", label: "状态", options: ["全部", "待审批", "未复核", "已复核"] },
+        { id: "title", label: "标题", type: "text", placeholder: "请输入标题关键词" },
         { id: "start", label: "开始时间", type: "date" },
         { id: "end", label: "结束时间", type: "date" },
       ],
@@ -47,23 +47,13 @@
           alertId: 201,
           note: "报警点附近机场及关联无人机已完成推荐。",
         },
-        {
-          tab: "alert",
-          title: "夜间巡查异常复核",
-          source: "智慧巡检",
-          user: "系统",
-          time: "2026-05-14 14:06",
-          status: "已复核",
-          workflowStatus: "已复核",
-          alertId: 202,
-          note: "需进入审核环节确认处置结果。",
-        },
       ],
     },
     "wb-sys-notify": {
       title: "系统通知",
       badge: "审批结果与到期提醒",
       filters: [
+        { id: "title", label: "标题", type: "text", placeholder: "请输入标题关键词" },
         { id: "type", label: "通知类型", options: ["全部", "空域许可提醒", "审批消息"] },
         { id: "start", label: "发布开始", type: "date" },
         { id: "end", label: "发布结束", type: "date" }
@@ -124,10 +114,11 @@
       title: "已处理事项",
       badge: "历史记录追溯查询",
       filters: [
+        { id: "title", label: "标题", type: "text", placeholder: "请输入标题关键词" },
         { id: "type", label: "事项类型", options: ["全部", "审批", "告警", "空域许可续期"] },
         { id: "start", label: "处理开始", type: "date" },
         { id: "end", label: "处理结束", type: "date" },
-        { id: "result", label: "处理结果", options: ["全部", "通过", "驳回", "已处置", "已续期"] }
+        { id: "result", label: "处理结果", options: ["全部", "通过", "驳回", "已复核", "已续期"] }
       ],
       columns: ["标题", "类型", "来源模块", "处理人", "处理时间", "处理结果", "操作"],
       rows: [
@@ -161,9 +152,21 @@
           source: "地图驾驶舱",
           user: "鲍雄澎",
           time: "2026-05-12 16:42",
-          result: "已处置",
-          workflowStatus: "已处置",
+          result: "已复核",
+          workflowStatus: "已复核",
           opinion: "已派发人工复核，现场确认无新增施工。",
+        },
+        {
+          doneKind: "alarm",
+          alertId: 202,
+          title: "夜间巡查异常复核",
+          type: "告警",
+          source: "智慧巡检",
+          user: "鲍雄澎",
+          time: "2026-05-14 14:06",
+          result: "已复核",
+          workflowStatus: "已复核",
+          opinion: "现场有破拆机械挖掘施工，动静比较大",
         },
         {
           doneKind: "airspace",
@@ -194,8 +197,8 @@
   function style() {
     if (document.getElementById("wb-module-style")) return;
     document.head.insertAdjacentHTML("beforeend", '<style id="wb-module-style">' +
-      '.wb-hero{border:1px solid rgba(34,211,238,.16);background:linear-gradient(135deg,rgba(2,8,23,.92),rgba(8,47,73,.28));box-shadow:0 22px 60px rgba(0,0,0,.28);border-radius:8px}.wb-stat{border-left:1px solid rgba(34,211,238,.18);padding-left:18px}.wb-table th,.wb-table td{height:52px;border-bottom:1px solid rgba(34,211,238,.09);border-right:1px solid rgba(34,211,238,.06);vertical-align:middle}.wb-table th:last-child,.wb-table td:last-child{border-right:0}.wb-table thead th{background:rgba(2,8,23,.72);font-size:12px;font-weight:600;white-space:nowrap}.wb-table tbody td{font-size:12px;color:rgba(226,245,255,.9)}.wb-tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;border:1px solid rgba(34,211,238,.22);background:rgba(34,211,238,.08);color:#bae6fd;font-size:11px}.wb-tag--warn{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.08);color:#fde68a}.wb-tag--danger{border-color:rgba(251,113,133,.32);background:rgba(251,113,133,.08);color:#fecdd3}.wb-tag--ok{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.08);color:#bbf7d0}.wb-action{display:inline-flex;align-items:center;gap:5px;margin-right:10px;white-space:nowrap;cursor:pointer;color:#67e8f9}.wb-action:hover{color:#fff}.wb-action--hot{color:#fbbf24}.wb-action--danger{color:#fb7185}.wb-modal-mask{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;background:rgba(2,8,23,.68);padding:20px}.wb-modal-mask.show{display:flex}.wb-modal{width:min(760px,94vw);border:1px solid rgba(34,211,238,.2);border-radius:8px;background:#071426;box-shadow:0 30px 90px rgba(0,0,0,.5)}' +
-      '.wb-approval-mask{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;background:rgba(2,8,23,.72);padding:22px}.wb-approval-mask.show{display:flex}.wb-approval-modal{width:min(1080px,96vw);max-height:88vh;overflow:auto;border:1px solid rgba(34,211,238,.25);border-radius:10px;background:#071b33;box-shadow:0 20px 60px rgba(0,0,0,.55)}' +
+      '.wb-hero{border:1px solid rgba(34,211,238,.16);background:linear-gradient(135deg,rgba(2,8,23,.92),rgba(8,47,73,.28));box-shadow:0 22px 60px rgba(0,0,0,.28);border-radius:8px}.wb-stat{border-left:1px solid rgba(34,211,238,.18);padding-left:18px}.wb-table th,.wb-table td{height:52px;border-bottom:1px solid rgba(34,211,238,.09);border-right:1px solid rgba(34,211,238,.06);vertical-align:middle}.wb-table th:last-child,.wb-table td:last-child{border-right:0}.wb-table thead th{background:rgba(2,8,23,.72);font-size:12px;font-weight:600;white-space:nowrap}.wb-table tbody td{font-size:12px;color:rgba(226,245,255,.9)}.wb-tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;border:1px solid rgba(34,211,238,.22);background:rgba(34,211,238,.08);color:#bae6fd;font-size:11px}.wb-tag--warn{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.08);color:#fde68a}.wb-tag--danger{border-color:rgba(251,113,133,.32);background:rgba(251,113,133,.08);color:#fecdd3}.wb-tag--ok{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.08);color:#bbf7d0}.wb-action{display:inline-flex;align-items:center;gap:5px;margin-right:10px;white-space:nowrap;cursor:pointer;color:#67e8f9}.wb-action:hover{color:#fff}.wb-action--hot{color:#fbbf24}.wb-action--danger{color:#fb7185}.wb-modal-mask{position:fixed;inset:0;z-index:1250;display:none;align-items:flex-start;justify-content:center;background:rgba(2,8,23,.68);padding:72px 20px 20px}.wb-modal-mask.show{display:flex}.wb-modal{width:min(760px,94vw);max-height:calc(100dvh - 96px);overflow:auto;border:1px solid rgba(34,211,238,.2);border-radius:8px;background:#071426;box-shadow:0 30px 90px rgba(0,0,0,.5)}' +
+      '.wb-approval-mask{position:fixed;inset:0;z-index:1250;display:none;align-items:flex-start;justify-content:center;background:rgba(2,8,23,.72);padding:72px 22px 22px}.wb-approval-mask.show{display:flex}.wb-approval-modal{width:min(1080px,96vw);max-height:calc(100dvh - 96px);overflow:auto;border:1px solid rgba(34,211,238,.25);border-radius:10px;background:#071b33;box-shadow:0 20px 60px rgba(0,0,0,.55)}' +
       '.wb-notify-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px}.wb-notify-detail-item--full{grid-column:1/-1}.wb-notify-detail-key{display:block;font-size:11px;color:#9cc6df;margin-bottom:6px}.wb-notify-detail-val{display:block;font-size:13px;color:#ecfeff;line-height:1.5;word-break:break-word}.wb-notify-detail-val--pass{color:#34d399;font-weight:600}.wb-notify-detail-val--reject{color:#fb7185;font-weight:600}' +
       '.wb-approval-modal .field-label{color:#9cc6df;font-size:12px;margin-bottom:6px;display:block}.status-dot{width:7px;height:7px;border-radius:999px;display:inline-block;margin-right:6px}' +
       '.approval-records-scroll{max-height:min(520px,58vh);overflow-y:auto;padding:2px 8px 2px 2px}.approval-item{display:flex;gap:12px;align-items:stretch;padding:0 0 18px;border:none}.approval-item--last{padding-bottom:0}.approval-item__rail{display:flex;flex-direction:column;align-items:center;width:20px;flex-shrink:0}.approval-item__dot{width:12px;height:12px;min-width:12px;min-height:12px;border-radius:50%;background:#64748b;flex-shrink:0}.approval-item__line{flex:1;width:2px;min-height:14px;margin-top:4px;background:rgba(148,163,184,.22)}.approval-item.pass .approval-item__dot{background:#22c55e}.approval-item.wait .approval-item__dot{background:#f59e0b}.approval-item.reject .approval-item__dot{background:#ef4444}.approval-item__content{flex:1;min-width:0}' +
@@ -232,7 +235,7 @@
         diseaseStatCard("blue", "fa-list-check", "wb-stat-total", "当前列表", "筛选结果") +
         diseaseStatCard("cyan", "fa-file-signature", "wb-stat-approval", "审批", "待办分类") +
         diseaseStatCard("amber", "fa-bell", "wb-stat-alert", "告警", "待办分类") +
-        diseaseStatCard("rose", "fa-hourglass-half", "wb-stat-pending", "待处理", "待审批/未复核")
+        diseaseStatCard("rose", "fa-hourglass-half", "wb-stat-pending", "本月待处理", "待审批/未复核")
       );
     }
     if (key === "wb-sys-notify") {
@@ -248,7 +251,7 @@
         diseaseStatCard("blue", "fa-clipboard-check", "wb-stat-total", "当前列表", "筛选结果") +
         diseaseStatCard("cyan", "fa-file-signature", "wb-stat-approval", "审批", "事项类型") +
         diseaseStatCard("amber", "fa-bell", "wb-stat-alarm", "告警", "事项类型") +
-        diseaseStatCard("green", "fa-circle-check", "wb-stat-closed", "已闭环", "通过/已处置/已续期")
+        diseaseStatCard("green", "fa-circle-check", "wb-stat-closed", "已通过/已复核", "通过/已复核")
       );
     }
     return "";
@@ -262,6 +265,17 @@
         '</span><input data-filter="' +
         item.id +
         '" type="date" class="wh-input w-full"></label>'
+      );
+    }
+    if (item.type === "text") {
+      return (
+        '<label><span>' +
+        item.label +
+        '</span><input data-filter="' +
+        item.id +
+        '" type="text" class="wh-input w-full" placeholder="' +
+        esc(item.placeholder || "") +
+        '"></label>'
       );
     }
     return (
@@ -311,6 +325,14 @@
     });
   }
 
+  function currentMonthPrefix() {
+    var d = new Date();
+    var pad = function (n) {
+      return n < 10 ? "0" + n : String(n);
+    };
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1);
+  }
+
   function updateWorkbenchStats(rows, key) {
     function set(id, val) {
       var el = document.getElementById(id);
@@ -319,10 +341,15 @@
     set("wb-stat-total", rows.length);
     if (key === "wb-todo") {
       var all = current.rows;
+      var month = currentMonthPrefix();
       set(
         "wb-stat-pending",
-        rows.filter(function (r) {
-          return r.status === "待审批" || r.status === "未复核";
+        all.filter(function (r) {
+          return (
+            (r.status === "待审批" || r.status === "未复核") &&
+            r.time &&
+            r.time.slice(0, 7) === month
+          );
         }).length
       );
       set(
@@ -376,7 +403,7 @@
       set(
         "wb-stat-closed",
         rows.filter(function (r) {
-          return r.result === "通过" || r.result === "已处置" || r.result === "已续期";
+          return r.result === "通过" || r.result === "已复核";
         }).length
       );
     }
@@ -407,16 +434,17 @@
     var buttons = (current.toolbar || [])
       .map(function (name) {
         var hidden =
-          key === "wb-todo" && name === "批量审批" && current.activeTab !== "approval"
+          key === "wb-todo" && name === "批量审批" && current.activeTab !== "approval" && current.activeTab !== "alert"
             ? " hidden"
             : "";
+        var label = key === "wb-todo" && name === "批量审批" && current.activeTab === "alert" ? "批量复核" : name;
         return (
           '<button type="button" data-action="' +
           esc(name) +
           '" class="px-4 py-1.5 rounded text-xs wh-btn-primary' +
           hidden +
           '"><i class="fa-solid fa-check-double mr-1"></i>' +
-          esc(name) +
+          esc(label) +
           "</button>"
         );
       })
@@ -444,7 +472,7 @@
       "</div>" +
       buildTodoTabBar(key) +
       buildToolbarHtml(key) +
-      '<div class="wh-table-shell bg-slate-950/35"><div class="overflow-x-auto"><table class="wb-table min-w-[1180px] w-full text-left"><thead><tr id="wb-thead-row">' +
+      '<div class="wh-table-shell bg-slate-950/35"><div class="wb-table-wrap overflow-x-auto"><table class="wb-table min-w-[1180px] w-full text-left"><thead><tr id="wb-thead-row">' +
       todoTableHeadHtml(key) +
       '</tr></thead><tbody id="wb-body"></tbody></table></div><div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400"><span>共 <b id="wb-total" class="text-cyan-200">0</b> 条</span><div class="flex items-center gap-2 flex-wrap"><button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-left"></i></button><button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary" type="button">1</button><button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-right"></i></button><select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select><span>跳至</span><input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" /><span>页</span></div></div></div></div>' +
       '<aside class="disease-layout__right" aria-label="筛选与快捷操作"><div class="disease-filter-panel"><div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div><div class="disease-panel-body">' +
@@ -454,7 +482,7 @@
       buildQuickLinks(key) +
       "</div></div></aside></div></section>" +
       '<div id="wb-modal-mask" class="wb-modal-mask"><div class="wb-modal"><div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15"><h3 class="text-white text-[16px] font-semibold">详情</h3><button type="button" data-action="close-modal" class="wh-modal-close" aria-label="关闭">×</button></div><div id="wb-modal-body" class="p-6 space-y-3"></div></div></div>' +
-      '<div id="wb-approval-mask" class="wb-approval-mask"><div class="wb-approval-modal"><div class="flex items-center justify-between px-5 py-4 border-b border-white/10"><h3 class="text-base font-semibold text-white">飞行计划审批</h3><button type="button" data-action="close-approval" class="wh-modal-close" aria-label="关闭">×</button></div><div id="wb-approval-box" class="p-5"></div></div></div>'
+      '<div id="wb-approval-mask" class="wb-approval-mask"><div class="wb-approval-modal"><div class="flex items-center justify-between px-5 py-4 border-b border-white/10"><h3 id="wb-approval-modal-title" class="text-base font-semibold text-white">飞行计划审批</h3><button type="button" data-action="close-approval" class="wh-modal-close" aria-label="关闭">×</button></div><div id="wb-approval-box" class="p-5"></div></div></div>'
     );
   }
 
@@ -477,22 +505,132 @@
 
   var todoApprovalSingleRow = null;
   var todoApprovalBatchRows = null;
+  var todoApprovalMode = "approval";
+  var todoFloatingReviewBound = false;
+
+  function closeTodoReviewMenus(exceptWrap) {
+    document.querySelectorAll("body > .alert-review-menu").forEach(function (menu) {
+      var parent = menu._origParent;
+      if (exceptWrap && parent === exceptWrap) return;
+      restoreTodoReviewMenu(menu);
+    });
+    document.querySelectorAll(".alert-op-review-wrap.is-open").forEach(function (wrap) {
+      if (exceptWrap && wrap === exceptWrap) return;
+      wrap.classList.remove("is-open");
+      var menu = wrap._reviewMenuEl || wrap.querySelector(".alert-review-menu");
+      if (menu && menu.parentElement === document.body) restoreTodoReviewMenu(menu);
+    });
+  }
+
+  function restoreTodoReviewMenu(menu) {
+    if (!menu || !menu._origParent) return;
+    menu.classList.remove("alert-review-menu--floating", "is-visible");
+    menu.style.left = "";
+    menu.style.top = "";
+    menu._origParent.appendChild(menu);
+  }
+
+  function positionTodoFloatingReviewMenu(wrap) {
+    var menu = wrap.querySelector(".alert-review-menu");
+    var btn = wrap.querySelector('[data-action="review-menu"]');
+    if (!menu || !btn) return;
+    if (!menu._origParent) menu._origParent = wrap;
+    wrap._reviewMenuEl = menu;
+    document.body.appendChild(menu);
+    menu.classList.add("alert-review-menu--floating", "is-visible");
+    wrap.classList.add("is-open");
+    var rect = btn.getBoundingClientRect();
+    var gap = 4;
+    var menuW = menu.offsetWidth || 108;
+    var menuH = menu.offsetHeight || 72;
+    var left = rect.right - menuW;
+    var top = rect.bottom + gap;
+    if (top + menuH > window.innerHeight - 8) {
+      top = rect.top - menuH - gap;
+    }
+    left = Math.max(8, Math.min(left, window.innerWidth - menuW - 8));
+    top = Math.max(72, Math.min(top, window.innerHeight - menuH - 8));
+    menu.style.left = left + "px";
+    menu.style.top = top + "px";
+  }
+
+  function setApprovalModalTitle(title) {
+    var el = document.getElementById("wb-approval-modal-title");
+    if (el) el.textContent = title;
+  }
+
+  function tableColumnCount(key) {
+    var count = (current.columns || []).length;
+    if (key === "wb-todo" && (current.activeTab === "approval" || current.activeTab === "alert")) count += 1;
+    return count;
+  }
+
+  function renderTodoEmptyRow(key) {
+    return (
+      '<tr class="wb-todo-empty-row"><td colspan="' +
+      tableColumnCount(key) +
+      '" class="wb-todo-empty"><div class="wb-todo-empty__inner">' +
+      '<div class="wb-todo-empty__illus" aria-hidden="true"><i class="fa-regular fa-inbox"></i></div>' +
+      "<span>暂无数据</span></div></td></tr>"
+    );
+  }
+
+  function isActionsColumn(label) {
+    return label === "操作";
+  }
+
+  function finishAlertReviewRow(row, data) {
+    if (!row) return false;
+    var flow = global.WHTodoFlow;
+    var opinion = (data && data.scene) || "";
+    if (flow) {
+      flow.patchTodoRow(row, { status: "已复核", workflowStatus: "已复核" }, current.rows);
+    } else {
+      row.status = "已复核";
+      row.workflowStatus = "已复核";
+    }
+    if (flow && flow.shouldMoveToDone(row, "已复核")) {
+      flow.moveTodoRowToDone(row, "已复核", opinion, current.rows);
+      return true;
+    }
+    return false;
+  }
+
+  function finishAlertAuditRow(row, decision) {
+    if (!row || !decision) return false;
+    var flow = global.WHTodoFlow;
+    var result = decision.result;
+    var opinion = decision.opinion || "";
+    if (flow && flow.shouldMoveToDone(row, result)) {
+      flow.moveTodoRowToDone(row, result, opinion, current.rows);
+      return true;
+    }
+    if (flow) {
+      flow.patchTodoRow(row, { status: result, workflowStatus: result }, current.rows);
+    } else {
+      row.status = result;
+      row.workflowStatus = result;
+    }
+    return false;
+  }
 
   function todoTableHeadHtml(key) {
     var cols = current.columns || [];
-    if (key === "wb-todo" && current.activeTab === "approval") {
+    if (key === "wb-todo" && (current.activeTab === "approval" || current.activeTab === "alert")) {
       return (
-        '<th class="w-10 px-3"><input type="checkbox" id="wb-todo-check-all" title="全选待审批" /></th>' +
+        '<th class="w-10 px-3"><input type="checkbox" id="wb-todo-check-all" title="全选" /></th>' +
         cols
           .map(function (col) {
-            return '<th class="px-3 text-cyan-50/95">' + col + "</th>";
+            var cls = "px-3 text-cyan-50/95" + (isActionsColumn(col) ? " disease-col-actions" : "");
+            return '<th class="' + cls + '">' + col + "</th>";
           })
           .join("")
       );
     }
     return cols
       .map(function (col) {
-        return '<th class="px-3 text-cyan-50/95">' + col + "</th>";
+        var cls = "px-3 text-cyan-50/95" + (isActionsColumn(col) ? " disease-col-actions" : "");
+        return '<th class="' + cls + '">' + col + "</th>";
       })
       .join("");
   }
@@ -506,8 +644,13 @@
   }
 
   function todoCheckboxCell(row) {
-    if (row.tab !== "approval" || row.status !== "待审批") {
-      return '<input type="checkbox" class="wb-todo-row-check" disabled title="仅待审批可批量审批" />';
+    var actionable =
+      (row.tab === "approval" && row.status === "待审批") ||
+      (row.tab === "alert" && row.status === "未复核");
+    if (!actionable) {
+      return (
+        '<input type="checkbox" class="wb-todo-row-check" disabled title="当前状态不可批量操作" />'
+      );
     }
     return (
       '<input type="checkbox" class="wb-todo-row-check" data-row-title="' +
@@ -530,19 +673,48 @@
     all.disabled = !enabled.length;
   }
 
-  function selectedTodoApprovalRows() {
+  function selectedTodoBatchRows() {
     var list = [];
     document.querySelectorAll(".wb-todo-row-check:checked:not(:disabled)").forEach(function (cb) {
       var row = rowByTitle(cb.getAttribute("data-row-title"));
-      if (row && row.tab === "approval" && row.status === "待审批") list.push(row);
+      if (!row) return;
+      if (current.activeTab === "approval" && row.tab === "approval" && row.status === "待审批") {
+        list.push(row);
+      }
+      if (current.activeTab === "alert" && row.tab === "alert" && row.status === "未复核") {
+        list.push(row);
+      }
     });
     return list;
+  }
+
+  function renderTodoReviewAction(row, index) {
+    return (
+      '<span class="alert-op-review-wrap">' +
+      '<span class="wb-action wb-action--hot" data-action="review-menu" data-index="' +
+      index +
+      '" data-row-title="' +
+      esc(row.title) +
+      '"><i class="fa-solid fa-clipboard-check"></i>复核</span>' +
+      '<div class="alert-review-menu" role="menu">' +
+      '<button type="button" class="alert-review-menu__item" data-action="review-manual" data-index="' +
+      index +
+      '" data-row-title="' +
+      esc(row.title) +
+      '">人工复核</button>' +
+      '<button type="button" class="alert-review-menu__item" data-action="review-uav" data-index="' +
+      index +
+      '" data-row-title="' +
+      esc(row.title) +
+      '">无人机复核</button>' +
+      "</div></span>"
+    );
   }
 
   function rowCells(key, row, index) {
     if (key === "wb-todo") {
       var cells = [row.title, row.source, row.user, row.time, tag(row.status), todoActions(row, index)];
-      if (current.activeTab === "approval") cells.unshift(todoCheckboxCell(row));
+      if (current.activeTab === "approval" || current.activeTab === "alert") cells.unshift(todoCheckboxCell(row));
       return cells;
     }
     if (key === "wb-sys-notify") return [row.title, tag(row.type), row.time, tag(row.read), actions(row, index)];
@@ -563,6 +735,9 @@
   function todoActions(row, index) {
     return todoActionNames(row)
       .map(function (name) {
+        if (name === "复核" && row.tab === "alert" && (row.workflowStatus || row.status) === "未复核") {
+          return renderTodoReviewAction(row, index);
+        }
         var cls =
           name === "审批" || name === "复核" || name === "审核"
             ? " wb-action--hot"
@@ -575,6 +750,7 @@
               : name === "审核"
                 ? "fa-stamp"
                 : "fa-eye";
+        var iconStyle = name === "查看" ? "fa-regular" : "fa-solid";
         return (
           '<span class="wb-action' +
           cls +
@@ -584,7 +760,9 @@
           index +
           '" data-row-title="' +
           esc(row.title) +
-          '"><i class="fa-regular ' +
+          '"><i class="' +
+          iconStyle +
+          " " +
           icon +
           '"></i>' +
           name +
@@ -632,24 +810,33 @@
     updateWorkbenchStats(rows, key);
     lastRenderedRows = rows;
     if (window.WHTableRowClick) WHTableRowClick.injectStyles();
+    if (!rows.length) {
+      document.getElementById("wb-body").innerHTML = renderTodoEmptyRow(key);
+      if (key === "wb-todo" && (current.activeTab === "approval" || current.activeTab === "alert")) syncTodoCheckAllState();
+      return;
+    }
     document.getElementById("wb-body").innerHTML = rows
       .map(function (row, index) {
+        var cells = rowCells(key, row, index);
         return (
           '<tr class="wh-row-open ' +
           (index % 2 ? "bg-slate-950/10" : "bg-slate-950/25") +
           '" data-row-index="' +
           index +
           '">' +
-          rowCells(key, row, index)
-            .map(function (cell) {
-              return '<td class="px-3">' + cell + "</td>";
+          cells
+            .map(function (cell, cellIndex) {
+              var isActions = cellIndex === cells.length - 1;
+              var tdClass = "px-3" + (isActions ? " disease-col-actions" : "");
+              var content = isActions ? '<div class="disease-op-actions">' + cell + "</div>" : cell;
+              return '<td class="' + tdClass + '">' + content + "</td>";
             })
             .join("") +
           "</tr>"
         );
       })
       .join("");
-    if (key === "wb-todo" && current.activeTab === "approval") syncTodoCheckAllState();
+    if (key === "wb-todo" && (current.activeTab === "approval" || current.activeTab === "alert")) syncTodoCheckAllState();
   }
 
   function rowByTitle(title) {
@@ -689,10 +876,12 @@
     return "";
   }
 
-  function buildTodoBatchListHtml(rows) {
+  function buildTodoBatchListHtml(rows, label) {
+    label = label || "待审批事项";
     return (
-      '<div class="text-sm font-semibold text-cyan-100 mb-3">待审批事项</div>' +
-      '<div class="max-h-[320px] overflow-y-auto pr-1 space-y-2">' +
+      '<div class="text-sm font-semibold text-cyan-100 mb-3">' +
+      esc(label) +
+      '</div><div class="max-h-[320px] overflow-y-auto pr-1 space-y-2">' +
       rows
         .map(function (row) {
           return (
@@ -707,6 +896,23 @@
         })
         .join("") +
       "</div>"
+    );
+  }
+
+  function buildTodoBatchReviewHtml(rows) {
+    var reviewForm =
+      global.WuhanExpertReviewModal && global.WuhanExpertReviewModal.buildDesktopBatchReviewFormHtml
+        ? global.WuhanExpertReviewModal.buildDesktopBatchReviewFormHtml()
+        : "";
+    return (
+      '<div class="mb-4"><div class="text-cyan-100 font-semibold">批量复核' +
+      (rows.length > 1 ? "（" + rows.length + " 条）" : "") +
+      '</div></div><div class="grid md:grid-cols-[1fr_360px] gap-4"><section class="min-w-0">' +
+      reviewForm +
+      '<div class="mt-4 flex justify-end"><button type="button" id="wb-batch-review-save" class="wh-btn-primary px-4 py-2">保存</button></div>' +
+      '</section><section class="wb-todo-batch-list-panel">' +
+      buildTodoBatchListHtml(rows, "待复核事项") +
+      "</section></div>"
     );
   }
 
@@ -735,32 +941,85 @@
   }
 
   function bindTodoApprovalModalActions() {
-    document.getElementById("wb-approve-btn").onclick = function () {
-      submitTodoApproval("审批通过");
-    };
-    document.getElementById("wb-reject-btn").onclick = function () {
-      submitTodoApproval("已驳回");
-    };
+    var approveBtn = document.getElementById("wb-approve-btn");
+    var rejectBtn = document.getElementById("wb-reject-btn");
+    var saveBtn = document.getElementById("wb-batch-review-save");
+    if (approveBtn) {
+      approveBtn.onclick = function () {
+        submitTodoApproval("审批通过");
+      };
+    }
+    if (rejectBtn) {
+      rejectBtn.onclick = function () {
+        submitTodoApproval("已驳回");
+      };
+    }
+    if (saveBtn) {
+      saveBtn.onclick = function () {
+        submitTodoBatchReview();
+      };
+    }
   }
 
   function openTodoFlightApproval(row) {
     var plan = todoPlanFromRow(row);
     todoApprovalSingleRow = row;
     todoApprovalBatchRows = null;
+    todoApprovalMode = "approval";
+    setApprovalModalTitle("飞行计划审批");
     document.getElementById("wb-approval-box").innerHTML = buildTodoApprovalHtml(plan);
     bindTodoApprovalModalActions();
     document.getElementById("wb-approval-mask").classList.add("show");
   }
 
+  function openTodoBatchReview() {
+    var selected = selectedTodoBatchRows();
+    if (!selected.length) {
+      alert("请选择待复核项");
+      return;
+    }
+    todoApprovalSingleRow = null;
+    todoApprovalBatchRows = selected.slice();
+    todoApprovalMode = "batchReview";
+    setApprovalModalTitle("批量复核");
+    document.getElementById("wb-approval-box").innerHTML = buildTodoBatchReviewHtml(selected);
+    if (global.WuhanExpertReviewModal && global.WuhanExpertReviewModal.initInlineReviewForm) {
+      var first = selected[0];
+      var project =
+        global.TodoModalBridge && first && first.alertId != null
+          ? global.TodoModalBridge.getAlarmProject(first.alertId, first)
+          : null;
+      global.WuhanExpertReviewModal.initInlineReviewForm({
+        projectName: (project && project.projectName) || "",
+        projectNameOptions:
+          global.TodoModalBridge && global.TodoModalBridge.collectAlarmProjectNames
+            ? global.TodoModalBridge.collectAlarmProjectNames()
+            : [],
+        falseAlarm: "非误报",
+        levelAdjust: "一级告警",
+        scene: "",
+        photos: global.WuhanExpertReviewModal.DEFAULT_PHOTOS,
+      });
+    }
+    bindTodoApprovalModalActions();
+    document.getElementById("wb-approval-mask").classList.add("show");
+  }
+
   function openTodoBatchApproval() {
-    var selected = selectedTodoApprovalRows();
+    if (current.activeTab === "alert") {
+      openTodoBatchReview();
+      return;
+    }
+    var selected = selectedTodoBatchRows();
     if (!selected.length) {
       alert("请选择需要审批的待办");
       return;
     }
     todoApprovalSingleRow = null;
     todoApprovalBatchRows = selected.slice();
+    todoApprovalMode = "approval";
     var plan = { name: "批量飞行计划审批", audit: "审核中" };
+    setApprovalModalTitle("批量审批");
     document.getElementById("wb-approval-box").innerHTML = buildTodoApprovalHtml(plan, {
       batchCount: selected.length,
       batchRows: selected,
@@ -769,9 +1028,46 @@
     document.getElementById("wb-approval-mask").classList.add("show");
   }
 
+  function submitTodoBatchReview() {
+    var bridge = global.TodoModalBridge;
+    var reviewModal = global.WuhanExpertReviewModal;
+    if (!bridge || !reviewModal || !reviewModal.readInlineReviewForm) {
+      alert("复核模块未加载");
+      return;
+    }
+    var data = reviewModal.readInlineReviewForm();
+    if (!data.scene && data.falseAlarm !== "误报") {
+      alert("请填写现场复核情况");
+      return;
+    }
+    var targets = todoApprovalBatchRows && todoApprovalBatchRows.length ? todoApprovalBatchRows : [];
+    var applied = 0;
+    targets.forEach(function (row) {
+      if (!row || row.tab !== "alert" || row.status !== "未复核") return;
+      if (bridge.applyAlarmReviewData(row.alertId, row, data)) {
+        if (finishAlertReviewRow(row, data)) applied++;
+      }
+    });
+    todoApprovalSingleRow = null;
+    todoApprovalBatchRows = null;
+    todoApprovalMode = "approval";
+    document.getElementById("wb-approval-mask").classList.remove("show");
+    applyFilter();
+    if (!applied) {
+      alert("所选待办均不可复核");
+      return;
+    }
+    alert("批量复核完成，已移入已处理事项");
+  }
+
   function submitTodoApproval(status) {
+    if (todoApprovalMode === "batchReview") {
+      submitTodoBatchReview();
+      return;
+    }
     var ta = document.getElementById("wb-approval-opinion");
-    var opinion = (ta && ta.value || "").trim();
+    var opinion = (ta && ta.value) || "";
+    opinion = opinion.trim();
     if (!opinion) {
       alert("请填写审批意见");
       return;
@@ -783,14 +1079,20 @@
         ? [todoApprovalSingleRow]
         : [];
     var applied = 0;
+    var flow = global.WHTodoFlow;
     targets.forEach(function (row) {
-      if (row.tab !== "approval" || row.status !== "待审批") return;
-      row.status = resultStatus;
-      row.opinion = opinion;
+      if (!row || row.tab !== "approval" || row.status !== "待审批") return;
+      if (flow && flow.shouldMoveToDone(row, resultStatus)) {
+        flow.moveTodoRowToDone(row, resultStatus, opinion, current.rows);
+      } else {
+        row.status = resultStatus;
+        row.opinion = opinion;
+      }
       applied++;
     });
     todoApprovalSingleRow = null;
     todoApprovalBatchRows = null;
+    todoApprovalMode = "approval";
     document.getElementById("wb-approval-mask").classList.remove("show");
     applyFilter();
     if (!applied) {
@@ -800,11 +1102,15 @@
     if (targets.length > 1) {
       alert(
         status === "审批通过"
-          ? "已批量审批通过 " + applied + " 条"
-          : "已批量驳回 " + applied + " 条"
+          ? "已批量审批通过 " + applied + " 条，已移入已处理事项"
+          : "已批量驳回 " + applied + " 条，已移入已处理事项"
       );
     } else {
-      alert(status === "审批通过" ? "审批通过，已写入审批记录" : "已驳回，审批意见已记录");
+      alert(
+        status === "审批通过"
+          ? "审批通过，已移入已处理事项"
+          : "已驳回，已移入已处理事项"
+      );
     }
   }
 
@@ -935,6 +1241,10 @@
     });
     var base = document.body.dataset.sidebarKey === "wb-todo" ? visibleTodoRows() : current.rows;
     var rows = base.filter(function (row) {
+      if (values.title) {
+        var q = String(values.title).trim().toLowerCase();
+        if (q && (!row.title || row.title.toLowerCase().indexOf(q) < 0)) return false;
+      }
       if (values.status && values.status !== "全部" && row.status !== values.status) return false;
       if (values.result && values.result !== "全部" && row.result !== values.result) return false;
       if (values.type && values.type !== "全部" && row.type !== values.type) return false;
@@ -949,7 +1259,9 @@
   function syncTodoBatchToolbar() {
     var btn = document.querySelector('#wb-app [data-action="批量审批"]');
     if (!btn) return;
-    btn.classList.toggle("hidden", current.activeTab !== "approval");
+    btn.classList.toggle("hidden", current.activeTab !== "approval" && current.activeTab !== "alert");
+    var label = current.activeTab === "alert" ? "批量复核" : "批量审批";
+    btn.innerHTML = '<i class="fa-solid fa-check-double mr-1"></i>' + label;
   }
 
   function switchTodoTab(tabKey) {
@@ -968,6 +1280,9 @@
 
   var current = null;
   function init() {
+    if (global.WHTodoFlow && global.WHTodoFlow.applyToConfigs) {
+      global.WHTodoFlow.applyToConfigs();
+    }
     var key = document.body.dataset.sidebarKey;
     current = configs[key];
     if (!current) return;
@@ -980,6 +1295,9 @@
     }
     if (key === "wb-todo") {
       if (global.TodoModalBridge) global.TodoModalBridge.mountModals();
+      if (global.WHMapAlerts && global.WHMapAlerts.initPortalDetailModal) {
+        global.WHMapAlerts.initPortalDetailModal();
+      }
       updateTodoTableHead();
       syncTodoBatchToolbar();
       renderRows(visibleTodoRows());
@@ -990,6 +1308,38 @@
       renderRows(current.rows);
     }
     if (global.WHHeaderBadges) WHHeaderBadges.refresh();
+
+    if (key === "wb-todo") {
+      document.addEventListener("click", function (e) {
+        if (e.target.closest(".alert-op-review-wrap") || e.target.closest(".alert-review-menu")) return;
+        closeTodoReviewMenus();
+      });
+      if (!todoFloatingReviewBound) {
+        todoFloatingReviewBound = true;
+        document.addEventListener("click", function (e) {
+          if (document.body.dataset.sidebarKey !== "wb-todo") return;
+          var node = e.target.closest("body > .alert-review-menu [data-action]");
+          if (!node) return;
+          var action = node.getAttribute("data-action");
+          if (action !== "review-manual" && action !== "review-uav") return;
+          e.stopPropagation();
+          var r = rowByTitle(node.getAttribute("data-row-title"));
+          if (!r || !r.alertId || !window.TodoModalBridge) return;
+          closeTodoReviewMenus();
+          if (action === "review-manual") {
+            TodoModalBridge.openAlarmReview(r.alertId, r, function (data) {
+              finishAlertReviewRow(r, data);
+              applyFilter();
+            });
+          } else {
+            TodoModalBridge.openDroneAlarmReview(r.alertId, r);
+          }
+        });
+        window.addEventListener("resize", closeTodoReviewMenus);
+        var tableWrap = document.querySelector(".wb-table-wrap");
+        if (tableWrap) tableWrap.addEventListener("scroll", closeTodoReviewMenus);
+      }
+    }
 
     document.getElementById("wb-app").addEventListener("change", function (event) {
       if (key !== "wb-todo") return;
@@ -1008,7 +1358,7 @@
 
     document.getElementById("wb-app").addEventListener("click", function (event) {
       var rowTr = event.target.closest("#wb-body tr[data-row-index]");
-      if (rowTr && !event.target.closest("[data-action], input, button, a, label, .wb-todo-row-check")) {
+      if (rowTr && !event.target.closest("[data-action], input, button, a, label, .wb-todo-row-check, .alert-op-review-wrap, .alert-review-menu")) {
         var rowIndex = Number(rowTr.getAttribute("data-row-index"));
         var rowData = lastRenderedRows[rowIndex];
         if (rowData) {
@@ -1062,14 +1412,29 @@
           openTodoFlightApproval(r);
           return;
         }
-        if (action === "复核" && r.alertId && window.TodoModalBridge) {
-          TodoModalBridge.openAlarmReview(r.alertId, r, function () {
+        if (action === "review-menu") {
+          var wrap = node.closest(".alert-op-review-wrap");
+          var wasOpen = wrap && wrap.classList.contains("is-open");
+          closeTodoReviewMenus();
+          if (wrap && !wasOpen) positionTodoFloatingReviewMenu(wrap);
+          return;
+        }
+        if (action === "review-manual" && r.alertId && window.TodoModalBridge) {
+          closeTodoReviewMenus();
+          TodoModalBridge.openAlarmReview(r.alertId, r, function (data) {
+            finishAlertReviewRow(r, data);
             applyFilter();
           });
           return;
         }
+        if (action === "review-uav" && r.alertId && window.TodoModalBridge) {
+          closeTodoReviewMenus();
+          TodoModalBridge.openDroneAlarmReview(r.alertId, r);
+          return;
+        }
         if (action === "审核" && r.alertId && window.TodoModalBridge) {
-          TodoModalBridge.openAlarmAudit(r.alertId, r, function () {
+          TodoModalBridge.openAlarmAudit(r.alertId, r, function (project, decision) {
+            finishAlertAuditRow(r, decision || { result: project && project.workflowStatus });
             applyFilter();
           });
           return;
@@ -1102,5 +1467,78 @@
       if (action === "删除" || action === "export") alert("原型演示：操作已触发");
     });
   }
+  function notifyDetailPairs(row) {
+    if (!row) return [];
+    if (row.type === "审批消息") {
+      return [
+        ["标题", row.title],
+        ["计划名称", row.planName],
+        ["飞行航线", row.route],
+        ["使用机场", row.airport],
+        ["审批结果", row.auditResult],
+        ["通知类型", "审批消息"],
+        ["发布时间", row.time],
+      ];
+    }
+    if (isAirspaceNotify(row)) {
+      return [
+        ["标题", row.title],
+        ["审批号", row.approvalNo],
+        ["航线名称", row.routeName],
+        ["审批通过", row.approvedAt],
+        ["许可结束", row.permitEnd],
+        ["备注", row.remark],
+        ["通知类型", "空域许可提醒"],
+        ["发布时间", row.time],
+      ];
+    }
+    return [
+      ["标题", row.title],
+      ["发布时间", row.time],
+    ];
+  }
+
+  global.WHWorkbenchNotify = {
+    notifyDetailPairs: notifyDetailPairs,
+    isAirspaceNotify: isAirspaceNotify,
+  };
+
+  function doneDetailPairs(row) {
+    if (!row) return [];
+    if (row.doneKind === "airspace") {
+      return [
+        ["标题", row.title],
+        ["审批号", row.approvalNo],
+        ["航线名称", row.routeName],
+        ["审批通过", row.approvedAt],
+        ["许可结束", row.permitEnd],
+        ["备注", row.remark],
+        ["事项类型", row.type || "空域许可续期"],
+        ["处理时间", row.notifyTime || row.time],
+        ["处理人", row.user],
+        ["处理结果", row.result],
+      ];
+    }
+    return [
+      ["标题", row.title],
+      ["类型", row.type],
+      ["来源模块", row.source],
+      ["处理人", row.user],
+      ["处理时间", row.time],
+      ["处理结果", row.result],
+      ["处理意见", row.opinion],
+    ];
+  }
+
+  global.WHWorkbenchDone = {
+    doneDetailPairs: doneDetailPairs,
+    isClosedResult: function (result) {
+      return result === "通过" || result === "已复核";
+    },
+  };
+
+  global.WH_WORKBENCH_DEFAULTS = JSON.parse(JSON.stringify(configs));
+  global.WH_WORKBENCH_CONFIGS = configs;
+
   document.addEventListener("DOMContentLoaded", init);
 })(typeof window !== "undefined" ? window : this);

@@ -307,10 +307,6 @@
             <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
             <div class="disease-panel-body">
               <label>
-                <span>站点名称</span>
-                <input id="filter-station" class="wh-input w-full" value="" placeholder="请输入搜索内容" />
-              </label>
-              <label>
                 <span>所属线路</span>
                 <select id="filter-line" class="wh-input w-full px-2">
                   <option value="">全部</option>
@@ -384,11 +380,9 @@
       }
 
       function searchRows() {
-        var station = document.getElementById("filter-station").value.trim();
         var line = document.getElementById("filter-line").value;
         var type = document.getElementById("filter-type").value;
         listRows = allRows.filter(function (row) {
-          if (station && row.name.indexOf(station) === -1 && String(row.seq).indexOf(station) === -1) return false;
           if (line && row.line !== line) return false;
           if (type && row.type !== type) return false;
           return true;
@@ -397,7 +391,6 @@
       }
 
       function resetFilters() {
-        document.getElementById("filter-station").value = "";
         document.getElementById("filter-line").value = "";
         document.getElementById("filter-type").value = "";
         listRows = allRows.slice();

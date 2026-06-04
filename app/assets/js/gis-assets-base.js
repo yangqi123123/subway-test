@@ -54,6 +54,27 @@
     return base + "web/" + String(canonical || "").replace(/^\//, "");
   };
 
+  function isGisMobilePage() {
+    return (
+      global.document &&
+      global.document.body &&
+      global.document.body.classList.contains("gis-mobile-page")
+    );
+  }
+
+  var WH_GIS_MOBILE_ROUTES = {
+    "wb/in-project.html": "../../patrol/pages/project.html",
+    "patrol/in-manual.html": "../../patrol/pages/manual.html",
+    "wb/am-emergency-warehouse.html": "../../asset/pages/emergency-warehouse.html",
+    "wb/am-emergency-staff.html": "../../asset/pages/emergency-staff.html",
+  };
+
+  function resolveGisMobileHref(canon, query) {
+    var rel = WH_GIS_MOBILE_ROUTES[canon];
+    if (!rel) return null;
+    return rel + (query || "");
+  }
+
   function pageHref(href) {
     if (!href || /^(https?:|#|mailto:)/i.test(href)) return href;
     var q = "";
@@ -63,6 +84,10 @@
     var file = pathPart.split("/").pop();
     var routes = global.WH_PAGE_ROUTES || {};
     var canon = routes[file] || routes[pathPart] || pathPart;
+    if (isGisMobilePage()) {
+      var mobileHref = resolveGisMobileHref(canon, q);
+      if (mobileHref) return mobileHref;
+    }
     return global.whResolveWebPage(canon) + q;
   }
 

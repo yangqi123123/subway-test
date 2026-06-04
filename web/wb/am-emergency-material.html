@@ -183,15 +183,15 @@
       <div class="flex flex-wrap items-end gap-4">
         <div class="min-w-[220px]">
           <label class="wh-filter-label block mb-1.5">名称</label>
-          <input class="wh-input h-8 w-full px-3" placeholder="请输入物资名称" />
+          <input id="filter-name" class="wh-input h-8 w-full px-3" placeholder="请输入物资名称" />
         </div>
         <div class="min-w-[220px]">
           <label class="wh-filter-label block mb-1.5">型号</label>
-          <input class="wh-input h-8 w-full px-3" placeholder="请输入型号" />
+          <input id="filter-model" class="wh-input h-8 w-full px-3" placeholder="请输入型号" />
         </div>
         <div class="flex gap-2">
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary">搜索</button>
-          <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">重置</button>
+          <button id="btn-search-material" type="button" class="px-5 h-8 rounded text-xs wh-btn-primary">搜索</button>
+          <button id="btn-reset-material" type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">重置</button>
           <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary" data-action="new-material">新建</button>
           <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">模板导出</button>
           <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost">导入物资</button>
@@ -277,194 +277,15 @@
     </div>
   </div>
 
+  <script src="../../assets/js/am-emergency-material-data.js"></script>
+  <script src="../../assets/js/am-emergency-material-page.js"></script>
   <script>
     (function () {
-      var allRows = [
-        { name:"防爆沙袋", model:"FZ-20", qty:"200", warehouse:"南湖应急仓", remark:"防汛常备物资" },
-        { name:"救生绳", model:"JS-50", qty:"80", warehouse:"白沙洲应急仓", remark:"水域救援使用" },
-        { name:"应急照明灯", model:"ZM-12", qty:"35", warehouse:"金银潭应急仓", remark:"" },
-        { name:"防护头盔", model:"FH-08", qty:"120", warehouse:"南湖应急仓", remark:"现场作业防护" }
-      ];
-      var params = new URLSearchParams(location.search);
-      var currentWarehouse = params.get("warehouse") || "南湖应急仓";
-      var rows = allRows.filter(function (row) { return row.warehouse === currentWarehouse; });
-
-      var editIndex = -1;
-      var deleteIndex = -1;
-      var tableBody = document.getElementById("material-table-body");
-      var modalMask = document.getElementById("material-modal-mask");
-      var confirmMask = document.getElementById("material-confirm-mask");
-      var modalTitle = document.getElementById("material-modal-title");
-      var warehouseSubtitle = document.getElementById("material-warehouse-subtitle");
-      var warehouseInput = document.getElementById("material-warehouse");
-      var detailMask = document.getElementById("material-detail-mask");
-      var detailBody = document.getElementById("material-detail-body");
-      var detailSubtitle = document.getElementById("material-detail-subtitle");
-
-      function escHtml(value) {
-        return String(value || "").replace(/[&<>"']/g, function (char) {
-          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
-        });
-      }
-      function detailValue(value, multiline) {
-        var text = value === undefined || value === null || value === "" ? "—" : String(value);
-        var cls = "detail-value" + (text === "—" ? " detail-value--empty" : "") + (multiline ? " detail-value--multiline" : "");
-        return '<div class="' + cls + '">' + escHtml(text) + "</div>";
-      }
-      function detailRow(label, value, multiline) {
-        return (
-          '<label class="material-form-item' +
-          (multiline ? " material-form-item--textarea" : "") +
-          '"><span class="material-form-label">' +
-          escHtml(label) +
-          "：</span>" +
-          detailValue(value, multiline) +
-          "</label>"
-        );
-      }
-      function buildDetailHtml(row) {
-        return (
-          '<div class="material-form-grid">' +
-          detailRow("名称", row.name) +
-          detailRow("型号", row.model) +
-          detailRow("数量", row.qty) +
-          detailRow("所属仓库", row.warehouse) +
-          detailRow("备注", row.remark, true) +
-          "</div>"
-        );
-      }
-      function openDetail(index) {
-        var row = rows[index];
-        if (!row || !detailMask || !detailBody) return;
-        if (detailSubtitle) detailSubtitle.textContent = row.name || "应急物资详情";
-        detailBody.innerHTML = buildDetailHtml(row);
-        detailMask.classList.add("show");
-        detailMask.setAttribute("aria-hidden", "false");
-      }
-      function closeDetail() {
-        if (!detailMask) return;
-        detailMask.classList.remove("show");
-        detailMask.setAttribute("aria-hidden", "true");
-      }
-
-      if (warehouseSubtitle) {
-        warehouseSubtitle.textContent = "所属仓库：" + currentWarehouse;
-      }
-
-      function renderRows() {
-        var totalEl = document.getElementById("material-table-total");
-        if (totalEl) totalEl.textContent = String(rows.length);
-        tableBody.innerHTML = rows.map(function (row, index) {
-          var remark = row.remark || "—";
-          return '<tr class="wh-row-open ' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '" data-row-index="' + index + '">' +
-            '<td class="px-4">' + row.name + '</td>' +
-            '<td class="px-4">' + row.model + '</td>' +
-            '<td class="px-4">' + row.qty + '</td>' +
-            '<td class="px-4">' + row.warehouse + '</td>' +
-            '<td class="px-4 max-w-[220px] truncate" title="' + remark.replace(/"/g, "&quot;") + '">' + remark + '</td>' +
-            '<td class="px-4 disease-col-actions"><div class="disease-op-actions">' +
-              '<span class="material-action text-amber-300" data-action="edit-material" data-index="' + index + '"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
-              '<span class="material-action text-rose-300" data-action="delete-material" data-index="' + index + '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
-            '</div></td>' +
-          '</tr>';
-        }).join("");
-      }
-
-      function openModal(mode, index) {
-        editIndex = mode === "edit" ? index : -1;
-        modalTitle.textContent = mode === "edit" ? "编辑应急物资" : "新增应急物资";
-        var row = index > -1 ? rows[index] : null;
-        document.getElementById("material-name").value = row ? row.name : "";
-        document.getElementById("material-model").value = row ? row.model : "";
-        document.getElementById("material-qty").value = row ? row.qty : "";
-        warehouseInput.value = row ? row.warehouse : currentWarehouse;
-        document.getElementById("material-remark").value = row ? row.remark || "" : "";
-        modalMask.classList.add("show");
-      }
-
-      function saveMaterial() {
-        var name = document.getElementById("material-name").value.trim();
-        var model = document.getElementById("material-model").value.trim();
-        var qty = document.getElementById("material-qty").value.trim();
-        if (!name || !model || !qty) {
-          alert("请完善必填项：名称、型号、数量");
-          return;
-        }
-        var row = {
-          name: name,
-          model: model,
-          qty: qty,
-          warehouse: editIndex > -1 ? rows[editIndex].warehouse : currentWarehouse,
-          remark: document.getElementById("material-remark").value.trim()
-        };
-        if (editIndex > -1) {
-          var oldRow = rows[editIndex];
-          rows[editIndex] = row;
-          var globalIdx = allRows.findIndex(function (item) {
-            return item.name === oldRow.name && item.model === oldRow.model && item.warehouse === oldRow.warehouse;
-          });
-          if (globalIdx > -1) allRows[globalIdx] = row;
-        } else {
-          rows.unshift(row);
-          allRows.unshift(row);
-        }
-        modalMask.classList.remove("show");
-        renderRows();
-      }
-
-      function setupListRowClick() {
-        if (!window.WHTableRowClick) return window.setTimeout(setupListRowClick, 40);
-        WHTableRowClick.bindById("material-table-body", {
-          getRows: function () { return rows; },
-          onOpen: function (row, index) { openDetail(index); }
-        });
-      }
-
-      setupListRowClick();
-      renderRows();
-
-      document.addEventListener("click", function (event) {
-        var trigger = event.target.closest("[data-action]");
-        if (!trigger) return;
-        var action = trigger.getAttribute("data-action");
-        var index = Number(trigger.getAttribute("data-index"));
-        if (action === "back-warehouse") {
-          location.href = "am-emergency-warehouse.html";
-          return;
-        }
-        if (action === "new-material") openModal("new");
-        if (action === "edit-material") openModal("edit", index);
-        if (action === "delete-material") {
-          deleteIndex = index;
-          confirmMask.classList.add("show");
-        }
-        if (action === "close-material-modal") modalMask.classList.remove("show");
-        if (action === "close-material-detail") closeDetail();
-        if (action === "save-material") saveMaterial();
-        if (action === "cancel-material-delete") {
-          deleteIndex = -1;
-          confirmMask.classList.remove("show");
-        }
-        if (action === "confirm-material-delete") {
-          if (deleteIndex > -1) {
-            var removed = rows.splice(deleteIndex, 1)[0];
-            if (removed) {
-              var removeIdx = allRows.findIndex(function (item) {
-                return item.name === removed.name && item.model === removed.model && item.warehouse === removed.warehouse;
-              });
-              if (removeIdx > -1) allRows.splice(removeIdx, 1);
-            }
-          }
-          deleteIndex = -1;
-          confirmMask.classList.remove("show");
-          renderRows();
+      document.addEventListener("DOMContentLoaded", function () {
+        if (window.WHEmergencyMaterialPage) {
+          WHEmergencyMaterialPage.boot({ mobile: false });
         }
       });
-      if (detailMask) {
-        detailMask.addEventListener("click", function (event) {
-          if (event.target === detailMask) closeDetail();
-        });
-      }
     })();
   </script>
   <script src="../../assets/js/menu-config.js"></script>

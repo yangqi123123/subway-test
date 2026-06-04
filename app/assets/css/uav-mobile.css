@@ -1,0 +1,130 @@
+/* 移动端无人机巡检记录 */
+body.mp-uav-page #uav-list-view:not(.hidden),
+body.mp-uav-page #uav-detail-view:not(.hidden) {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-uav-page #uav-detail-view:not(.hidden) {
+  z-index: 20;
+}
+
+body.mp-uav-page #uav-list-view.hidden,
+body.mp-uav-page #uav-detail-view.hidden {
+  display: none !important;
+}
+
+body.mp-uav-page .mp-uav-card__meta {
+  grid-template-columns: 1fr;
+}
+
+body.mp-uav-page .mp-uav-card__meta .mp-project-card__meta-full {
+  grid-column: 1 / -1;
+}
+
+body.mp-uav-page .mp-uav-card__meta .mp-project-card__meta-nowrap dd {
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+body.mp-uav-page .mp-uav-card__actions {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.mp-uav-page .mp-uav-card__actions .mp-project-action {
+  flex: 1 1 calc(33.33% - 6px);
+  min-width: 72px;
+  justify-content: center;
+}
+
+body.mp-uav-page #uav-detail-view .mp-disease-detail-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 14px calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+body.mp-uav-page .patrol-media-cell--detail-grid {
+  max-width: none;
+  min-width: 0;
+  padding: 0;
+}
+
+body.mp-uav-page .patrol-media-cell--detail-grid .patrol-media-popover__grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.mp-uav-page .patrol-media-cell--detail-grid .patrol-media-popover__card-head {
+  padding: 4px 6px;
+  font-size: 10px;
+}
+
+body.mp-uav-page .patrol-media-cell--detail-grid .patrol-media-popover__item {
+  aspect-ratio: 1 / 1;
+}
+
+/* 飞行报告 — 移动端全屏（与项目管理-巡查记录一致） */
+body.mp-uav-page #report-modal.fr-report-modal--patrol-mobile {
+  z-index: 400;
+  padding: 0;
+  align-items: stretch;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-uav-page #report-modal.fr-report-modal--patrol-mobile .modal-card--report {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  min-height: 100dvh;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+}
+
+body.mp-uav-page #report-modal.fr-report-modal--patrol-mobile .fr-report-toolbar {
+  padding: 12px 14px;
+  padding-top: calc(12px + var(--mp-safe-top, 0px));
+  border-bottom: 1px solid var(--mp-border-light);
+  background: #fff;
+}
+
+body.mp-uav-page #report-modal.fr-report-modal--patrol-mobile .fr-report-toolbar__title {
+  font-size: 16px;
+  color: var(--mp-text);
+  line-height: 1.4;
+  padding-right: 8px;
+}
+
+body.mp-uav-page #report-modal.fr-report-modal--patrol-mobile .fr-report-modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--mp-bg-subtle);
+  color: var(--mp-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+}
+
+body.mp-uav-page #report-modal.fr-report-modal--patrol-mobile .fr-report-body {
+  background: #f8fafc;
+  padding: 12px 14px calc(20px + var(--mp-safe-bottom, 0px));
+}
+
+body.mp-uav-page #report-modal.fr-report-modal--patrol-mobile .fr-doc-wrap .fr-doc__foot {
+  display: none;
+}

@@ -699,7 +699,6 @@
                       <th class="px-3 text-cyan-50/95">纬度</th>
                       <th class="px-3 text-cyan-50/95">开始时间</th>
                       <th class="px-3 text-cyan-50/95">结束时间</th>
-                      <th class="px-3 text-cyan-50/95">工程概况</th>
                       <th class="px-3 text-cyan-50/95 disease-col-actions">操作</th>
                     </tr>
                   </thead>
@@ -1267,8 +1266,8 @@
       function renderRows() {
         tbody.innerHTML = projects.map(function (row, index) {
           return '<tr class="' + (index % 2 ? "bg-slate-900/35" : "bg-slate-950/25") + '" data-row="' + index + '">' +
-            row.slice(0, 13).map(function (cell, i) {
-              var width = i === 1 ? "max-w-[190px]" : i === 12 ? "max-w-[260px]" : "";
+            row.slice(0, 12).map(function (cell, i) {
+              var width = i === 1 ? "max-w-[190px]" : "";
               return '<td class="px-3 text-slate-100/95 ' + width + ' truncate" title="' + (cell || "") + '">' + (cell || "") + '</td>';
             }).join("") +
             '<td class="px-3 disease-col-actions">' +

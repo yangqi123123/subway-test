@@ -3,6 +3,7 @@
 .uav-table-wrap,
 .project-table-wrap,
 .am-table-wrap,
+.wb-table-wrap,
 .alert-tree-wrap {
   overflow-x: auto;
 }
@@ -15,6 +16,8 @@
 .project-table-wrap tbody td.disease-col-actions,
 .am-table-wrap thead th.disease-col-actions,
 .am-table-wrap tbody td.disease-col-actions,
+.wb-table-wrap thead th.disease-col-actions,
+.wb-table-wrap tbody td.disease-col-actions,
 .alert-tree-wrap thead th.disease-col-actions,
 .alert-tree-wrap tbody td.disease-col-actions {
   position: sticky;
@@ -35,6 +38,7 @@
 .uav-table-wrap thead th.disease-col-actions,
 .project-table-wrap thead th.disease-col-actions,
 .am-table-wrap thead th.disease-col-actions,
+.wb-table-wrap thead th.disease-col-actions,
 .alert-tree-wrap thead th.disease-col-actions {
   z-index: 5;
   background: rgba(2, 6, 23, 0.96);
@@ -44,6 +48,7 @@
 .uav-table-wrap tbody td.disease-col-actions,
 .project-table-wrap tbody td.disease-col-actions,
 .am-table-wrap tbody td.disease-col-actions,
+.wb-table-wrap tbody td.disease-col-actions,
 .alert-tree-wrap tbody td.disease-col-actions {
   z-index: 2;
 }
@@ -60,14 +65,16 @@
 .disease-table-wrap tbody tr:nth-child(odd) td.disease-col-actions,
 .uav-table-wrap tbody tr:nth-child(odd) td.disease-col-actions,
 .project-table-wrap tbody tr:nth-child(odd) td.disease-col-actions,
-.am-table-wrap tbody tr:nth-child(odd) td.disease-col-actions {
+.am-table-wrap tbody tr:nth-child(odd) td.disease-col-actions,
+.wb-table-wrap tbody tr:nth-child(odd) td.disease-col-actions {
   background: rgba(2, 6, 23, 0.92);
 }
 
 .disease-table-wrap tbody tr:nth-child(even) td.disease-col-actions,
 .uav-table-wrap tbody tr:nth-child(even) td.disease-col-actions,
 .project-table-wrap tbody tr:nth-child(even) td.disease-col-actions,
-.am-table-wrap tbody tr:nth-child(even) td.disease-col-actions {
+.am-table-wrap tbody tr:nth-child(even) td.disease-col-actions,
+.wb-table-wrap tbody tr:nth-child(even) td.disease-col-actions {
   background: rgba(15, 23, 42, 0.88);
 }
 
@@ -75,6 +82,7 @@
 .uav-table-wrap tbody tr:hover td.disease-col-actions,
 .project-table-wrap tbody tr:hover td.disease-col-actions,
 .am-table-wrap tbody tr:hover td.disease-col-actions,
+.wb-table-wrap tbody tr:hover td.disease-col-actions,
 .alert-tree-wrap tbody tr:hover td.disease-col-actions {
   background: rgba(12, 40, 68, 0.98);
 }
@@ -96,12 +104,19 @@
 }
 
 .page-table .row-action,
+.project-table-wrap .disease-op-actions .row-action,
 .project-table-wrap .disease-op-actions .project-action,
 .am-table-wrap .disease-op-actions [class$="-action"],
+.wb-table-wrap .disease-op-actions [class$="-action"],
 .am-table-wrap .disease-op-actions .fl-op-btn,
+.wb-table-wrap .disease-op-actions .fl-op-btn,
 .am-table-wrap .disease-op-actions .mm-op-btn,
+.wb-table-wrap .disease-op-actions .mm-op-btn,
 .am-table-wrap .disease-op-actions .wb-action-btn,
+.wb-table-wrap .disease-op-actions .wb-action,
+.wb-table-wrap .disease-op-actions .wb-action-btn,
 .am-table-wrap .disease-op-actions .alert-op-btn,
+.wb-table-wrap .disease-op-actions .alert-op-btn,
 .alert-tree-wrap .disease-op-actions .alert-op-btn,
 .uav-table-wrap .disease-op-actions .uav-link {
   display: inline-flex;
@@ -122,6 +137,14 @@
 
 .project-table-wrap .disease-op-actions .project-action {
   color: #38bdf8;
+}
+
+.project-table-wrap .disease-op-actions .row-action i,
+.page-table .row-action i {
+  font-size: 11px;
+  width: 12px;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .project-table-wrap .disease-op-actions .project-action--danger {

@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
   <style>
     .disease-layout {
       display: grid;
@@ -202,27 +203,40 @@
     }
     .score-modal {
       width: min(1860px, 96vw);
-      min-height: 380px;
+      max-height: calc(100vh - 48px);
       border-radius: 8px;
       border: 1px solid rgba(34,211,238,.16);
       background: #071426;
       box-shadow: 0 24px 80px rgba(0,0,0,.48);
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .score-modal__body {
+      flex: 1;
+      min-height: 0;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: center;
     }
     .score-detail-wrap {
+      width: 100%;
+      max-width: 100%;
       overflow-x: auto;
       overflow-y: auto;
-      max-height: 430px;
-      border-top: 1px solid rgba(34,211,238,.08);
-      border-bottom: 1px solid rgba(34,211,238,.08);
+      max-height: calc(100vh - 220px);
+      border: 1px solid rgba(34,211,238,.08);
+      border-radius: 6px;
     }
     .score-detail-table th,
     .score-detail-table td {
-      height: 54px;
+      height: 36px;
+      padding: 4px 10px;
       border-right: 1px solid rgba(34,211,238,.08);
       border-bottom: 1px solid rgba(34,211,238,.08);
       vertical-align: middle;
       white-space: nowrap;
+      text-align: center;
     }
     .score-detail-table th:last-child,
     .score-detail-table td:last-child {
@@ -236,7 +250,16 @@
     }
     .score-detail-table tbody td {
       color: rgba(226,245,255,.88);
-      font-size: 12px;
+      font-size: 11px;
+    }
+    .score-modal__footer {
+      flex-shrink: 0;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      border-top: 1px solid rgba(34,211,238,.12);
+      background: rgba(2, 8, 23, 0.55);
     }
     .score-pager {
       display: flex;
@@ -308,7 +331,7 @@
 
           <div class="disease-list-area">
             <div class="wh-table-shell bg-slate-950/35">
-              <div class="overflow-x-auto">
+              <div class="am-table-wrap overflow-x-auto">
                 <table class="score-table min-w-[1600px] w-full text-left">
                   <thead>
                     <tr>
@@ -318,7 +341,7 @@
                       <th class="px-4">设备号</th>
                       <th class="px-4">巡查日期</th>
                       <th class="px-4">最低分数</th>
-                      <th class="px-4">操作</th>
+                      <th class="px-4 disease-col-actions">操作</th>
                     </tr>
                   </thead>
                   <tbody id="score-table-body"></tbody>
@@ -347,6 +370,10 @@
           <div class="disease-filter-panel">
             <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
             <div class="disease-panel-body">
+              <label>
+                <span>巡查人员</span>
+                <input id="filter-user" class="wh-input w-full" placeholder="请输入巡查人员姓名" />
+              </label>
               <label>
                 <span>时间范围</span>
                 <div class="disease-filter-dates">
@@ -380,7 +407,7 @@
         <h3 class="text-white text-[16px] font-semibold">巡查详情</h3>
         <button type="button" class="wh-modal-close" data-action="close-detail" aria-label="关闭">×</button>
       </div>
-      <div class="p-6">
+      <div class="score-modal__body">
         <div class="score-detail-wrap">
           <table class="score-detail-table min-w-[1520px] w-full text-left">
             <thead>
@@ -399,7 +426,7 @@
           </table>
         </div>
       </div>
-      <div class="px-6 py-4 flex justify-end gap-3">
+      <div class="score-modal__footer">
         <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-detail">取消</button>
         <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="close-detail">确定</button>
       </div>
@@ -492,7 +519,7 @@
             '<td class="px-4">' + row.device + '</td>' +
             '<td class="px-4">' + row.date + '</td>' +
             '<td class="px-4">' + row.minScore + '</td>' +
-            '<td class="px-4"><span class="score-action-link" data-action="open-detail" data-device="' + row.device + '">详情</span></td>' +
+            '<td class="px-4 disease-col-actions"><div class="disease-op-actions"><span class="score-action-link" data-action="open-detail" data-device="' + row.device + '">详情</span></div></td>' +
           '</tr>';
         }).join("");
         updateScoreStats(listRows);
@@ -501,7 +528,9 @@
       function searchRows() {
         var start = parseDateTime(document.getElementById("filter-date-start").value);
         var end = parseDateTime(document.getElementById("filter-date-end").value);
+        var userKeyword = (document.getElementById("filter-user").value || "").trim();
         listRows = allListRows.filter(function (row) {
+          if (userKeyword && String(row.user || "").indexOf(userKeyword) < 0) return false;
           var rowTime = parseDateTime(row.date);
           if (rowTime === null) return true;
           if (start !== null && rowTime < start) return false;
@@ -512,6 +541,7 @@
       }
 
       function resetFilters() {
+        document.getElementById("filter-user").value = "";
         document.getElementById("filter-date-start").value = DEFAULT_DATE_START;
         document.getElementById("filter-date-end").value = DEFAULT_DATE_END;
         listRows = allListRows.slice();

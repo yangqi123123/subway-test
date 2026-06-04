@@ -1,0 +1,313 @@
+/* 移动端线路项目统计 */
+body.mp-line-stats-page #line-stats-view {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-line-stats-page .mp-line-stats-filterbar {
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+body.mp-line-stats-page .mp-line-stats-filter-hint {
+  flex: 1;
+  margin: 0;
+  font-size: 12px;
+  color: var(--mp-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.mp-line-stats-page .mp-line-stats-filter-btn {
+  flex-shrink: 0;
+}
+
+body.mp-line-stats-page .mp-line-stats-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 12px 6px;
+  margin: 0 -12px 14px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(37, 99, 235, 0.45) rgba(148, 163, 184, 0.16);
+}
+
+body.mp-line-stats-page .mp-line-stats-tabs::-webkit-scrollbar {
+  display: block;
+  height: 5px;
+}
+
+body.mp-line-stats-page .mp-line-stats-tabs::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.16);
+  border-radius: 999px;
+}
+
+body.mp-line-stats-page .mp-line-stats-tabs::-webkit-scrollbar-thumb {
+  background: rgba(37, 99, 235, 0.45);
+  border-radius: 999px;
+}
+
+body.mp-line-stats-page .stats-tab {
+  flex: 0 0 auto;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--mp-border-subtle);
+  background: #fff;
+  color: var(--mp-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+body.mp-line-stats-page .stats-tab.active {
+  color: var(--mp-primary);
+  border-color: rgba(37, 99, 235, 0.28);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+body.mp-line-stats-page .mp-line-stats-chart-card,
+body.mp-line-stats-page .line-panel,
+body.mp-line-stats-page .sys-chart-panel {
+  border-radius: 12px;
+  border: 1px solid var(--mp-border-subtle);
+  background: #fff;
+  padding: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+body.mp-line-stats-page .stats-tab-panel.hidden {
+  display: none !important;
+}
+
+body.mp-line-stats-page .line-chart-title,
+body.mp-line-stats-page .sys-chart-title {
+  text-align: center;
+  color: var(--mp-text-primary);
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+body.mp-line-stats-page .line-chart-sub,
+body.mp-line-stats-page .sys-chart-sub {
+  text-align: center;
+  color: var(--mp-text-muted);
+  font-size: 12px;
+  margin: 6px 0 10px;
+}
+
+body.mp-line-stats-page .dc-chart-legend-item {
+  color: var(--mp-text-secondary);
+  font-size: 11px;
+}
+
+body.mp-line-stats-page .dc-chart-tool {
+  border-color: var(--mp-border-subtle);
+  background: #f8fafc;
+  color: var(--mp-text-muted);
+}
+
+body.mp-line-stats-page .dc-chart-tool.is-active {
+  color: var(--mp-primary);
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+body.mp-line-stats-page .mp-stats-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  cursor: crosshair;
+}
+
+body.mp-line-stats-page .dc-chart-stage .dc-chart-tooltip {
+  position: absolute;
+  z-index: 12;
+  min-width: 120px;
+  max-width: min(240px, 72vw);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--mp-border-subtle);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+body.mp-line-stats-page .dc-chart-stage .dc-chart-tooltip.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body.mp-line-stats-page .dc-chart-tooltip__title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mp-text-primary);
+  margin-bottom: 6px;
+}
+
+body.mp-line-stats-page .dc-chart-tooltip__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--mp-text-secondary);
+  line-height: 1.6;
+}
+
+body.mp-line-stats-page .dc-chart-tooltip__row b {
+  color: var(--mp-text-primary);
+  font-weight: 700;
+}
+
+body.mp-line-stats-page .dc-chart-table-wrap {
+  margin-top: 10px;
+  width: 100%;
+  border: 1px solid var(--mp-border-light);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+body.mp-line-stats-page .dc-chart-table-wrap.dc-chart-table-wrap--split {
+  display: flex;
+  flex-direction: column;
+  max-height: min(55vh, 420px);
+}
+
+body.mp-line-stats-page .dc-chart-table-split {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  height: 100%;
+}
+
+body.mp-line-stats-page .dc-chart-table-head {
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--mp-primary-soft);
+  border-bottom: 1px solid var(--mp-border-light);
+}
+
+body.mp-line-stats-page .dc-chart-table-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(35, 106, 255, 0.35) rgba(148, 163, 184, 0.16);
+}
+
+body.mp-line-stats-page .dc-chart-table-body::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+body.mp-line-stats-page .dc-chart-table-body::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.12);
+  border-radius: 999px;
+}
+
+body.mp-line-stats-page .dc-chart-table-body::-webkit-scrollbar-thumb {
+  background: rgba(35, 106, 255, 0.35);
+  border-radius: 999px;
+}
+
+body.mp-line-stats-page .dc-chart-table {
+  width: max-content;
+  min-width: 100%;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+body.mp-line-stats-page .dc-chart-table th,
+body.mp-line-stats-page .dc-chart-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--mp-border-light);
+  text-align: center;
+  white-space: nowrap;
+}
+
+body.mp-line-stats-page .dc-chart-table-head .dc-chart-table th {
+  overflow: visible;
+  text-overflow: clip;
+  background: var(--mp-primary-soft);
+  color: var(--mp-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  border-bottom: none;
+}
+
+body.mp-line-stats-page .dc-chart-table-body .dc-chart-table td {
+  color: var(--mp-text);
+  font-size: 14px;
+  background: #fff;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+body.mp-line-stats-page .dc-chart-table th:first-child,
+body.mp-line-stats-page .dc-chart-table td:first-child {
+  text-align: left;
+}
+
+body.mp-line-stats-page .dc-chart-table-body .dc-chart-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+body.mp-line-stats-page .dc-chart-table-body .dc-chart-table tbody tr:hover td {
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-line-stats-page .dc-chart-table-body .dc-chart-table tbody tr:active td {
+  background: var(--mp-primary-soft);
+}
+
+body.mp-line-stats-page .mp-filter-sheet__body.project-filter-panel {
+  grid-template-columns: 1fr;
+}
+
+body.mp-line-stats-page .mp-filter-sheet__body .mp-filter-field {
+  grid-column: 1 / -1;
+}
+
+body.mp-line-stats-page #line-stats-toast.project-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 13px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+body.mp-line-stats-page #line-stats-toast.project-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>巡查记录</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../../assets/css/flight-report-modal.css" />
+  <link rel="stylesheet" href="../../../assets/css/map-gis.css" />
+  <link rel="stylesheet" href="../../../assets/css/map-alerts.css" />
+  <link rel="stylesheet" href="../../assets/css/project-patrol-mobile.css" />
+</head>
+<body class="mp-patrol-page mp-project-page miniapp-page" data-miniapp="page" data-module="patrol" data-title="巡查记录" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" id="patrol-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title">巡查记录</h1>
+  </header>
+
+  <div id="page-root" class="mp-patrol-app mp-project-app">
+    <p id="patrol-project-subtitle" class="mp-patrol-subtitle"></p>
+
+    <div class="mp-project-stats">
+      <div class="mp-stat-card mp-stat-card--total">
+        <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></div>
+        <div class="mp-stat-card__body">
+          <div class="mp-stat-card__value" id="stat-total">0</div>
+          <div class="mp-stat-card__label">巡查总数</div>
+        </div>
+      </div>
+      <div class="mp-stat-card mp-stat-card--key">
+        <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-person-walking"></i></div>
+        <div class="mp-stat-card__body">
+          <div class="mp-stat-card__value" id="stat-manual">0</div>
+          <div class="mp-stat-card__label">人工巡查</div>
+        </div>
+      </div>
+      <div class="mp-stat-card mp-stat-card--general">
+        <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-helicopter"></i></div>
+        <div class="mp-stat-card__body">
+          <div class="mp-stat-card__value" id="stat-uav">0</div>
+          <div class="mp-stat-card__label">无人机</div>
+        </div>
+      </div>
+      <div class="mp-stat-card mp-stat-card--month">
+        <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="mp-stat-card__body">
+          <div class="mp-stat-card__value" id="stat-alert">0</div>
+          <div class="mp-stat-card__label">全时告警</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mp-project-searchbar">
+      <div class="mp-search-input-wrap" data-action="open-patrol-search" role="button" tabindex="0" aria-label="搜索巡查记录">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input type="text" id="patrol-search-trigger" class="mp-search-input" placeholder="搜索项目名称" readonly />
+        <button type="button" class="mp-search-clear" id="patrol-search-clear" hidden aria-label="清空搜索">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </button>
+      </div>
+      <button type="button" class="mp-filter-text-btn" data-action="open-patrol-filter-sheet">筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i></button>
+    </div>
+
+    <div id="patrol-mobile-list" class="mp-project-list"></div>
+    <span id="table-total" hidden aria-hidden="true">0</span>
+    <table class="hidden" aria-hidden="true"><tbody id="patrol-tbody"></tbody></table>
+  </div>
+
+  <div id="patrol-record-mask" class="project-modal-mask" aria-hidden="true">
+    <div class="project-modal mp-project-modal mp-record-modal" role="dialog" aria-labelledby="patrol-record-title">
+      <div class="mp-project-modal__head">
+        <h3 id="patrol-record-title" class="mp-project-modal__title">操作记录</h3>
+        <button type="button" class="gis-mobile-sheet-close mp-modal-close" data-action="close-patrol-record" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="patrol-record-body" class="mp-record-modal__body record-list"></div>
+    </div>
+  </div>
+
+  <div id="patrol-manual-form-mask" class="project-modal-mask" aria-hidden="true">
+    <div class="project-modal mp-project-modal" role="dialog" aria-labelledby="patrol-manual-form-title">
+      <div class="mp-project-modal__head">
+        <h3 id="patrol-manual-form-title" class="mp-project-modal__title">编辑人工巡查记录</h3>
+        <button type="button" class="gis-mobile-sheet-close mp-modal-close" data-action="close-manual-form" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="mp-project-modal__body" id="patrol-manual-form-root">
+        <div class="mp-modal-form mp-form-grid">
+          <div class="mp-form-row"><label class="project-form-label project-required">编号</label><input id="pm-f-id" type="text" class="wh-input mp-field" readonly /></div>
+          <div class="mp-form-row"><label class="project-form-label project-required">所属线路</label><select id="pm-f-line" class="wh-input mp-field"><option value="">请选择</option><option value="8号线">8号线</option><option value="2号线">2号线</option><option value="7号线">7号线</option></select></div>
+          <div class="mp-form-row"><label class="project-form-label project-required">上下行</label><select id="pm-f-direction" class="wh-input mp-field"><option value="">请选择</option><option value="上行">上行</option><option value="下行">下行</option></select></div>
+          <div class="mp-form-row"><label class="project-form-label">所在区间</label><select id="pm-f-section" class="wh-input mp-field"><option value="">请选择</option><option value="洪山路~小洪山">洪山路~小洪山</option></select></div>
+          <div class="mp-form-row"><label class="project-form-label">站点</label><select id="pm-f-station" class="wh-input mp-field"><option value="">请选择</option><option value="洪山路">洪山路</option><option value="小洪山">小洪山</option></select></div>
+          <div class="mp-form-row"><label class="project-form-label project-required">所在项目</label><select id="pm-f-project" class="wh-input mp-field"><option value="">请选择项目</option><option value="八一路102号水表改迁">八一路102号水表改迁</option></select></div>
+          <div class="mp-form-row"><label class="project-form-label project-required">巡查日期</label><input id="pm-f-patrol-date" class="wh-input mp-field" /></div>
+          <div class="mp-form-row mp-form-row--full mp-form-row--media" id="pm-f-photo-row" hidden>
+            <label class="project-form-label">巡查照片</label>
+            <div id="pm-f-photo-list" class="mp-patrol-photo-list"></div>
+          </div>
+          <div class="mp-form-row mp-form-row--full"><label class="project-form-label project-required">项目进展</label><textarea id="pm-f-progress" class="wh-input mp-field mp-field--area"></textarea></div>
+          <div class="mp-form-row mp-form-row--full"><label class="project-form-label">协调情况及备注</label><textarea id="pm-f-remark" class="wh-input mp-field mp-field--area"></textarea></div>
+        </div>
+      </div>
+      <div class="mp-project-modal__foot">
+        <button type="button" class="mp-project-modal__btn mp-project-modal__btn--ghost" data-action="close-manual-form">取消</button>
+        <button type="button" class="mp-project-modal__btn mp-project-modal__btn--primary" data-action="save-manual-form">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="wh-alert-detail-modal-mask" class="project-modal-mask wh-alert-detail-modal-mask" aria-hidden="true">
+    <div class="project-modal mp-project-modal mp-patrol-alert-modal" role="dialog" aria-labelledby="wh-alert-detail-title">
+      <div class="mp-project-modal__head">
+        <h3 id="wh-alert-detail-title" class="mp-project-modal__title">告警详情</h3>
+        <button type="button" class="gis-mobile-sheet-close mp-modal-close" data-action="close-alert-detail-modal" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="mp-project-modal__body mp-patrol-alert-modal__body">
+        <div class="mp-patrol-alert-shell">
+          <div class="mp-patrol-alert-map-wrap alert-detail-map-wrap">
+            <div class="alert-flag" id="patrol-alert-flag">疑似钻探<br />施工</div>
+            <div id="alert-detail-map" class="alert-detail-map"></div>
+          </div>
+          <section class="mp-patrol-alert-section">
+            <h4 class="mp-patrol-alert-section__title">告警详情</h4>
+            <div class="mp-patrol-alert-grid alert-detail-grid" id="alert-detail-grid"></div>
+          </section>
+          <section class="mp-patrol-alert-section" id="record-alarm-card">
+            <h4 class="mp-patrol-alert-section__title">告警记录</h4>
+            <div class="mp-patrol-alert-section__body" id="record-alarm"></div>
+          </section>
+          <section class="mp-patrol-alert-section" id="record-uav-card">
+            <h4 class="mp-patrol-alert-section__title">无人机实拍记录</h4>
+            <div class="mp-patrol-alert-section__body" id="record-uav"></div>
+          </section>
+          <section class="mp-patrol-alert-section" id="record-disposal-card">
+            <h4 class="mp-patrol-alert-section__title" id="record-disposal-title">处警记录</h4>
+            <div class="mp-patrol-alert-section__body" id="record-disposal"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="patrol-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-patrol-filter-sheet"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-patrol-filter-sheet" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field mp-filter-field--full"><span>巡查类型</span>
+          <select class="wh-input w-full px-2" data-patrol-filter="type">
+            <option value="">全部</option>
+            <option value="人工巡查">人工巡查</option>
+            <option value="无人机巡查">无人机巡查</option>
+            <option value="全时全域告警">全时全域告警</option>
+          </select>
+        </label>
+        <label class="mp-filter-field mp-filter-field--full"><span>巡查人/飞手</span>
+          <input class="wh-input w-full px-2" data-patrol-filter="operator" placeholder="请输入巡查人或飞手" />
+        </label>
+        <label class="mp-filter-field mp-filter-field--full"><span>更新时间</span>
+          <div class="mp-filter-dates">
+            <input type="datetime-local" class="wh-input w-full px-2" data-patrol-filter="time-start" />
+            <input type="datetime-local" class="wh-input w-full px-2" data-patrol-filter="time-end" />
+          </div>
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-patrol-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-patrol">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mp-confirm-mask" class="mp-confirm-mask" aria-hidden="true">
+    <div class="mp-confirm-mask__panel" role="alertdialog" aria-labelledby="mp-confirm-title">
+      <h3 id="mp-confirm-title" class="mp-confirm-mask__title">确认操作</h3>
+      <p id="mp-confirm-msg" class="mp-confirm-mask__msg">确定执行该操作吗？</p>
+      <div class="mp-confirm-mask__actions">
+        <button type="button" class="mp-confirm-mask__btn" data-action="mp-confirm-cancel">取消</button>
+        <button type="button" class="mp-confirm-mask__btn mp-confirm-mask__btn--danger" data-action="mp-confirm-ok">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mp-picker-sheet" class="mp-picker-sheet" aria-hidden="true">
+    <div class="mp-picker-sheet__mask" data-action="mp-picker-mask-close"></div>
+    <div class="mp-picker-sheet__panel" role="dialog">
+      <div class="mp-picker-sheet__head">
+        <button type="button" class="mp-picker-sheet__btn" data-action="mp-picker-cancel">取消</button>
+        <h3 id="mp-picker-title" class="mp-picker-sheet__title">请选择</h3>
+        <button type="button" class="mp-picker-sheet__btn mp-picker-sheet__btn--ok" data-action="mp-picker-confirm">确定</button>
+      </div>
+      <div id="mp-picker-body" class="mp-picker-sheet__body"></div>
+    </div>
+  </div>
+
+  <div class="project-toast" id="patrol-toast" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="../../assets/js/gis-assets-base.js"></script>
+  <script src="../../../assets/js/map-gis.js"></script>
+  <script src="../../../assets/js/patrol-preview-assets.js"></script>
+  <script src="../../../assets/js/alert-disposal-timeline.js"></script>
+  <script src="../../../assets/js/patrol-media-gallery.js"></script>
+  <script src="../../../assets/js/flight-report-modal.js"></script>
+  <script src="../../../assets/js/project-operation-log.js"></script>
+  <script src="../../../assets/js/in-project-mobile.js"></script>
+  <script src="../../../assets/js/in-project-patrol.js"></script>
+  <script src="../../../assets/js/map-situation-gis.js"></script>
+  <script src="../../../assets/js/map-alerts.js"></script>
+  <script>
+    document.getElementById("patrol-nav-back").addEventListener("click", function () {
+      if (history.length > 1) history.back();
+      else location.href = "project.html";
+    });
+    if (window.MiniAppFrame && window.MiniAppFrame.syncTabbar) {
+      window.MiniAppFrame.syncTabbar();
+    }
+    if (window.WHProjectMobile && window.WHProjectMobile.init) {
+      window.WHProjectMobile.init({ getOptions: function () { return []; } });
+    }
+  </script>
+</body>
+</html>

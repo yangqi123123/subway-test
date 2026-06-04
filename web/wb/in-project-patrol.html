@@ -38,7 +38,7 @@
     .wh-alert-detail-modal-mask { position:fixed; inset:0; z-index:140; display:none; align-items:center; justify-content:center; padding:16px; background:rgba(2,8,23,.78); }
     .wh-alert-detail-modal-mask.show { display:flex; }
     .wh-alert-detail-modal { width:min(1280px,98vw); max-height:94vh; overflow:auto; border-radius:8px; border:1px solid rgba(34,211,238,.18); background:linear-gradient(180deg,#040914 0%,#091426 100%); box-shadow:0 24px 80px rgba(0,0,0,.5); }
-    .wh-alert-detail-modal__head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 18px; border-bottom:1px solid rgba(34,211,238,.12); }
+    .wh-alert-detail-modal__head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 18px; border-bottom:1px solid rgba(34,211,238,.12); flex-shrink:0; }
     .wh-alert-detail-modal__body { padding:16px; }
     .alert-detail-shell { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:16px; }
     .alert-detail-map-wrap { position:relative; border:1px solid rgba(148,163,184,.18); background:linear-gradient(180deg,rgba(9,18,36,.96) 0%,rgba(7,14,29,.96) 100%); }
@@ -48,9 +48,6 @@
     .alert-side-title { padding:12px 14px; border-bottom:1px solid rgba(34,211,238,.08); font-size:13px; font-weight:700; color:#ecfeff; }
     .alert-side-title::before { content:""; display:inline-block; width:4px; height:14px; margin-right:8px; border-radius:999px; background:#2d8cf0; vertical-align:-2px; }
     .alert-detail-block { border:1px solid rgba(148,163,184,.18); background:linear-gradient(180deg,rgba(9,18,36,.96) 0%,rgba(7,14,29,.96) 100%); overflow:hidden; }
-    .alert-detail-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px 20px; padding:16px; }
-    .alert-detail-key { font-size:12px; color:#9cc6df; }
-    .alert-detail-val { margin-top:6px; font-size:13px; color:#f8fafc; line-height:1.5; word-break:break-all; }
     .alert-side-body { padding:14px; }
     @media (max-width: 1024px) {
       .alert-detail-shell { grid-template-columns:1fr; }
@@ -158,13 +155,13 @@
                   <option value="全时全域告警">全时全域告警</option>
                 </select>
               </label>
+              <label class="disease-filter-span-2"><span>巡查人/飞手</span><input id="filter-operator" class="wh-input w-full px-2" placeholder="请输入巡查人或飞手" /></label>
               <label class="disease-filter-span-2"><span>更新时间</span>
                 <div class="disease-filter-dates">
                   <input id="filter-time-start" type="datetime-local" class="wh-input w-full px-2" />
                   <input id="filter-time-end" type="datetime-local" class="wh-input w-full px-2" />
                 </div>
               </label>
-              <label class="disease-filter-span-2"><span>巡查人/飞手</span><input id="filter-operator" class="wh-input w-full px-2" placeholder="请输入巡查人或飞手" /></label>
               <div class="disease-filter-actions">
                 <button type="button" id="filter-search" class="px-4 py-1.5 rounded text-xs wh-btn-primary flex-1">搜索</button>
                 <button type="button" id="filter-reset" class="px-4 py-1.5 rounded text-xs wh-btn-ghost flex-1">重置</button>
@@ -252,13 +249,13 @@
     <div class="wh-alert-detail-modal" role="dialog" aria-labelledby="wh-alert-detail-title">
       <div class="wh-alert-detail-modal__head">
         <h3 id="wh-alert-detail-title" class="text-white font-semibold text-sm m-0">告警详情</h3>
-        <button type="button" class="text-slate-400 hover:text-white text-xl leading-none" data-action="close-alert-detail-modal" aria-label="关闭">×</button>
+        <button type="button" class="wh-modal-close" data-action="close-alert-detail-modal" aria-label="关闭"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
       </div>
       <div class="wh-alert-detail-modal__body">
         <div class="alert-detail-shell">
           <div class="min-w-0">
             <div class="alert-detail-map-wrap">
-              <div class="alert-flag"><i class="fa-solid fa-trophy block mb-2 text-[18px]"></i>疑似钻探<br />施工</div>
+              <div class="alert-flag" id="patrol-alert-flag"><i class="fa-solid fa-trophy block mb-2 text-[18px]"></i>疑似钻探<br />施工</div>
               <div id="alert-detail-map" class="alert-detail-map"></div>
             </div>
             <div class="alert-detail-block mt-4">
@@ -294,6 +291,7 @@
   <script src="../../assets/js/map-situation-gis.js"></script>
   <script src="../../assets/js/alert-disposal-timeline.js"></script>
   <script src="../../assets/js/expert-review-modal.js"></script>
+  <script src="../../assets/js/patrol-preview-assets.js"></script>
   <script src="../../assets/js/patrol-media-gallery.js"></script>
   <script src="../../assets/js/flight-report-modal.js"></script>
   <script src="../../assets/js/project-operation-log.js"></script>

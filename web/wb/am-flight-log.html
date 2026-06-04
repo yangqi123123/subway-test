@@ -22,8 +22,14 @@
     .fl-detail-grid { display: grid; grid-template-columns: 330px 1fr; gap: 20px; }
     .fl-map-shell { position: relative; }
     .fl-map { width: 100%; height: 520px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(34, 211, 238, 0.14); }
-    .fl-detail-link { color: #38bdf8; text-decoration: none; }
+    .fl-detail-link { color: #38bdf8; text-decoration: none; cursor: pointer; }
     .fl-detail-link:hover { text-decoration: underline; }
+    .fl-detail-list { display: flex; flex-direction: column; gap: 10px; }
+    .fl-detail-row { display: flex; align-items: flex-start; gap: 4px; font-size: 13px; line-height: 1.55; }
+    .fl-detail-row__label { flex-shrink: 0; width: 92px; color: #94a3b8; white-space: nowrap; }
+    .fl-detail-row__value { flex: 1; min-width: 0; color: #e2e8f0; word-break: break-word; }
+    .fl-landing-warn { color: #f87171; }
+    .fl-detail-status { display: inline-flex; align-items: center; gap: 6px; }
     .leaflet-container { background: #e8ecf1; }
     @media (max-width: 1180px) {
       .fl-detail-grid { grid-template-columns: 1fr; }
@@ -186,7 +192,7 @@
         <div class="fl-detail-grid">
           <section>
             <h4 class="text-sm font-semibold text-white mb-4">基本信息</h4>
-            <div id="detail-info" class="space-y-3 text-sm"></div>
+            <div id="detail-info" class="text-sm"></div>
           </section>
           <section>
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -194,7 +200,7 @@
               <div class="flex flex-wrap gap-2">
                 <button id="detail-play-track-btn" type="button" class="wh-btn-primary px-4 py-2 text-sm"><i class="fa-solid fa-play mr-1"></i>播放轨迹</button>
                 <button id="detail-map-reset-btn" type="button" class="wh-btn-ghost px-4 py-2 text-sm"><i class="fa-solid fa-location-crosshairs mr-1"></i>重置视角</button>
-                <button id="detail-export-btn" type="button" class="wh-btn-gold px-4 py-2 text-sm">导出</button>
+                <button id="detail-export-btn" type="button" class="wh-btn-ghost px-4 py-2 text-sm"><i class="fa-solid fa-file-export mr-1"></i>导出</button>
               </div>
             </div>
             <div class="fl-map-shell track-map-shell">
@@ -214,353 +220,27 @@
     </div>
   </div>
 
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="../../assets/js/menu-config.js"></script>
-  <script src="../../assets/js/workbench-mega.js"></script>
-  <script src="../../assets/js/shell.js"></script>
-  <script src="../../assets/js/map-gis.js"></script>
+  <script src="../../assets/js/am-flight-log-data.js"></script>
+  <script src="../../assets/js/am-flight-log-page.js"></script>
   <script src="../../assets/js/track-playback.js"></script>
   <script src="../../assets/js/flight-report-modal.js"></script>
   <script>
-    const WUHAN = [30.5928, 114.3055];
-    const rows = [
-      {
-        id: "FL20251225001",
-        deviceName: "DJI-M300E-01",
-        deviceCode: "A区巡检机01",
-        taskType: "自动执行计划/临时任务",
-        planName: "梨园站周边计划01",
-        planCode: "PLAN-20251225-01",
-        takeoff: "2025-12-25 10:00",
-        landing: "2025-12-25 18:15",
-        status: "异常中止",
-        maxHeight: "XXX",
-        battery: "35%（此处是电池剩量占用电状态的百分比）",
-        operator: "张三",
-        droneNo: "DJI-M36e-01",
-        airport: "车辆段机场",
-        duration: "6分15秒",
-        takeoffPos: "WGS84 坐标",
-        landingPos: "WGS84 坐标/未降落（标红）",
-        totalDistance: "单位：公里，保留1位小数",
-        takeoffPower: "85%",
-        landingPower: "22%",
-        weather: "晴，风速3m/s，能见度10km",
-        track: [
-          [30.5969, 114.3005],
-          [30.5961, 114.3026],
-          [30.5953, 114.3048],
-          [30.5942, 114.3072],
-          [30.5935, 114.3093],
-          [30.5927, 114.3116],
-          [30.5918, 114.3131]
-        ],
-        events: [
-          { time: "2025-12-13 10:00:15", type: "系统", detail: "起飞准备已通过" },
-          { time: "2025-12-13 10:00:23", type: "系统", detail: "自动起飞，开始执行巡检计划“跨A区AI监测”" },
-          { time: "2025-12-13 10:05:24", type: "系统", detail: "到达巡检点#1，开始执行环境拍摄任务" },
-          { time: "2025-12-13 10:06:16", type: "系统", detail: "环境巡检任务中断" },
-          { time: "2025-12-13 10:06:16", type: "飞手操作", detail: "手动进入手动控制模式（操作员：张三）" },
-          { time: "2025-12-13 10:07:24", type: "人工操作", detail: "操作员手动绕行障碍物（操作员：张三）" },
-          { time: "2025-12-13 10:08:24", type: "人工操作", detail: "操作员手动恢复系统航线（操作员：张三）" },
-          { time: "2025-12-13 10:08:25", type: "系统", detail: "恢复巡航执行" }
-        ]
-      },
-      {
-        id: "FL20251224008",
-        deviceName: "青山巡检无人机",
-        deviceCode: "青山巡检无人机",
-        taskType: "临时任务",
-        planName: "青山段例行巡查",
-        planCode: "PLAN-20251224-02",
-        takeoff: "2025-12-24 09:12",
-        landing: "2025-12-24 09:48",
-        status: "成功",
-        maxHeight: "96.2",
-        battery: "42%",
-        operator: "李四",
-        droneNo: "DJI-M36e-02",
-        airport: "青山机场",
-        duration: "36分02秒",
-        takeoffPos: "WGS84 坐标",
-        landingPos: "WGS84 坐标",
-        totalDistance: "4.2",
-        takeoffPower: "88%",
-        landingPower: "46%",
-        weather: "多云，风速2m/s",
-        track: [[30.6318, 114.4021], [30.6312, 114.4035], [30.6305, 114.4052]],
-        events: [{ time: "2025-12-24 09:12:10", type: "系统", detail: "临时任务起飞" }]
-      },
-      {
-        id: "FL20251223015",
-        deviceName: "DJI-M300E-01",
-        deviceCode: "DJI-M300E-01",
-        taskType: "自动执行计划",
-        planName: "光谷广场周边计划",
-        planCode: "PLAN-20251223-05",
-        takeoff: "2025-12-23 14:20",
-        landing: "2025-12-23 15:05",
-        status: "手动取消",
-        maxHeight: "110.0",
-        battery: "28%",
-        operator: "王五",
-        droneNo: "DJI-M300E-01",
-        airport: "光谷广场机场",
-        duration: "45分18秒",
-        takeoffPos: "WGS84 坐标",
-        landingPos: "WGS84 坐标",
-        totalDistance: "5.8",
-        takeoffPower: "92%",
-        landingPower: "64%",
-        weather: "晴，风速4m/s",
-        track: [[30.5050, 114.4020], [30.5042, 114.4040], [30.5035, 114.4060]],
-        events: [{ time: "2025-12-23 14:20:05", type: "系统", detail: "按计划自动起飞" }]
-      },
-      {
-        id: "FL20251222003",
-        deviceName: "徐家棚巡检机02",
-        deviceCode: "徐家棚巡检机02",
-        taskType: "临时任务",
-        planName: "徐家棚保护区巡查",
-        planCode: "PLAN-20251222-01",
-        takeoff: "2025-12-22 08:30",
-        landing: "2025-12-22 09:02",
-        status: "失败",
-        maxHeight: "88.5",
-        battery: "51%",
-        operator: "赵六",
-        droneNo: "DJI-M36e-03",
-        airport: "徐家棚机场",
-        duration: "32分10秒",
-        takeoffPos: "WGS84 坐标",
-        landingPos: "WGS84 坐标",
-        totalDistance: "3.6",
-        takeoffPower: "90%",
-        landingPower: "39%",
-        weather: "阴，风速3m/s",
-        track: [[30.5389, 114.3446], [30.5382, 114.3460], [30.5375, 114.3475]],
-        events: [{ time: "2025-12-22 08:30:12", type: "系统", detail: "临时巡查任务开始" }]
-      }
-    ];
-    let filtered = [...rows];
-    let trackPlayback = null;
-    let currentDetailId = null;
-
-    const $ = id => document.getElementById(id);
-
-    function openModal(id) {
-      $(id).classList.add("show");
-    }
-
-    function closeModal(id) {
-      $(id).classList.remove("show");
-      if (id === "detail-modal" && trackPlayback) {
-        trackPlayback.destroy();
-        trackPlayback = null;
-      }
-    }
-
-    function flightStatusMeta(status) {
-      const label = String(status || "成功").trim();
-      if (label === "异常中止" || label === "手动取消") {
-        return { label, text: "text-amber-200", dot: "bg-amber-400" };
-      }
-      if (label === "失败") {
-        return { label: "失败", text: "text-rose-200", dot: "bg-rose-500" };
-      }
-      return { label: "成功", text: "text-emerald-200", dot: "bg-emerald-400" };
-    }
-
-    function statusHtml(status) {
-      const meta = flightStatusMeta(status);
-      return `<div class="inline-flex items-center gap-2 ${meta.text}"><span class="fl-dot ${meta.dot}"></span>${meta.label}</div>`;
-    }
-
-    function updateFlightLogStats(list) {
-      var success = 0, abnormal = 0, fail = 0;
-      list.forEach(function (item) {
-        var meta = flightStatusMeta(item.status);
-        if (meta.label === "成功") success++;
-        else if (meta.label === "失败") fail++;
-        else abnormal++;
-      });
-      $("stat-total").textContent = String(list.length);
-      $("stat-success").textContent = String(success);
-      $("stat-abnormal").textContent = String(abnormal);
-      $("stat-fail").textContent = String(fail);
-      var totalEl = $("table-total");
-      if (totalEl) totalEl.textContent = String(list.length);
-    }
-
-    function initQuickLinks() {
-      document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
-        var target = anchor.getAttribute("data-quick-href");
-        if (target && typeof whPageHref === "function") anchor.setAttribute("href", whPageHref(target));
-      });
-    }
-
-    function renderTable() {
-      updateFlightLogStats(filtered);
-      $("table-body").innerHTML = filtered.map((item, index) => `
-        <tr data-id="${item.id}" style="background:${index % 2 === 0 ? "rgba(12,24,48,0.45)" : "rgba(15,32,58,0.55)"}">
-          <td class="px-3 text-slate-100/95 leading-6"><div>${item.id}</div><div class="text-slate-400 text-[11px]">唯一标识（如 FL20251225001）</div></td>
-          <td class="px-3 text-cyan-300 leading-6"><a href="#" class="fl-detail-link" onclick="event.preventDefault();showDetail('${item.id}')">显示设备名称（可点击跳转设备详情页面）</a></td>
-          <td class="px-3 text-slate-100/95">${item.taskType}</td>
-          <td class="px-3 text-cyan-300 leading-6"><a href="#" class="fl-detail-link" onclick="event.preventDefault();showDetail('${item.id}')">显示关联计划名称（可点击跳转对应计划详情页面）</a></td>
-          <td class="px-3 text-slate-100/95 whitespace-nowrap">${item.takeoff}</td>
-          <td class="px-3 text-slate-100/95 whitespace-nowrap">${item.landing}</td>
-          <td class="px-3">${statusHtml(item.status)}</td>
-          <td class="px-3 text-slate-100/95">${item.maxHeight}</td>
-          <td class="px-3 text-slate-100/95 leading-6">${item.battery}</td>
-          <td class="px-3 text-slate-100/95">${item.operator}</td>
-          <td class="px-3 disease-col-actions">
-            <div class="disease-op-actions">
-            <button type="button" class="fl-op-btn" onclick="showDetail('${item.id}')">查看详情</button>
-            <button type="button" class="fl-op-btn" onclick="exportFlightReport('${item.id}')">导出报告</button>
-            </div>
-          </td>
-        </tr>
-      `).join("");
-    }
-
-    function applySearch() {
-      const keyword = $("search-keyword").value.trim();
-      filtered = rows.filter(item => {
-        if (!keyword) return true;
-        return [item.id, item.droneNo, item.operator].some(text => text.includes(keyword));
-      });
-      renderTable();
-    }
-
-    function resetSearch() {
-      $("search-keyword").value = "";
-      filtered = [...rows];
-      renderTable();
-    }
-
-    function detailItem(label, value, extraClass) {
-      return `
-        <div class="grid grid-cols-[92px_1fr] gap-2 text-sm">
-          <div class="text-slate-300">${label}</div>
-          <div class="text-slate-100 ${extraClass || ""}">${value}</div>
-        </div>
-      `;
-    }
-
-    function renderDetailInfo(item) {
-      $("detail-info").innerHTML = [
-        detailItem("任务ID", item.id),
-        detailItem("无人机编号", item.droneNo),
-        detailItem("无人机名称", `<a href="#" class="fl-detail-link">A区巡检机01（可点击跳转设备详情页面）</a>`),
-        detailItem("所属机场", `<a href="#" class="fl-detail-link">${item.airport}（可点击跳转设备详情页面）</a>`),
-        detailItem("操作员", item.operator),
-        detailItem("任务类型", item.taskType),
-        detailItem("关联计划", `<a href="#" class="fl-detail-link">显示关联计划名称（可点击跳转对应计划详情页面）</a>`),
-        detailItem("起飞时间", item.takeoff),
-        detailItem("降落时间", item.landing),
-        detailItem("飞行时长", item.duration),
-        detailItem("起飞位置", item.takeoffPos),
-        detailItem("降落位置", `<span>${item.landingPos.split("/")[0]}</span> <span class="text-rose-300">${item.landingPos.split("/")[1] || ""}</span>`),
-        detailItem("最大飞行高度", "单位：米，保留1位小数"),
-        detailItem("总飞行距离", item.totalDistance),
-        detailItem("起飞电量", item.takeoffPower),
-        detailItem("降落电量", item.landingPower),
-        detailItem("飞行状态", statusHtml(item.status)),
-        detailItem("天气情况", item.weather)
-      ].join("");
-    }
-
-    function ensureTrackPlayback() {
-      if (trackPlayback) trackPlayback.destroy();
-      trackPlayback = window.WHTrackPlayback.create({
-        preset: "drone",
-        mapContainerId: "detail-map",
-        center: WUHAN,
-        zoom: 12,
-        statusEl: $("fl-map-status-text"),
-        nameEl: $("fl-map-current-name"),
-        timeEl: $("fl-map-current-time"),
-        fitPadding: [30, 30],
-      });
-      return trackPlayback;
-    }
-
-    function renderTrackMap(item) {
-      const player = ensureTrackPlayback();
-      player.draw(item.track);
-      setTimeout(function () {
-        var map = player.getMap();
-        if (map) map.invalidateSize();
-      }, 120);
-    }
-
-    function exportFlightReport(id) {
-      const item = rows.find(row => row.id === id);
-      if (!item || !window.WHFlightReportModal) return showToast("暂无飞行报告数据");
-      const plan = WHFlightReportModal.planFromFlightLog(item);
-      WHFlightReportModal.exportReport(plan);
-    }
-
-    function showDetail(id) {
-      const item = rows.find(row => row.id === id);
-      if (!item) return;
-      currentDetailId = id;
-      renderDetailInfo(item);
-      openModal("detail-modal");
-      setTimeout(() => renderTrackMap(item), 80);
-    }
-
-    function showToast(text) {
-      const existing = document.getElementById("toast-box");
-      if (existing) existing.remove();
-      const toast = document.createElement("div");
-      toast.id = "toast-box";
-      toast.className = "fixed right-5 bottom-5 z-[100] rounded bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg";
-      toast.textContent = text;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 1800);
-    }
-
-    document.querySelectorAll("[data-close]").forEach(btn => {
-      btn.addEventListener("click", () => closeModal(btn.dataset.close));
-    });
-
-    $("search-btn").addEventListener("click", applySearch);
-    $("reset-btn").addEventListener("click", resetSearch);
-    $("export-btn").addEventListener("click", () => showToast("已按当前日志列表导出"));
-    $("detail-export-btn").addEventListener("click", () => showToast("已导出当前飞行日志详情"));
-    $("detail-play-track-btn").addEventListener("click", () => {
-      if (trackPlayback) trackPlayback.play();
-    });
-    $("detail-map-reset-btn").addEventListener("click", () => {
-      if (trackPlayback) trackPlayback.fitBounds();
-    });
-
-    window.showDetail = showDetail;
-    window.exportFlightReport = exportFlightReport;
-
-    initQuickLinks();
-    function setupFlightLogRowClick() {
-      if (!window.WHTableRowClick) return window.setTimeout(setupFlightLogRowClick, 40);
-      WHTableRowClick.bindById("table-body", {
-        onOpenByTr: function (tr) {
-          var id = tr.getAttribute("data-id");
-          if (id) showDetail(id);
-        }
-      });
-    }
-    setupFlightLogRowClick();
-    renderTable();
-
     (function () {
-      var params = new URLSearchParams(location.search);
-      var detailId = params.get("detail") || params.get("id");
-      if (detailId) {
-        setTimeout(function () {
-          showDetail(detailId);
-        }, 120);
-      }
+      document.addEventListener("DOMContentLoaded", function () {
+        if (window.WHFlightLogPage) {
+          WHFlightLogPage.boot({ mobile: false });
+        }
+        document.querySelectorAll(".disease-quick-link[data-quick-href]").forEach(function (anchor) {
+          var target = anchor.getAttribute("data-quick-href");
+          if (target && typeof whPageHref === "function") anchor.setAttribute("href", whPageHref(target));
+        });
+      });
     })();
   </script>
+  <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/workbench-mega.js"></script>
+  <script src="../../assets/js/shell.js"></script>
 </body>
 </html>

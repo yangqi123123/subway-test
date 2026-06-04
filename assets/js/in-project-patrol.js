@@ -58,9 +58,12 @@
     },
   ];
 
-  var filters = { type: "", timeStart: "", timeEnd: "", operator: "" };
+  var filters = { type: "", operator: "", timeStart: "", timeEnd: "" };
+  var mobileFilterRows = null;
   var pendingConfirm = null;
   var editingManualId = null;
+  var manualFormFootHtml = "";
+  var manualFormReadonly = false;
 
   function pm$(id) {
     return document.getElementById(id);
@@ -116,7 +119,42 @@
     });
   }
 
+  function normalizeSearchText(text) {
+    return String(text || "")
+      .replace(/\s+/g, "")
+      .toLowerCase();
+  }
+
+  function matchSearchScore(query, target) {
+    var q = normalizeSearchText(query);
+    var n = normalizeSearchText(target);
+    if (!q) return 0;
+    if (!n) return -1;
+    if (n.indexOf(q) >= 0) return 100 + (q.length / Math.max(n.length, 1)) * 40;
+    var qi = 0;
+    for (var i = 0; i < n.length && qi < q.length; i++) {
+      if (n.charAt(i) === q.charAt(qi)) qi++;
+    }
+    if (qi === q.length) return 50 + (qi / Math.max(n.length, 1)) * 30;
+    return -1;
+  }
+
+  function rowMatchesSearch(row, query) {
+    var q = (query || "").trim();
+    if (!q) return true;
+    return (
+      Math.max(
+        matchSearchScore(q, row.projectName),
+        matchSearchScore(q, row.id),
+        matchSearchScore(q, row.operator)
+      ) > 0
+    );
+  }
+
   function rowMatches(row) {
+    var searchInput = document.getElementById("patrol-search-trigger");
+    var nameKw = searchInput && searchInput.value ? searchInput.value.trim() : "";
+    if (nameKw && !rowMatchesSearch(row, nameKw)) return false;
     if (filters.type && row.patrolType !== filters.type) return false;
     if (filters.operator && String(row.operator).indexOf(filters.operator) < 0) return false;
     var t = parseTime(row.updatedAt);
@@ -131,8 +169,12 @@
     return true;
   }
 
+  function getListSource() {
+    return mobileFilterRows || scopedRows();
+  }
+
   function filteredRows() {
-    return scopedRows().filter(rowMatches);
+    return getListSource().filter(rowMatches);
   }
 
   function updateStats(rows) {
@@ -183,74 +225,203 @@
 
   function manualActions(index) {
     return (
-      '<span class="row-action text-sky-300" data-action="manual-edit" data-index="' +
+      '<button type="button" class="mp-project-action" data-action="manual-edit" data-index="' +
       index +
-      '"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
-      '<span class="row-action text-cyan-300" data-action="manual-confirm" data-index="' +
+      '"><i class="fa-regular fa-pen-to-square"></i>编辑</button>' +
+      '<button type="button" class="mp-project-action" data-action="manual-confirm" data-index="' +
       index +
-      '"><i class="fa-regular fa-circle-check"></i>工班确认</span>' +
-      '<span class="row-action text-rose-300" data-action="manual-reject" data-index="' +
+      '"><i class="fa-regular fa-circle-check"></i>工班确认</button>' +
+      '<button type="button" class="mp-project-action" data-action="manual-reject" data-index="' +
       index +
-      '"><i class="fa-regular fa-circle-xmark"></i>拒绝</span>' +
-      '<span class="row-action text-rose-300" data-action="manual-delete" data-index="' +
+      '"><i class="fa-regular fa-circle-xmark"></i>拒绝</button>' +
+      '<button type="button" class="mp-project-action mp-project-action--danger" data-action="manual-delete" data-index="' +
       index +
-      '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
-      '<span class="row-action text-sky-300" data-action="manual-logs" data-index="' +
+      '"><i class="fa-regular fa-trash-can"></i>删除</button>' +
+      '<button type="button" class="mp-project-action" data-action="manual-logs" data-index="' +
       index +
-      '"><i class="fa-regular fa-clock"></i>操作记录</span>'
+      '"><i class="fa-regular fa-clock"></i>操作记录</button>'
+    );
+  }
+
+  function desktopActionLink(colorClass, action, attrs, iconClass, label) {
+    return (
+      '<span class="row-action ' +
+      colorClass +
+      '" data-action="' +
+      action +
+      '" ' +
+      attrs +
+      '><i class="' +
+      iconClass +
+      '"></i>' +
+      label +
+      "</span>"
+    );
+  }
+
+  function manualActionsDesktop(index) {
+    var idx = 'data-index="' + index + '"';
+    return (
+      desktopActionLink("text-sky-300", "manual-edit", idx, "fa-regular fa-pen-to-square", "编辑") +
+      desktopActionLink("text-cyan-300", "manual-confirm", idx, "fa-regular fa-circle-check", "工班确认") +
+      desktopActionLink("text-rose-300", "manual-reject", idx, "fa-regular fa-circle-xmark", "拒绝") +
+      desktopActionLink("text-rose-300", "manual-delete", idx, "fa-regular fa-trash-can", "删除") +
+      desktopActionLink("text-sky-300", "manual-logs", idx, "fa-regular fa-clock", "操作记录")
     );
   }
 
   function uavActions(row) {
     var id = row.uav && row.uav.taskId ? row.uav.taskId : row.id;
     return (
-      '<span class="row-action text-sky-300" data-action="uav-view" data-task="' +
+      '<button type="button" class="mp-project-action" data-action="uav-view" data-task="' +
       esc(id) +
-      '"><i class="fa-regular fa-file-lines"></i>查看报告</span>' +
-      '<span class="row-action text-cyan-300" data-action="uav-download" data-task="' +
+      '"><i class="fa-regular fa-file-lines"></i>查看报告</button>' +
+      '<button type="button" class="mp-project-action" data-action="uav-download" data-task="' +
       esc(id) +
-      '"><i class="fa-solid fa-download"></i>下载报告</span>'
+      '"><i class="fa-solid fa-download"></i>下载报告</button>'
     );
+  }
+
+  function uavActionsDesktop(row) {
+    var id = row.uav && row.uav.taskId ? row.uav.taskId : row.id;
+    var task = 'data-task="' + esc(id) + '"';
+    return (
+      desktopActionLink("text-sky-300", "uav-view", task, "fa-regular fa-file-lines", "查看报告") +
+      desktopActionLink("text-sky-300", "uav-download", task, "fa-solid fa-download", "下载报告")
+    );
+  }
+
+  function readFiltersFromForm() {
+    var t = document.getElementById("filter-type");
+    var ts = document.getElementById("filter-time-start");
+    var te = document.getElementById("filter-time-end");
+    var o = document.getElementById("filter-operator");
+    filters.type = t ? t.value : "";
+    filters.timeStart = ts ? ts.value : "";
+    filters.timeEnd = te ? te.value : "";
+    filters.operator = o ? o.value.trim() : "";
   }
 
   function alertActions(index) {
     return (
-      '<span class="row-action text-sky-300" data-action="alert-detail" data-index="' +
+      '<button type="button" class="mp-project-action" data-action="alert-detail" data-index="' +
       index +
-      '"><i class="fa-regular fa-eye"></i>查看详情</span>'
+      '"><i class="fa-regular fa-eye"></i>查看详情</button>'
     );
+  }
+
+  function alertActionsDesktop(index) {
+    return desktopActionLink(
+      "text-sky-300",
+      "alert-detail",
+      'data-index="' + index + '"',
+      "fa-regular fa-eye",
+      "查看详情"
+    );
+  }
+
+  function renderActions(row, index, desktop) {
+    if (desktop) {
+      if (row.patrolType === TYPE_MANUAL) return manualActionsDesktop(index);
+      if (row.patrolType === TYPE_UAV) return uavActionsDesktop(row);
+      return alertActionsDesktop(index);
+    }
+    if (row.patrolType === TYPE_MANUAL) return manualActions(index);
+    if (row.patrolType === TYPE_UAV) return uavActions(row);
+    return alertActions(index);
   }
 
   function openPatrolRow(row) {
     if (!row) return;
     if (row.patrolType === TYPE_MANUAL) {
-      openManualEdit(row);
+      openManualDetail(row);
       return;
     }
     if (row.patrolType === TYPE_UAV) {
-      var plan = planFromUav(row.uav);
-      if (!plan || !global.WHFlightReportModal) {
-        toast("暂无飞行报告数据");
-        return;
-      }
-      WHFlightReportModal.open(plan, { editable: false });
+      openUavReport(row);
       return;
     }
     openAlertDetail(row);
   }
 
-  function renderActions(row, index) {
-    var html = "";
-    if (row.patrolType === TYPE_MANUAL) html = manualActions(index);
-    else if (row.patrolType === TYPE_UAV) html = uavActions(row);
-    else html = alertActions(index);
-    return '<div class="disease-op-actions">' + html + "</div>";
+  function openUavReport(row) {
+    var plan = planFromUav(row && row.uav);
+    if (!plan || !global.WHFlightReportModal) {
+      toast("暂无飞行报告数据");
+      return;
+    }
+    WHFlightReportModal.open(plan, { editable: false, patrolMobile: true });
+  }
+
+  function downloadUavReport(row) {
+    var plan = planFromUav(row && row.uav);
+    if (!plan || !global.WHFlightReportModal) {
+      toast("暂无飞行报告数据");
+      return;
+    }
+    WHFlightReportModal.exportReport(plan);
+  }
+
+  function findUavRowByTask(taskId) {
+    return ALL_ROWS.filter(function (r) {
+      return r.patrolType === TYPE_UAV && ((r.uav && r.uav.taskId === taskId) || r.id === taskId);
+    })[0];
+  }
+
+  function renderMobilePatrolList(rows, listEl) {
+    if (!listEl) return;
+    if (!rows.length) {
+      listEl.innerHTML =
+        '<div class="mp-project-empty"><i class="fa-regular fa-clipboard"></i><p>暂无巡查记录</p></div>';
+      return;
+    }
+    listEl.innerHTML = rows
+      .map(function (row, index) {
+        var progress =
+          row.progress && String(row.progress).trim() && row.progress !== "—" ? row.progress : "";
+        return (
+          '<article class="mp-project-card" data-row-index="' +
+          index +
+          '">' +
+          '<div class="mp-project-card__head"><span class="mp-project-card__id">' +
+          esc(row.id) +
+          "</span>" +
+          typeBadge(row.patrolType) +
+          "</div>" +
+          '<h3 class="mp-project-card__title">' +
+          esc(row.projectName) +
+          "</h3>" +
+          '<dl class="mp-project-card__meta">' +
+          "<div><dt>更新时间</dt><dd>" +
+          esc(row.updatedAt) +
+          "</dd></div>" +
+          "<div><dt>巡查人/飞手</dt><dd>" +
+          esc(row.operator) +
+          "</dd></div>" +
+          (progress
+            ? '<div class="mp-patrol-card__progress"><dt>项目进展</dt><dd>' + esc(progress) + "</dd></div>"
+            : "") +
+          "</dl>" +
+          '<div class="mp-project-card__actions">' +
+          renderActions(row, index) +
+          "</div></article>"
+        );
+      })
+      .join("");
   }
 
   function renderTable() {
+    var rows = filteredRows();
+    var mobileList = document.getElementById("patrol-mobile-list");
+    if (mobileList) {
+      updateStats(rows);
+      renderMobilePatrolList(rows, mobileList);
+      var totalEl = document.getElementById("table-total");
+      if (totalEl) totalEl.textContent = String(rows.length);
+      return;
+    }
     var tbody = document.getElementById("patrol-tbody");
     if (!tbody) return;
-    var rows = filteredRows();
     updateStats(rows);
     if (!rows.length) {
       tbody.innerHTML =
@@ -288,9 +459,9 @@
           '<td class="px-3 text-slate-100/95">' +
           esc(row.operator) +
           "</td>" +
-          '<td class="px-3 disease-col-actions">' +
-          renderActions(row, index) +
-          "</td></tr>"
+          '<td class="px-3 disease-col-actions"><div class="disease-op-actions">' +
+          renderActions(row, index, true) +
+          "</div></td></tr>"
         );
       })
       .join("");
@@ -340,17 +511,109 @@
     toast("告警详情组件未加载");
   }
 
-  function openManualEdit(row) {
+  function cacheManualFormFoot() {
+    if (manualFormFootHtml) return;
+    var foot = document.querySelector("#patrol-manual-form-mask .mp-project-modal__foot");
+    if (foot) manualFormFootHtml = foot.innerHTML;
+  }
+
+  function patrolEventImage() {
+    if (global.WHPatrolPreviewAssets && global.WHPatrolPreviewAssets.eventUrl) {
+      return global.WHPatrolPreviewAssets.eventUrl();
+    }
+    if (global.whAsset) return global.whAsset("assets/images/flight-report-event.png");
+    return "";
+  }
+
+  function renderManualPhotoPreview() {
+    var row = document.getElementById("pm-f-photo-row");
+    var list = document.getElementById("pm-f-photo-list");
+    if (!row || !list) return;
+    var url = patrolEventImage();
+    row.hidden = false;
+    list.innerHTML = url
+      ? '<div class="mp-patrol-photo-thumb"><img src="' +
+        esc(url) +
+        '" alt="巡查照片预览" /></div>'
+      : '<span class="mp-patrol-photo-empty">暂无照片</span>';
+  }
+
+  function hideManualPhotoPreview() {
+    var row = document.getElementById("pm-f-photo-row");
+    var list = document.getElementById("pm-f-photo-list");
+    if (row) row.hidden = true;
+    if (list) list.innerHTML = "";
+  }
+
+  function setManualFormMode(readonly) {
+    manualFormReadonly = !!readonly;
+    cacheManualFormFoot();
+    var root = document.getElementById("patrol-manual-form-root");
+    var mask = document.getElementById("patrol-manual-form-mask");
+    var foot = document.querySelector("#patrol-manual-form-mask .mp-project-modal__foot");
+    var title = document.getElementById("patrol-manual-form-title");
+    if (title) title.textContent = readonly ? "人工巡查详情" : "编辑人工巡查记录";
+    if (mask) mask.classList.toggle("mp-manual-form--readonly", readonly);
+    if (foot) {
+      foot.innerHTML = readonly
+        ? '<button type="button" class="mp-project-modal__btn mp-project-modal__btn--primary" data-action="close-manual-form">关闭</button>'
+        : manualFormFootHtml;
+    }
+    if (!root) return;
+    root.classList.toggle("mp-modal-form--readonly", readonly);
+    root.querySelectorAll("input, select, textarea").forEach(function (el) {
+      if (readonly) {
+        if (el.tagName === "SELECT") {
+          el.disabled = true;
+        } else {
+          el.disabled = false;
+          el.readOnly = true;
+        }
+        el.setAttribute("aria-disabled", "true");
+        el.tabIndex = -1;
+      } else {
+        if (el.tagName === "SELECT") el.disabled = false;
+        else {
+          el.disabled = false;
+          el.removeAttribute("readonly");
+        }
+        el.removeAttribute("aria-disabled");
+        el.tabIndex = 0;
+        if (el.id === "pm-f-id") el.readOnly = true;
+      }
+    });
+    root.querySelectorAll("button.mp-picker-field").forEach(function (btn) {
+      btn.disabled = readonly;
+      btn.tabIndex = readonly ? -1 : 0;
+    });
+    if (readonly) renderManualPhotoPreview();
+    else hideManualPhotoPreview();
+  }
+
+  function openManualForm(row, readonly) {
     var source = findSourceRow(row);
     if (!source) return;
-    editingManualId = source.id;
+    editingManualId = readonly ? null : source.id;
     var mask = document.getElementById("patrol-manual-form-mask");
     if (!mask) {
-      toast("编辑弹窗未加载");
+      toast(readonly ? "详情弹窗未加载" : "编辑弹窗未加载");
       return;
     }
     loadManualForm(source);
+    setManualFormMode(readonly);
     mask.classList.add("show");
+    mask.setAttribute("aria-hidden", "false");
+    if (!readonly && global.WHProjectMobile && global.WHProjectMobile.enhanceSelectFields) {
+      global.WHProjectMobile.enhanceSelectFields(document.getElementById("patrol-manual-form-root"));
+    }
+  }
+
+  function openManualDetail(row) {
+    openManualForm(row, true);
+  }
+
+  function openManualEdit(row) {
+    openManualForm(row, false);
   }
 
   function loadManualForm(row) {
@@ -364,13 +627,11 @@
     if (pm$("pm-f-patrol-date")) pm$("pm-f-patrol-date").value = row.patrolDate || "";
     if (pm$("pm-f-progress")) pm$("pm-f-progress").value = row.progress || "";
     if (pm$("pm-f-remark")) pm$("pm-f-remark").value = row.remark || "";
-    if (pm$("pm-f-photo-list")) pm$("pm-f-photo-list").textContent = "暂无上传";
-    if (pm$("pm-f-video-list")) pm$("pm-f-video-list").textContent = "暂无上传";
-    var title = document.getElementById("patrol-manual-form-title");
-    if (title) title.textContent = "编辑人工巡查记录";
+    if (!manualFormReadonly) hideManualPhotoPreview();
   }
 
   function saveManualForm() {
+    if (manualFormReadonly) return closeManualEdit();
     var row = findSourceRow({ id: editingManualId });
     if (!row) return closeManualEdit();
     if (!pm$("pm-f-line").value) return alert("请选择所属线路");
@@ -397,8 +658,13 @@
 
   function closeManualEdit() {
     editingManualId = null;
+    manualFormReadonly = false;
     var mask = document.getElementById("patrol-manual-form-mask");
-    if (mask) mask.classList.remove("show");
+    if (mask) {
+      mask.classList.remove("show");
+      mask.setAttribute("aria-hidden", "true");
+    }
+    setManualFormMode(false);
   }
 
   function bindManualUploadPreview(inputId, listId, label) {
@@ -443,20 +709,30 @@
         : '<div class="record-empty">暂无操作记录</div>';
     }
     mask.classList.add("show");
+    mask.setAttribute("aria-hidden", "false");
   }
 
-  function openConfirm(kind, index, trigger) {
+  function runWithConfirm(options, onConfirm) {
+    if (global.WHProjectMobile && global.WHProjectMobile.showConfirm) {
+      global.WHProjectMobile.showConfirm(
+        Object.assign({}, options, { onConfirm: onConfirm })
+      );
+      return;
+    }
+    if (global.confirm(options.message || "确定？")) onConfirm();
+  }
+
+  function openConfirm(kind, index) {
     pendingConfirm = { kind: kind, index: index };
-    var pop = document.getElementById("patrol-confirm-pop");
-    var text = document.getElementById("patrol-confirm-text");
-    var icon = document.getElementById("patrol-confirm-icon");
-    if (!pop || !text) return;
-    text.textContent = kind === "confirm" ? "确定通过？" : "确定拒绝？";
-    if (icon) icon.className = "fa-solid fa-star " + (kind === "confirm" ? "text-amber-400" : "text-red-400");
-    var rect = trigger.getBoundingClientRect();
-    pop.style.left = Math.max(16, rect.left + rect.width / 2 - 66) + "px";
-    pop.style.top = Math.max(16, rect.top - 92) + "px";
-    pop.classList.remove("hidden");
+    runWithConfirm(
+      {
+        title: kind === "confirm" ? "工班确认" : "工班拒绝",
+        message: kind === "confirm" ? "确定通过该巡查记录？" : "确定拒绝该巡查记录？",
+        okText: "确定",
+        danger: kind !== "confirm"
+      },
+      applyConfirm
+    );
   }
 
   function applyConfirm() {
@@ -474,35 +750,97 @@
     });
     row.updatedAt = now;
     pendingConfirm = null;
-    document.getElementById("patrol-confirm-pop").classList.add("hidden");
     renderTable();
     toast(kind === "confirm" ? "工班已确认" : "工班已拒绝");
   }
 
-  function readFiltersFromForm() {
-    var t = document.getElementById("filter-type");
-    var ts = document.getElementById("filter-time-start");
-    var te = document.getElementById("filter-time-end");
-    var o = document.getElementById("filter-operator");
-    filters.type = t ? t.value : "";
-    filters.timeStart = ts ? ts.value : "";
-    filters.timeEnd = te ? te.value : "";
-    filters.operator = o ? o.value.trim() : "";
+  function readPatrolFilterSheet() {
+    var sheet = document.getElementById("patrol-filter-sheet");
+    if (!sheet) return;
+    var typeEl = sheet.querySelector('[data-patrol-filter="type"]');
+    var operatorEl = sheet.querySelector('[data-patrol-filter="operator"]');
+    var startEl = sheet.querySelector('[data-patrol-filter="time-start"]');
+    var endEl = sheet.querySelector('[data-patrol-filter="time-end"]');
+    filters.type = typeEl ? typeEl.value : "";
+    filters.operator = operatorEl ? operatorEl.value.trim() : "";
+    filters.timeStart = startEl ? startEl.value : "";
+    filters.timeEnd = endEl ? endEl.value : "";
   }
 
-  function applyQueryProject() {}
-
-  function resetFilters() {
-    filters = { type: "", timeStart: "", timeEnd: "", operator: "" };
-    var t = document.getElementById("filter-type");
-    var ts = document.getElementById("filter-time-start");
-    var te = document.getElementById("filter-time-end");
-    var o = document.getElementById("filter-operator");
-    if (t) t.value = "";
-    if (ts) ts.value = "";
-    if (te) te.value = "";
-    if (o) o.value = "";
+  function applyPatrolFilter(nameOverride) {
+    var searchInput = document.getElementById("patrol-search-trigger");
+    var nameKw =
+      typeof nameOverride === "string"
+        ? nameOverride
+        : searchInput && searchInput.value
+          ? searchInput.value.trim()
+          : "";
+    if (searchInput && typeof nameOverride === "string") searchInput.value = nameOverride;
+    readPatrolFilterSheet();
+    mobileFilterRows = scopedRows().filter(function (row) {
+      if (nameKw && !rowMatchesSearch(row, nameKw)) return false;
+      if (filters.type && row.patrolType !== filters.type) return false;
+      if (filters.operator && String(row.operator).indexOf(filters.operator) < 0) return false;
+      var t = parseTime(row.updatedAt);
+      if (filters.timeStart) {
+        var s = parseTime(filters.timeStart);
+        if (s && t && t < s) return false;
+      }
+      if (filters.timeEnd) {
+        var e = parseTime(filters.timeEnd);
+        if (e && t && t > e) return false;
+      }
+      return true;
+    });
     renderTable();
+    syncPatrolSearchClear();
+  }
+
+  function clearPatrolSearch() {
+    var searchInput = document.getElementById("patrol-search-trigger");
+    if (searchInput) searchInput.value = "";
+    mobileFilterRows = null;
+    filters = { type: "", operator: "", timeStart: "", timeEnd: "" };
+    var sheet = document.getElementById("patrol-filter-sheet");
+    if (sheet) {
+      sheet.querySelectorAll("[data-patrol-filter]").forEach(function (el) {
+        if (el.tagName === "SELECT") el.selectedIndex = 0;
+        else el.value = "";
+      });
+    }
+    renderTable();
+    syncPatrolSearchClear();
+  }
+
+  function syncPatrolSearchClear() {
+    var input = document.getElementById("patrol-search-trigger");
+    var clearBtn = document.getElementById("patrol-search-clear");
+    if (!input || !clearBtn) return;
+    clearBtn.hidden = !input.value.trim();
+  }
+
+  function refreshPatrolFilterPickers() {
+    if (global.WHProjectMobile && global.WHProjectMobile.enhanceSelectFields) {
+      var sheet = document.getElementById("patrol-filter-sheet");
+      if (sheet) global.WHProjectMobile.enhanceSelectFields(sheet);
+    }
+  }
+
+  function applyQueryProject() {
+    var project = getQueryProject();
+    var sub = document.getElementById("patrol-project-subtitle");
+    if (sub) sub.textContent = project ? "关联项目：" + project : "";
+  }
+
+  function bindPatrolSearch() {
+    var clearBtn = document.getElementById("patrol-search-clear");
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        clearPatrolSearch();
+      });
+    }
   }
 
   function initQuickLinks() {
@@ -512,30 +850,19 @@
     });
   }
 
-  function bindEvents() {
-    var searchBtn = document.getElementById("filter-search");
-    var resetBtn = document.getElementById("filter-reset");
-    var tbody = document.getElementById("patrol-tbody");
-    if (searchBtn) {
-      searchBtn.addEventListener("click", function () {
-        readFiltersFromForm();
-        renderTable();
-      });
-    }
-    if (resetBtn) resetBtn.addEventListener("click", resetFilters);
-    if (!tbody) return;
-
-    tbody.addEventListener("click", function (e) {
-      if (e.target.closest("[data-action], input, button, a, label, .disease-col-actions")) return;
-      var tr = e.target.closest("tr[data-row-index]");
-      if (!tr) return;
-      var index = Number(tr.getAttribute("data-row-index"));
+  function bindPatrolListRoot(root) {
+    if (!root) return;
+    root.addEventListener("click", function (e) {
+      if (e.target.closest("[data-action], input, button, a, label, .disease-col-actions, .mp-project-card__actions")) return;
+      var item = e.target.closest("tr[data-row-index], .mp-project-card[data-row-index]");
+      if (!item) return;
+      var index = Number(item.getAttribute("data-row-index"));
       var rows = filteredRows();
       var row = rows[index];
       if (row) openPatrolRow(row);
     });
 
-    tbody.addEventListener("click", function (e) {
+    root.addEventListener("click", function (e) {
       var btn = e.target.closest("[data-action]");
       if (!btn) return;
       var action = btn.getAttribute("data-action");
@@ -548,61 +875,136 @@
         return;
       }
       if ((action === "manual-confirm" || action === "manual-reject") && row) {
-        openConfirm(action === "manual-confirm" ? "confirm" : "reject", index, btn);
+        openConfirm(action === "manual-confirm" ? "confirm" : "reject", index);
         return;
       }
       if (action === "manual-delete" && row) {
         var source = findSourceRow(row);
         var idx = source ? ALL_ROWS.indexOf(source) : -1;
-        if (idx >= 0 && confirm("确认删除该巡查记录？")) {
-          ALL_ROWS.splice(idx, 1);
-          renderTable();
-          toast("已删除");
-        }
+        if (idx < 0) return;
+        runWithConfirm(
+          {
+            title: "确认删除",
+            message: "确定删除该巡查记录吗？删除后不可恢复。",
+            okText: "确定删除",
+            danger: true
+          },
+          function () {
+            ALL_ROWS.splice(idx, 1);
+            applyPatrolFilter();
+            toast("已删除");
+          }
+        );
         return;
       }
       if (action === "manual-logs" && row) {
         openRecordLogs(row);
         return;
       }
-      if (action === "uav-view" || action === "uav-download") {
+      if (action === "uav-view") {
         var taskId = btn.getAttribute("data-task");
-        var uavRow = ALL_ROWS.filter(function (r) {
-          return r.patrolType === TYPE_UAV && ((r.uav && r.uav.taskId === taskId) || r.id === taskId);
-        })[0];
-        var plan = planFromUav(uavRow && uavRow.uav);
-        if (!plan || !global.WHFlightReportModal) {
-          toast("暂无飞行报告数据");
-          return;
-        }
-        if (action === "uav-view") WHFlightReportModal.open(plan, { editable: false });
-        else WHFlightReportModal.exportReport(plan);
+        openUavReport(findUavRowByTask(taskId));
+        return;
+      }
+      if (action === "uav-download") {
+        var downloadTaskId = btn.getAttribute("data-task");
+        downloadUavReport(findUavRowByTask(downloadTaskId));
         return;
       }
       if (action === "alert-detail" && row) {
         openAlertDetail(row);
       }
     });
+  }
 
-    if (global.WHTableRowClick) WHTableRowClick.injectStyles();
-
-    var confirmYes = document.getElementById("patrol-confirm-yes");
-    var confirmNo = document.getElementById("patrol-confirm-no");
-    if (confirmYes) confirmYes.addEventListener("click", applyConfirm);
-    if (confirmNo) {
-      confirmNo.addEventListener("click", function () {
-        pendingConfirm = null;
-        var pop = document.getElementById("patrol-confirm-pop");
-        if (pop) pop.classList.add("hidden");
+  function bindEvents() {
+    bindPatrolSearch();
+    var searchBtn = document.getElementById("filter-search");
+    var resetBtn = document.getElementById("filter-reset");
+    if (searchBtn) {
+      searchBtn.addEventListener("click", function () {
+        readFiltersFromForm();
+        mobileFilterRows = null;
+        renderTable();
       });
     }
+    if (resetBtn) {
+      resetBtn.addEventListener("click", function () {
+        filters = { type: "", operator: "", timeStart: "", timeEnd: "" };
+        mobileFilterRows = null;
+        var typeEl = document.getElementById("filter-type");
+        var o = document.getElementById("filter-operator");
+        var ts = document.getElementById("filter-time-start");
+        var te = document.getElementById("filter-time-end");
+        if (typeEl) typeEl.value = "";
+        if (o) o.value = "";
+        if (ts) ts.value = "";
+        if (te) te.value = "";
+        renderTable();
+      });
+    }
+
+    document.addEventListener("click", function (e) {
+      var trigger = e.target.closest("[data-action]");
+      if (!trigger) return;
+      var action = trigger.getAttribute("data-action");
+      if (action === "open-patrol-search") {
+        if (e.target.closest("#patrol-search-clear")) return;
+        var project = getQueryProject();
+        var url = "patrol-search.html";
+        if (project) url += "?project=" + encodeURIComponent(project);
+        global.location.href = url;
+        return;
+      }
+      if (action === "open-patrol-filter-sheet") {
+        var sheet = document.getElementById("patrol-filter-sheet");
+        if (sheet) {
+          sheet.classList.add("is-open");
+          refreshPatrolFilterPickers();
+        }
+        return;
+      }
+      if (action === "close-patrol-filter-sheet") {
+        var closeSheet = document.getElementById("patrol-filter-sheet");
+        if (closeSheet) closeSheet.classList.remove("is-open");
+        return;
+      }
+      if (action === "search-patrol") {
+        var filterSheet = document.getElementById("patrol-filter-sheet");
+        if (filterSheet) filterSheet.classList.remove("is-open");
+        applyPatrolFilter();
+        toast("已按当前条件筛选");
+        return;
+      }
+      if (action === "reset-patrol-filter") {
+        var resetSheet = document.getElementById("patrol-filter-sheet");
+        if (resetSheet) {
+          resetSheet.querySelectorAll("[data-patrol-filter]").forEach(function (el) {
+            if (el.tagName === "SELECT") el.selectedIndex = 0;
+            else el.value = "";
+          });
+        }
+        filters = { type: "", operator: "", timeStart: "", timeEnd: "" };
+        applyPatrolFilter();
+        return;
+      }
+    });
+
+    bindPatrolListRoot(document.getElementById("patrol-tbody"));
+    bindPatrolListRoot(document.getElementById("patrol-mobile-list"));
+
+    if (global.WHTableRowClick) WHTableRowClick.injectStyles();
 
     if (global.ProjectOperationLog) {
       ProjectOperationLog.bindClose("patrol-record-mask", "close-patrol-record");
     } else {
       document.querySelectorAll("[data-action='close-patrol-record']").forEach(function (b) {
         b.addEventListener("click", function () {
-          document.getElementById("patrol-record-mask").classList.remove("show");
+          var mask = document.getElementById("patrol-record-mask");
+          if (mask) {
+            mask.classList.remove("show");
+            mask.setAttribute("aria-hidden", "true");
+          }
         });
       });
     }
@@ -619,13 +1021,56 @@
         if (e.target === manualMask) closeManualEdit();
       });
     }
+    var alertMask = document.getElementById("wh-alert-detail-modal-mask");
+    if (alertMask) {
+      alertMask.addEventListener("click", function (e) {
+        if (e.target === alertMask) {
+          if (global.WHMapAlerts && WHMapAlerts.closeDetail) WHMapAlerts.closeDetail();
+          else {
+            alertMask.classList.remove("show");
+            alertMask.setAttribute("aria-hidden", "true");
+          }
+        }
+      });
+    }
+    document.querySelectorAll("[data-action='close-alert-detail-modal']").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (global.WHMapAlerts && WHMapAlerts.closeDetail) WHMapAlerts.closeDetail();
+        else {
+          var mask = document.getElementById("wh-alert-detail-modal-mask");
+          if (mask) {
+            mask.classList.remove("show");
+            mask.setAttribute("aria-hidden", "true");
+          }
+        }
+      });
+    });
   }
 
   function init() {
+    cacheManualFormFoot();
+    if (global.WHMapAlerts && WHMapAlerts.initPortalDetailModal) {
+      WHMapAlerts.initPortalDetailModal();
+    }
     applyQueryProject();
     initQuickLinks();
     bindEvents();
+    syncPatrolSearchClear();
     renderTable();
+    try {
+      var params = new URLSearchParams(global.location.search);
+      var q = params.get("q");
+      if (q) {
+        applyPatrolFilter(q);
+        try {
+          global.history.replaceState({}, "", global.location.pathname + (getQueryProject() ? "?project=" + encodeURIComponent(getQueryProject()) : ""));
+        } catch (e) {
+          /* ignore */
+        }
+      }
+    } catch (e) {
+      /* ignore */
+    }
     if (window.WHPatrolMediaGallery) {
       window.WHPatrolMediaGallery.bind(document.getElementById("page-root") || document);
     }

@@ -2,14 +2,388 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>项目管理</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
 </head>
-<body data-miniapp="placeholder" data-module="patrol" data-title="项目管理" data-base="../" data-desc="对接后台「项目管理」模块，当前为页面框架占位。">
+<body class="mp-project-page miniapp-page" data-miniapp="page" data-module="patrol" data-title="项目管理" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner" id="project-nav">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title" id="project-nav-title">项目管理</h1>
+  </header>
+  <div id="project-app" class="mp-project-app">
+    <section id="project-list-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+      <div class="mp-project-stats">
+        <div class="mp-stat-card mp-stat-card--total">
+          <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-layer-group"></i></div>
+          <div class="mp-stat-card__body">
+            <div class="mp-stat-card__value" id="stat-total">0</div>
+            <div class="mp-stat-card__label">项目总数</div>
+          </div>
+        </div>
+        <div class="mp-stat-card mp-stat-card--key">
+          <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-star"></i></div>
+          <div class="mp-stat-card__body">
+            <div class="mp-stat-card__value" id="stat-key">0</div>
+            <div class="mp-stat-card__label">重点项目</div>
+          </div>
+        </div>
+        <div class="mp-stat-card mp-stat-card--general">
+          <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-regular fa-folder-open"></i></div>
+          <div class="mp-stat-card__body">
+            <div class="mp-stat-card__value" id="stat-general">0</div>
+            <div class="mp-stat-card__label">一般项目</div>
+          </div>
+        </div>
+        <div class="mp-stat-card mp-stat-card--month">
+          <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="mp-stat-card__body">
+            <div class="mp-stat-card__value" id="stat-month">0</div>
+            <div class="mp-stat-card__label">本月更新</div>
+          </div>
+        </div>
+      </div>
+      <div class="mp-project-searchbar">
+        <div class="mp-search-input-wrap" data-action="open-project-search" role="button" tabindex="0" aria-label="搜索项目">
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <input type="text" id="project-search-trigger" class="mp-search-input" placeholder="搜索项目名称" readonly />
+          <button type="button" class="mp-search-clear" id="project-search-clear" hidden aria-label="清空搜索">
+            <i class="fa-solid fa-circle-xmark"></i>
+          </button>
+        </div>
+        <button type="button" class="mp-filter-text-btn" data-action="open-filter-sheet">筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i></button>
+      </div>
+      <div id="project-mobile-list" class="mp-project-list" role="list"></div>
+      <span id="table-total" hidden aria-hidden="true">0</span>
+      </div>
+      <footer class="mp-detail-footer" id="mp-list-footer">
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--primary" data-action="new-project">新增项目</button>
+      </footer>
+      <div id="project-table-body" hidden aria-hidden="true" style="display:none"></div>
+    </section>
+
+    <section id="project-detail-view" class="hidden mp-detail-view">
+      <div class="mp-detail-tabs-wrap" id="project-tabs-wrap">
+        <div class="mp-detail-tabs done-tabs" id="project-tabs" role="tablist">
+          <button type="button" class="done-tab mp-detail-tab active" data-tab="base">基本信息</button>
+          <button type="button" class="done-tab mp-detail-tab" data-tab="status">状态信息</button>
+          <button type="button" class="done-tab mp-detail-tab" data-tab="units">参建单位</button>
+          <button type="button" class="done-tab mp-detail-tab" data-tab="docs">相关资料</button>
+          <button type="button" class="done-tab mp-detail-tab" data-tab="exchange">交底交涉</button>
+          <button type="button" class="done-tab mp-detail-tab" data-tab="monitor">监测台账</button>
+        </div>
+      </div>
+      <div class="mp-detail-scroll">
+      <div class="neon-panel neon-panel--tight mp-detail-panel" id="project-detail-shell">
+
+        <div class="done-tab-panel mp-detail-panel__body" data-panel="base">
+          <div class="mp-form-grid">
+            <div class="mp-form-row">
+              <label class="project-form-label project-required">项目编号</label>
+              <input id="proj-id" class="wh-input mp-field" readonly />
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label project-required">项目名称</label>
+              <input id="proj-name" class="wh-input mp-field" placeholder="请输入项目名称" />
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label">开始时间</label>
+              <input id="proj-start" type="date" class="wh-input mp-field" />
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label">结束时间</label>
+              <input id="proj-end" type="date" class="wh-input mp-field" />
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label project-required">所属线路</label>
+              <select id="proj-line" class="wh-input mp-field"><option value="">请选择</option><option>2号线</option><option>4号线</option><option>6号线</option><option>7号线</option><option>8号线</option><option>19号线</option></select>
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label project-required">上下行</label>
+              <select id="proj-direction" class="wh-input mp-field"><option>上行</option><option>下行</option></select>
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label">所在区间</label>
+              <input id="proj-section" class="wh-input mp-field" placeholder="区间" />
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label">站点</label>
+              <select class="wh-input mp-field"><option>请选择站点</option></select>
+            </div>
+            <div class="mp-form-row mp-form-row--picker">
+              <label class="project-form-label project-required">地址类型</label>
+              <button type="button" class="mp-picker-field" data-picker="addr-type" data-placeholder="请选择地址类型">
+                <span class="mp-picker-field__text is-placeholder">请选择地址类型</span>
+                <i class="fa-solid fa-chevron-down"></i>
+              </button>
+              <input type="hidden" id="proj-addr-type" value="" />
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label project-required">项目类型</label>
+              <select id="proj-type" class="wh-input mp-field"><option>一般项目</option><option>重点项目</option></select>
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label">评估报告风险等级</label>
+              <select id="proj-risk-level" class="wh-input mp-field">
+                <option value="">请选择评估报告风险等级</option>
+                <option>一级</option><option>二级</option><option>三级</option><option>四级</option><option>特级</option><option>无</option>
+              </select>
+            </div>
+            <div class="mp-form-row mp-form-row--picker">
+              <label class="project-form-label project-required">工程类别</label>
+              <button type="button" class="mp-picker-field" data-picker="category" data-placeholder="请选择工程类别">
+                <span class="mp-picker-field__text is-placeholder">请选择工程类别</span>
+                <i class="fa-solid fa-chevron-down"></i>
+              </button>
+              <input type="hidden" id="proj-category" value="" />
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label">经度</label>
+              <input id="proj-lng" class="wh-input mp-field" placeholder="经度" />
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label">纬度</label>
+              <input id="proj-lat" class="wh-input mp-field" placeholder="纬度" />
+            </div>
+            <div class="mp-form-row mp-form-row--full">
+              <label class="project-form-label">位置关系</label>
+              <textarea id="proj-location" class="wh-input mp-field mp-field--area" placeholder="位置关系说明"></textarea>
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label">距离地铁结构最小净距</label>
+              <input id="proj-min-distance" class="wh-input mp-field" value="43" />
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label project-required">是否与车站接驳</label>
+              <select id="proj-station-connect" class="wh-input mp-field"><option>否</option><option>是</option></select>
+            </div>
+            <div class="mp-form-row mp-form-row--picker">
+              <label class="project-form-label project-required">地铁结构类型</label>
+              <button type="button" class="mp-picker-field" data-picker="struct-type" data-placeholder="请选择地铁结构类型">
+                <span class="mp-picker-field__text is-placeholder">请选择地铁结构类型</span>
+                <i class="fa-solid fa-chevron-down"></i>
+              </button>
+              <input type="hidden" id="proj-struct-type" value="" />
+            </div>
+            <div class="mp-form-row mp-form-row--picker">
+              <label class="project-form-label project-required">地铁结构状态</label>
+              <button type="button" class="mp-picker-field" data-picker="struct-status" data-placeholder="请选择地铁结构状态">
+                <span class="mp-picker-field__text is-placeholder">请选择地铁结构状态</span>
+                <i class="fa-solid fa-chevron-down"></i>
+              </button>
+              <input type="hidden" id="proj-struct-status" value="" />
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label project-required">地铁结构埋深</label>
+              <input id="proj-struct-depth" class="wh-input mp-field" value="9.1~9.6" />
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label project-required">地质类型</label>
+              <select id="proj-geology" class="wh-input mp-field"><option>长江三级阶地</option></select>
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label">地铁所处地层</label>
+              <input id="proj-stratum" class="wh-input mp-field" value="（3a-1）淤泥质土" />
+            </div>
+            <div class="mp-form-row mp-form-row--full">
+              <label class="project-form-label">工程概况</label>
+              <textarea id="proj-summary" class="wh-input mp-field mp-field--area" placeholder="请输入工程概况"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="done-tab-panel mp-detail-panel__body hidden" data-panel="status">
+          <div class="mp-form-grid">
+            <div class="mp-form-row">
+              <label class="project-form-label project-required">项目状态</label>
+              <select id="proj-status" class="wh-input mp-field"><option>未开工</option><option>正在施工</option><option>停工</option><option>完工</option></select>
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label">开工日期</label>
+              <input id="proj-work-start" type="date" class="wh-input mp-field" />
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label">完工日期</label>
+              <input id="proj-work-end" type="date" class="wh-input mp-field" />
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label project-required">是否发函</label>
+              <select id="proj-send-letter" class="wh-input mp-field"><option>否</option><option>是</option></select>
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label project-required">是否实施监测</label>
+              <select id="proj-do-monitor" class="wh-input mp-field"><option>否</option><option>是</option></select>
+            </div>
+            <div class="mp-form-row">
+              <label class="project-form-label project-required">是否降水</label>
+              <select id="proj-dewater" class="wh-input mp-field"><option>否</option><option>是</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="done-tab-panel mp-detail-panel__body hidden" data-panel="units">
+          <div class="mp-section-block" id="unit-list"></div>
+        </div>
+
+        <div class="done-tab-panel mp-detail-panel__body hidden" data-panel="docs">
+          <div class="mp-section-block" id="doc-list"></div>
+        </div>
+
+        <div class="done-tab-panel mp-detail-panel__body hidden" data-panel="exchange">
+          <div class="flex justify-end mb-3">
+            <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="open-exchange-modal"><i class="fa-solid fa-plus mr-1"></i>新增</button>
+          </div>
+          <div id="exchange-list"></div>
+        </div>
+
+        <div class="done-tab-panel mp-detail-panel__body hidden" data-panel="monitor" id="monitor-tab-root"></div>
+
+      </div>
+      </div>
+
+      <footer id="mp-detail-footer" class="mp-detail-footer project-hidden-when-readonly">
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--ghost" data-action="cancel-project">取消</button>
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--primary" data-action="save-project">保存</button>
+      </footer>
+    </section>
+
+    
+    <section id="project-patrol-view" class="hidden">
+      <div class="mb-4 flex flex-wrap items-center gap-3">
+        <button type="button" class="w-8 h-8 rounded-md wh-btn-ghost" data-action="back-list" title="返回">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div>
+          <h1 class="text-base font-semibold text-white tracking-tight">项目巡查</h1>
+          <div id="project-patrol-subtitle" class="text-[11px] text-slate-400 mt-0.5"></div>
+        </div>
+      </div>
+      <div class="project-patrol-frame-wrap project-patrol-frame-wrap--embed">
+          <iframe id="project-patrol-frame" title="巡查记录"></iframe>
+        </div>
+    </section>
+  </div>
+
+  <div class="project-modal-mask" id="project-modal-mask" aria-hidden="true">
+    <div class="project-modal mp-project-modal">
+      <div class="mp-project-modal__head">
+        <h3 class="mp-project-modal__title" id="modal-title">新增</h3>
+        <button type="button" class="gis-mobile-sheet-close mp-modal-close" data-action="close-modal" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="mp-project-modal__body" id="modal-body"></div>
+      <div class="mp-project-modal__foot">
+        <button type="button" class="mp-project-modal__btn mp-project-modal__btn--ghost" data-action="close-modal">取消</button>
+        <button type="button" class="mp-project-modal__btn mp-project-modal__btn--primary" data-action="modal-save">保存</button>
+      </div>
+    </div>
+  </div>
+  <div class="project-toast" id="project-toast" aria-live="polite">已完成</div>
+
+  <div id="project-record-mask" class="project-modal-mask" aria-hidden="true">
+    <div class="project-modal mp-project-modal mp-record-modal" role="dialog" aria-labelledby="project-record-title">
+      <div class="mp-project-modal__head">
+        <h3 id="project-record-title" class="mp-project-modal__title">操作记录</h3>
+        <button type="button" class="gis-mobile-sheet-close mp-modal-close" data-action="close-project-record" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="project-record-body" class="mp-record-modal__body record-list"></div>
+    </div>
+  </div>
+
+  <div id="mp-media-preview" class="mp-media-preview" aria-hidden="true">
+    <button type="button" class="mp-media-preview__close" data-action="mp-media-preview-close" aria-label="关闭预览">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <img id="mp-media-preview-img" class="mp-media-preview__img" alt="" />
+  </div>
+
+  <div id="mp-file-preview-mask" class="project-modal-mask mp-file-preview-mask" aria-hidden="true">
+    <div class="project-modal mp-project-modal mp-file-preview" role="dialog" aria-labelledby="mp-file-preview-title">
+      <div class="mp-project-modal__head">
+        <h3 class="mp-project-modal__title" id="mp-file-preview-title">文件预览</h3>
+        <button type="button" class="gis-mobile-sheet-close mp-modal-close" data-action="mp-file-preview-close" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="mp-file-preview__body" id="mp-file-preview-body"></div>
+    </div>
+  </div>
+
+  <div id="mp-confirm-mask" class="mp-confirm-mask" aria-hidden="true">
+    <div class="mp-confirm-mask__panel" role="alertdialog" aria-labelledby="mp-confirm-title">
+      <h3 id="mp-confirm-title" class="mp-confirm-mask__title">确认删除</h3>
+      <p id="mp-confirm-msg" class="mp-confirm-mask__msg">确定要删除吗？此操作不可恢复。</p>
+      <div class="mp-confirm-mask__actions">
+        <button type="button" class="mp-confirm-mask__btn" data-action="mp-confirm-cancel">取消</button>
+        <button type="button" class="mp-confirm-mask__btn mp-confirm-mask__btn--danger" data-action="mp-confirm-ok">确定删除</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mp-picker-sheet" class="mp-picker-sheet" aria-hidden="true">
+    <div class="mp-picker-sheet__mask" data-action="mp-picker-mask-close"></div>
+    <div class="mp-picker-sheet__panel" role="dialog">
+      <div class="mp-picker-sheet__head">
+        <button type="button" class="mp-picker-sheet__btn" data-action="mp-picker-cancel">取消</button>
+        <h3 id="mp-picker-title" class="mp-picker-sheet__title">请选择</h3>
+        <button type="button" class="mp-picker-sheet__btn mp-picker-sheet__btn--ok" data-action="mp-picker-confirm">确定</button>
+      </div>
+      <div id="mp-picker-body" class="mp-picker-sheet__body"></div>
+    </div>
+  </div>
+
+  <div id="project-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-filter-sheet"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-filter-sheet" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field"><span>所属线路</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>7号线</option><option>8号线</option><option>19号线</option></select></label>
+        <label class="mp-filter-field"><span>上下行</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>上行</option><option>下行</option></select></label>
+        <label class="mp-filter-field"><span>所属区间</span><select class="wh-input w-full px-2" data-filter><option>请选择区间</option><option>洪山路~小洪山</option><option>松槐路~天阳大道</option></select></label>
+        <label class="mp-filter-field"><span>所在站点</span><select class="wh-input w-full px-2" data-filter><option>请选择站点</option><option>洪山路</option><option>小洪山</option></select></label>
+        <label class="mp-filter-field"><span>项目类型</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>一般项目</option><option>重点项目</option></select></label>
+        <label class="mp-filter-field"><span>工程类别</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>钻孔、地勘、打桩</option><option>道路排水工程</option><option>房建工程</option></select></label>
+        <label class="mp-filter-field"><span>是否发函</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>是</option><option>否</option></select></label>
+        <label class="mp-filter-field"><span>是否降水</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>是</option><option>否</option></select></label>
+        <label class="mp-filter-field"><span>是否监测</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>是</option><option>否</option></select></label>
+        <label class="mp-filter-field"><span>评估报告风险</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>一级</option><option>二级</option><option>三级</option><option>四级</option><option>特级</option><option>无</option></select></label>
+        <label class="mp-filter-field"><span>地质类型</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>长江三级阶地</option></select></label>
+        <label class="mp-filter-field"><span>地铁结构类型</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>盾构结构</option><option>明挖结构</option></select></label>
+        <label class="mp-filter-field"><span>是否与车站接驳</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>是</option><option>否</option></select></label>
+        <label class="mp-filter-field mp-filter-field--full"><span>是否签订安全协议</span><select class="wh-input w-full px-2" data-filter><option>全部</option><option>是</option><option>否</option></select></label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-project">搜索</button>
+      </div>
+    </div>
+  </div>
+
   <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/gis-assets-base.js"></script>
+  <script src="../../../assets/js/in-project-data.js"></script>
+  <script src="../../../assets/js/in-project-mobile.js"></script>
+  <script src="../../../assets/js/search-select.js"></script>
+  <script src="../../../assets/js/upload-widget.js"></script>
+  <script src="../../../assets/js/project-preview-mock.js"></script>
+  <script src="../../../assets/js/project-doc-shared.js"></script>
+  <script src="../../../assets/js/project-exchange-shared.js"></script>
+  <script src="../../../assets/js/project-monitor-shared.js"></script>
+  <script src="../../../assets/js/project-operation-log.js"></script>
+  <script src="../../../assets/js/in-project-page.js"></script>
+  <script src="../../assets/js/project-page-boot.js"></script>
 </body>
 </html>

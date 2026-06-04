@@ -1,15 +1,225 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>维修与检修记录</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/maintenance-mobile.css" />
 </head>
-<body data-miniapp="placeholder" data-module="asset" data-title="维修与检修记录" data-base="../" data-desc="对接后台「维修与检修记录」模块，当前为页面框架占位。">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-disease-page mp-maintenance-page mp-project-page miniapp-page" data-miniapp="page" data-module="asset" data-title="维修与检修记录" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title" id="maintenance-nav-title">维修与检修记录</h1>
+  </header>
+
+  <div id="maintenance-app" class="mp-disease-app mp-project-app">
+    <section id="maintenance-list-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-project-stats">
+          <div class="mp-stat-card mp-stat-card--total">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-clipboard-list"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-total">0</div>
+              <div class="mp-stat-card__label">记录总数</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--key">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-done">0</div>
+              <div class="mp-stat-card__label">已完成</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--month">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-spinner"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-progress">0</div>
+              <div class="mp-stat-card__label">进行中</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--general">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-fault">0</div>
+              <div class="mp-stat-card__label">故障处理</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mp-project-searchbar">
+          <div class="mp-search-input-wrap" data-action="open-maintenance-search" role="button" tabindex="0" aria-label="搜索维修记录">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="text" id="maintenance-search-trigger" class="mp-search-input" placeholder="设备编号 / 名称 / 维修内容" readonly />
+            <button type="button" class="mp-search-clear" id="maintenance-search-clear" data-action="maintenance-search-clear" hidden aria-label="清空搜索">
+              <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+          </div>
+          <button type="button" class="mp-filter-text-btn" data-action="open-maintenance-filter">筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i></button>
+        </div>
+
+        <div id="maintenance-mobile-list" class="mp-project-list" role="list"></div>
+        <span id="table-total" hidden aria-hidden="true">0</span>
+      </div>
+      <footer class="mp-detail-footer" id="mp-maintenance-list-footer">
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--primary" data-action="new-maintenance">新增维修记录</button>
+      </footer>
+    </section>
+
+    <section id="maintenance-detail-view" class="hidden mp-detail-view">
+      <span id="detail-maintenance-title" hidden aria-hidden="true"></span>
+      <div class="mp-disease-detail-scroll">
+        <div id="maintenance-detail-body" class="mp-disease-detail-body"></div>
+      </div>
+    </section>
+
+    <section id="maintenance-form-view" class="hidden mp-detail-view">
+      <span id="maintenance-form-title" hidden aria-hidden="true">新增维修记录</span>
+      <div class="mp-disease-form-scroll">
+        <div class="mp-form-grid" id="maintenance-form-root">
+          <div class="mp-form-row">
+            <label class="project-form-label project-required">设备类型</label>
+            <select id="f-device-type" class="wh-input mp-field">
+              <option value="">请选择</option>
+              <option value="drone">无人机</option>
+              <option value="airport">机场</option>
+            </select>
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label project-required">关联设备</label>
+            <select id="f-device" class="wh-input mp-field">
+              <option value="">请先选择设备类型</option>
+            </select>
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label project-required">维修类型</label>
+            <select id="f-type" class="wh-input mp-field">
+              <option value="故障处理">故障处理</option>
+              <option value="定期检修">定期检修</option>
+            </select>
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label project-required">责任人</label>
+            <input id="f-owner" class="wh-input mp-field" placeholder="请输入责任人" />
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label">更换部件</label>
+            <input id="f-parts" class="wh-input mp-field" placeholder="请输入更换部件" />
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label project-required">开始维修时间</label>
+            <input id="f-start" type="datetime-local" class="wh-input mp-field" />
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label">完成维修时间</label>
+            <input id="f-end" type="datetime-local" class="wh-input mp-field" />
+          </div>
+          <div class="mp-form-row">
+            <label class="project-form-label">状态</label>
+            <select id="f-status" class="wh-input mp-field">
+              <option value="进行中">进行中</option>
+              <option value="已完成">已完成</option>
+            </select>
+          </div>
+          <div class="mp-form-row mp-form-row--full">
+            <label class="project-form-label project-required">维护内容摘要</label>
+            <textarea id="f-summary" class="wh-input mp-field mp-field--textarea" placeholder="请输入维护内容摘要"></textarea>
+          </div>
+        </div>
+      </div>
+      <footer class="mp-detail-footer">
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--ghost" data-action="cancel-maintenance-form">取消</button>
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--primary" data-action="save-maintenance-form">保存</button>
+      </footer>
+    </section>
+  </div>
+
+  <div id="maintenance-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-maintenance-filter"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-maintenance-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field"><span>维护类型</span>
+          <select id="filter-type" class="wh-input w-full px-2">
+            <option value="">全部</option>
+            <option value="故障处理">故障处理</option>
+            <option value="定期检修">定期检修</option>
+          </select>
+        </label>
+        <label class="mp-filter-field"><span>维护状态</span>
+          <select id="filter-status" class="wh-input w-full px-2">
+            <option value="">全部</option>
+            <option value="已完成">已完成</option>
+            <option value="进行中">进行中</option>
+          </select>
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-maintenance-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-maintenance">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="maintenance-confirm-mask" class="mp-confirm-mask" aria-hidden="true">
+    <div class="mp-confirm-mask__panel" role="alertdialog" aria-labelledby="maintenance-confirm-title">
+      <h3 id="maintenance-confirm-title" class="mp-confirm-mask__title">删除确认</h3>
+      <p id="maintenance-confirm-msg" class="mp-confirm-mask__msg">确认删除当前维修记录吗？</p>
+      <div class="mp-confirm-mask__actions">
+        <button type="button" class="mp-confirm-mask__btn" data-action="maintenance-confirm-cancel">取消</button>
+        <button type="button" class="mp-confirm-mask__btn mp-confirm-mask__btn--danger" data-action="maintenance-confirm-ok">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mp-picker-sheet" class="mp-picker-sheet" aria-hidden="true">
+    <div class="mp-picker-sheet__mask" data-action="mp-picker-mask-close"></div>
+    <div class="mp-picker-sheet__panel" role="dialog">
+      <div class="mp-picker-sheet__head">
+        <button type="button" class="mp-picker-sheet__btn" data-action="mp-picker-cancel">取消</button>
+        <h3 id="mp-picker-title" class="mp-picker-sheet__title">请选择</h3>
+        <button type="button" class="mp-picker-sheet__btn mp-picker-sheet__btn--ok" data-action="mp-picker-confirm">确定</button>
+      </div>
+      <div id="mp-picker-body" class="mp-picker-sheet__body"></div>
+    </div>
+  </div>
+
+  <div class="project-toast" id="maintenance-toast" aria-live="polite"></div>
+
+  <div id="mp-media-preview" class="mp-media-preview" aria-hidden="true">
+    <button type="button" class="mp-media-preview__close" data-action="mp-media-preview-close" aria-label="关闭预览">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <img id="mp-media-preview-img" class="mp-media-preview__img" alt="" />
+  </div>
+
+  <div id="mp-file-preview-mask" class="project-modal-mask mp-file-preview-mask" aria-hidden="true">
+    <div class="project-modal mp-project-modal mp-file-preview" role="dialog" aria-labelledby="mp-file-preview-title">
+      <div class="mp-project-modal__head">
+        <h3 class="mp-project-modal__title" id="mp-file-preview-title">文件预览</h3>
+        <button type="button" class="gis-mobile-sheet-close mp-modal-close" data-action="mp-file-preview-close" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="mp-file-preview__body" id="mp-file-preview-body"></div>
+    </div>
+  </div>
+
+  <script src="../../../assets/js/project-preview-mock.js"></script>
+  <script src="../../../assets/js/project-doc-shared.js"></script>
+  <script src="../../../assets/js/am-maintenance-data.js"></script>
+  <script src="../../../assets/js/am-maintenance-page.js"></script>
+  <script src="../../../assets/js/in-project-mobile.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/maintenance-page-boot.js"></script>
 </body>
 </html>

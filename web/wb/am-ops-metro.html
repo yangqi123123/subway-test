@@ -551,114 +551,21 @@
       </div>
     </section>
   </div>
-  <script src="../../assets/js/menu-config.js"></script>
+
+  <script src="../../assets/js/am-ops-metro-data.js"></script>
+  <script src="../../assets/js/am-ops-metro-page.js"></script>
   <script src="../../assets/js/system-mgmt-quick-links.js"></script>
-  <script src="../../assets/js/workbench-mega.js"></script>
-  <script src="../../assets/js/shell.js"></script>
   <script>
     (function () {
-      var SERVER_DATA = {
-        metro: {
-          metrics: { cpu: "3%", cores: "8", mem: "16.88%", disk: "9%", memFree: "26.1 GiB / 31.4 GiB", diskFree: "1.0T / 45.0T" },
-          store: { photoCount: "182", photoSize: "3.82 TB", projectCount: "96", projectSize: "1.26 TB", libCount: "268", libSize: "860 GB" },
-          chart: { total: "45.0 TB", used: "5.94 TB", free: "39.06 TB", pct: 13.2, pctDetail: "5.94 TB / 45.0 TB", bars: { photo: "64%", project: "21%", lib: "15%" }, labels: { photo: "3.82 TB", project: "1.26 TB", lib: "860 GB" } },
-          nodes: { core: ["ok", "在线"], app: ["ok", "在线"], db: ["ok", "在线"], gateway: ["warn", "在线"], backup: ["warn", "告警"], storage: ["ok", "在线"] }
-        },
-        fulltime: {
-          metrics: { cpu: "12%", cores: "16", mem: "42.5%", disk: "18%", memFree: "18.2 GiB / 31.4 GiB", diskFree: "2.1T / 12.0T" },
-          store: { photoCount: "256", photoSize: "4.12 TB", projectCount: "112", projectSize: "1.58 TB", libCount: "302", libSize: "920 GB" },
-          chart: { total: "12.0 TB", used: "6.62 TB", free: "5.38 TB", pct: 55.2, pctDetail: "6.62 TB / 12.0 TB", bars: { photo: "62%", project: "24%", lib: "14%" }, labels: { photo: "4.12 TB", project: "1.58 TB", lib: "920 GB" } },
-          nodes: { core: ["ok", "在线"], app: ["warn", "告警"], db: ["ok", "在线"], gateway: ["ok", "在线"], backup: ["ok", "在线"], storage: ["ok", "在线"] }
-        },
-        uav: {
-          metrics: { cpu: "8%", cores: "12", mem: "58.2%", disk: "34%", memFree: "13.1 GiB / 31.4 GiB", diskFree: "6.6T / 10.0T" },
-          store: { photoCount: "98", photoSize: "1.82 TB", projectCount: "64", projectSize: "860 GB", libCount: "188", libSize: "520 GB" },
-          chart: { total: "10.0 TB", used: "3.18 TB", free: "6.82 TB", pct: 31.8, pctDetail: "3.18 TB / 10.0 TB", bars: { photo: "57%", project: "27%", lib: "16%" }, labels: { photo: "1.82 TB", project: "860 GB", lib: "520 GB" } },
-          nodes: { core: ["ok", "在线"], app: ["ok", "在线"], db: ["warn", "告警"], gateway: ["ok", "在线"], backup: ["ok", "在线"], storage: ["ok", "在线"] }
+      document.addEventListener("DOMContentLoaded", function () {
+        if (window.WHOpsMetroPage) {
+          WHOpsMetroPage.boot({ mobile: false, serverId: "metro" });
         }
-      };
-
-      function metricHtml(val, isRate) {
-        if (!isRate) return val;
-        return '<i class="fa-solid fa-arrow-down text-[11px]"></i> ' + val;
-      }
-
-      function setNodeStatus(key, level, text) {
-        var el = document.querySelector('[data-node="' + key + '"]');
-        if (!el) return;
-        var dot = el.querySelector(".topo-dot");
-        if (!dot) return;
-        dot.className = "topo-dot topo-dot--" + level;
-        el.querySelector("span:last-child").textContent = text;
-      }
-
-      function applyServer(id) {
-        var data = SERVER_DATA[id] || SERVER_DATA.metro;
-        ["cpu", "mem", "disk"].forEach(function (k) {
-          var el = document.querySelector('[data-metric="' + k + '"]');
-          if (el) el.innerHTML = metricHtml(data.metrics[k], true);
-        });
-        ["cores", "memFree", "diskFree"].forEach(function (k) {
-          var el = document.querySelector('[data-metric="' + k + '"]');
-          if (el) el.textContent = data.metrics[k];
-        });
-        Object.keys(data.store).forEach(function (k) {
-          var el = document.querySelector('[data-store="' + k + '"]');
-          if (el) el.textContent = data.store[k];
-        });
-        document.querySelector('[data-chart="total"]').textContent = data.chart.total;
-        document.querySelector('[data-chart="used"]').textContent = data.chart.used;
-        document.querySelector('[data-chart="free"]').textContent = data.chart.free;
-        document.querySelector('[data-chart="pctBar"]').style.width = data.chart.pct + "%";
-        document.querySelector('[data-chart="pctText"]').textContent = "已用 " + data.chart.pct + "%";
-        document.querySelector('[data-chart="pctDetail"]').textContent = data.chart.pctDetail;
-        ["photo", "project", "lib"].forEach(function (k) {
-          document.querySelector('[data-bar="' + k + '"]').style.width = data.chart.bars[k];
-          var labelEl = document.querySelector('[data-bar-label="' + k + '"]');
-          if (labelEl && data.chart.labels) labelEl.textContent = data.chart.labels[k];
-        });
-        Object.keys(data.nodes).forEach(function (k) {
-          setNodeStatus(k, data.nodes[k][0], data.nodes[k][1]);
-        });
-      }
-
-      function showOpsToast(message) {
-        var box = document.getElementById("ops-toast");
-        if (!box) {
-          box = document.createElement("div");
-          box.id = "ops-toast";
-          box.className =
-            "fixed bottom-5 right-5 z-[1300] hidden rounded bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg";
-          document.body.appendChild(box);
-        }
-        box.textContent = message;
-        box.classList.remove("hidden");
-        clearTimeout(showOpsToast._timer);
-        showOpsToast._timer = setTimeout(function () {
-          box.classList.add("hidden");
-        }, 1600);
-      }
-
-      var DEFAULT_FILTER = { start: "2026-05-12T00:00", end: "2026-05-19T23:59" };
-
-      document.getElementById("ops-filter-search").addEventListener("click", function () {
-        applyServer("metro");
-        showOpsToast("已按时间范围刷新监控数据");
       });
-
-      document.getElementById("ops-filter-reset").addEventListener("click", function () {
-        document.getElementById("ops-filter-start").value = DEFAULT_FILTER.start;
-        document.getElementById("ops-filter-end").value = DEFAULT_FILTER.end;
-        applyServer("metro");
-        showOpsToast("筛选条件已重置");
-      });
-
-      if (window.SystemMgmtQuickLinks) {
-        SystemMgmtQuickLinks.mount(document.getElementById("ops-quick-links"), "wb/am-ops-metro.html");
-      }
-
-      applyServer("metro");
     })();
   </script>
+  <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/workbench-mega.js"></script>
+  <script src="../../assets/js/shell.js"></script>
 </body>
 </html>

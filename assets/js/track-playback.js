@@ -233,9 +233,11 @@
           setStatus("播放完成");
           currentIndex = points.length - 1;
           focusPoint(currentIndex, true);
+          if (typeof options.onStep === "function") options.onStep(currentIndex);
           return;
         }
         focusPoint(currentIndex, true);
+        if (typeof options.onStep === "function") options.onStep(currentIndex);
       }, intervalMs);
     }
 
@@ -272,8 +274,12 @@
       stop: stop,
       destroy: destroy,
       fitBounds: fitBounds,
+      focusPoint: focusPoint,
       getMap: function () {
         return map;
+      },
+      getCurrentIndex: function () {
+        return currentIndex;
       },
     };
   }

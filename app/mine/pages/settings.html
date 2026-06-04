@@ -2,14 +2,73 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>设置</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/mine-mobile.css" />
 </head>
-<body data-miniapp="placeholder" data-module="mine" data-title="设置" data-base="../" data-desc="对接后台「设置」模块，当前为页面框架占位。">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-disease-page mp-mine-page mp-project-page miniapp-page">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title">设置</h1>
+  </header>
+
+  <div id="mine-settings-app" class="mp-disease-app">
+    <div class="mp-mine-settings-scroll">
+      <article class="mp-ops-settings-card">
+        <h2>全景地图巡查色块自动清空</h2>
+        <p class="mp-ops-settings-card__desc">
+          按自定义间隔天数，系统自动清空全景地图上<strong>已巡查</strong>与<strong>待巡查</strong>区域色块及关联工地照片标注。到达周期后，用户打开全景地图时将执行清空；也可在此立即清空。
+        </p>
+
+        <div class="mp-ops-settings-row">
+          <label for="ops-clear-interval">清空间隔（天）</label>
+          <input id="ops-clear-interval" type="number" class="wh-input px-3 text-sm" min="1" max="365" step="1" value="7" />
+          <span class="text-xs text-gray-400">范围 1～365 天</span>
+        </div>
+
+        <p id="ops-clear-status-wrap" hidden>
+          <span id="ops-clear-status" class="mp-ops-settings-status">—</span>
+        </p>
+
+        <dl class="mp-ops-settings-meta">
+          <div>
+            <dt>色块开始展示时间</dt>
+            <dd id="ops-meta-seeded">—</dd>
+          </div>
+          <div>
+            <dt>预计下次自动清空</dt>
+            <dd id="ops-meta-next">—</dd>
+          </div>
+        </dl>
+
+        <div class="mp-ops-settings-actions">
+          <button type="button" id="ops-save-interval" class="mp-ops-btn mp-ops-btn--primary">
+            <i class="fa-solid fa-floppy-disk"></i>保存间隔
+          </button>
+          <button type="button" id="ops-clear-now" class="mp-ops-btn">
+            <i class="fa-solid fa-eraser"></i>立即清空色块
+          </button>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <div id="ops-settings-toast" aria-live="polite"></div>
+
+  <script src="../../../assets/js/map-patrol-clear-settings.js"></script>
+  <script src="../../../assets/js/wb-ops-settings-page.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/mine-page-boot.js"></script>
+  <script>
+    WHOpsSettingsPage.boot();
+    MinePageBoot.start();
+  </script>
 </body>
 </html>

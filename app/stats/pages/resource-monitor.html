@@ -1,15 +1,217 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>资源监控</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="../../../assets/css/ops-topology-scene.css" />
+  <link rel="stylesheet" href="../../assets/css/resource-monitor-mobile.css" />
 </head>
-<body data-miniapp="placeholder" data-module="stats" data-title="资源监控" data-base="../" data-desc="对接后台「资源监控」模块，当前为页面框架占位。">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-disease-page mp-ops-page mp-project-page miniapp-page" data-miniapp="page" data-module="stats" data-title="资源监控" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title">资源监控</h1>
+  </header>
+
+  <div id="ops-app" class="mp-disease-app mp-project-app">
+    <section id="ops-monitor-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-project-searchbar mp-ops-filterbar">
+          <p id="ops-filter-hint" class="mp-ops-filter-hint" hidden aria-live="polite"></p>
+          <button type="button" class="mp-filter-text-btn" data-action="open-ops-filter">筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i></button>
+        </div>
+
+        <section class="mp-ops-section mp-ops-section--topology">
+          <h2 class="mp-ops-section__title">服务器的拓扑图</h2>
+          <div class="topo-scene" id="topo-scene">
+            <div class="topo-scene__bg"></div>
+            <div class="topo-scene__stars"></div>
+            <div class="topo-scene__grid"></div>
+            <svg class="topo-scene__links" viewBox="0 0 640 420" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="topoLineGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.2" />
+                  <stop offset="50%" stop-color="#67e8f9" stop-opacity="1" />
+                  <stop offset="100%" stop-color="#22d3ee" stop-opacity="0.2" />
+                </linearGradient>
+              </defs>
+              <g data-link="app">
+                <line class="topo-link-base" x1="320" y1="215" x2="320" y2="58" />
+                <line class="topo-link-glow" x1="320" y1="215" x2="320" y2="58" />
+                <circle class="topo-pulse-dot" r="2.5"><animateMotion dur="2.4s" repeatCount="indefinite" path="M 320 215 L 320 58" /></circle>
+              </g>
+              <g data-link="db">
+                <line class="topo-link-base" x1="320" y1="215" x2="72" y2="205" />
+                <line class="topo-link-glow" x1="320" y1="215" x2="72" y2="205" />
+                <circle class="topo-pulse-dot" r="2.5"><animateMotion dur="2.8s" repeatCount="indefinite" path="M 320 215 L 72 205" /></circle>
+              </g>
+              <g data-link="gateway">
+                <line class="topo-link-base" x1="320" y1="215" x2="158" y2="332" />
+                <line class="topo-link-glow" x1="320" y1="215" x2="158" y2="332" />
+                <circle class="topo-pulse-dot" r="2.5"><animateMotion dur="3s" repeatCount="indefinite" path="M 320 215 L 158 332" /></circle>
+              </g>
+              <g data-link="backup">
+                <line class="topo-link-base" x1="320" y1="215" x2="320" y2="362" />
+                <line class="topo-link-glow" x1="320" y1="215" x2="320" y2="362" />
+                <circle class="topo-pulse-dot" r="2.5"><animateMotion dur="2.2s" repeatCount="indefinite" path="M 320 215 L 320 362" /></circle>
+              </g>
+              <g data-link="storage">
+                <line class="topo-link-base" x1="320" y1="215" x2="568" y2="205" />
+                <line class="topo-link-glow" x1="320" y1="215" x2="568" y2="205" />
+                <circle class="topo-pulse-dot" r="2.5"><animateMotion dur="2.6s" repeatCount="indefinite" path="M 320 215 L 568 205" /></circle>
+              </g>
+              <circle cx="320" cy="215" r="4" fill="#38bdf8" opacity="0.9"><animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" /></circle>
+            </svg>
+            <div class="topo-node" style="left:50%;top:51%">
+              <div class="topo-node__halo"><div class="topo-node__device"><div class="topo-dev topo-dev--switch"><div class="topo-dev__box"><span class="topo-dev__symbol">⇄</span></div></div></div></div>
+              <div class="topo-node__name">核心交换机</div>
+              <div class="topo-node__status" data-node="core"><span class="topo-dot topo-dot--ok"></span><span>在线</span></div>
+            </div>
+            <div class="topo-node topo-node--north" style="left:50%;top:17%">
+              <div class="topo-node__halo"><div class="topo-node__device"><div class="topo-dev topo-dev--cluster"><div class="topo-rack"></div><div class="topo-rack"></div></div></div></div>
+              <div class="topo-node__name">应用服务器集群</div>
+              <div class="topo-node__status" data-node="app"><span class="topo-dot topo-dot--ok"></span><span>在线</span></div>
+            </div>
+            <div class="topo-node" style="left:11%;top:49%">
+              <div class="topo-node__halo"><div class="topo-node__device"><div class="topo-dev topo-dev--db"><div class="topo-cylinder"></div><div class="topo-cylinder"></div><div class="topo-cylinder"></div></div></div></div>
+              <div class="topo-node__name">数据库服务器</div>
+              <div class="topo-node__status" data-node="db"><span class="topo-dot topo-dot--ok"></span><span>在线</span></div>
+            </div>
+            <div class="topo-node" style="left:25%;top:79%">
+              <div class="topo-node__halo"><div class="topo-node__device"><div class="topo-dev topo-dev--gateway"><div class="topo-dev__antenna"></div><div class="topo-dev__box"><span class="topo-dev__shield"><i class="fa-solid fa-shield-halved"></i></span></div></div></div></div>
+              <div class="topo-node__name">管理网关</div>
+              <div class="topo-node__status" data-node="gateway"><span class="topo-dot topo-dot--warn"></span><span>在线</span></div>
+            </div>
+            <div class="topo-node" style="left:50%;top:86%">
+              <div class="topo-node__halo"><div class="topo-node__device"><div class="topo-dev topo-dev--backup"><div class="topo-rack"></div></div></div></div>
+              <div class="topo-node__name">备份服务器</div>
+              <div class="topo-node__status" data-node="backup"><span class="topo-dot topo-dot--warn"></span><span>告警</span></div>
+            </div>
+            <div class="topo-node" style="left:89%;top:49%">
+              <div class="topo-node__halo"><div class="topo-node__device"><div class="topo-dev topo-dev--storage"><div class="topo-storage-body"><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span><span class="topo-storage-slot"></span></div></div></div></div>
+              <div class="topo-node__name">存储阵列</div>
+              <div class="topo-node__status" data-node="storage"><span class="topo-dot topo-dot--ok"></span><span>在线</span></div>
+            </div>
+            <div class="topo-legend">
+              <span><span class="topo-dot topo-dot--ok"></span>正常</span>
+              <span><span class="topo-dot topo-dot--warn"></span>告警</span>
+              <span><span class="topo-dot topo-dot--danger"></span>严重</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="mp-ops-section">
+          <h2 class="mp-ops-section__title">网管监控</h2>
+          <div class="ops-nms-grid">
+            <div class="ops-nms-metrics">
+              <div class="ops-metrics-mini">
+                <div class="ops-mini-card"><div class="ops-mini-card__label">CPU使用率</div><div class="ops-mini-card__val ops-mini-card__val--green" data-metric="cpu"><i class="fa-solid fa-arrow-down text-[11px]"></i> 3%</div></div>
+                <div class="ops-mini-card"><div class="ops-mini-card__label">CPU核心数</div><div class="ops-mini-card__val" data-metric="cores">8</div></div>
+                <div class="ops-mini-card"><div class="ops-mini-card__label">内存使用率</div><div class="ops-mini-card__val ops-mini-card__val--green" data-metric="mem"><i class="fa-solid fa-arrow-down text-[11px]"></i> 16.88%</div></div>
+                <div class="ops-mini-card"><div class="ops-mini-card__label">磁盘使用率</div><div class="ops-mini-card__val ops-mini-card__val--green" data-metric="disk"><i class="fa-solid fa-arrow-down text-[11px]"></i> 9%</div></div>
+              </div>
+              <div class="ops-metrics-extra">
+                <div class="ops-metrics-extra__row"><div class="ops-metrics-extra__label">剩余内存情况</div><div class="ops-metrics-extra__val" data-metric="memFree">26.1 GiB / 31.4 GiB</div></div>
+                <div class="ops-metrics-extra__row"><div class="ops-metrics-extra__label">剩余磁盘情况</div><div class="ops-metrics-extra__val" data-metric="diskFree">1.0T / 45.0T</div></div>
+              </div>
+            </div>
+            <div class="ops-store-list">
+              <div class="ops-store-item">
+                <div class="ops-store-item__title">照片视频存储信息</div>
+                <div class="ops-store-item__nums">
+                  <div><div class="ops-store-item__num" data-store="photoCount">182</div><div class="ops-store-item__sub">照片视频数量</div></div>
+                  <div><div class="ops-store-item__num" data-store="photoSize">3.82 TB</div><div class="ops-store-item__sub">照片视频大小</div></div>
+                </div>
+              </div>
+              <div class="ops-store-item">
+                <div class="ops-store-item__title">项目文件存储信息</div>
+                <div class="ops-store-item__nums">
+                  <div><div class="ops-store-item__num" data-store="projectCount">96</div><div class="ops-store-item__sub">项目文件数量</div></div>
+                  <div><div class="ops-store-item__num" data-store="projectSize">1.26 TB</div><div class="ops-store-item__sub">项目文件大小</div></div>
+                </div>
+              </div>
+              <div class="ops-store-item">
+                <div class="ops-store-item__title">资料库存储信息</div>
+                <div class="ops-store-item__nums">
+                  <div><div class="ops-store-item__num" data-store="libCount">268</div><div class="ops-store-item__sub">资料库数量</div></div>
+                  <div><div class="ops-store-item__num" data-store="libSize">860 GB</div><div class="ops-store-item__sub">资料库大小</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mp-ops-section">
+          <h2 class="mp-ops-section__title">存储占用</h2>
+          <div class="ops-cap-summary">
+            <div class="ops-cap-summary__item"><div class="ops-cap-summary__label">总容量</div><div class="ops-cap-summary__val" data-chart="total">45.0 TB</div></div>
+            <div class="ops-cap-summary__item"><div class="ops-cap-summary__label">已用容量</div><div class="ops-cap-summary__val" data-chart="used">5.94 TB</div></div>
+            <div class="ops-cap-summary__item"><div class="ops-cap-summary__label">可用容量</div><div class="ops-cap-summary__val" data-chart="free">39.06 TB</div></div>
+          </div>
+          <div class="ops-cap-bars">
+            <div class="ops-cap-bar-row">
+              <span class="ops-cap-bar-row__label"><span class="ops-cap-bar-row__dot" style="background:#1e90ff"></span>照片视频</span>
+              <div class="ops-cap-bar-track"><div class="ops-cap-bar-fill" data-bar="photo" style="width:64%;background:#1e90ff"></div></div>
+              <span class="ops-cap-bar-row__end" data-bar-label="photo">3.82 TB</span>
+            </div>
+            <div class="ops-cap-bar-row">
+              <span class="ops-cap-bar-row__label"><span class="ops-cap-bar-row__dot" style="background:#17bebb"></span>项目文件</span>
+              <div class="ops-cap-bar-track"><div class="ops-cap-bar-fill" data-bar="project" style="width:21%;background:#17bebb"></div></div>
+              <span class="ops-cap-bar-row__end" data-bar-label="project">1.26 TB</span>
+            </div>
+            <div class="ops-cap-bar-row">
+              <span class="ops-cap-bar-row__label"><span class="ops-cap-bar-row__dot" style="background:#52c41a"></span>资料库</span>
+              <div class="ops-cap-bar-track"><div class="ops-cap-bar-fill" data-bar="lib" style="width:15%;background:#52c41a"></div></div>
+              <span class="ops-cap-bar-row__end" data-bar-label="lib">860 GB</span>
+            </div>
+          </div>
+          <div class="ops-cap-total">
+            <div class="ops-cap-total__label">总存储占用</div>
+            <div class="ops-cap-total__track"><div class="ops-cap-total__fill" data-chart="pctBar" style="width:13.2%"></div></div>
+            <div class="ops-cap-total__foot">
+              <span data-chart="pctText">已用 13.2%</span>
+              <span data-chart="pctDetail">5.94 TB / 45.0 TB</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <div id="ops-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-ops-filter"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>时间范围</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-ops-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field mp-filter-field--full"><span>开始时间</span>
+          <input id="ops-filter-start" type="datetime-local" class="wh-input w-full px-2" value="2026-05-12T00:00" />
+        </label>
+        <label class="mp-filter-field mp-filter-field--full"><span>结束时间</span>
+          <input id="ops-filter-end" type="datetime-local" class="wh-input w-full px-2" value="2026-05-19T23:59" />
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-ops-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-ops-filter">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="project-toast" id="ops-toast" aria-live="polite"></div>
+
+  <script src="../../../assets/js/am-ops-metro-data.js"></script>
+  <script src="../../../assets/js/am-ops-metro-page.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/resource-monitor-page-boot.js"></script>
 </body>
 </html>

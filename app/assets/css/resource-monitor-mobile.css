@@ -1,0 +1,288 @@
+/* 移动端资源监控 */
+body.mp-ops-page #ops-monitor-view {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-ops-page .mp-ops-filterbar {
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+body.mp-ops-page .mp-ops-filter-hint {
+  flex: 1;
+  margin: 0;
+  font-size: 12px;
+  color: var(--mp-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.mp-ops-page .mp-ops-section {
+  border-radius: 12px;
+  border: 1px solid var(--mp-border-subtle);
+  background: #fff;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+body.mp-ops-page .mp-ops-section__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mp-text-primary);
+}
+
+body.mp-ops-page .mp-ops-section__title::before {
+  content: "";
+  width: 3px;
+  height: 14px;
+  border-radius: 1px;
+  background: var(--mp-primary);
+  flex-shrink: 0;
+}
+
+body.mp-ops-page .mp-ops-section--topology {
+  padding: 0;
+  overflow: hidden;
+}
+
+body.mp-ops-page .mp-ops-section--topology .mp-ops-section__title {
+  padding: 12px 12px 0;
+}
+
+body.mp-ops-page .mp-ops-section--topology .topo-scene {
+  height: 300px;
+  border-radius: 0 0 12px 12px;
+}
+
+body.mp-ops-page .ops-metrics-mini {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+body.mp-ops-page .ops-mini-card {
+  border: 1px solid var(--mp-border-subtle);
+  border-radius: 10px;
+  background: var(--mp-bg-subtle);
+  padding: 12px;
+  min-height: 72px;
+}
+
+body.mp-ops-page .ops-mini-card__label {
+  font-size: 11px;
+  color: var(--mp-text-muted);
+  margin-bottom: 8px;
+}
+
+body.mp-ops-page .ops-mini-card__val {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--mp-text-primary);
+}
+
+body.mp-ops-page .ops-mini-card__val--green {
+  color: #059669;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+body.mp-ops-page .ops-metrics-extra {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+body.mp-ops-page .ops-metrics-extra__row {
+  border: 1px solid var(--mp-border-subtle);
+  border-radius: 10px;
+  background: var(--mp-bg-subtle);
+  padding: 10px 12px;
+}
+
+body.mp-ops-page .ops-metrics-extra__label {
+  font-size: 11px;
+  color: var(--mp-text-muted);
+  margin-bottom: 4px;
+}
+
+body.mp-ops-page .ops-metrics-extra__val {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mp-text-primary);
+}
+
+body.mp-ops-page .ops-nms-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.mp-ops-page .ops-store-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+body.mp-ops-page .ops-store-item {
+  border: 1px solid var(--mp-border-subtle);
+  border-radius: 10px;
+  background: var(--mp-bg-subtle);
+  padding: 10px 12px;
+}
+
+body.mp-ops-page .ops-store-item__title {
+  font-size: 11px;
+  color: var(--mp-text-muted);
+  margin-bottom: 8px;
+}
+
+body.mp-ops-page .ops-store-item__nums {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  text-align: center;
+}
+
+body.mp-ops-page .ops-store-item__num {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--mp-text-primary);
+}
+
+body.mp-ops-page .ops-store-item__sub {
+  font-size: 10px;
+  color: var(--mp-text-muted);
+  margin-top: 3px;
+}
+
+body.mp-ops-page .ops-cap-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+body.mp-ops-page .ops-cap-summary__label {
+  font-size: 11px;
+  color: var(--mp-text-muted);
+  margin-bottom: 6px;
+}
+
+body.mp-ops-page .ops-cap-summary__val {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--mp-text-primary);
+}
+
+body.mp-ops-page .ops-cap-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+body.mp-ops-page .ops-cap-bar-row {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+body.mp-ops-page .ops-cap-bar-row__label {
+  font-size: 12px;
+  color: var(--mp-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.mp-ops-page .ops-cap-bar-track {
+  height: 10px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+body.mp-ops-page .ops-cap-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+body.mp-ops-page .ops-cap-bar-row__end {
+  font-size: 11px;
+  color: var(--mp-text-muted);
+  min-width: 56px;
+  text-align: right;
+}
+
+body.mp-ops-page .ops-cap-total__label {
+  font-size: 12px;
+  color: var(--mp-text-muted);
+  margin-bottom: 8px;
+}
+
+body.mp-ops-page .ops-cap-total__track {
+  height: 6px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+body.mp-ops-page .ops-cap-total__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2563eb, #38bdf8);
+}
+
+body.mp-ops-page .ops-cap-total__foot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--mp-text-muted);
+}
+
+body.mp-ops-page .mp-filter-sheet__body.project-filter-panel {
+  grid-template-columns: 1fr;
+}
+
+body.mp-ops-page .mp-filter-sheet__body .mp-filter-field {
+  grid-column: 1 / -1;
+}
+
+body.mp-ops-page #ops-toast.project-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 13px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+body.mp-ops-page #ops-toast.project-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

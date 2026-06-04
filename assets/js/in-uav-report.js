@@ -2,7 +2,7 @@
  * 无人机巡查记录 — 查看/下载报告复用 WHFlightReportModal
  */
 (function (global) {
-  var PATROL_ROWS = [
+  var PATROL_ROWS = global.WH_UAV_ROWS || [
     {
       taskId: "FL20251225001",
       planId: 1,
@@ -58,8 +58,9 @@
     }, 1800);
   }
 
-  function findRow(taskId) {
-    return PATROL_ROWS.find(function (r) {
+  function findRow(taskId, list) {
+    var source = list || PATROL_ROWS;
+    return source.find(function (r) {
       return r.taskId === taskId;
     });
   }
@@ -82,8 +83,9 @@
     };
   }
 
-  function showPatrolReport(taskId) {
-    var row = findRow(taskId);
+  function showPatrolReport(taskId, list, options) {
+    options = options || {};
+    var row = findRow(taskId, list);
     var plan = planFromPatrol(row);
     if (!plan || !global.WHFlightReportModal) {
       toast("暂无飞行报告数据");
@@ -91,6 +93,7 @@
     }
     WHFlightReportModal.open(plan, {
       editable: false,
+      patrolMobile: !!options.patrolMobile,
       onSave: function () {
         toast("飞行报告补充说明已保存");
       },

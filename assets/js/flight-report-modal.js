@@ -5,8 +5,19 @@
   function assetUrl(rel) {
     return typeof whAsset === "function" ? whAsset(rel) : rel;
   }
-  var TRACK_IMG = "assets/images/flight-report-track.png";
-  var EVENT_IMG = "assets/images/flight-report-event.png";
+  function previewTrackImg() {
+    if (global.WHPatrolPreviewAssets && global.WHPatrolPreviewAssets.trackUrl) {
+      return global.WHPatrolPreviewAssets.trackUrl();
+    }
+    return assetUrl("assets/images/flight-report-track.png");
+  }
+
+  function previewEventImg() {
+    if (global.WHPatrolPreviewAssets && global.WHPatrolPreviewAssets.eventUrl) {
+      return global.WHPatrolPreviewAssets.eventUrl();
+    }
+    return assetUrl("assets/images/flight-report-event.png");
+  }
 
   var mounted = false;
   var currentPlan = null;
@@ -104,7 +115,7 @@
         type: "全部 > 堆土",
         level: "较重",
         warnMode: "无人机巡线",
-        eventImage: assetUrl(EVENT_IMG),
+        eventImage: previewEventImg(),
         unit: "武汉地保",
         person: "张三",
         processTime: "2026-05-12 10:20:15",
@@ -137,7 +148,7 @@
         type: "全部 > 挖掘机",
         level: "特别严重",
         warnMode: "无人机巡线",
-        eventImage: assetUrl(EVENT_IMG),
+        eventImage: previewEventImg(),
         unit: "武汉地保",
         person: "赵六",
         processTime: "2026-05-12 10:05:40",
@@ -159,7 +170,7 @@
       type: "全部 > 施工围挡",
       level: "一般",
       warnMode: "无人机巡线",
-      eventImage: assetUrl(EVENT_IMG),
+      eventImage: previewEventImg(),
       unit: "武汉地保",
       person: (plan.execMeta && plan.execMeta.pilot) || plan.applicant || "值班员",
       processTime: formatPublishTime(plan),
@@ -201,8 +212,8 @@
       airport: plan.airport || "—",
       taskType: plan.type || "—",
       relatedPlan: plan.name || "—",
-      trackImage: assetUrl(TRACK_IMG),
-      eventImage: (base.event && base.event.eventImage) || assetUrl(EVENT_IMG),
+      trackImage: previewTrackImg(),
+      eventImage: (base.event && base.event.eventImage) || previewEventImg(),
     });
     if (plan.reportOverrides) {
       var overrides = Object.assign({}, plan.reportOverrides);
@@ -234,7 +245,7 @@
         '<div class="modal-card modal-card--report">' +
         '<div class="fr-report-toolbar">' +
         '<h3 id="fr-report-modal-title" class="fr-report-toolbar__title">飞行报告</h3>' +
-        '<button type="button" class="wh-modal-close fr-report-modal-close" data-fr-report-close aria-label="关闭">×</button>' +
+        '<button type="button" class="wh-modal-close fr-report-modal-close" data-fr-report-close aria-label="关闭"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>' +
         "</div>" +
         '<div id="report-box" class="fr-report-body"></div>' +
         "</div></div>"
@@ -274,15 +285,25 @@
 
   function openMediaPreview(payload) {
     ensureDom();
+    payload = payload || {};
     var mask = document.getElementById("wh-media-preview-mask");
     var body = document.getElementById("wh-media-preview-body");
     document.getElementById("wh-media-preview-title").textContent = payload.title || "图片预览";
-    body.innerHTML =
-      '<img class="wh-media-preview-image" src="' +
-      esc(payload.url) +
-      '" alt="' +
-      esc(payload.title || "图片") +
-      '">';
+    if (payload.kind === "video") {
+      body.innerHTML =
+        '<video class="wh-media-preview-video" src="' +
+        esc(payload.url) +
+        '" controls autoplay playsinline' +
+        (payload.poster ? ' poster="' + esc(payload.poster) + '"' : "") +
+        "></video>";
+    } else {
+      body.innerHTML =
+        '<img class="wh-media-preview-image" src="' +
+        esc(payload.url) +
+        '" alt="' +
+        esc(payload.title || "图片") +
+        '">';
+    }
     mask.classList.add("show");
   }
 
@@ -325,7 +346,7 @@
     return (
       '<div class="fr-doc-track">' +
       '<img class="fr-doc-track__img" src="' +
-      esc(report.trackImage || assetUrl(TRACK_IMG)) +
+      esc(report.trackImage || previewTrackImg()) +
       '" alt="飞行轨迹" />' +
       '<div class="fr-doc-track__bar">' +
       '<div class="fr-doc-track__cell"><span class="fr-doc-track__label">飞行器</span><span class="fr-doc-track__value">' +
@@ -365,7 +386,7 @@
 
   function renderEventSection(report) {
     var ev = report.event || defaultEvent(currentPlan || {});
-    var imgUrl = ev.eventImage || assetUrl(EVENT_IMG);
+    var imgUrl = ev.eventImage || previewEventImg();
     var imgCell =
       '<img class="fr-doc-event-img" src="' +
       esc(imgUrl) +
@@ -428,7 +449,7 @@
       '<div class="fr-doc-wrap">' +
       renderDocContent(plan, report) +
       '<footer class="fr-doc__foot">' +
-      '<button type="button" id="fr-report-export-btn" class="wh-btn-gold px-5 py-2"><i class="fa-solid fa-file-pdf mr-1.5"></i>导出报告</button>' +
+      '<button type="button" id="fr-report-export-btn" class="wh-btn-primary px-5 py-2"><i class="fa-solid fa-file-pdf mr-1.5"></i>导出报告</button>' +
       "</footer></div>"
     );
   }
@@ -606,7 +627,7 @@
       var openPreview = function () {
         openMediaPreview({
           title: "事件图片",
-          url: (report.event && report.event.eventImage) || assetUrl(EVENT_IMG),
+          url: (report.event && report.event.eventImage) || previewEventImg(),
         });
       };
       previewImg.addEventListener("click", openPreview);
@@ -649,16 +670,27 @@
     bindReportEvents(report, options);
 
     var modal = document.getElementById("report-modal");
-    if (modal) modal.classList.add("show");
+    if (modal) {
+      modal.classList.toggle("fr-report-modal--patrol-mobile", !!options.patrolMobile);
+      modal.classList.add("show");
+    }
 
     var toolbarTitle = document.getElementById("fr-report-modal-title");
     if (toolbarTitle) toolbarTitle.textContent = formatReportTitle(plan);
+
+    var closeBtn = modal && modal.querySelector("[data-fr-report-close]");
+    if (closeBtn) {
+      closeBtn.setAttribute("aria-label", options.patrolMobile ? "返回巡查记录" : "关闭");
+    }
   }
 
   function close() {
     closeMediaPreview();
     var modal = document.getElementById("report-modal");
-    if (modal) modal.classList.remove("show");
+    if (modal) {
+      modal.classList.remove("show");
+      modal.classList.remove("fr-report-modal--patrol-mobile");
+    }
   }
 
   global.WHFlightReportModal = {

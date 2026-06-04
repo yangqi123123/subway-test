@@ -1,0 +1,72 @@
+/* 移动端统计分析 */
+body.mp-quality-page {
+  margin: 0;
+  min-height: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--mp-bg-subtle);
+  color: var(--mp-text);
+  font-size: 14px;
+}
+
+.mp-quality-app {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+body.mp-quality-page #quality-list-view:not(.hidden) {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-quality-page .mp-project-stats {
+  margin: 12px 14px 0;
+}
+
+body.mp-quality-page .mp-list-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 14px 20px;
+}
+
+body.mp-quality-page .mp-project-searchbar {
+  margin: 12px 0;
+}
+
+body.mp-quality-page .mp-quality-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+body.mp-quality-page .mp-quality-type--key {
+  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.12);
+}
+
+body.mp-quality-page .mp-quality-type--general {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+body.mp-quality-page .mp-quality-card__meta {
+  grid-template-columns: 1fr 1fr;
+}
+
+body.mp-quality-page .mp-stat-card__value {
+  font-size: 18px;
+}

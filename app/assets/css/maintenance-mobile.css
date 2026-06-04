@@ -1,0 +1,215 @@
+/* 移动端维修与检修记录 */
+body.mp-maintenance-page #maintenance-list-view:not(.hidden),
+body.mp-maintenance-page #maintenance-detail-view:not(.hidden),
+body.mp-maintenance-page #maintenance-form-view:not(.hidden) {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-maintenance-page #maintenance-detail-view:not(.hidden),
+body.mp-maintenance-page #maintenance-form-view:not(.hidden) {
+  z-index: 20;
+}
+
+body.mp-maintenance-page #maintenance-list-view.hidden,
+body.mp-maintenance-page #maintenance-detail-view.hidden,
+body.mp-maintenance-page #maintenance-form-view.hidden {
+  display: none !important;
+}
+
+body.mp-maintenance-page #maintenance-list-view .mp-detail-footer {
+  flex-shrink: 0;
+  position: relative;
+}
+
+body.mp-maintenance-page #maintenance-form-view .mp-detail-footer {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+body.mp-maintenance-page .mp-maintenance-card__meta {
+  grid-template-columns: 1fr;
+}
+
+body.mp-maintenance-page .mp-maintenance-card__meta > div {
+  grid-column: 1 / -1;
+}
+
+body.mp-maintenance-page .mp-filter-sheet__body.project-filter-panel {
+  grid-template-columns: 1fr;
+}
+
+body.mp-maintenance-page .mp-filter-sheet__body .mp-filter-field {
+  grid-column: 1 / -1;
+}
+
+body.mp-maintenance-page .mp-maintenance-type-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0369a1;
+  background: rgba(14, 165, 233, 0.1);
+  border: 1px solid rgba(14, 165, 233, 0.22);
+}
+
+body.mp-maintenance-page .mp-maintenance-status {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+body.mp-maintenance-page .mp-maintenance-status--done {
+  color: #059669;
+}
+
+body.mp-maintenance-page .mp-maintenance-status--progress {
+  color: #d97706;
+}
+
+body.mp-maintenance-page .mp-maintenance-card__actions {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.mp-maintenance-page .mp-maintenance-card__actions .mp-project-action {
+  flex: 1 1 calc(33.33% - 6px);
+  min-width: 72px;
+  justify-content: center;
+}
+
+body.mp-maintenance-page .mp-maintenance-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.mp-maintenance-page .mp-maintenance-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--mp-text-secondary);
+}
+
+body.mp-maintenance-page .mp-maintenance-chip--clickable {
+  cursor: pointer;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  background: rgba(37, 99, 235, 0.06);
+}
+
+body.mp-maintenance-page .mp-maintenance-photo--clickable {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+}
+
+body.mp-maintenance-page .mp-maintenance-video--clickable {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--mp-border-subtle);
+  background: rgba(15, 23, 42, 0.04);
+  cursor: pointer;
+  text-align: left;
+}
+
+body.mp-maintenance-page .mp-maintenance-video__play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--mp-primary);
+  flex-shrink: 0;
+}
+
+body.mp-maintenance-page .mp-maintenance-video__label {
+  font-size: 13px;
+  color: var(--mp-text-secondary);
+}
+
+body.mp-maintenance-page .mp-maintenance-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.mp-maintenance-page .mp-maintenance-photo {
+  aspect-ratio: 4 / 3;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+body.mp-maintenance-page .mp-maintenance-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+body.mp-maintenance-page .mp-maintenance-video-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+body.mp-maintenance-page .mp-maintenance-video video {
+  width: 100%;
+  border-radius: 8px;
+  background: #0f172a;
+}
+
+body.mp-maintenance-page .mp-maintenance-empty-media {
+  margin: 0;
+  font-size: 13px;
+  color: var(--mp-text-muted);
+}
+
+body.mp-scroll-locked #maintenance-app,
+body.mp-scroll-locked .mp-maintenance-page .mp-list-scroll,
+body.mp-scroll-locked .mp-maintenance-page .mp-disease-detail-scroll,
+body.mp-scroll-locked .mp-maintenance-page .mp-disease-form-scroll {
+  overflow: hidden !important;
+}
+
+body.mp-maintenance-page #maintenance-toast.project-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 13px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+body.mp-maintenance-page #maintenance-toast.project-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

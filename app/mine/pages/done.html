@@ -2,14 +2,180 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>已处理事项</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="../../../assets/css/map-gis.css" />
+  <link rel="stylesheet" href="../../../assets/css/map-alerts.css" />
+  <link rel="stylesheet" href="../../assets/css/project-patrol-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/mine-mobile.css" />
 </head>
-<body data-miniapp="placeholder" data-module="mine" data-title="已处理事项" data-base="../" data-desc="对接后台「已处理事项」模块，当前为页面框架占位。">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-disease-page mp-mine-page mp-project-page mp-patrol-page mp-todo-page mp-notify-page mp-done-page miniapp-page" data-wb-page="wb-done">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title-wrap">
+      <span id="wb-nav-title">已处理事项</span>
+    </h1>
+  </header>
+
+  <div id="wb-app" class="mp-disease-app mp-project-app">
+    <section id="wb-list-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-project-stats mp-project-stats--quad">
+          <div class="mp-stat-card mp-stat-card--total">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-clipboard-check"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-total">0</div>
+              <div class="mp-stat-card__label">当前列表</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--key">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-file-signature"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-approval">0</div>
+              <div class="mp-stat-card__label">审批</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--general">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-bell"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-alarm">0</div>
+              <div class="mp-stat-card__label">告警</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--month">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-closed">0</div>
+              <div class="mp-stat-card__label">已通过/已复核</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mp-project-searchbar">
+          <div class="mp-search-input-wrap" data-action="open-wb-search" role="button" tabindex="0" aria-label="搜索标题">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="text" id="wb-search-trigger" class="mp-search-input" placeholder="搜索标题" readonly />
+            <button type="button" class="mp-search-clear" id="wb-search-clear" data-action="wb-search-clear" hidden aria-label="清空搜索">
+              <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+          </div>
+          <button type="button" class="mp-filter-text-btn" data-action="open-wb-filter">筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i></button>
+        </div>
+
+        <div id="wb-mobile-list" class="mp-project-list" role="list"></div>
+      </div>
+    </section>
+
+    <section id="wb-detail-view" class="hidden mp-detail-view">
+      <span id="detail-wb-title" hidden aria-hidden="true"></span>
+      <div class="mp-disease-detail-scroll">
+        <div id="wb-detail-body" class="mp-disease-detail-body"></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="wb-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-wb-filter"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-wb-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field"><span>事项类型</span>
+          <select id="wb-filter-type" class="wh-input w-full px-2">
+            <option value="全部">全部</option>
+            <option value="审批">审批</option>
+            <option value="告警">告警</option>
+            <option value="空域许可续期">空域许可续期</option>
+          </select>
+        </label>
+        <label class="mp-filter-field"><span>处理开始</span>
+          <input id="wb-filter-start" type="date" class="wh-input w-full px-2" />
+        </label>
+        <label class="mp-filter-field"><span>处理结束</span>
+          <input id="wb-filter-end" type="date" class="wh-input w-full px-2" />
+        </label>
+        <label class="mp-filter-field"><span>处理结果</span>
+          <select id="wb-filter-result" class="wh-input w-full px-2">
+            <option value="全部">全部</option>
+            <option value="通过">通过</option>
+            <option value="驳回">驳回</option>
+            <option value="已复核">已复核</option>
+            <option value="已续期">已续期</option>
+          </select>
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-wb-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-wb-filter">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="wb-mobile-toast" aria-live="polite"></div>
+
+  <div id="wh-alert-detail-modal-mask" class="project-modal-mask wh-alert-detail-modal-mask" aria-hidden="true">
+    <div class="project-modal mp-project-modal mp-patrol-alert-modal" role="dialog" aria-labelledby="wh-alert-detail-title">
+      <div class="mp-project-modal__head">
+        <h3 id="wh-alert-detail-title" class="mp-project-modal__title">告警详情</h3>
+        <button type="button" class="gis-mobile-sheet-close mp-modal-close" data-action="close-alert-detail-modal" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="mp-project-modal__body mp-patrol-alert-modal__body">
+        <div class="mp-patrol-alert-shell">
+          <div class="mp-patrol-alert-map-wrap alert-detail-map-wrap">
+            <div class="alert-flag" id="patrol-alert-flag">疑似钻探<br />施工</div>
+            <div id="alert-detail-map" class="alert-detail-map"></div>
+          </div>
+          <section class="mp-patrol-alert-section">
+            <h4 class="mp-patrol-alert-section__title">告警详情</h4>
+            <div class="mp-patrol-alert-grid alert-detail-grid" id="alert-detail-grid"></div>
+          </section>
+          <section class="mp-patrol-alert-section" id="record-alarm-card">
+            <h4 class="mp-patrol-alert-section__title">告警记录</h4>
+            <div class="mp-patrol-alert-section__body" id="record-alarm"></div>
+          </section>
+          <section class="mp-patrol-alert-section" id="record-uav-card">
+            <h4 class="mp-patrol-alert-section__title">无人机实拍记录</h4>
+            <div class="mp-patrol-alert-section__body" id="record-uav"></div>
+          </section>
+          <section class="mp-patrol-alert-section" id="record-disposal-card">
+            <h4 class="mp-patrol-alert-section__title" id="record-disposal-title">处警记录</h4>
+            <div class="mp-patrol-alert-section__body" id="record-disposal"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="../../assets/js/gis-assets-base.js"></script>
+  <script src="../../../assets/js/patrol-preview-assets.js"></script>
+  <script src="../../../assets/js/map-situation-gis.js"></script>
+  <script src="../../../assets/js/map-alerts.js"></script>
+  <script src="../../../assets/js/menu-config.js"></script>
+  <script src="../../../assets/js/workbench-module.js"></script>
+  <script src="../../../assets/js/wb-todo-flow.js"></script>
+  <script src="../../../assets/js/approval-timeline.js"></script>
+  <script src="../../../assets/js/project-operation-log.js"></script>
+  <script src="../../../assets/js/alert-disposal-timeline.js"></script>
+  <script src="../../../assets/js/todo-modal-bridge.js"></script>
+  <script src="../../../assets/js/wb-done-mobile-page.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/mine-page-boot.js"></script>
+  <script>
+    WHDoneMobilePage.boot();
+    MinePageBoot.start({ navTitle: "已处理事项" });
+  </script>
 </body>
 </html>

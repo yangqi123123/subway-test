@@ -1,15 +1,178 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>无人机巡检记录</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../../assets/css/patrol-media-gallery.css" />
+  <link rel="stylesheet" href="../../../assets/css/flight-report-modal.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/uav-mobile.css" />
 </head>
-<body data-miniapp="placeholder" data-module="patrol" data-title="无人机巡检记录" data-base="../" data-desc="对接后台「无人机巡检记录」模块，当前为页面框架占位。">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-disease-page mp-uav-page mp-project-page miniapp-page" data-miniapp="page" data-module="patrol" data-title="无人机巡检记录" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title" id="uav-nav-title">无人机巡检记录</h1>
+  </header>
+
+  <div id="uav-app" class="mp-disease-app mp-project-app">
+    <section id="uav-list-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-project-stats">
+          <div class="mp-stat-card mp-stat-card--total">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-total">0</div>
+              <div class="mp-stat-card__label">巡查总数</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--key">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-calendar-plus"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-month">0</div>
+              <div class="mp-stat-card__label">本月新增</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--general">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-bell"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-alarm">0</div>
+              <div class="mp-stat-card__label">报警任务</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--month">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-normal">0</div>
+              <div class="mp-stat-card__label">正常完成</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mp-project-searchbar">
+          <div class="mp-search-input-wrap" data-action="open-uav-search" role="button" tabindex="0" aria-label="搜索无人机巡检记录">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="text" id="uav-search-trigger" class="mp-search-input" placeholder="搜索任务ID" readonly />
+            <button type="button" class="mp-search-clear" id="uav-search-clear" hidden aria-label="清空搜索">
+              <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+          </div>
+          <button type="button" class="mp-filter-text-btn" data-action="open-uav-filter">筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i></button>
+        </div>
+
+        <div id="uav-mobile-list" class="mp-project-list" role="list"></div>
+        <span id="table-total" hidden aria-hidden="true">0</span>
+      </div>
+    </section>
+
+    <section id="uav-detail-view" class="hidden mp-detail-view">
+      <span id="detail-uav-title" hidden aria-hidden="true"></span>
+      <div class="mp-disease-detail-scroll">
+        <div id="uav-detail-body" class="mp-disease-detail-body"></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="uav-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-uav-filter"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-uav-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field mp-filter-field--full"><span>所属线路</span>
+          <select id="filter-line" class="wh-input w-full px-2">
+            <option value="">全部</option>
+            <option value="8号线">8号线</option>
+            <option value="5号线">5号线</option>
+            <option value="2号线">2号线</option>
+            <option value="7号线">7号线</option>
+          </select>
+        </label>
+        <label class="mp-filter-field mp-filter-field--full"><span>巡查区间</span>
+          <select id="filter-section" class="wh-input w-full px-2">
+            <option value="">全部</option>
+            <option value="徐东~梨园">徐东~梨园</option>
+            <option value="青山站—工业四路">青山站—工业四路</option>
+          </select>
+        </label>
+        <label class="mp-filter-field mp-filter-field--full"><span>项目名称</span>
+          <select id="filter-project" class="wh-input w-full px-2">
+            <option value="">全部</option>
+            <option value="项目1、项目2、项目3">项目1、项目2、项目3</option>
+            <option value="青山站保护区巡查">青山站保护区巡查</option>
+          </select>
+        </label>
+        <label class="mp-filter-field mp-filter-field--full"><span>开始时间</span>
+          <input id="filter-date-start" type="datetime-local" class="wh-input w-full px-2" />
+        </label>
+        <label class="mp-filter-field mp-filter-field--full"><span>结束时间</span>
+          <input id="filter-date-end" type="datetime-local" class="wh-input w-full px-2" />
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-uav-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-uav">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mp-picker-sheet" class="mp-picker-sheet" aria-hidden="true">
+    <div class="mp-picker-sheet__mask" data-action="mp-picker-mask-close"></div>
+    <div class="mp-picker-sheet__panel" role="dialog">
+      <div class="mp-picker-sheet__head">
+        <button type="button" class="mp-picker-sheet__btn" data-action="mp-picker-cancel">取消</button>
+        <h3 id="mp-picker-title" class="mp-picker-sheet__title">请选择</h3>
+        <button type="button" class="mp-picker-sheet__btn mp-picker-sheet__btn--ok" data-action="mp-picker-confirm">确定</button>
+      </div>
+      <div id="mp-picker-body" class="mp-picker-sheet__body"></div>
+    </div>
+  </div>
+
+  <div id="mp-media-preview" class="mp-media-preview" aria-hidden="true">
+    <button type="button" class="mp-media-preview__close" data-action="mp-media-preview-close" aria-label="关闭预览">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <img id="mp-media-preview-img" class="mp-media-preview__img" alt="" />
+  </div>
+
+  <div id="mp-file-preview-mask" class="project-modal-mask mp-file-preview-mask" aria-hidden="true">
+    <div class="project-modal mp-project-modal mp-file-preview" role="dialog" aria-labelledby="mp-file-preview-title">
+      <div class="mp-project-modal__head">
+        <h3 class="mp-project-modal__title" id="mp-file-preview-title">文件预览</h3>
+        <button type="button" class="gis-mobile-sheet-close mp-modal-close" data-action="mp-file-preview-close" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="mp-file-preview__body" id="mp-file-preview-body"></div>
+    </div>
+  </div>
+
+  <div class="project-toast" id="uav-toast" aria-live="polite"></div>
+
+  <script src="../../assets/js/gis-assets-base.js"></script>
+  <script src="../../../assets/js/patrol-preview-assets.js"></script>
+  <script src="../../../assets/js/expert-review-modal.js"></script>
+  <script src="../../../assets/js/patrol-media-gallery.js"></script>
+  <script src="../../../assets/js/flight-report-modal.js"></script>
+  <script src="../../../assets/js/in-uav-report-data.js"></script>
+  <script src="../../../assets/js/in-uav-report.js"></script>
+  <script src="../../../assets/js/in-uav-page.js"></script>
+  <script src="../../../assets/js/in-project-mobile.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/uav-page-boot.js"></script>
+  <script>
+    if (window.whApplyGisAssetPaths) window.whApplyGisAssetPaths();
+    if (window.WHProjectMobile && window.WHProjectMobile.init) {
+      window.WHProjectMobile.init({ getOptions: function () { return []; } });
+    }
+  </script>
 </body>
 </html>

@@ -6,6 +6,8 @@
   var SOURCE_TRADITIONAL = "全时全域·传统";
   var SOURCE_MIXED = "全时全域·传统+AI";
   var SOURCE_UAV = "无人机";
+  var SOURCE_FULLTIME = "全时全域";
+  var FULLTIME_SOURCES = [SOURCE_AI, SOURCE_TRADITIONAL, SOURCE_MIXED];
   var SOURCE_ORDER = [SOURCE_AI, SOURCE_TRADITIONAL, SOURCE_MIXED, SOURCE_UAV];
   var SOURCE_COLORS = {};
   SOURCE_COLORS[SOURCE_AI] = "#22d3ee";
@@ -90,6 +92,39 @@
       riskLevel: "一般",
       startTime: "2026-03-05 05:55:29",
     },
+    {
+      id: 401,
+      projectName: "长江新区涉铁施工监测",
+      alarmArea: "徐家棚-汪家墩",
+      line: "8号线",
+      station: "汪家墩站",
+      source: SOURCE_AI,
+      workflowStatus: "未复核",
+      riskLevel: "较重",
+      startTime: "2026-05-15 09:20:00",
+    },
+    {
+      id: 402,
+      projectName: "8号线保护区基坑工程",
+      alarmArea: "汪家墩-岳家嘴",
+      line: "8号线",
+      station: "岳家嘴站",
+      source: SOURCE_MIXED,
+      workflowStatus: "已复核",
+      riskLevel: "一般",
+      startTime: "2026-05-17 14:08:00",
+    },
+    {
+      id: 403,
+      projectName: "徐东大道市政改造",
+      alarmArea: "汪家墩-岳家嘴",
+      line: "8号线",
+      station: "汪家墩站",
+      source: SOURCE_TRADITIONAL,
+      workflowStatus: "未复核",
+      riskLevel: "严重",
+      startTime: "2026-05-18 11:30:00",
+    },
   ];
 
   function normalizeSource(row) {
@@ -146,7 +181,31 @@
 
   function isFulltimeSource(row) {
     var s = normalizeSource(row);
-    return s === SOURCE_AI || s === SOURCE_TRADITIONAL || s === SOURCE_MIXED;
+    return FULLTIME_SOURCES.indexOf(s) >= 0;
+  }
+
+  function filterFulltimeAlerts(alerts) {
+    return alerts.filter(isFulltimeSource);
+  }
+
+  function formatDateInput(d) {
+    var pad = function (n) {
+      return n < 10 ? "0" + n : String(n);
+    };
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+
+  function getDefaultFilters() {
+    var end = new Date();
+    var start = new Date();
+    start.setDate(end.getDate() - 6);
+    return {
+      line: "8号线",
+      area: "",
+      station: "",
+      start: formatDateInput(start),
+      end: formatDateInput(end),
+    };
   }
 
   function filterAlerts(filters) {
@@ -176,68 +235,55 @@
   }
 
   function buildProjectChartConfig(alerts) {
+    var fulltimeAlerts = filterFulltimeAlerts(alerts);
     var projects = [];
-    alerts.forEach(function (r) {
+    fulltimeAlerts.forEach(function (r) {
       if (projects.indexOf(r.projectName) < 0) projects.push(r.projectName);
     });
     projects.sort();
-    var series = SOURCE_ORDER.map(function (src) {
-      return {
-        name: src,
-        color: SOURCE_COLORS[src],
-        values: projects.map(function (name) {
-          return alerts.filter(function (r) {
-            return r.projectName === name && normalizeSource(r) === src;
-          }).length;
-        }),
-      };
-    });
-    var stackSums = projects.map(function (_, i) {
-      var sum = 0;
-      series.forEach(function (s) {
-        sum += s.values[i] || 0;
-      });
-      return sum;
-    });
-    var subParts = SOURCE_ORDER.map(function (src) {
-      var n = alerts.filter(function (r) {
-        return normalizeSource(r) === src;
+    var values = projects.map(function (name) {
+      return fulltimeAlerts.filter(function (r) {
+        return r.projectName === name;
       }).length;
-      return src + " " + n + "条";
     });
     return {
       title: "项目告警统计图",
-      sub: subParts.join(" · ") + " · 共" + alerts.length + "条告警",
+      sub: "",
       axisLabel: "项目名称",
       yLabel: "告警条数",
-      max: calcMaxFromValues([], stackSums),
+      max: calcMaxFromValues(values),
       labels: projects,
-      legend: SOURCE_ORDER.map(function (src) {
-        return { name: src, color: SOURCE_COLORS[src] };
-      }),
-      defaultBarLayout: "stacked",
-      series: series,
+      legend: [],
+      defaultBarLayout: "grouped",
+      series: [
+        {
+          name: SOURCE_FULLTIME,
+          color: "#22d3ee",
+          values: values,
+        },
+      ],
     };
   }
 
   function buildChartConfigs(alerts) {
-    var total = alerts.length;
+    var fulltimeAlerts = filterFulltimeAlerts(alerts);
+    var total = fulltimeAlerts.length;
     var sourceAgg = countByOrder(
-      alerts,
+      fulltimeAlerts,
       normalizeSource,
-      SOURCE_ORDER,
-      SOURCE_ORDER.map(function (k) {
+      FULLTIME_SOURCES,
+      FULLTIME_SOURCES.map(function (k) {
         return SOURCE_COLORS[k];
       })
     );
     var statusAgg = countByOrder(
-      alerts,
+      fulltimeAlerts,
       normalizeWorkflowStatus,
       STATUS_ORDER,
       STATUS_COLORS
     );
     var riskAgg = countByOrder(
-      alerts,
+      fulltimeAlerts,
       normalizeRisk,
       RISK_ORDER,
       RISK_ORDER.map(function (k) {
@@ -319,12 +365,28 @@
     return { areas: areas, lines: lines, stations: stations };
   }
 
+  /** 示例数据日期对齐到近 7 天，避免默认筛选后图表无数据 */
+  function alignDemoAlertDates() {
+    var today = new Date();
+    ALERT_RECORDS.forEach(function (row, index) {
+      var d = new Date(today);
+      d.setDate(today.getDate() - (index % 7));
+      var timePart = (row.startTime || "10:00:00").slice(10).trim();
+      if (!timePart) timePart = "10:00:00";
+      row.startTime = formatDateInput(d) + " " + timePart;
+    });
+  }
+
+  alignDemoAlertDates();
+
   global.DCAlertStats = {
     ALERT_RECORDS: ALERT_RECORDS,
     filterAlerts: filterAlerts,
+    filterFulltimeAlerts: filterFulltimeAlerts,
     computeSummary: computeSummary,
     buildChartConfigs: buildChartConfigs,
     getFilterOptions: getFilterOptions,
+    getDefaultFilters: getDefaultFilters,
     normalizeSource: normalizeSource,
     normalizeWorkflowStatus: normalizeWorkflowStatus,
     normalizeRisk: normalizeRisk,

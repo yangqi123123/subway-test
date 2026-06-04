@@ -147,7 +147,8 @@
   height: auto;
   min-height: 220px;
   max-height: 360px;
-  object-fit: cover;
+  object-fit: contain;
+  background: #0f172a;
 }
 
 .fr-doc-track__bar {
@@ -269,7 +270,6 @@
   background: #f8fafc;
 }
 
-.fr-doc__foot .wh-btn-gold,
 .fr-doc__foot .wh-btn-primary {
   font-size: 13px;
 }

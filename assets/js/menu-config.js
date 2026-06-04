@@ -480,7 +480,7 @@
 /** 顶栏待办 / 系统通知角标（与 workbench-module 列表对齐） */
 (function (global) {
   var STORAGE_NOTIFY_READ = "whmetro-notify-read";
-  var TODO_PENDING_STATUS = ["待审批", "未复核", "已复核"];
+  var TODO_PENDING_STATUS = ["待审批", "未复核"];
 
   var NOTIFY_ROWS = [
     { id: "n1", read: "未读" },
@@ -493,7 +493,6 @@
     { id: "t1", status: "待审批" },
     { id: "t2", status: "待审批" },
     { id: "t3", status: "未复核" },
-    { id: "t4", status: "已复核" },
   ];
 
   function getNotifyReadSet() {
@@ -517,12 +516,24 @@
   }
 
   function notifyUnreadCount() {
-    return NOTIFY_ROWS.filter(function (r) {
+    var cfg = global.WH_WORKBENCH_CONFIGS && global.WH_WORKBENCH_CONFIGS["wb-sys-notify"];
+    var rows = cfg && cfg.rows && cfg.rows.length ? cfg.rows : NOTIFY_ROWS;
+    if (cfg && cfg.rows) applyNotifyReadToRows(cfg.rows);
+    return rows.filter(function (r) {
       return !isNotifyRead(r);
     }).length;
   }
 
   function todoPendingCount() {
+    if (global.WHTodoFlow && typeof global.WHTodoFlow.applyToConfigs === "function") {
+      global.WHTodoFlow.applyToConfigs();
+    }
+    var cfg = global.WH_WORKBENCH_CONFIGS && global.WH_WORKBENCH_CONFIGS["wb-todo"];
+    if (cfg && cfg.rows && cfg.rows.length) {
+      return cfg.rows.filter(function (r) {
+        return TODO_PENDING_STATUS.indexOf(r.status) >= 0;
+      }).length;
+    }
     return TODO_ROWS.filter(function (r) {
       return TODO_PENDING_STATUS.indexOf(r.status) >= 0;
     }).length;
@@ -552,6 +563,12 @@
     NOTIFY_ROWS.forEach(function (r) {
       if (r.id === id) r.read = "已读";
     });
+    var cfg = global.WH_WORKBENCH_CONFIGS && global.WH_WORKBENCH_CONFIGS["wb-sys-notify"];
+    if (cfg && cfg.rows) {
+      cfg.rows.forEach(function (r) {
+        if (r.id === id) r.read = "已读";
+      });
+    }
     refresh();
   }
 
@@ -564,6 +581,12 @@
     NOTIFY_ROWS.forEach(function (r) {
       r.read = "已读";
     });
+    var cfg = global.WH_WORKBENCH_CONFIGS && global.WH_WORKBENCH_CONFIGS["wb-sys-notify"];
+    if (cfg && cfg.rows) {
+      cfg.rows.forEach(function (r) {
+        r.read = "已读";
+      });
+    }
     refresh();
   }
 
@@ -573,6 +596,39 @@
       if (row.id && isNotifyRead({ id: row.id, read: row.read })) row.read = "已读";
     });
     return rows;
+  }
+
+  function restoreNotifyDemoDefaults() {
+    try {
+      global.localStorage.removeItem(STORAGE_NOTIFY_READ);
+    } catch (e) {}
+    NOTIFY_ROWS.forEach(function (r) {
+      r.read = r.id === "n2" ? "已读" : "未读";
+    });
+    var defaults = global.WH_WORKBENCH_DEFAULTS;
+    var configs = global.WH_WORKBENCH_CONFIGS;
+    if (defaults && defaults["wb-sys-notify"] && configs) {
+      configs["wb-sys-notify"] = JSON.parse(JSON.stringify(defaults["wb-sys-notify"]));
+    }
+    refreshMineHubBadges();
+  }
+
+  function refreshMineHubBadges() {
+    document.querySelectorAll(".miniapp-cell[data-list]").forEach(function (cell) {
+      var list = cell.getAttribute("data-list");
+      var badge = cell.querySelector(".miniapp-cell__badge");
+      if (!badge) return;
+      var count = 0;
+      if (list === "todo") count = todoPendingCount();
+      else if (list === "notify") count = notifyUnreadCount();
+      if (!count) {
+        badge.hidden = true;
+        badge.textContent = "";
+        return;
+      }
+      badge.hidden = false;
+      badge.textContent = count > 99 ? "99+" : String(count);
+    });
   }
 
   function refresh() {
@@ -586,6 +642,7 @@
       node.innerHTML = badgeHtml(notifyCount);
       node.classList.toggle("wh-shell-badge-wrap--hidden", !notifyCount);
     });
+    refreshMineHubBadges();
   }
 
   global.WHHeaderBadges = {
@@ -595,6 +652,8 @@
     markNotifyRead: markNotifyRead,
     markAllNotifyRead: markAllNotifyRead,
     applyNotifyReadToRows: applyNotifyReadToRows,
+    restoreNotifyDemoDefaults: restoreNotifyDemoDefaults,
+    refreshMineHubBadges: refreshMineHubBadges,
     refresh: refresh,
   };
 })(typeof window !== "undefined" ? window : this);

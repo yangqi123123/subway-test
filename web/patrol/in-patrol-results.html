@@ -160,6 +160,45 @@
 
   <div id="pr-toast" class="pr-toast" role="status" aria-live="polite"></div>
 
+  <div id="pr-detail-mask" class="pr-detail-mask" aria-hidden="true">
+    <div class="pr-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="pr-detail-title">
+      <header class="pr-detail-dialog__head">
+        <h3 id="pr-detail-title" class="pr-detail-dialog__title">成果详情</h3>
+        <button type="button" class="pr-detail-dialog__close" data-action="close-detail" aria-label="关闭">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </header>
+      <div class="pr-detail-dialog__body">
+        <div class="pr-detail-media">
+          <div class="pr-detail-media__stage" id="pr-detail-stage">
+            <div class="pr-detail-media__inner" id="pr-detail-media-inner">
+              <img id="pr-detail-img" class="pr-detail-media__img" alt="" />
+              <video id="pr-detail-video" class="pr-detail-media__video hidden" controls playsinline></video>
+            </div>
+          </div>
+          <div class="pr-detail-toolbar" role="toolbar" aria-label="媒体操作">
+            <button type="button" class="pr-detail-tool" data-action="media-zoom-in" title="放大"><i class="fa-solid fa-magnifying-glass-plus"></i><span>放大</span></button>
+            <button type="button" class="pr-detail-tool" data-action="media-zoom-out" title="缩小"><i class="fa-solid fa-magnifying-glass-minus"></i><span>缩小</span></button>
+            <button type="button" class="pr-detail-tool" data-action="media-rotate-left" title="左转"><i class="fa-solid fa-rotate-left"></i><span>左转</span></button>
+            <button type="button" class="pr-detail-tool" data-action="media-rotate-right" title="右转"><i class="fa-solid fa-rotate-right"></i><span>右转</span></button>
+            <button type="button" class="pr-detail-tool" data-action="media-reset" title="重置"><i class="fa-solid fa-arrows-rotate"></i><span>重置</span></button>
+            <button type="button" class="pr-detail-tool" data-action="media-view-large" title="查看大图"><i class="fa-solid fa-up-right-and-down-left-from-center"></i><span>查看大图</span></button>
+            <button type="button" class="pr-detail-tool pr-detail-tool--primary" data-action="media-download" title="下载"><i class="fa-solid fa-download"></i><span>下载</span></button>
+          </div>
+        </div>
+        <aside class="pr-detail-info">
+          <h4 class="pr-detail-info__title">基本信息</h4>
+          <div id="pr-detail-info-grid" class="pr-detail-info__grid"></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <div id="pr-lightbox-mask" class="pr-lightbox-mask" aria-hidden="true">
+    <button type="button" class="pr-lightbox-close" data-action="close-lightbox" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+    <img id="pr-lightbox-img" class="pr-lightbox-img" alt="" />
+  </div>
+
   <script src="../../assets/js/menu-config.js"></script>
   <script src="../../assets/js/card-grid-pager.js"></script>
   <script src="../../assets/js/in-patrol-results.js"></script>

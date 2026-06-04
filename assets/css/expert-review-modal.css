@@ -16,7 +16,7 @@
 
 .expert-modal {
   width: min(520px, 96vw);
-  max-height: 90vh;
+  max-height: calc(100dvh - 96px);
   overflow: auto;
   border-radius: 10px;
   border: 1px solid rgba(34, 211, 238, 0.22);
@@ -87,7 +87,13 @@
 
 .expert-select {
   height: 34px;
-  padding: 0 10px;
+  padding: 0 28px 0 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  cursor: pointer;
 }
 
 .expert-textarea {
@@ -120,6 +126,35 @@
   margin-top: 8px;
   font-size: 11px;
   color: #94a3b8;
+}
+
+.expert-photo-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px dashed rgba(34, 211, 238, 0.35);
+  background: rgba(34, 211, 238, 0.06);
+  color: #7dd3fc;
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.expert-photo-upload-btn:hover {
+  border-color: rgba(34, 211, 238, 0.55);
+  background: rgba(34, 211, 238, 0.12);
+  color: #bae6fd;
+}
+
+.expert-photo-upload input[type="file"] {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .expert-modal__foot {

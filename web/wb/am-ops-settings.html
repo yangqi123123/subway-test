@@ -159,9 +159,6 @@
               <button type="button" id="ops-clear-now" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">
                 <i class="fa-solid fa-eraser mr-1"></i>立即清空色块
               </button>
-              <a id="ops-open-map" href="../map/map-gis.html" class="px-4 py-1.5 rounded text-xs wh-btn-ghost inline-flex items-center">
-                <i class="fa-solid fa-map mr-1"></i>打开全景地图
-              </a>
             </div>
           </div>
         </div>
@@ -232,11 +229,6 @@
         refreshUi();
         showToast("已清空全景地图巡查色块，打开地图后生效");
       });
-
-      var openMap = document.getElementById("ops-open-map");
-      if (openMap && typeof whPageHref === "function") {
-        openMap.href = whPageHref("map/map-gis.html");
-      }
 
       if (window.SystemMgmtQuickLinks) {
         SystemMgmtQuickLinks.mount(document.getElementById("ops-quick-links"), "wb/am-ops-settings.html");

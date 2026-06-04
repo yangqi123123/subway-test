@@ -7,6 +7,9 @@
   var SUB_THERMAL = "热成像";
   var SUB_NATURAL = "自然光";
 
+  var DEMO_VIDEO =
+    "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
+
   var PHOTOS = [
     "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=800&q=80",
@@ -36,12 +39,36 @@
     { id: "r15", mediaTitle: "RG-122704-现场-01", planName: "RG-20260304-122704", mediaType: TYPE_PHOTO, subType: SUB_NATURAL, duration: "", sizeBytes: 1800000, uploadMethod: "人工上传", uploadedAt: "2026/03/04 17:05:33", projectName: "三金潭车辆段上盖物业综合开发项目", patrolSource: "人工", aiDetect: false },
   ];
 
+  var COORD_POOL = [
+    [114.35582, 30.561615],
+    [114.3328, 30.5365],
+    [114.3085, 30.6012],
+    [114.3145, 30.5868],
+    [114.292, 30.572],
+    [114.325, 30.575],
+    [114.3168, 30.5301],
+    [114.3378, 30.5512],
+  ];
+
+  ITEMS.forEach(function (item, index) {
+    var c = COORD_POOL[index % COORD_POOL.length];
+    item.lng = item.lng != null ? item.lng : c[0];
+    item.lat = item.lat != null ? item.lat : c[1];
+    item.mediaUrl = item.mediaUrl || PHOTOS[index % PHOTOS.length];
+    if (item.mediaType === TYPE_VIDEO) {
+      item.videoUrl = item.videoUrl || DEMO_VIDEO;
+      item.posterUrl = item.posterUrl || item.mediaUrl;
+    }
+  });
+
   var groupMode = "plan";
   var selectedTreeKey = "all";
   var expandedIds = Object.create(null);
   var selectedIds = Object.create(null);
   var pageState = { page: 1, pageSize: 12 };
   var toastTimer = null;
+  var detailItem = null;
+  var mediaView = { scale: 1, rotate: 0 };
 
   function $(id) {
     return document.getElementById(id);
@@ -69,7 +96,18 @@
   }
 
   function thumbFor(item, index) {
-    return PHOTOS[index % PHOTOS.length];
+    return item.mediaUrl || item.posterUrl || PHOTOS[index % PHOTOS.length];
+  }
+
+  function formatCoord(item) {
+    if (item == null || item.lng == null || item.lat == null) return "—";
+    return Number(item.lng).toFixed(6) + ", " + Number(item.lat).toFixed(6);
+  }
+
+  function findItemById(id) {
+    return ITEMS.find(function (x) {
+      return x.id === id;
+    });
   }
 
   function uniqueValues(list, field) {
@@ -240,7 +278,6 @@
   function cardHtml(item, index) {
     var isVideo = item.mediaType === TYPE_VIDEO;
     var checked = !!selectedIds[item.id];
-    var title = item.mediaTitle || item.planName;
     var badge =
       item.patrolSource === "无人机"
         ? '<span class="pr-card__badge">AI检测</span>'
@@ -266,30 +303,15 @@
       " /></label>" +
       "</div>" +
       '<div class="pr-card__body">' +
-      '<h4 class="pr-card__title" title="' +
-      esc(title) +
-      '">' +
-      esc(title) +
-      "</h4>" +
-      '<div class="pr-card__row"><span>计划名称</span><b title="' +
+      '<div class="pr-card__row pr-card__row--name"><span>计划名称</span><b class="pr-card__name" title="' +
       esc(item.planName) +
       '">' +
       esc(item.planName) +
       "</b></div>" +
-      '<div class="pr-card__row"><span>成果类型</span><b>' +
-      esc(item.mediaType) +
-      "</b></div>" +
-      '<div class="pr-card__row"><span>成果子类型</span><b>' +
-      esc(item.subType) +
-      "</b></div>" +
-      '<div class="pr-card__row"><span>视频时长</span><b>' +
-      esc(isVideo ? item.duration || "—" : "—") +
-      "</b></div>" +
-      '<div class="pr-card__row"><span>文件大小</span><b>' +
-      esc(formatSize(item.sizeBytes)) +
-      "</b></div>" +
-      '<div class="pr-card__row"><span>上传方式</span><b>' +
-      esc(item.uploadMethod) +
+      '<div class="pr-card__row"><span>经纬坐标</span><b class="pr-card__coord" title="' +
+      esc(formatCoord(item)) +
+      '">' +
+      esc(formatCoord(item)) +
       "</b></div>" +
       '<div class="pr-card__row"><span>上传时间</span><b>' +
       esc(item.uploadedAt) +
@@ -299,6 +321,11 @@
       '">' +
       esc(item.projectName) +
       "</b></div>" +
+      '<div class="pr-card__actions">' +
+      '<button type="button" class="pr-card__view-btn" data-action="view-result" data-id="' +
+      esc(item.id) +
+      '"><i class="fa-regular fa-eye" aria-hidden="true"></i>查看</button>' +
+      "</div>" +
       "</div></article>"
     );
   }
@@ -423,6 +450,166 @@
     });
   }
 
+  function applyMediaTransform() {
+    var inner = $("pr-detail-media-inner");
+    if (!inner) return;
+    inner.style.transform = "scale(" + mediaView.scale + ") rotate(" + mediaView.rotate + "deg)";
+  }
+
+  function resetMediaView() {
+    mediaView.scale = 1;
+    mediaView.rotate = 0;
+    applyMediaTransform();
+  }
+
+  function renderDetailInfo(item) {
+    var grid = $("pr-detail-info-grid");
+    if (!grid || !item) return;
+    var isVideo = item.mediaType === TYPE_VIDEO;
+    var rows = [
+      ["计划名称", item.planName],
+      ["成果类型", item.mediaType],
+      ["成果子类型", item.subType],
+      ["视频时长", isVideo ? item.duration || "—" : "—"],
+      ["文件大小", formatSize(item.sizeBytes)],
+      ["上传方式", item.uploadMethod],
+      ["上传时间", item.uploadedAt],
+      ["关联项目", item.projectName],
+      ["经纬坐标", formatCoord(item)],
+    ];
+    grid.innerHTML = rows
+      .map(function (pair) {
+        var valClass = pair[0] === "经纬坐标" ? " pr-detail-info__val--coord" : "";
+        return (
+          '<div class="pr-detail-info__row">' +
+          '<span class="pr-detail-info__key">' +
+          esc(pair[0]) +
+          "</span>" +
+          '<span class="pr-detail-info__val' +
+          valClass +
+          '" title="' +
+          esc(pair[1]) +
+          '">' +
+          esc(pair[1]) +
+          "</span></div>"
+        );
+      })
+      .join("");
+  }
+
+  function loadDetailMedia(item) {
+    var img = $("pr-detail-img");
+    var video = $("pr-detail-video");
+    if (!img || !video) return;
+    var isVideo = item.mediaType === TYPE_VIDEO;
+    resetMediaView();
+    if (isVideo) {
+      img.classList.add("hidden");
+      video.classList.remove("hidden");
+      video.poster = item.posterUrl || item.mediaUrl || "";
+      video.src = item.videoUrl || DEMO_VIDEO;
+      video.load();
+    } else {
+      video.classList.add("hidden");
+      video.pause();
+      video.removeAttribute("src");
+      img.classList.remove("hidden");
+      img.src = item.mediaUrl || thumbFor(item, 0);
+      img.alt = item.mediaTitle || item.planName || "巡检成果";
+    }
+  }
+
+  function openDetail(item) {
+    if (!item) return;
+    detailItem = item;
+    var mask = $("pr-detail-mask");
+    var titleEl = $("pr-detail-title");
+    if (titleEl) {
+      titleEl.textContent =
+        item.mediaType === TYPE_VIDEO ? "巡检视频详情" : item.subType === SUB_THERMAL ? "拍照图片详情" : "巡检照片详情";
+    }
+    renderDetailInfo(item);
+    loadDetailMedia(item);
+    if (mask) {
+      mask.classList.add("is-open");
+      mask.setAttribute("aria-hidden", "false");
+    }
+  }
+
+  function closeDetail() {
+    var mask = $("pr-detail-mask");
+    var video = $("pr-detail-video");
+    if (video) {
+      video.pause();
+    }
+    detailItem = null;
+    if (mask) {
+      mask.classList.remove("is-open");
+      mask.setAttribute("aria-hidden", "true");
+    }
+    closeLightbox();
+  }
+
+  function closeLightbox() {
+    var lb = $("pr-lightbox-mask");
+    if (lb) {
+      lb.classList.remove("is-open");
+      lb.setAttribute("aria-hidden", "true");
+    }
+  }
+
+  function openLightbox() {
+    if (!detailItem) return;
+    var lb = $("pr-lightbox-mask");
+    var img = $("pr-lightbox-img");
+    if (!lb || !img || detailItem.mediaType === TYPE_VIDEO) {
+      toast("视频请使用播放器全屏查看（原型演示）");
+      return;
+    }
+    img.src = detailItem.mediaUrl || thumbFor(detailItem, 0);
+    lb.classList.add("is-open");
+    lb.setAttribute("aria-hidden", "false");
+  }
+
+  function downloadDetailMedia() {
+    if (!detailItem) return;
+    var isVideo = detailItem.mediaType === TYPE_VIDEO;
+    var url = isVideo ? detailItem.videoUrl || DEMO_VIDEO : detailItem.mediaUrl || thumbFor(detailItem, 0);
+    var name = (detailItem.mediaTitle || detailItem.planName || "patrol-result").replace(/[\\/:*?"<>|]/g, "_");
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = name + (isVideo ? ".mp4" : ".jpg");
+    a.rel = "noopener";
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    toast("已开始下载（原型演示）");
+  }
+
+  function handleMediaAction(act) {
+    if (!detailItem) return;
+    if (act === "media-zoom-in") {
+      mediaView.scale = Math.min(mediaView.scale + 0.2, 3);
+      applyMediaTransform();
+    }
+    if (act === "media-zoom-out") {
+      mediaView.scale = Math.max(mediaView.scale - 0.2, 0.4);
+      applyMediaTransform();
+    }
+    if (act === "media-rotate-left") {
+      mediaView.rotate -= 90;
+      applyMediaTransform();
+    }
+    if (act === "media-rotate-right") {
+      mediaView.rotate += 90;
+      applyMediaTransform();
+    }
+    if (act === "media-reset") resetMediaView();
+    if (act === "media-view-large") openLightbox();
+    if (act === "media-download") downloadDetailMedia();
+  }
+
   function init() {
     bindQuickLinks();
     render();
@@ -457,9 +644,30 @@
         return;
       }
 
+      var viewBtn = t.closest("[data-action='view-result']");
+      if (viewBtn) {
+        e.preventDefault();
+        var vid = viewBtn.getAttribute("data-id");
+        var item = findItemById(vid);
+        if (item) openDetail(item);
+        return;
+      }
+
       var action = t.closest("[data-action]");
       if (!action) return;
       var act = action.getAttribute("data-action");
+      if (act === "close-detail") {
+        closeDetail();
+        return;
+      }
+      if (act === "close-lightbox") {
+        closeLightbox();
+        return;
+      }
+      if (act && act.indexOf("media-") === 0) {
+        handleMediaAction(act);
+        return;
+      }
       if (act === "search") {
         resetPage();
         render();
@@ -476,6 +684,29 @@
         toast("已开始批量下载 " + picked.length + " 项（原型演示）");
       }
       if (act === "export-list") toast("导出列表功能（原型演示）");
+    });
+
+    var detailMask = $("pr-detail-mask");
+    if (detailMask) {
+      detailMask.addEventListener("click", function (e) {
+        if (e.target === detailMask) closeDetail();
+      });
+    }
+    var lightboxMask = $("pr-lightbox-mask");
+    if (lightboxMask) {
+      lightboxMask.addEventListener("click", function (e) {
+        if (e.target === lightboxMask) closeLightbox();
+      });
+    }
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      if ($("pr-lightbox-mask") && $("pr-lightbox-mask").classList.contains("is-open")) {
+        closeLightbox();
+        return;
+      }
+      if ($("pr-detail-mask") && $("pr-detail-mask").classList.contains("is-open")) {
+        closeDetail();
+      }
     });
 
     var grid = $("pr-card-grid");

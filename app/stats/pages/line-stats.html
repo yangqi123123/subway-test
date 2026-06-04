@@ -1,15 +1,153 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>线路项目统计</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="../../../assets/css/dc-chart-toolbar.css" />
+  <link rel="stylesheet" href="../../assets/css/line-stats-mobile.css" />
 </head>
-<body data-miniapp="placeholder" data-module="stats" data-title="线路项目统计" data-base="../" data-desc="对接后台「线路项目统计」模块，当前为页面框架占位。">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-disease-page mp-line-stats-page mp-project-page miniapp-page" data-miniapp="page" data-module="stats" data-title="线路项目统计" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title">线路项目统计</h1>
+  </header>
+
+  <div id="line-stats-app" class="mp-disease-app mp-project-app">
+    <section id="line-stats-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-project-stats">
+          <div class="mp-stat-card mp-stat-card--total">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-share-nodes"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-line">0</div>
+              <div class="mp-stat-card__label">线路数量</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--key">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-location-crosshairs"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-station">0</div>
+              <div class="mp-stat-card__label">站点数量</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--month">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-bezier-curve"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-section">0</div>
+              <div class="mp-stat-card__label">区间数量</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--general">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-regular fa-rectangle-list"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-project">0</div>
+              <div class="mp-stat-card__label">项目数量</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mp-project-searchbar mp-line-stats-filterbar">
+          <p id="line-stats-filter-hint" class="mp-line-stats-filter-hint" hidden aria-live="polite"></p>
+          <button type="button" class="mp-filter-text-btn mp-line-stats-filter-btn" data-action="open-line-stats-filter">
+            筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <nav id="line-stats-tabs" class="mp-line-stats-tabs" aria-label="统计图表标签"></nav>
+
+        <div class="mp-line-stats-chart-card">
+          <section id="tab-panel-line" class="stats-tab-panel line-panel">
+            <div class="dc-chart-toolbar-row">
+              <div class="dc-chart-legend">
+                <span class="dc-chart-legend-item"><span class="dc-chart-legend-dot" style="background:#2dd4bf"></span>一般项目</span>
+                <span class="dc-chart-legend-item"><span class="dc-chart-legend-dot" style="background:#f97316"></span>重点项目</span>
+              </div>
+              <div class="dc-chart-tools-slot"><div id="line-chart-tools"></div></div>
+            </div>
+            <div class="line-chart-title">线路项目统计图</div>
+            <div class="line-chart-sub">一般项目456个，重点项目224个</div>
+            <div class="dc-chart-stage">
+              <canvas id="line-project-chart" class="line-canvas dc-chart-canvas mp-stats-canvas" width="720" height="320"></canvas>
+              <div id="line-chart-table" class="dc-chart-table-wrap"></div>
+            </div>
+          </section>
+
+          <section id="tab-panel-system" class="stats-tab-panel sys-chart-panel hidden">
+            <div class="dc-chart-toolbar-row">
+              <div id="system-chart-legend" class="dc-chart-legend"></div>
+              <div class="dc-chart-tools-slot"><div id="system-chart-tools"></div></div>
+            </div>
+            <div id="chart-title" class="sys-chart-title">项目类型图</div>
+            <div id="chart-sub" class="sys-chart-sub">总计701个项目</div>
+            <div class="dc-chart-stage">
+              <canvas id="system-chart" class="sys-canvas dc-chart-canvas mp-stats-canvas" width="720" height="320"></canvas>
+              <div id="system-chart-table" class="dc-chart-table-wrap"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="line-stats-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-line-stats-filter"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-line-stats-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field"><span>所属线路</span>
+          <select id="filter-line" class="wh-input w-full px-2">
+            <option value="">全部</option>
+            <option>1号线</option><option>2号线</option><option>3号线</option><option>4号线</option>
+            <option>5号线</option><option>6号线</option><option>7号线</option><option>8号线</option>
+            <option>11号线</option><option>16号线</option><option>19号线</option><option>阳逻线</option>
+          </select>
+        </label>
+        <label class="mp-filter-field"><span>所属区间</span>
+          <select id="filter-section" class="wh-input w-full px-2">
+            <option value="">全部</option>
+            <option>洪山路~小洪山</option>
+            <option>松槐路~天阳大道</option>
+            <option>光谷五路~花山河</option>
+            <option>武昌站~螃蟹岬</option>
+            <option>青山站~武汉站东</option>
+          </select>
+        </label>
+        <label class="mp-filter-field"><span>所属站点</span>
+          <select id="filter-station" class="wh-input w-full px-2">
+            <option value="">全部</option>
+            <option>梨园站</option>
+            <option>中南医院站</option>
+            <option>车辆段站</option>
+            <option>青山站</option>
+            <option>光谷五路站</option>
+            <option>花山河站</option>
+          </select>
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-line-stats-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-line-stats-filter">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="project-toast" id="line-stats-toast" aria-live="polite"></div>
+
+  <script src="../../../assets/js/dc-line-stats-data.js"></script>
+  <script src="../../../assets/js/dc-chart-toolbar.js"></script>
+  <script src="../../../assets/js/dc-line-stats-page.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/line-stats-page-boot.js"></script>
 </body>
 </html>

@@ -2,14 +2,125 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>系统通知</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/project-patrol-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/mine-mobile.css" />
 </head>
-<body data-miniapp="list" data-module="mine" data-title="系统通知" data-base="../" data-list="notify">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-disease-page mp-mine-page mp-project-page mp-patrol-page mp-todo-page mp-notify-page miniapp-page" data-wb-page="wb-sys-notify">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title-wrap">
+      <span id="wb-nav-title">系统通知</span>
+    </h1>
+  </header>
+
+  <div id="wb-app" class="mp-disease-app mp-project-app">
+    <section id="wb-list-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-project-stats mp-project-stats--quad">
+          <div class="mp-stat-card mp-stat-card--total">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-bell"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-total">0</div>
+              <div class="mp-stat-card__label">通知总数</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--key">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-envelope-open-text"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-unread">0</div>
+              <div class="mp-stat-card__label">未读</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--general">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-file-signature"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-approval-msg">0</div>
+              <div class="mp-stat-card__label">审批消息</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--month">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-route"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-airspace">0</div>
+              <div class="mp-stat-card__label">空域许可</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mp-project-searchbar">
+          <div class="mp-search-input-wrap" data-action="open-wb-search" role="button" tabindex="0" aria-label="搜索标题">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="text" id="wb-search-trigger" class="mp-search-input" placeholder="搜索标题" readonly />
+            <button type="button" class="mp-search-clear" id="wb-search-clear" data-action="wb-search-clear" hidden aria-label="清空搜索">
+              <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+          </div>
+          <button type="button" class="mp-filter-text-btn" data-action="open-wb-filter">筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i></button>
+        </div>
+
+        <div id="wb-mobile-list" class="mp-project-list" role="list"></div>
+      </div>
+      <footer class="mp-detail-footer">
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--primary" data-action="wb-mark-all-read">全部已读</button>
+      </footer>
+    </section>
+
+    <section id="wb-detail-view" class="hidden mp-detail-view">
+      <span id="detail-wb-title" hidden aria-hidden="true"></span>
+      <div class="mp-disease-detail-scroll">
+        <div id="wb-detail-body" class="mp-disease-detail-body"></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="wb-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-wb-filter"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-wb-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field"><span>通知类型</span>
+          <select id="wb-filter-type" class="wh-input w-full px-2">
+            <option value="全部">全部</option>
+            <option value="空域许可提醒">空域许可提醒</option>
+            <option value="审批消息">审批消息</option>
+          </select>
+        </label>
+        <label class="mp-filter-field"><span>发布开始</span>
+          <input id="wb-filter-start" type="date" class="wh-input w-full px-2" />
+        </label>
+        <label class="mp-filter-field"><span>发布结束</span>
+          <input id="wb-filter-end" type="date" class="wh-input w-full px-2" />
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-wb-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-wb-filter">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="wb-mobile-toast" aria-live="polite"></div>
+
+  <script src="../../../assets/js/menu-config.js"></script>
+  <script src="../../../assets/js/workbench-module.js"></script>
+  <script src="../../../assets/js/wb-notify-mobile-page.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/mine-page-boot.js"></script>
+  <script>
+    WHNotifyMobilePage.boot();
+    MinePageBoot.start({ navTitle: "系统通知" });
+  </script>
 </body>
 </html>
