@@ -578,7 +578,7 @@
   var INTERVAL_ORDER = [];
 
   var activeListFilters = {
-    handleMode: "",
+    workflowStatus: "",
     timeStart: "",
     timeEnd: "",
     source: "",
@@ -621,15 +621,23 @@
     return isNaN(date.getTime()) ? null : date;
   }
 
+  function matchesWorkflowStatusFilter(project, status) {
+    if (!status) return true;
+    var workflowStatus = project.workflowStatus || "";
+    if (status === "未复核") return workflowStatus === "未复核";
+    if (status === "已复核") return workflowStatus !== "未复核";
+    return workflowStatus === status;
+  }
+
   function readListFiltersFromForm() {
-    var handleModeEl = document.getElementById("alert-filter-handle-mode");
+    var workflowStatusEl = document.getElementById("alert-filter-handle-mode");
     var timeStartEl = document.getElementById("alert-filter-time-start");
     var timeEndEl = document.getElementById("alert-filter-time-end");
     var sourceEl = document.getElementById("alert-filter-source");
     var intervalStartEl = document.getElementById("alert-filter-interval-start");
     var intervalEndEl = document.getElementById("alert-filter-interval-end");
     return {
-      handleMode: handleModeEl ? handleModeEl.value : "",
+      workflowStatus: workflowStatusEl ? workflowStatusEl.value : "",
       timeStart: timeStartEl ? timeStartEl.value : "",
       timeEnd: timeEndEl ? timeEndEl.value : "",
       source: sourceEl ? sourceEl.value : "",
@@ -648,7 +656,7 @@
       if (el) el.value = "";
     });
     activeListFilters = {
-      handleMode: "",
+      workflowStatus: "",
       timeStart: "",
       timeEnd: "",
       source: "",
@@ -659,7 +667,7 @@
 
   function projectMatchesListFilters(project, interval, filters) {
     if (!projectIntervalInRange(project, interval, filters)) return false;
-    if (filters.handleMode && project.handleMode !== filters.handleMode) return false;
+    if (!matchesWorkflowStatusFilter(project, filters.workflowStatus)) return false;
     if (filters.source) {
       if (filters.source === ALERT_SOURCE_FULLTIME) {
         if (!isFulltimeAlertSource(project.source)) return false;
