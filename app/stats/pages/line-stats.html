@@ -65,15 +65,17 @@
 
         <div class="mp-line-stats-chart-card">
           <section id="tab-panel-line" class="stats-tab-panel line-panel">
-            <div class="dc-chart-toolbar-row">
-              <div class="dc-chart-legend">
-                <span class="dc-chart-legend-item"><span class="dc-chart-legend-dot" style="background:#2dd4bf"></span>一般项目</span>
-                <span class="dc-chart-legend-item"><span class="dc-chart-legend-dot" style="background:#f97316"></span>重点项目</span>
+            <div class="mp-stats-chart-head">
+              <div class="mp-stats-chart-head__main">
+                <div class="line-chart-title">线路项目统计图</div>
+                <div class="line-chart-sub">一般项目456个，重点项目224个</div>
               </div>
               <div class="dc-chart-tools-slot"><div id="line-chart-tools"></div></div>
             </div>
-            <div class="line-chart-title">线路项目统计图</div>
-            <div class="line-chart-sub">一般项目456个，重点项目224个</div>
+            <div class="dc-chart-legend">
+              <span class="dc-chart-legend-item"><span class="dc-chart-legend-dot" style="background:#2dd4bf"></span>一般项目</span>
+              <span class="dc-chart-legend-item"><span class="dc-chart-legend-dot" style="background:#f97316"></span>重点项目</span>
+            </div>
             <div class="dc-chart-stage">
               <canvas id="line-project-chart" class="line-canvas dc-chart-canvas mp-stats-canvas" width="720" height="320"></canvas>
               <div id="line-chart-table" class="dc-chart-table-wrap"></div>
@@ -81,12 +83,14 @@
           </section>
 
           <section id="tab-panel-system" class="stats-tab-panel sys-chart-panel hidden">
-            <div class="dc-chart-toolbar-row">
-              <div id="system-chart-legend" class="dc-chart-legend"></div>
+            <div class="mp-stats-chart-head">
+              <div class="mp-stats-chart-head__main">
+                <div id="chart-title" class="sys-chart-title">项目类型图</div>
+                <div id="chart-sub" class="sys-chart-sub">总计701个项目</div>
+              </div>
               <div class="dc-chart-tools-slot"><div id="system-chart-tools"></div></div>
             </div>
-            <div id="chart-title" class="sys-chart-title">项目类型图</div>
-            <div id="chart-sub" class="sys-chart-sub">总计701个项目</div>
+            <div id="system-chart-legend" class="dc-chart-legend"></div>
             <div class="dc-chart-stage">
               <canvas id="system-chart" class="sys-canvas dc-chart-canvas mp-stats-canvas" width="720" height="320"></canvas>
               <div id="system-chart-table" class="dc-chart-table-wrap"></div>
@@ -134,6 +138,12 @@
             <option>花山河站</option>
           </select>
         </label>
+        <label class="mp-filter-field"><span>开始日期</span>
+          <input type="date" id="filter-date-start" class="wh-input w-full px-2" />
+        </label>
+        <label class="mp-filter-field"><span>结束日期</span>
+          <input type="date" id="filter-date-end" class="wh-input w-full px-2" />
+        </label>
       </div>
       <div class="mp-filter-sheet__foot">
         <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-line-stats-filter">重置</button>
@@ -144,10 +154,24 @@
 
   <div class="project-toast" id="line-stats-toast" aria-live="polite"></div>
 
+  <div id="mp-picker-sheet" class="mp-picker-sheet" aria-hidden="true">
+    <div class="mp-picker-sheet__mask" data-action="mp-picker-mask-close"></div>
+    <div class="mp-picker-sheet__panel" role="dialog">
+      <div class="mp-picker-sheet__head">
+        <button type="button" class="mp-picker-sheet__btn" data-action="mp-picker-cancel">取消</button>
+        <h3 id="mp-picker-title" class="mp-picker-sheet__title">请选择</h3>
+        <button type="button" class="mp-picker-sheet__btn mp-picker-sheet__btn--ok" data-action="mp-picker-confirm">确定</button>
+      </div>
+      <div id="mp-picker-body" class="mp-picker-sheet__body"></div>
+    </div>
+  </div>
+
   <script src="../../../assets/js/dc-line-stats-data.js"></script>
   <script src="../../../assets/js/dc-chart-toolbar.js"></script>
+  <script src="../../../assets/js/mp-filter-picker.js"></script>
   <script src="../../../assets/js/dc-line-stats-page.js"></script>
   <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/stats-filter-picker-boot.js"></script>
   <script src="../../assets/js/line-stats-page-boot.js"></script>
 </body>
 </html>

@@ -243,6 +243,32 @@
     }
   }
 
+  var PATROL_ALERT_OPEN_KEY = "whPatrolAlertOpenId";
+
+  function openAlarmDetailPage(alarm) {
+    if (!alarm || alarm.alertId == null) return;
+    var id = String(alarm.alertId);
+    if (isGisMobilePage()) {
+      try {
+        sessionStorage.setItem(PATROL_ALERT_OPEN_KEY, id);
+      } catch (e) {}
+      window.location.href = gisDetailHref("map/map-alerts.html", { id: id });
+      return;
+    }
+    window.location.href = alarmDetailUrl(alarm);
+  }
+
+  function bindAlarmDetailNavigation(body, alarm) {
+    if (!body) return;
+    if (alarm && alarm.alertId != null) {
+      body._gisOpenAlarmDetail = function () {
+        openAlarmDetailPage(alarm);
+      };
+    } else {
+      delete body._gisOpenAlarmDetail;
+    }
+  }
+
   function buildFlightPlanNavHtml() {
     return (
       '<div class="gis-detail-action gis-alarm-panel__action">' +
@@ -313,9 +339,13 @@
   }
 
   function alarmDetailUrl(alarm) {
+    var id = (alarm && alarm.alertId) || 201;
+    if (isGisMobilePage()) {
+      return gisDetailHref("map/map-alerts.html", { id: id });
+    }
     return gisDetailHref("map/map-alerts.html", {
       view: "detail",
-      id: (alarm && alarm.alertId) || 201,
+      id: id,
     });
   }
 
@@ -508,6 +538,9 @@
       "gis-airport-panel gis-alarm-carousel__viewport" + (airportList.length === 1 ? " gis-airport-panel--single" : "");
     var panelClass = "gis-alarm-panel" + (options.hideCockpitNav ? " gis-alarm-panel--cockpit" : "");
 
+    var detailNavHtml = buildDetailNavHtml(alarmDetailUrl(alarm));
+    var flightPlanHtml = options.hideCockpitNav || isGisMobilePage() ? "" : buildFlightPlanNavHtml();
+
     return (
       '<div class="' +
       panelClass +
@@ -540,8 +573,8 @@
       airportList.map(buildAlarmAirportCardHtml).join("") +
       "</div>" +
       "</section>" +
-      (options.hideCockpitNav ? "" : buildFlightPlanNavHtml()) +
-      buildDetailNavHtml(alarmDetailUrl(alarm)) +
+      flightPlanHtml +
+      detailNavHtml +
       "</div>"
     );
   }
@@ -739,8 +772,15 @@
     });
     body.querySelectorAll("[data-detail-url]").forEach(function (btn) {
       btn.addEventListener("click", function () {
+        if (typeof body._gisOpenAlarmDetail === "function") {
+          body._gisOpenAlarmDetail();
+          return;
+        }
         var detailUrl = btn.getAttribute("data-detail-url");
-        if (detailUrl) window.location.href = detailUrl;
+        if (detailUrl) {
+          window.location.href =
+            typeof whPageHref === "function" ? whPageHref(detailUrl) : detailUrl;
+        }
       });
     });
     body.querySelectorAll("[data-warehouse-pick]").forEach(function (btn) {
@@ -875,6 +915,7 @@
       detailEls.panel.classList.remove("hidden");
       wireDetailInteractivity(detailEls.body);
       bindAlarmFlightPlanAction(detailEls.body, options.alarm);
+      bindAlarmDetailNavigation(detailEls.body, options.alarm);
     }
     if (detailEls.close && !detailEls.close.dataset.bound) {
       detailEls.close.dataset.bound = "1";
@@ -1714,6 +1755,7 @@
       detailPanel.classList.remove("hidden");
       wireDetailInteractivity(detailBody);
       bindAlarmFlightPlanAction(detailBody, options && options.alarm);
+      bindAlarmDetailNavigation(detailBody, options && options.alarm);
     }
 
     function openWarehouseListPanel() {

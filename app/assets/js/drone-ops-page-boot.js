@@ -1,8 +1,17 @@
 /**
- * 移动端线路项目统计启动
+ * 移动端无人机数据统计启动
  */
 (function (global) {
   "use strict";
+
+  function readInitialTab() {
+    try {
+      var params = new URLSearchParams(global.location.search);
+      return params.get("tab") === "records" ? "records" : "overview";
+    } catch (e) {
+      return "overview";
+    }
+  }
 
   function start() {
     global.document.addEventListener("click", function (event) {
@@ -17,10 +26,10 @@
       global.MiniAppFrame.syncTabbar();
     }
     if (global.WHStatsFilterPickerBoot) {
-      global.WHStatsFilterPickerBoot.boot("line-stats-filter-sheet");
+      global.WHStatsFilterPickerBoot.boot("drone-stats-filter-sheet");
     }
-    if (global.WHLineStatsPage && global.WHLineStatsPage.boot) {
-      global.WHLineStatsPage.boot({ mobile: true });
+    if (global.WHDroneStatsPage && global.WHDroneStatsPage.boot) {
+      global.WHDroneStatsPage.boot({ mobile: true, initialTab: readInitialTab() });
     }
   }
 

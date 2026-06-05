@@ -1,5 +1,5 @@
 /**
- * 移动端线路项目统计启动
+ * 移动端全时全域数据统计启动
  */
 (function (global) {
   "use strict";
@@ -17,10 +17,10 @@
       global.MiniAppFrame.syncTabbar();
     }
     if (global.WHStatsFilterPickerBoot) {
-      global.WHStatsFilterPickerBoot.boot("line-stats-filter-sheet");
+      global.WHStatsFilterPickerBoot.boot("system-stats-filter-sheet");
     }
-    if (global.WHLineStatsPage && global.WHLineStatsPage.boot) {
-      global.WHLineStatsPage.boot({ mobile: true });
+    if (global.WHSystemStatsPage && global.WHSystemStatsPage.boot) {
+      global.WHSystemStatsPage.boot({ mobile: true });
     }
   }
 

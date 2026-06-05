@@ -4,8 +4,28 @@
 (function (global) {
   "use strict";
 
+  function getQueryContext() {
+    try {
+      var params = new URLSearchParams(global.location.search);
+      return {
+        from: params.get("from") || "",
+        detailId: params.get("detail") || params.get("id") || "",
+      };
+    } catch (e) {
+      return { from: "", detailId: "" };
+    }
+  }
+
   function resolveAssetHome() {
     return "../home.html";
+  }
+
+  function resolveDroneStatsRecordsHref() {
+    return "../../stats/pages/drone-ops.html?tab=records";
+  }
+
+  function shouldReturnDroneStats(ctx) {
+    return ctx.from === "drone-stats";
   }
 
   function updateNavTitle(text) {
@@ -17,19 +37,30 @@
     global.document.addEventListener("click", function (event) {
       var btn = event.target.closest("[data-action='mp-nav-back']");
       if (!btn) return;
+      var ctx = getQueryContext();
       var detail = global.document.getElementById("flight-log-detail-view");
       var list = global.document.getElementById("flight-log-list-view");
+
       if (detail && !detail.classList.contains("hidden")) {
         event.preventDefault();
         event.stopPropagation();
+        if (shouldReturnDroneStats(ctx)) {
+          global.location.href = resolveDroneStatsRecordsHref();
+          return;
+        }
         if (global.WHFlightLogPage && typeof global.WHFlightLogPage.showList === "function") {
           global.WHFlightLogPage.showList();
         }
         return;
       }
+
       if (list && !list.classList.contains("hidden")) {
         event.preventDefault();
         event.stopPropagation();
+        if (shouldReturnDroneStats(ctx)) {
+          global.location.href = resolveDroneStatsRecordsHref();
+          return;
+        }
         global.location.href = resolveAssetHome();
       }
     });
@@ -46,7 +77,7 @@
         updateNavTitle(nameEl && nameEl.textContent ? nameEl.textContent : "飞行日志详情");
         return;
       }
-      updateNavTitle("飞行日志");
+      updateNavTitle(getQueryContext().from === "drone-stats" ? "使用记录明细" : "飞行日志");
     }
 
     [listEl, detailEl].forEach(function (node) {

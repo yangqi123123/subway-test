@@ -75,9 +75,12 @@
       var line = fieldVal("filter-line");
       var section = fieldVal("filter-section");
       var station = fieldVal("filter-station");
+      var start = fieldVal("filter-date-start");
+      var end = fieldVal("filter-date-end");
       var hints = [];
       if (section) hints.push("区间：" + section);
       if (station) hints.push("站点：" + station);
+      if (start || end) hints.push((start || "…") + " ~ " + (end || "…"));
       if (hints.length) cfg.sub = hints.join(" · ") + " · " + lineChartBase.sub;
 
       if (line) {
@@ -99,6 +102,41 @@
         }
       }
       return cfg;
+    }
+
+    function formatDateInput(d) {
+      var pad = function (n) {
+        return n < 10 ? "0" + n : String(n);
+      };
+      return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+    }
+
+    function getDefaultDateRange() {
+      var end = new Date();
+      var start = new Date();
+      start.setDate(end.getDate() - 6);
+      return { start: formatDateInput(start), end: formatDateInput(end) };
+    }
+
+    function applyDefaultDateFilters() {
+      var defaults = getDefaultDateRange();
+      var startEl = $("filter-date-start");
+      var endEl = $("filter-date-end");
+      if (startEl) startEl.value = defaults.start;
+      if (endEl) endEl.value = defaults.end;
+    }
+
+    function applyDefaultLineFilters() {
+      applyDefaultDateFilters();
+      if (isMobile) {
+        var lineEl = $("filter-line");
+        if (lineEl) lineEl.value = "8号线";
+      }
+    }
+
+    function enhanceMobileFilterPickers() {
+      if (!isMobile || !global.WHFilterPicker) return;
+      global.WHFilterPicker.enhanceFilterSheet("line-stats-filter-sheet");
     }
 
     function fieldVal(id) {
@@ -124,10 +162,20 @@
     }
 
     function resetGeoFilter() {
-      ["filter-line", "filter-section", "filter-station"].forEach(function (id) {
-        var el = $(id);
-        if (el) el.value = "";
-      });
+      if (isMobile) {
+        ["filter-section", "filter-station"].forEach(function (id) {
+          var el = $(id);
+          if (el) el.value = "";
+        });
+        applyDefaultLineFilters();
+        enhanceMobileFilterPickers();
+      } else {
+        ["filter-line", "filter-section", "filter-station"].forEach(function (id) {
+          var el = $(id);
+          if (el) el.value = "";
+        });
+        applyDefaultDateFilters();
+      }
       updateLineChartTitles(lineChartBase);
       if ($("tab-panel-line") && !$("tab-panel-line").classList.contains("hidden") && lineToolbar) {
         lineToolbar.render();
@@ -140,8 +188,9 @@
       if (!hintEl) return;
       var parts = [];
       if (fieldVal("filter-line")) parts.push(fieldVal("filter-line"));
-      if (fieldVal("filter-section")) parts.push(fieldVal("filter-section"));
-      if (fieldVal("filter-station")) parts.push(fieldVal("filter-station"));
+      if (fieldVal("filter-date-start") || fieldVal("filter-date-end")) {
+        parts.push((fieldVal("filter-date-start") || "…") + " ~ " + (fieldVal("filter-date-end") || "…"));
+      }
       hintEl.textContent = parts.length ? parts.join(" · ") : "";
       hintEl.hidden = !parts.length;
     }
@@ -315,7 +364,10 @@
     updateSummary();
     bindEvents();
     initQuickLinks();
+    if (isMobile) applyDefaultLineFilters();
+    else applyDefaultDateFilters();
     syncFilterHint();
+    enhanceMobileFilterPickers();
 
     function bootCharts() {
       if (!initToolbars()) {

@@ -307,7 +307,31 @@ body.mp-patrol-page .mp-patrol-alert-section__body .alert-duration-pill {
 }
 
 body.mp-patrol-page .mp-alert-record__head {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   margin-bottom: 8px;
+}
+
+body.mp-patrol-page .mp-alert-record__head .alert-dot {
+  flex: 0 0 auto;
+}
+
+body.mp-patrol-page .mp-alert-record__head .alert-code-tag,
+body.mp-patrol-page .mp-alert-record__head .alert-duration-pill {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: none;
+  white-space: nowrap;
+}
+
+body.mp-patrol-page .mp-alert-record__head .alert-duration-pill {
+  border: 1px solid #ffd99b;
+  background: #fff7e8;
+  color: #f59e0b;
 }
 
 body.mp-patrol-page .mp-alert-record__range {

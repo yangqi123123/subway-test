@@ -67,6 +67,7 @@
     "patrol/in-manual.html": "../../patrol/pages/manual.html",
     "wb/am-emergency-warehouse.html": "../../asset/pages/emergency-warehouse.html",
     "wb/am-emergency-staff.html": "../../asset/pages/emergency-staff.html",
+    "map/map-alerts.html": "../../patrol/pages/patrol-alerts.html",
   };
 
   function resolveGisMobileHref(canon, query) {

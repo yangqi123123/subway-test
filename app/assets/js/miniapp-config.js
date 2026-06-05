@@ -82,7 +82,7 @@
       },
       menus: [
         { label: "线路项目统计", icon: "fa-chart-column", tone: "blue", href: "pages/line-stats.html" },
-        { label: "无人机运行数据", icon: "fa-helicopter", tone: "cyan", href: "pages/drone-ops.html" },
+        { label: "无人机数据统计", icon: "fa-helicopter", tone: "cyan", href: "pages/drone-ops.html" },
         { label: "全时全域数据统计", icon: "fa-chart-pie", tone: "green", href: "pages/system-stats.html" },
         { label: "资源监控", icon: "fa-gauge-high", tone: "amber", href: "pages/resource-monitor.html" },
       ],

@@ -1,0 +1,191 @@
+/* 移动端无人机运行数据 — 对齐线路项目统计 */
+body.mp-drone-stats-page #drone-stats-view {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-drone-stats-page .mp-drone-stats-main-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 12px 12px 6px;
+  margin: 8px -12px 14px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(37, 99, 235, 0.45) rgba(148, 163, 184, 0.16);
+}
+
+body.mp-drone-stats-page .mp-drone-stats-main-tabs::-webkit-scrollbar {
+  display: block;
+  height: 5px;
+}
+
+body.mp-drone-stats-page .stats-tab {
+  flex: 0 0 auto;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--mp-border-subtle);
+  background: #fff;
+  color: var(--mp-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+body.mp-drone-stats-page .stats-tab.active {
+  color: var(--mp-primary);
+  border-color: rgba(37, 99, 235, 0.28);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+body.mp-drone-stats-page .mp-drone-stats-filterbar,
+body.mp-drone-stats-page .mp-drone-records-toolbar {
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+body.mp-drone-stats-page .mp-drone-records-toolbar .mp-search-input-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+body.mp-drone-stats-page .mp-drone-stats-filter-hint {
+  flex: 1;
+  margin: 0;
+  font-size: 12px;
+  color: var(--mp-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.mp-drone-stats-page .mp-drone-stats-filter-btn {
+  flex-shrink: 0;
+}
+
+body.mp-drone-stats-page .mp-drone-chart-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.mp-drone-stats-page .mp-drone-chart-card {
+  border-radius: 12px;
+  border: 1px solid var(--mp-border-subtle);
+  background: #fff;
+  padding: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+body.mp-drone-stats-page .mp-drone-chart-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+body.mp-drone-stats-page .mp-drone-chart-card__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--mp-text-primary);
+}
+
+body.mp-drone-stats-page .mp-drone-chart-card__note {
+  font-size: 11px;
+  color: var(--mp-text-muted);
+  white-space: nowrap;
+}
+
+body.mp-drone-stats-page .mp-drone-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+body.mp-drone-stats-page .mp-drone-pie-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0 8px;
+}
+
+body.mp-drone-stats-page .mp-drone-pie-canvas {
+  width: 140px;
+  height: 140px;
+  display: block;
+}
+
+body.mp-drone-stats-page .dc-legend,
+body.mp-drone-stats-page .mp-drone-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+body.mp-drone-stats-page .dc-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--mp-text-secondary);
+}
+
+body.mp-drone-stats-page .dc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+body.mp-drone-stats-page .dc-legend-label {
+  max-width: 8.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.mp-drone-stats-page .mp-filter-sheet__body.project-filter-panel {
+  grid-template-columns: 1fr;
+}
+
+body.mp-drone-stats-page .mp-filter-sheet__body .mp-filter-field {
+  grid-column: 1 / -1;
+}
+
+body.mp-drone-stats-page #drone-stats-toast.project-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 13px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+body.mp-drone-stats-page #drone-stats-toast.project-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+body.mp-drone-stats-page .hidden {
+  display: none !important;
+}

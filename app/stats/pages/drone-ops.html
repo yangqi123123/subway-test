@@ -2,14 +2,209 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>无人机运行数据</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>无人机数据统计</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/flight-log-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/drone-stats-mobile.css" />
 </head>
-<body data-miniapp="placeholder" data-module="stats" data-title="无人机运行数据" data-base="../" data-desc="对接后台「无人机运行数据」模块，当前为页面框架占位。">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-disease-page mp-drone-stats-page mp-project-page miniapp-page" data-miniapp="page" data-module="stats" data-title="无人机数据统计" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title">无人机数据统计</h1>
+  </header>
+
+  <div id="drone-stats-app" class="mp-disease-app mp-project-app">
+    <section id="drone-stats-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <nav id="drone-stats-main-tabs" class="mp-drone-stats-main-tabs" aria-label="页面标签"></nav>
+
+        <div id="drone-stats-overview-view">
+          <div class="mp-project-stats">
+            <div class="mp-stat-card mp-stat-card--total">
+              <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-list"></i></div>
+              <div class="mp-stat-card__body">
+                <div class="mp-stat-card__value" id="stat-records">0</div>
+                <div class="mp-stat-card__label">本月新增违规项目</div>
+              </div>
+            </div>
+            <div class="mp-stat-card mp-stat-card--key">
+              <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-hard-hat"></i></div>
+              <div class="mp-stat-card__body">
+                <div class="mp-stat-card__value" id="stat-airports">0</div>
+                <div class="mp-stat-card__label">次均发现施工数</div>
+              </div>
+            </div>
+            <div class="mp-stat-card mp-stat-card--month">
+              <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-plane"></i></div>
+              <div class="mp-stat-card__body">
+                <div class="mp-stat-card__value" id="stat-devices">0</div>
+                <div class="mp-stat-card__label">本月飞行趟次</div>
+              </div>
+            </div>
+            <div class="mp-stat-card mp-stat-card--general">
+              <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-clock"></i></div>
+              <div class="mp-stat-card__body">
+                <div class="mp-stat-card__value" id="stat-operators">0</div>
+                <div class="mp-stat-card__label">本月飞行总时间</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mp-project-searchbar mp-drone-stats-filterbar">
+            <p id="drone-stats-filter-hint" class="mp-drone-stats-filter-hint" hidden aria-live="polite"></p>
+            <button type="button" class="mp-filter-text-btn mp-drone-stats-filter-btn" data-action="open-drone-stats-filter">
+              筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div class="mp-drone-chart-stack">
+            <div class="mp-drone-chart-card">
+              <div class="mp-drone-chart-card__head">
+                <div class="mp-drone-chart-card__title">月度新增违规项目统计</div>
+                <div class="mp-drone-chart-card__note">单位：个</div>
+              </div>
+              <canvas id="violation-month-chart" class="mp-drone-canvas" width="720" height="220"></canvas>
+              <div class="mp-drone-legend">
+                <span class="dc-legend-item"><span class="dc-dot" style="background:#22d3ee"></span>基于无人机监测的月度新增违规项目数量</span>
+              </div>
+            </div>
+
+            <div class="mp-drone-chart-card">
+              <div class="mp-drone-chart-card__head">
+                <div class="mp-drone-chart-card__title">新增违规项目分布图</div>
+                <div class="mp-drone-chart-card__note">单位：个</div>
+              </div>
+              <div class="mp-drone-pie-wrap">
+                <canvas id="violation-pie-chart" class="mp-drone-pie-canvas" width="140" height="140" aria-label="新增违规项目分布图"></canvas>
+              </div>
+              <div id="violation-pie-legend" class="dc-legend"></div>
+            </div>
+
+            <div class="mp-drone-chart-card">
+              <div class="mp-drone-chart-card__head">
+                <div class="mp-drone-chart-card__title">设备使用率趋势图</div>
+                <div class="mp-drone-chart-card__note">单位：百分比</div>
+              </div>
+              <canvas id="trend-chart" class="mp-drone-canvas" width="720" height="220"></canvas>
+              <div class="mp-drone-legend">
+                <span class="dc-legend-item"><span class="dc-dot" style="background:#1e90ff"></span>无人机</span>
+                <span class="dc-legend-item"><span class="dc-dot" style="background:#22d3ee"></span>机场设备</span>
+              </div>
+            </div>
+
+            <div class="mp-drone-chart-card">
+              <div class="mp-drone-chart-card__head">
+                <div class="mp-drone-chart-card__title">设备使用时长</div>
+                <div class="mp-drone-chart-card__note">单位：月份 / 小时</div>
+              </div>
+              <canvas id="duration-chart" class="mp-drone-canvas" width="720" height="220"></canvas>
+              <div class="mp-drone-legend">
+                <span class="dc-legend-item"><span class="dc-dot" style="background:#1e90ff"></span>无人机</span>
+                <span class="dc-legend-item"><span class="dc-dot" style="background:#31c5e4"></span>机场设备</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="drone-stats-records-view" class="hidden">
+          <div class="mp-project-searchbar mp-drone-records-toolbar">
+            <div class="mp-search-input-wrap" id="drone-usage-search-wrap" role="search">
+              <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+              <input type="search" id="drone-usage-search-input" class="mp-search-input" placeholder="任务ID / 设备 / 操作员" enterkeyhint="search" />
+              <button type="button" class="mp-search-clear" id="drone-usage-search-clear" data-action="drone-usage-search-clear" hidden aria-label="清空搜索">
+                <i class="fa-solid fa-circle-xmark"></i>
+              </button>
+            </div>
+            <button type="button" class="mp-filter-text-btn mp-drone-stats-filter-btn" data-action="open-drone-stats-filter">
+              筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="drone-usage-mobile-list" class="mp-project-list" role="list"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="drone-stats-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-drone-stats-filter"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-drone-stats-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field"><span>所属线路</span>
+          <select id="filter-line" class="wh-input w-full px-2">
+            <option value="">全部线路</option>
+            <option value="1">1号线</option>
+            <option value="2">2号线</option>
+            <option value="3">3号线</option>
+            <option value="4">4号线</option>
+            <option value="7">7号线</option>
+            <option value="8">8号线</option>
+            <option value="11">11号线</option>
+            <option value="19">19号线</option>
+          </select>
+        </label>
+        <label class="mp-filter-field"><span>所属机场</span>
+          <select id="filter-airport" class="wh-input w-full px-2">
+            <option value="">全部机场</option>
+            <option value="车辆段机场">车辆段机场</option>
+            <option value="青山机场">青山机场</option>
+            <option value="光谷广场机场">光谷广场机场</option>
+            <option value="徐家棚机场">徐家棚机场</option>
+          </select>
+        </label>
+        <label class="mp-filter-field"><span>设备名称</span>
+          <select id="filter-device" class="wh-input w-full px-2">
+            <option value="">全部设备</option>
+            <option value="A区巡检机01">A区巡检机01</option>
+            <option value="青山巡检无人机">青山巡检无人机</option>
+            <option value="DJI-M300E-01">DJI-M300E-01</option>
+            <option value="徐家棚巡检机02">徐家棚巡检机02</option>
+          </select>
+        </label>
+        <label class="mp-filter-field"><span>开始时间</span>
+          <input id="filter-time-start" type="date" class="wh-input w-full px-2" />
+        </label>
+        <label class="mp-filter-field"><span>结束时间</span>
+          <input id="filter-time-end" type="date" class="wh-input w-full px-2" />
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-drone-stats-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" id="usage-filter-search" data-action="search-drone-stats-filter">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="project-toast" id="drone-stats-toast" aria-live="polite"></div>
+
+  <div id="mp-picker-sheet" class="mp-picker-sheet" aria-hidden="true">
+    <div class="mp-picker-sheet__mask" data-action="mp-picker-mask-close"></div>
+    <div class="mp-picker-sheet__panel" role="dialog">
+      <div class="mp-picker-sheet__head">
+        <button type="button" class="mp-picker-sheet__btn" data-action="mp-picker-cancel">取消</button>
+        <h3 id="mp-picker-title" class="mp-picker-sheet__title">请选择</h3>
+        <button type="button" class="mp-picker-sheet__btn mp-picker-sheet__btn--ok" data-action="mp-picker-confirm">确定</button>
+      </div>
+      <div id="mp-picker-body" class="mp-picker-sheet__body"></div>
+    </div>
+  </div>
+
+  <script src="../../../assets/js/dc-drone-stats-data.js"></script>
+  <script src="../../../assets/js/mp-filter-picker.js"></script>
+  <script src="../../../assets/js/dc-drone-stats-page.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/stats-filter-picker-boot.js"></script>
+  <script src="../../assets/js/drone-ops-page-boot.js"></script>
 </body>
 </html>

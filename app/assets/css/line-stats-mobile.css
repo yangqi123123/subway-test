@@ -29,13 +29,31 @@ body.mp-line-stats-page .mp-line-stats-filter-btn {
   flex-shrink: 0;
 }
 
+body.mp-line-stats-page .mp-stats-chart-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+body.mp-line-stats-page .mp-stats-chart-head__main {
+  flex: 1;
+  min-width: 0;
+}
+
+body.mp-line-stats-page .mp-stats-chart-head .dc-chart-tools-slot {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
 body.mp-line-stats-page .mp-line-stats-tabs {
   display: flex;
   gap: 8px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 12px 6px;
-  margin: 0 -12px 14px;
+  padding: 12px 12px 6px;
+  margin: 8px -12px 14px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: rgba(37, 99, 235, 0.45) rgba(148, 163, 184, 0.16);
@@ -92,19 +110,20 @@ body.mp-line-stats-page .stats-tab-panel.hidden {
 
 body.mp-line-stats-page .line-chart-title,
 body.mp-line-stats-page .sys-chart-title {
-  text-align: center;
+  text-align: left;
   color: var(--mp-text-primary);
   font-size: 15px;
   font-weight: 700;
-  margin-top: 4px;
+  margin: 0;
+  line-height: 1.35;
 }
 
 body.mp-line-stats-page .line-chart-sub,
 body.mp-line-stats-page .sys-chart-sub {
-  text-align: center;
+  text-align: left;
   color: var(--mp-text-muted);
   font-size: 12px;
-  margin: 6px 0 10px;
+  margin: 4px 0 0;
 }
 
 body.mp-line-stats-page .dc-chart-legend-item {

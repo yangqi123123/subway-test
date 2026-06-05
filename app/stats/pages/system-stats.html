@@ -2,14 +2,126 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>全时全域数据统计</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="../../../assets/css/dc-chart-toolbar.css" />
+  <link rel="stylesheet" href="../../assets/css/system-stats-mobile.css" />
 </head>
-<body data-miniapp="placeholder" data-module="stats" data-title="全时全域数据统计" data-base="../" data-desc="对接后台「全时全域数据统计」模块，当前为页面框架占位。">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-disease-page mp-system-stats-page mp-project-page miniapp-page" data-miniapp="page" data-module="stats" data-title="全时全域数据统计" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title">全时全域数据统计</h1>
+  </header>
+
+  <div id="system-stats-app" class="mp-disease-app mp-project-app">
+    <section id="system-stats-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-project-searchbar mp-system-stats-filterbar">
+          <p id="system-stats-filter-hint" class="mp-system-stats-filter-hint" hidden aria-live="polite"></p>
+          <button type="button" class="mp-filter-text-btn mp-system-stats-filter-btn" data-action="open-system-stats-filter">
+            筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="mp-system-stats-chart-stack">
+          <div class="mp-system-stats-chart-card">
+            <div class="mp-stats-chart-head">
+              <div class="mp-stats-chart-head__main">
+                <div id="chart-title-project" class="mp-stats-chart-title">项目告警统计图</div>
+                <div id="chart-sub-project" class="mp-stats-chart-sub"></div>
+              </div>
+              <div class="dc-chart-tools-slot"><div id="alert-chart-tools-project"></div></div>
+            </div>
+            <div id="alert-chart-legend-project" class="dc-chart-legend"></div>
+            <div class="dc-chart-stage">
+              <canvas id="alert-chart-project" class="line-canvas dc-chart-canvas mp-stats-canvas" width="720" height="320"></canvas>
+              <div id="alert-chart-table-project" class="dc-chart-table-wrap"></div>
+            </div>
+          </div>
+
+          <div class="mp-system-stats-chart-card">
+            <div class="mp-stats-chart-head">
+              <div class="mp-stats-chart-head__main">
+                <div id="chart-title-workflow" class="mp-stats-chart-title">处理状态统计图</div>
+                <div id="chart-sub-workflow" class="mp-stats-chart-sub"></div>
+              </div>
+              <div class="dc-chart-tools-slot"><div id="alert-chart-tools-workflow"></div></div>
+            </div>
+            <div id="alert-chart-legend-workflow" class="dc-chart-legend"></div>
+            <div class="dc-chart-stage">
+              <canvas id="alert-chart-workflow" class="line-canvas dc-chart-canvas mp-stats-canvas" width="720" height="320"></canvas>
+              <div id="alert-chart-table-workflow" class="dc-chart-table-wrap"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="system-stats-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
+    <div class="mp-filter-sheet__mask" data-action="close-system-stats-filter"></div>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
+      <div class="mp-filter-sheet__head">
+        <h2>快捷筛选</h2>
+        <button type="button" class="mp-icon-btn" data-action="close-system-stats-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-filter-sheet__body project-filter-panel">
+        <label class="mp-filter-field"><span>所属线路</span>
+          <select id="filter-line" class="wh-input w-full px-2">
+            <option value="">全部</option>
+          </select>
+        </label>
+        <label class="mp-filter-field"><span>所在区间</span>
+          <select id="filter-area" class="wh-input w-full px-2">
+            <option value="">全部</option>
+          </select>
+        </label>
+        <label class="mp-filter-field"><span>所在站点</span>
+          <select id="filter-station" class="wh-input w-full px-2">
+            <option value="">全部</option>
+          </select>
+        </label>
+        <label class="mp-filter-field"><span>开始日期</span>
+          <input type="date" id="filter-date-start" class="wh-input w-full px-2" />
+        </label>
+        <label class="mp-filter-field"><span>结束日期</span>
+          <input type="date" id="filter-date-end" class="wh-input w-full px-2" />
+        </label>
+      </div>
+      <div class="mp-filter-sheet__foot">
+        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-system-stats-filter">重置</button>
+        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-system-stats-filter">搜索</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="project-toast" id="system-stats-toast" aria-live="polite"></div>
+
+  <div id="mp-picker-sheet" class="mp-picker-sheet" aria-hidden="true">
+    <div class="mp-picker-sheet__mask" data-action="mp-picker-mask-close"></div>
+    <div class="mp-picker-sheet__panel" role="dialog">
+      <div class="mp-picker-sheet__head">
+        <button type="button" class="mp-picker-sheet__btn" data-action="mp-picker-cancel">取消</button>
+        <h3 id="mp-picker-title" class="mp-picker-sheet__title">请选择</h3>
+        <button type="button" class="mp-picker-sheet__btn mp-picker-sheet__btn--ok" data-action="mp-picker-confirm">确定</button>
+      </div>
+      <div id="mp-picker-body" class="mp-picker-sheet__body"></div>
+    </div>
+  </div>
+
+  <script src="../../../assets/js/dc-alert-stats-data.js"></script>
+  <script src="../../../assets/js/dc-chart-toolbar.js"></script>
+  <script src="../../../assets/js/mp-filter-picker.js"></script>
+  <script src="../../../assets/js/dc-system-stats-page.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/stats-filter-picker-boot.js"></script>
+  <script src="../../assets/js/system-stats-page-boot.js"></script>
 </body>
 </html>

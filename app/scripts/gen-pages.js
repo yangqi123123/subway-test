@@ -26,7 +26,7 @@ const pages = [
   ["asset", "maintenance", "维修与检修记录"],
   ["asset", "flight-log", "飞行日志"],
   ["stats", "line-stats", "线路项目统计"],
-  ["stats", "drone-ops", "无人机运行数据"],
+  ["stats", "drone-ops", "无人机数据统计"],
   ["stats", "system-stats", "全时全域数据统计"],
   ["stats", "resource-monitor", "资源监控"],
   ["mine", "settings", "设置"],
