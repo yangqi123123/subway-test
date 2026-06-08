@@ -118,6 +118,15 @@
       global.WHMapAlertsMobilePage.boot();
     }
     patchViewNav();
+    global.addEventListener("pageshow", function (event) {
+      if (!event.persisted) return;
+      if (!global.document.getElementById("patrol-alerts-app")) return;
+      var params = new URLSearchParams(global.location.search);
+      if (params.get("fromGis") === "1" && params.get("id")) return;
+      if (global.WHMapAlerts && typeof global.WHMapAlerts.resetPatrolAlertsEntryView === "function") {
+        global.WHMapAlerts.resetPatrolAlertsEntryView();
+      }
+    });
   }
 
   if (global.document.readyState === "loading") {

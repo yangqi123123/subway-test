@@ -140,6 +140,33 @@
     return '<span class="miniapp-cell__badge" aria-label="' + text + '">' + text + "</span>";
   }
 
+  function buildLogoutConfirmModalHtml() {
+    return (
+      '<div id="miniapp-logout-modal" class="miniapp-modal-mask miniapp-modal-mask--center" aria-hidden="true">' +
+      '<div class="miniapp-modal miniapp-modal--confirm" role="alertdialog" aria-labelledby="miniapp-logout-title" aria-describedby="miniapp-logout-msg">' +
+      "<h3 id=\"miniapp-logout-title\">退出登录</h3>" +
+      "<p id=\"miniapp-logout-msg\">确定要退出当前账号吗？</p>" +
+      '<div class="miniapp-modal__actions">' +
+      '<button type="button" class="miniapp-btn miniapp-btn--ghost" data-action="logout-confirm-cancel">取消</button>' +
+      '<button type="button" class="miniapp-btn miniapp-btn--danger" data-action="logout-confirm-ok">退出登录</button>' +
+      "</div></div></div>"
+    );
+  }
+
+  function showLogoutConfirmModal() {
+    var mask = document.getElementById("miniapp-logout-modal");
+    if (!mask) return;
+    mask.classList.add("is-show");
+    mask.setAttribute("aria-hidden", "false");
+  }
+
+  function hideLogoutConfirmModal() {
+    var mask = document.getElementById("miniapp-logout-modal");
+    if (!mask) return;
+    mask.classList.remove("is-show");
+    mask.setAttribute("aria-hidden", "true");
+  }
+
   function renderMineHub(mod) {
     document.body.className = "miniapp-page";
     document.body.setAttribute("data-module", "mine");
@@ -192,7 +219,8 @@
       cellHtml +
       "</div>" +
       '<button type="button" class="miniapp-btn miniapp-btn--ghost miniapp-btn--logout w-full mt-4" data-action="logout">退出登录</button>' +
-      "</main>";
+      "</main>" +
+      buildLogoutConfirmModalHtml();
 
     bindActions();
     if (global.MiniAppFrame && global.MiniAppFrame.syncTabbar) {
@@ -418,7 +446,10 @@
   function bindActions() {
     document.body.addEventListener("click", function (e) {
       var t = e.target.closest("[data-action]");
-      if (!t) return;
+      if (!t) {
+        if (e.target.id === "miniapp-logout-modal") hideLogoutConfirmModal();
+        return;
+      }
       var act = t.getAttribute("data-action");
       if (act === "back") goBack();
       if (act === "demo-toast") toast("交互正常（原型演示）");
@@ -441,9 +472,14 @@
         toast(row ? "查看：" + row.title : "查看详情");
       }
       if (act === "logout") {
-        if (confirm("确定退出登录？")) {
-          navigateToAppLogin();
-        }
+        showLogoutConfirmModal();
+      }
+      if (act === "logout-confirm-cancel") {
+        hideLogoutConfirmModal();
+      }
+      if (act === "logout-confirm-ok") {
+        hideLogoutConfirmModal();
+        navigateToAppLogin();
       }
       if (act === "change-avatar") {
         toast("更换头像（原型演示）");

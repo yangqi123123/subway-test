@@ -209,10 +209,14 @@
     if (!project) return;
     if (WA.isUavSourceAlert(project)) {
       showUavDetailPage(project);
+      clearDeepLinkAlertId();
       return;
     }
     currentDetailId = id;
-    if (typeof WA.openDetail === "function" && WA.openDetail(project)) return;
+    if (typeof WA.openDetail === "function" && WA.openDetail(project)) {
+      clearDeepLinkAlertId();
+      return;
+    }
     showToast("无法打开告警详情");
   }
 
@@ -343,28 +347,25 @@
   }
 
   var pendingDeepLinkId = null;
-  var DEEP_LINK_KEY = "whPatrolAlertOpenId";
 
   function peekDeepLinkAlertId() {
     if (pendingDeepLinkId != null) return pendingDeepLinkId;
-    var params = new URLSearchParams(global.location.search);
-    var id = params.get("id");
-    if (id) {
-      pendingDeepLinkId = String(id).trim();
+    var WA = api();
+    if (WA && typeof WA.readPatrolAlertsDeepLinkId === "function") {
+      pendingDeepLinkId = WA.readPatrolAlertsDeepLinkId() || "";
       return pendingDeepLinkId;
     }
-    try {
-      id = sessionStorage.getItem(DEEP_LINK_KEY);
-      if (id) {
-        pendingDeepLinkId = String(id).trim();
-        sessionStorage.removeItem(DEEP_LINK_KEY);
-      }
-    } catch (e) {}
-    return pendingDeepLinkId || "";
+    return "";
   }
 
   function clearDeepLinkAlertId() {
     pendingDeepLinkId = null;
+    var WA = api();
+    if (WA && typeof WA.finishPatrolAlertsDeepLink === "function") {
+      WA.finishPatrolAlertsDeepLink();
+    } else if (WA && typeof WA.clearPatrolAlertsDeepLinkState === "function") {
+      WA.clearPatrolAlertsDeepLinkState();
+    }
   }
 
   function isDetailOpened() {

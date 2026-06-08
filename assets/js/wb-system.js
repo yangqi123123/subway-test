@@ -1004,9 +1004,16 @@
   }
 
   function renderMenuTableOnly(container, page) {
+    var sticky = !!page.stickyActionColumn;
     var tableWrap = el("section", "wh-table-shell bg-slate-950/35");
-    var tableBox = el("div", "overflow-x-auto max-h-[min(620px,calc(100vh-300px))]");
-    var table = el("table", "w-full text-left");
+    var tableBox = el(
+      "div",
+      (sticky ? "am-table-wrap " : "") + "overflow-x-auto max-h-[min(620px,calc(100vh-300px))]"
+    );
+    var table = el("table", sticky ? "w-full text-left min-w-[1180px]" : "w-full text-left");
+    var actionThClass = sticky
+      ? "px-3 py-3 text-left uppercase tracking-wide text-cyan-50/95 disease-col-actions"
+      : "px-3 py-3 text-left uppercase tracking-wide text-cyan-50/95";
     table.innerHTML =
       "<thead><tr>" +
       page.columns
@@ -1014,7 +1021,7 @@
           return '<th class="px-3 py-3 text-left uppercase tracking-wide text-cyan-50/95">' + col.label + "</th>";
         })
         .join("") +
-      '<th class="px-3 py-3 text-left uppercase tracking-wide text-cyan-50/95">操作</th></tr></thead>';
+      '<th class="' + actionThClass + '">操作</th></tr></thead>';
 
     var body = el("tbody");
 
@@ -1137,6 +1144,9 @@
         filterState: page.filterState,
         actions: current.actions || page.actions || [],
         formFields: current.formFields || page.formFields || [],
+        buildDetailHtml: current.buildDetailHtml,
+        detailSubtitle: current.detailSubtitle,
+        detailPanelLabel: current.detailPanelLabel,
       },
       scoped
     );
@@ -1191,6 +1201,9 @@
       filterState: page.filterState,
       actions: current.actions || page.actions || [],
       formFields: current.formFields || page.formFields || [],
+      buildDetailHtml: current.buildDetailHtml,
+      detailSubtitle: current.detailSubtitle,
+      detailPanelLabel: current.detailPanelLabel,
     }, current.rows || []);
   }
 

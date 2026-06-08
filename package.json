@@ -1,0 +1,9 @@
+{
+  "name": "wh-metro-protection-zone-prototype",
+  "private": true,
+  "description": "武汉地铁保护区原型 — 本地静态服务",
+  "scripts": {
+    "start": "node scripts/dev-server.js",
+    "dev": "node scripts/dev-server.js 8080"
+  }
+}

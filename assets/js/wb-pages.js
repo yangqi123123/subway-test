@@ -399,6 +399,13 @@
         panelBadge: "用户管理面板",
         quickLinks: systemMgmtQuickLinks("wb/wb-user.html"),
         title: "用户管理",
+        detailPanelLabel: "用户详情",
+        buildDetailHtml: function (row) {
+          return WBUserForm.buildUserDetailHtml(row);
+        },
+        detailSubtitle: function (row) {
+          return row.nickName || row.userName || "用户详情";
+        },
         filters: [
           { key: "userName", label: "用户名称" },
           { key: "userType", label: "用户类型", type: "select", options: ["内部", "外部"] },
@@ -464,6 +471,7 @@
       return {
         pageType: "table",
         diseaseLayout: true,
+        stickyActionColumn: true,
         panelBadge: "角色管理面板",
         diseaseStatLabels: {
           total: "全部角色",
@@ -474,6 +482,13 @@
         },
         quickLinks: systemMgmtQuickLinks("wb/wb-role.html"),
         title: "角色管理",
+        detailPanelLabel: "角色详情",
+        buildDetailHtml: function (row) {
+          return WBPageDetails.buildRoleDetailHtml(row);
+        },
+        detailSubtitle: function (row) {
+          return row.roleName || "角色详情";
+        },
         filters: [
           { key: "roleName", label: "角色名称" },
           { key: "roleKey", label: "权限字符" },
@@ -512,6 +527,7 @@
       return {
         pageType: "tree-table",
         diseaseLayout: true,
+        stickyActionColumn: true,
         panelBadge: "部门管理面板",
         diseaseStatLabels: {
           total: "全部部门",
@@ -522,6 +538,13 @@
         },
         quickLinks: systemMgmtQuickLinks("wb/wb-dept.html"),
         title: "部门管理",
+        detailPanelLabel: "部门详情",
+        buildDetailHtml: function (row) {
+          return WBPageDetails.buildDeptDetailHtml(row, deptRows);
+        },
+        detailSubtitle: function (row) {
+          return row.deptName || "部门详情";
+        },
         filters: [
           { key: "deptName", label: "部门名称" },
           { key: "statusText", label: "状态", type: "select", options: ["启用", "停用"] },
@@ -567,6 +590,7 @@
       return {
         pageType: "menu",
         diseaseLayout: true,
+        stickyActionColumn: true,
         panelBadge: "菜单管理面板",
         diseaseStatLabels: {
           total: "全部菜单",
@@ -577,6 +601,13 @@
         },
         quickLinks: systemMgmtQuickLinks("wb/wb-menu.html"),
         title: "菜单管理",
+        detailPanelLabel: "菜单详情",
+        buildDetailHtml: function (row) {
+          return WBPageDetails.buildMenuDetailHtml(row, menuRows);
+        },
+        detailSubtitle: function (row) {
+          return row.menuName || "菜单详情";
+        },
         filters: [
           { key: "menuName", label: "菜单名称" },
           { key: "statusText", label: "菜单状态", type: "select", options: ["启用", "停用"] },
@@ -621,6 +652,7 @@
       return {
         pageType: "table",
         diseaseLayout: true,
+        stickyActionColumn: true,
         panelBadge: "岗位管理面板",
         diseaseStatLabels: {
           total: "全部岗位",
@@ -631,6 +663,13 @@
         },
         quickLinks: systemMgmtQuickLinks("wb/wb-post.html"),
         title: "岗位管理",
+        detailPanelLabel: "岗位详情",
+        buildDetailHtml: function (row) {
+          return WBPageDetails.buildPostDetailHtml(row);
+        },
+        detailSubtitle: function (row) {
+          return row.postName || "岗位详情";
+        },
         filters: [
           { key: "deptName", label: "所属部门" },
           { key: "postCode", label: "岗位编码" },
@@ -747,6 +786,7 @@
       return {
         pageType: "table",
         diseaseLayout: true,
+        stickyActionColumn: true,
         panelBadge: "参数配置面板",
         diseaseStatLabels: {
           total: "全部参数",
@@ -768,6 +808,13 @@
         },
         quickLinks: systemMgmtQuickLinks("wb/wb-param.html"),
         title: "参数配置",
+        detailPanelLabel: "参数详情",
+        buildDetailHtml: function (row) {
+          return WBPageDetails.buildParamDetailHtml(row);
+        },
+        detailSubtitle: function (row) {
+          return row.configName || "参数详情";
+        },
         filters: [
           { key: "configName", label: "参数名称" },
           { key: "configKey", label: "参数键名" },
@@ -1129,11 +1176,18 @@
                 { key: "statusText", label: "状态" },
                 { key: "operTime", label: "操作时间" },
               ],
+              detailPanelLabel: "操作日志详情",
+              buildDetailHtml: function (row) {
+                return WBPageDetails.buildOperateLogDetailHtml(row);
+              },
+              detailSubtitle: function (row) {
+                return row.title || "操作日志详情";
+              },
               actions: [
                 {
                   label: "查看",
-                  handler: function (row) {
-                    WBSystem.openModal("操作日志详情", '<div class="px-5 py-6 text-sm leading-7 text-slate-200">' + row.operParam + "</div>");
+                  handler: function (row, page) {
+                    WBSystem.openDetailModal(page, row);
                   },
                 },
               ],
@@ -1151,11 +1205,18 @@
               { key: "msg", label: "信息" },
               { key: "loginTime", label: "登录时间" },
             ],
+            detailPanelLabel: "登录日志详情",
+            buildDetailHtml: function (row) {
+              return WBPageDetails.buildLoginLogDetailHtml(row);
+            },
+            detailSubtitle: function (row) {
+              return row.userName || "登录日志详情";
+            },
             actions: [
               {
                 label: "查看",
-                handler: function (row) {
-                  WBSystem.openModal("登录日志详情", '<div class="px-5 py-6 text-sm leading-7 text-slate-200">' + row.msg + "</div>");
+                handler: function (row, page) {
+                  WBSystem.openDetailModal(page, row);
                 },
               },
             ],

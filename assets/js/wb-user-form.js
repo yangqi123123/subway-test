@@ -60,6 +60,75 @@
       .replace(/"/g, "&quot;");
   }
 
+  function detailValueHtml(value, multiline) {
+    var text = value === undefined || value === null || value === "" ? "—" : String(value);
+    var cls =
+      "wb-detail-value" +
+      (text === "—" ? " wb-detail-value--empty" : "") +
+      (multiline ? " wb-detail-value--multiline" : "");
+    return '<div class="' + cls + '">' + escapeHtml(text) + "</div>";
+  }
+
+  function detailRowHtml(label, value, full, multiline) {
+    return (
+      '<label class="wb-detail-form-item' +
+      (full ? " wb-detail-form-item--full" : "") +
+      '"><span class="wb-detail-form-label">' +
+      escapeHtml(label) +
+      "：</span>" +
+      detailValueHtml(value, multiline) +
+      "</label>"
+    );
+  }
+
+  function buildUserDetailHtml(row) {
+    row = row || {};
+    var section = parseSectionFields(row);
+    var sectionText =
+      row.sectionName ||
+      (section.start && section.end ? section.start + "-" + section.end : section.start || section.end || "");
+    var avatarHtml = row.avatarUrl
+      ? '<div class="wb-detail-value"><img src="' +
+        escapeHtml(row.avatarUrl) +
+        '" alt="用户头像" class="h-14 w-14 rounded-full border border-cyan-400/20 object-cover" /></div>'
+      : detailValueHtml("");
+    var pilotHtml = row.pilotCertName
+      ? '<div class="wb-detail-value"><span class="inline-flex items-center gap-2 text-cyan-100/90"><i class="fa-regular fa-file-lines text-cyan-300/80"></i>' +
+        escapeHtml(row.pilotCertName) +
+        "</span></div>"
+      : detailValueHtml("");
+
+    var html = '<div class="wb-detail-form-grid">';
+    html += detailRowHtml("用户编号", row.userId);
+    html += detailRowHtml("用户名称", row.userName);
+    html += detailRowHtml("用户昵称", row.nickName);
+    html += detailRowHtml("用户类型", row.userType);
+    html += detailRowHtml("所属部门", row.deptName);
+    html += detailRowHtml("角色", row.roleName);
+    html += detailRowHtml("岗位", row.postName);
+    html += detailRowHtml("所属线路", row.lineName);
+    html += detailRowHtml("所属区间", sectionText, true);
+    html += detailRowHtml("手机号码", row.phone);
+    html += detailRowHtml("邮箱", row.email);
+    html += detailRowHtml("性别", row.sex);
+    html +=
+      '<label class="wb-detail-form-item"><span class="wb-detail-form-label">状态：</span>' +
+      detailValueHtml(row.status ? "启用" : "停用") +
+      "</label>";
+    html += detailRowHtml("创建时间", row.createTime);
+    html +=
+      '<label class="wb-detail-form-item wb-detail-form-item--full"><span class="wb-detail-form-label">头像：</span>' +
+      avatarHtml +
+      "</label>";
+    html +=
+      '<label class="wb-detail-form-item wb-detail-form-item--full"><span class="wb-detail-form-label">飞手证：</span>' +
+      pilotHtml +
+      "</label>";
+    html += detailRowHtml("备注", row.remark, true, true);
+    html += "</div>";
+    return html;
+  }
+
   function formLabel(label, required) {
     return (
       "<label>" +
@@ -506,6 +575,7 @@
 
   global.WBUserForm = {
     buildUserFormHtml: buildUserFormHtml,
+    buildUserDetailHtml: buildUserDetailHtml,
     mountUserFormUploads: mountUserFormUploads,
     applyUserFormData: applyUserFormData,
     parseSectionFields: parseSectionFields,

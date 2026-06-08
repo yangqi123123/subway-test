@@ -1796,6 +1796,77 @@
     if (backBtn) backBtn.addEventListener("click", showListView);
   }
 
+  var PATROL_ALERT_OPEN_KEY = "whPatrolAlertOpenId";
+  var PATROL_ALERT_FROM_GIS_KEY = "whPatrolAlertFromGis";
+  var consumedPatrolAlertsDeepLinkId = null;
+
+  function consumePatrolAlertsDeepLinkOnBoot() {
+    if (consumedPatrolAlertsDeepLinkId !== null) return consumedPatrolAlertsDeepLinkId;
+
+    var params = new URLSearchParams(window.location.search);
+    var fromGis = params.get("fromGis") === "1";
+    var id = params.get("id");
+    if (fromGis && id) {
+      consumedPatrolAlertsDeepLinkId = String(id).trim();
+      clearPatrolAlertsDeepLinkState();
+      return consumedPatrolAlertsDeepLinkId;
+    }
+
+    try {
+      if (sessionStorage.getItem(PATROL_ALERT_FROM_GIS_KEY) === "1") {
+        id = sessionStorage.getItem(PATROL_ALERT_OPEN_KEY);
+        sessionStorage.removeItem(PATROL_ALERT_OPEN_KEY);
+        sessionStorage.removeItem(PATROL_ALERT_FROM_GIS_KEY);
+        if (id) {
+          consumedPatrolAlertsDeepLinkId = String(id).trim();
+          clearPatrolAlertsDeepLinkState();
+          return consumedPatrolAlertsDeepLinkId;
+        }
+      }
+    } catch (e) {}
+
+    clearPatrolAlertsDeepLinkState();
+    consumedPatrolAlertsDeepLinkId = "";
+    return "";
+  }
+
+  function readPatrolAlertsDeepLinkId() {
+    if (typeof window === "undefined") return "";
+    if (consumedPatrolAlertsDeepLinkId === null) {
+      return consumePatrolAlertsDeepLinkOnBoot();
+    }
+    return consumedPatrolAlertsDeepLinkId || "";
+  }
+
+  function resetPatrolAlertsEntryView() {
+    finishPatrolAlertsDeepLink();
+    if (!document.getElementById("patrol-alerts-app")) return;
+    if (window.WHMapAlertsMobile && typeof window.WHMapAlertsMobile.showList === "function") {
+      window.WHMapAlertsMobile.showList();
+    } else if (typeof closeDetailModal === "function") {
+      closeDetailModal();
+    }
+  }
+
+  function clearPatrolAlertsDeepLinkState() {
+    try {
+      sessionStorage.removeItem(PATROL_ALERT_OPEN_KEY);
+      sessionStorage.removeItem(PATROL_ALERT_FROM_GIS_KEY);
+    } catch (e) {}
+    if (typeof window === "undefined" || !window.history || !window.history.replaceState) return;
+    var url = new URL(window.location.href);
+    if (!url.searchParams.has("id") && !url.searchParams.has("fromGis")) return;
+    url.searchParams.delete("id");
+    url.searchParams.delete("fromGis");
+    var query = url.searchParams.toString();
+    window.history.replaceState(null, "", url.pathname + (query ? "?" + query : "") + url.hash);
+  }
+
+  function finishPatrolAlertsDeepLink() {
+    consumedPatrolAlertsDeepLinkId = "";
+    clearPatrolAlertsDeepLinkState();
+  }
+
   function closeDetailModal() {
     var mask = document.getElementById("wh-alert-detail-modal-mask");
     if (mask) {
@@ -1808,6 +1879,9 @@
     }
     var mapEl = document.getElementById("alert-detail-map");
     if (mapEl) mapEl.innerHTML = "";
+    if (document.getElementById("patrol-alerts-app")) {
+      finishPatrolAlertsDeepLink();
+    }
   }
 
   function openDetailModal(item) {
@@ -1891,22 +1965,19 @@
   }
 
   function schedulePatrolAlertsDeepLink() {
+    var deepLinkId = readPatrolAlertsDeepLinkId();
+    if (!deepLinkId) return;
+
     function attempt() {
+      if (!readPatrolAlertsDeepLinkId()) return;
       if (window.WHMapAlertsMobile && typeof window.WHMapAlertsMobile.showDetail === "function") {
-        var params = new URLSearchParams(window.location.search);
-        var id = params.get("id");
-        if (!id) {
-          try {
-            id = sessionStorage.getItem("whPatrolAlertOpenId");
-          } catch (e) {}
-        }
-        if (!id) return;
-        window.WHMapAlertsMobile.showDetail(String(id));
+        window.WHMapAlertsMobile.showDetail(String(deepLinkId));
         return;
       }
-      var project = getAlertByQuery();
-      if (!project || isUavSourceAlert(project)) return;
-      openDetailModal(project);
+      var project = findProject(deepLinkId);
+      if (!project) return;
+      if (isUavSourceAlert(project)) return;
+      if (openDetailModal(project)) finishPatrolAlertsDeepLink();
     }
     setTimeout(attempt, 0);
     setTimeout(attempt, 150);
@@ -1919,6 +1990,7 @@
     if (document.getElementById("patrol-alerts-app")) {
       applyAlertFlightPlanSubmission();
       populateIntervalFilterOptions();
+      consumePatrolAlertsDeepLinkOnBoot();
       schedulePatrolAlertsDeepLink();
       return;
     }
@@ -1968,6 +2040,11 @@
     formatAlertSourceDisplay: formatAlertSourceDisplay,
     isFulltimeAlertSource: isFulltimeAlertSource,
     ALERT_HANDLE_MODE_OPTIONS: ALERT_HANDLE_MODE_OPTIONS,
+    readPatrolAlertsDeepLinkId: readPatrolAlertsDeepLinkId,
+    clearPatrolAlertsDeepLinkState: clearPatrolAlertsDeepLinkState,
+    finishPatrolAlertsDeepLink: finishPatrolAlertsDeepLink,
+    resetPatrolAlertsEntryView: resetPatrolAlertsEntryView,
+    consumePatrolAlertsDeepLinkOnBoot: consumePatrolAlertsDeepLinkOnBoot,
   };
 
   if (typeof window !== "undefined") {

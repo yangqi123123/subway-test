@@ -244,6 +244,7 @@
   }
 
   var PATROL_ALERT_OPEN_KEY = "whPatrolAlertOpenId";
+  var PATROL_ALERT_FROM_GIS_KEY = "whPatrolAlertFromGis";
 
   function openAlarmDetailPage(alarm) {
     if (!alarm || alarm.alertId == null) return;
@@ -251,8 +252,9 @@
     if (isGisMobilePage()) {
       try {
         sessionStorage.setItem(PATROL_ALERT_OPEN_KEY, id);
+        sessionStorage.setItem(PATROL_ALERT_FROM_GIS_KEY, "1");
       } catch (e) {}
-      window.location.href = gisDetailHref("map/map-alerts.html", { id: id });
+      window.location.href = gisDetailHref("map/map-alerts.html", { id: id, fromGis: 1 });
       return;
     }
     window.location.href = alarmDetailUrl(alarm);

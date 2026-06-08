@@ -309,7 +309,117 @@
       );
     }
 
+    function detailRow(label, innerHtml, full) {
+      return (
+        '<label class="wb-detail-form-item' +
+        (full ? " wb-detail-form-item--full" : "") +
+        '"><span class="wb-detail-form-label">' +
+        esc(label) +
+        '：</span><div class="wb-detail-value wb-detail-value--multiline">' +
+        innerHtml +
+        "</div></label>"
+      );
+    }
+
+    function detailRowText(label, value, full) {
+      var text = displayVal(value);
+      return (
+        '<label class="wb-detail-form-item' +
+        (full ? " wb-detail-form-item--full" : "") +
+        '"><span class="wb-detail-form-label">' +
+        esc(label) +
+        '：</span><div class="wb-detail-value' +
+        (full ? " wb-detail-value--multiline" : "") +
+        (text === "—" ? " wb-detail-value--empty" : "") +
+        '">' +
+        esc(text) +
+        "</div></label>"
+      );
+    }
+
+    function renderWebDetailDocs(docs) {
+      if (!docs || !docs.length) return '<p class="mm-detail-empty">暂无维修资料</p>';
+      return (
+        '<div class="mm-detail-chip-list">' +
+        docs
+          .map(function (d) {
+            var name = typeof d === "string" ? d : d.name;
+            return (
+              '<span class="mm-detail-chip"><i class="fa-regular fa-file-lines"></i>' + esc(name) + "</span>"
+            );
+          })
+          .join("") +
+        "</div>"
+      );
+    }
+
+    function renderWebDetailPhotos(photos) {
+      if (!photos || !photos.length) return '<p class="mm-detail-empty">暂无维修照片</p>';
+      return (
+        '<div class="mm-detail-photo-grid">' +
+        photos
+          .map(function (src, i) {
+            return (
+              '<div class="mm-detail-photo"><img src="' +
+              esc(src) +
+              '" alt="维修照片' +
+              (i + 1) +
+              '" loading="lazy" /></div>'
+            );
+          })
+          .join("") +
+        "</div>"
+      );
+    }
+
+    function renderWebDetailVideos(videos) {
+      if (!videos || !videos.length) return '<p class="mm-detail-empty">暂无维修视频</p>';
+      return (
+        '<div class="mm-detail-video-list">' +
+        videos
+          .map(function (v, i) {
+            var name = v.name || "视频" + (i + 1);
+            if (v.url) {
+              return (
+                '<div class="mm-detail-video"><video src="' +
+                esc(v.url) +
+                '" controls preload="metadata"></video><span>' +
+                esc(name) +
+                "</span></div>"
+              );
+            }
+            return (
+              '<span class="mm-detail-chip"><i class="fa-solid fa-film"></i>' + esc(name) + "</span>"
+            );
+          })
+          .join("") +
+        "</div>"
+      );
+    }
+
+    function buildWebDetailHtml(row) {
+      var typeLabel = (global.WH_MAINTENANCE_DEVICE_TYPE_LABEL || {})[inferDeviceType(row)] || "—";
+      return (
+        '<div class="wb-detail-form-grid">' +
+        detailRowText("记录编号", row.id) +
+        detailRowText("设备类型", typeLabel) +
+        detailRowText("关联设备", row.device) +
+        detailRowText("维修类型", row.type) +
+        detailRowText("责任人", row.owner) +
+        detailRowText("开始维修时间", row.start) +
+        detailRowText("完成维修时间", row.end) +
+        detailRowText("状态", row.status) +
+        detailRowText("更换部件", row.parts) +
+        detailRowText("维护内容摘要", row.summary, true) +
+        detailRow("维修资料", renderWebDetailDocs(row.docs), true) +
+        detailRow("维修照片", renderWebDetailPhotos(row.photos), true) +
+        detailRow("维修视频", renderWebDetailVideos(row.videos), true) +
+        "</div>"
+      );
+    }
+
     function buildDetailHtml(row) {
+      if (!isMobile) return buildWebDetailHtml(row);
       var typeLabel = (global.WH_MAINTENANCE_DEVICE_TYPE_LABEL || {})[inferDeviceType(row)] || "—";
       return (
         '<dl class="mp-disease-detail-grid">' +
@@ -576,12 +686,16 @@
 
     function openWebModal(id) {
       var mask = $(id);
-      if (mask) mask.classList.add("show");
+      if (!mask) return;
+      mask.classList.add("show");
+      mask.setAttribute("aria-hidden", "false");
     }
 
     function closeWebModal(id) {
       var mask = $(id);
-      if (mask) mask.classList.remove("show");
+      if (!mask) return;
+      mask.classList.remove("show");
+      mask.setAttribute("aria-hidden", "true");
     }
 
     function readFormRow() {
@@ -678,7 +792,9 @@
       if (index < 0) return;
       var row = getListSource()[index];
       var body = $("detail-body");
+      var sub = $("detail-subtitle");
       if (!body) return;
+      if (sub) sub.textContent = row.device || row.id || "维修记录详情";
       body.innerHTML = buildDetailHtml(row);
       openWebModal("detail-modal");
     }

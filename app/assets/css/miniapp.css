@@ -625,6 +625,24 @@ body.miniapp-page {
   display: flex;
 }
 
+.miniapp-modal-mask--center {
+  align-items: center;
+  justify-content: center;
+}
+
+.miniapp-modal--confirm {
+  text-align: center;
+}
+
+.miniapp-modal--confirm h3 {
+  font-size: 17px;
+}
+
+.miniapp-modal--confirm p {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
 .miniapp-modal {
   width: 100%;
   max-width: 360px;
@@ -684,6 +702,18 @@ body.miniapp-page {
 .miniapp-btn--logout {
   color: #dc2626;
   border-color: rgba(220, 38, 38, 0.25);
+}
+
+.miniapp-btn--danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.28);
+}
+
+.miniapp-btn--danger:active {
+  transform: scale(0.98);
+  box-shadow: 0 3px 10px rgba(220, 38, 38, 0.24);
 }
 
 .miniapp-profile-card {
