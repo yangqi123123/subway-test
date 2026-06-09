@@ -62,6 +62,13 @@
     var renderTableRow = options.renderTableRow || null;
     var onConfirm = options.onConfirm || null;
     var initFilters = options.initFilters || null;
+    var rowMatchesSearchFn =
+      options.rowMatchesSearch ||
+      function (row, query) {
+        var q = (query || "").trim();
+        if (!q) return true;
+        return String(row.id).indexOf(q) >= 0;
+      };
     var formTitleFn = options.formTitle || null;
     var detailTitleFn = options.detailTitle || null;
     var saveToast = options.saveToast || "记录已保存";
@@ -151,9 +158,7 @@
     }
 
     function rowMatchesSearch(row, query) {
-      var q = (query || "").trim();
-      if (!q) return true;
-      return String(row.id).indexOf(q) >= 0;
+      return rowMatchesSearchFn(row, query);
     }
 
     function matchDateRange(row, f) {

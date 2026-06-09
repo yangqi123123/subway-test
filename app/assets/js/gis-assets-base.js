@@ -82,6 +82,7 @@
     var i = href.indexOf("?");
     var pathPart = i >= 0 ? href.slice(0, i) : href;
     if (i >= 0) q = href.slice(i);
+    if (/^\.\.\//.test(pathPart)) return href;
     var file = pathPart.split("/").pop();
     var routes = global.WH_PAGE_ROUTES || {};
     var canon = routes[file] || routes[pathPart] || pathPart;

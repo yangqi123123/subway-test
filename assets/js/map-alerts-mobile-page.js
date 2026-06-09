@@ -151,7 +151,7 @@
       esc(project.mistaken || "—") +
       "</dd></div>" +
       "</dl>" +
-      (project.image
+      (project.image && project.workflowStatus !== "未复核"
         ? '<div class="mp-alert-card__thumb"><img src="' +
           esc(project.image) +
           '" alt="" loading="lazy" /></div>'

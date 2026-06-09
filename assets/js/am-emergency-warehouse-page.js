@@ -699,7 +699,11 @@
           applyFilter(name, true);
           var list = getListSource();
           var idx = list.findIndex(function (r) { return r.name === name; });
-          if (idx >= 0) showDetail(idx);
+          if (idx >= 0) {
+            setTimeout(function () {
+              showDetail(idx);
+            }, 120);
+          }
           return;
         }
         if (name && !isMobile) {

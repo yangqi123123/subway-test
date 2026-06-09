@@ -76,7 +76,7 @@
     }
 
     function applyDefaultFilters() {
-      var defaults = global.DCDroneStats.getDefaultDateRange();
+      var defaults = global.DCDroneStats.getDefaultDateRange({ months: 6 });
       var lineEl = $("filter-line");
       var startEl = $("filter-time-start");
       var endEl = $("filter-time-end");
@@ -123,7 +123,7 @@
       if (isMobile) {
         return "../../asset/pages/flight-log.html?from=drone-stats&detail=" + encodeURIComponent(logId);
       }
-      return "../wb/am-flight-log.html?detail=" + encodeURIComponent(logId);
+      return "../wb/am-flight-log.html?from=drone-stats&detail=" + encodeURIComponent(logId);
     }
 
     function renderUsageRecordsWeb(list) {
@@ -172,9 +172,9 @@
             esc(row.operator) +
             "</td>" +
             '<td class="px-3 whitespace-nowrap">' +
-            '<a href="' +
-            esc(flightLogDetailUrl(row.id)) +
-            '" class="dc-table-op">查看详情</a>' +
+            '<button type="button" class="dc-table-op" data-action="drone-usage-detail" data-log-id="' +
+            esc(row.id) +
+            '">查看详情</button>' +
             "</td></tr>"
           );
         })
@@ -237,14 +237,14 @@
     }
 
     function syncSearchClear() {
-      var input = $("drone-usage-search-trigger");
+      var input = $("drone-usage-search-input");
       var clearBtn = $("drone-usage-search-clear");
       if (!input || !clearBtn) return;
       clearBtn.hidden = !(input.value || "").trim();
     }
 
     function syncSearchInput() {
-      var input = $("drone-usage-search-trigger");
+      var input = $("drone-usage-search-input");
       if (input) input.value = searchKeyword;
       syncSearchClear();
     }
@@ -498,7 +498,7 @@
       var lineSel = $("filter-line");
       var timeStart = $("filter-time-start");
       var timeEnd = $("filter-time-end");
-      var defaults = global.DCDroneStats.getDefaultDateRange();
+      var defaults = global.DCDroneStats.getDefaultDateRange({ months: 6 });
       if (airportSel) airportSel.value = "";
       if (deviceSel) deviceSel.value = "";
       if (lineSel) lineSel.value = "8";
@@ -595,6 +595,13 @@
             searchKeyword = "";
             syncSearchInput();
             applyUsageFilter(true);
+            return;
+          }
+          if (action === "drone-usage-detail") {
+            var logId = trigger.getAttribute("data-log-id");
+            if (logId && global.WHFlightLogPage && typeof global.WHFlightLogPage.openWebDetail === "function") {
+              global.WHFlightLogPage.openWebDetail(logId);
+            }
             return;
           }
         }

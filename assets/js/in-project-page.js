@@ -301,6 +301,9 @@
       function projectActionHtml(index) {
         if (isDoneModule) {
           return (
+            '<button type="button" class="mp-project-action" data-action="edit-project" data-row="' +
+            index +
+            '"><i class="fa-regular fa-pen-to-square"></i>编辑</button>' +
             '<button type="button" class="mp-project-action" data-action="patrol-project" data-row="' +
             index +
             '"><i class="fa-regular fa-clipboard"></i>巡查记录</button>' +
@@ -542,6 +545,9 @@
         if (isDoneModule) {
           var statusEl = document.getElementById("proj-status");
           if (statusEl) statusEl.value = "完工";
+          var workEndEl = document.getElementById("proj-work-end");
+          if (workEndEl && row && row[11] && !workEndEl.value) workEndEl.value = row[11];
+          if (workEndEl && !row && !workEndEl.value) workEndEl.value = formatNow().slice(0, 10);
           var endEl = document.getElementById("proj-end");
           if (endEl && row && row[11] && !endEl.value) endEl.value = row[11];
           if (endEl && !row && !endEl.value) endEl.value = formatNow().slice(0, 10);
@@ -1216,7 +1222,6 @@
         }
         if (action === "detail-project") showProjectView("detail");
         if (action === "edit-project") {
-          if (isDoneModule) return;
           var editRow = Number(trigger.getAttribute("data-row"));
           if (!Number.isNaN(editRow) && editRow >= 0) currentProjectIndex = editRow;
           showProjectView("edit");

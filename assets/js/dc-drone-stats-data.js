@@ -113,10 +113,15 @@
     return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
   }
 
-  function getDefaultDateRange() {
+  function getDefaultDateRange(options) {
+    options = options || {};
     var end = new Date();
     var start = new Date();
-    start.setDate(end.getDate() - 6);
+    if (options.months) {
+      start.setMonth(end.getMonth() - options.months);
+    } else {
+      start.setDate(end.getDate() - (options.days != null ? options.days : 6));
+    }
     return { start: formatDateInput(start), end: formatDateInput(end) };
   }
 

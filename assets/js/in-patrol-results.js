@@ -68,6 +68,8 @@
   var pageState = { page: 1, pageSize: 12 };
   var toastTimer = null;
   var detailItem = null;
+  var detailGallery = [];
+  var detailGalleryIndex = 0;
   var mediaView = { scale: 1, rotate: 0 };
 
   function $(id) {
@@ -188,22 +190,10 @@
 
   function buildProjectTree(list) {
     return uniqueValues(list, "projectName").map(function (proj) {
-      var plans = uniqueValues(
-        list.filter(function (x) {
-          return x.projectName === proj;
-        }),
-        "planName"
-      );
-      var children = plans.map(function (plan) {
-        var count = list.filter(function (x) {
-          return x.projectName === proj && x.planName === plan;
-        }).length;
-        return { key: "project:" + proj + "|plan:" + plan, label: plan, count: count, children: [] };
-      });
       var total = list.filter(function (x) {
         return x.projectName === proj;
       }).length;
-      return { key: "project:" + proj, label: proj, count: total, children: children };
+      return { key: "project:" + proj, label: proj, count: total, children: [] };
     });
   }
 
@@ -275,13 +265,17 @@
     root.innerHTML = html;
   }
 
+  function cardBadge(item) {
+    if (groupMode === "plan" || item.patrolSource === "无人机") {
+      return '<span class="pr-card__badge">AI检测</span>';
+    }
+    return '<span class="pr-card__badge pr-card__badge--manual">人工</span>';
+  }
+
   function cardHtml(item, index) {
     var isVideo = item.mediaType === TYPE_VIDEO;
     var checked = !!selectedIds[item.id];
-    var badge =
-      item.patrolSource === "无人机"
-        ? '<span class="pr-card__badge">AI检测</span>'
-        : '<span class="pr-card__badge pr-card__badge--manual">人工</span>';
+    var badge = cardBadge(item);
     return (
       '<article class="pr-card' +
       (checked ? " is-selected" : "") +
@@ -497,6 +491,58 @@
       .join("");
   }
 
+  function getPhotoGallery(item) {
+    if (!item || item.mediaType !== TYPE_PHOTO) return [];
+    return ITEMS.filter(function (x) {
+      return x.mediaType === TYPE_PHOTO && x.planName === item.planName;
+    }).map(function (x, i) {
+      return {
+        id: x.id,
+        url: x.mediaUrl || thumbFor(x, i),
+        title: x.mediaTitle || x.planName || "照片" + (i + 1),
+      };
+    });
+  }
+
+  function renderDetailThumbs() {
+    var wrap = $("pr-detail-thumbs");
+    if (!wrap) return;
+    if (!detailItem || detailItem.mediaType !== TYPE_PHOTO || detailGallery.length <= 1) {
+      wrap.classList.add("hidden");
+      wrap.innerHTML = "";
+      return;
+    }
+    wrap.classList.remove("hidden");
+    wrap.innerHTML = detailGallery
+      .map(function (ph, i) {
+        return (
+          '<button type="button" class="pr-detail-thumb' +
+          (i === detailGalleryIndex ? " is-active" : "") +
+          '" data-action="detail-thumb" data-thumb-index="' +
+          i +
+          '" title="' +
+          esc(ph.title) +
+          '"><img src="' +
+          esc(ph.url) +
+          '" alt="" loading="lazy" /></button>'
+        );
+      })
+      .join("");
+  }
+
+  function setDetailPhotoIndex(index) {
+    if (!detailGallery.length) return;
+    detailGalleryIndex = Math.max(0, Math.min(index, detailGallery.length - 1));
+    var ph = detailGallery[detailGalleryIndex];
+    var img = $("pr-detail-img");
+    if (img && ph) {
+      img.src = ph.url;
+      img.alt = ph.title;
+    }
+    resetMediaView();
+    renderDetailThumbs();
+  }
+
   function loadDetailMedia(item) {
     var img = $("pr-detail-img");
     var video = $("pr-detail-video");
@@ -514,14 +560,21 @@
       video.pause();
       video.removeAttribute("src");
       img.classList.remove("hidden");
-      img.src = item.mediaUrl || thumbFor(item, 0);
-      img.alt = item.mediaTitle || item.planName || "巡检成果";
+      var ph = detailGallery[detailGalleryIndex] || { url: item.mediaUrl || thumbFor(item, 0), title: item.mediaTitle };
+      img.src = ph.url;
+      img.alt = ph.title || item.mediaTitle || item.planName || "巡检成果";
     }
+    renderDetailThumbs();
   }
 
   function openDetail(item) {
     if (!item) return;
     detailItem = item;
+    detailGallery = getPhotoGallery(item);
+    detailGalleryIndex = detailGallery.findIndex(function (p) {
+      return p.id === item.id;
+    });
+    if (detailGalleryIndex < 0) detailGalleryIndex = 0;
     var mask = $("pr-detail-mask");
     var titleEl = $("pr-detail-title");
     if (titleEl) {
@@ -543,6 +596,8 @@
       video.pause();
     }
     detailItem = null;
+    detailGallery = [];
+    detailGalleryIndex = 0;
     if (mask) {
       mask.classList.remove("is-open");
       mask.setAttribute("aria-hidden", "true");
@@ -566,7 +621,7 @@
       toast("视频请使用播放器全屏查看（原型演示）");
       return;
     }
-    img.src = detailItem.mediaUrl || thumbFor(detailItem, 0);
+    img.src = (detailGallery[detailGalleryIndex] && detailGallery[detailGalleryIndex].url) || detailItem.mediaUrl || thumbFor(detailItem, 0);
     lb.classList.add("is-open");
     lb.setAttribute("aria-hidden", "false");
   }
@@ -574,7 +629,12 @@
   function downloadDetailMedia() {
     if (!detailItem) return;
     var isVideo = detailItem.mediaType === TYPE_VIDEO;
-    var url = isVideo ? detailItem.videoUrl || DEMO_VIDEO : detailItem.mediaUrl || thumbFor(detailItem, 0);
+    var url =
+      isVideo
+        ? detailItem.videoUrl || DEMO_VIDEO
+        : (detailGallery[detailGalleryIndex] && detailGallery[detailGalleryIndex].url) ||
+          detailItem.mediaUrl ||
+          thumbFor(detailItem, 0);
     var name = (detailItem.mediaTitle || detailItem.planName || "patrol-result").replace(/[\\/:*?"<>|]/g, "_");
     var a = document.createElement("a");
     a.href = url;
@@ -636,9 +696,6 @@
         if (key) {
           selectedTreeKey = key;
           resetPage();
-          if (groupMode === "project" && key.indexOf("project:") === 0 && key.indexOf("|plan:") < 0) {
-            expandedIds[key] = true;
-          }
           render();
         }
         return;
@@ -666,6 +723,11 @@
       }
       if (act && act.indexOf("media-") === 0) {
         handleMediaAction(act);
+        return;
+      }
+      if (act === "detail-thumb") {
+        var thumbIndex = Number(action.getAttribute("data-thumb-index"));
+        if (!Number.isNaN(thumbIndex)) setDetailPhotoIndex(thumbIndex);
         return;
       }
       if (act === "search") {

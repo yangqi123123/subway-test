@@ -69,6 +69,11 @@
       cardTitle: function (row) {
         return row.projectName || "—";
       },
+      rowMatchesSearch: function (row, query) {
+        var q = (query || "").trim();
+        if (!q) return true;
+        return String(row.projectName || "").indexOf(q) >= 0;
+      },
       cardMeta: function (row) {
         var place =
           [row.section, row.station].filter(function (s) {
@@ -139,7 +144,6 @@
           direction: fv("filter-direction"),
           section: fv("filter-section"),
           station: fv("filter-station"),
-          project: fv("filter-project"),
           dateStart: fv("filter-date-start"),
           dateEnd: fv("filter-date-end"),
         };
@@ -149,7 +153,6 @@
         if (f.direction && row.direction !== f.direction) return false;
         if (f.section && row.section !== f.section) return false;
         if (f.station && row.station !== f.station) return false;
-        if (f.project && row.projectName !== f.project) return false;
         return true;
       },
       readForm: function (fh) {

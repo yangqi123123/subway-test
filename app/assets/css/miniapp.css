@@ -986,3 +986,7 @@ body.miniapp-page {
   text-decoration: none;
   white-space: nowrap;
 }
+
+.login-forgot[hidden] {
+  display: none !important;
+}

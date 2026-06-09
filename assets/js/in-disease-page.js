@@ -135,7 +135,7 @@
     function rowMatchesSearch(row, query) {
       var q = (query || "").trim();
       if (!q) return true;
-      return String(row.id).indexOf(q) >= 0;
+      return String(row.desc || "").indexOf(q) >= 0;
     }
 
     function rowMatchesFilters(row, f) {

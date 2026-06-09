@@ -692,7 +692,7 @@
           applyFilter(q, true);
           return;
         }
-        if (isMobile && (name || no)) {
+        if (isMobile && (params.get("view") === "detail" || name || no)) {
           var match = rows.find(function (row) {
             return (no && row.no === no) || (name && row.name === name);
           });

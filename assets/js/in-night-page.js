@@ -69,6 +69,11 @@
       cardTitle: function (row) {
         return row.desc || "—";
       },
+      rowMatchesSearch: function (row, query) {
+        var q = (query || "").trim();
+        if (!q) return true;
+        return String(row.desc || "").indexOf(q) >= 0;
+      },
       cardMeta: function (row) {
         return [
           { label: "所属线路", value: row.line },

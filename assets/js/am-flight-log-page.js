@@ -624,6 +624,11 @@
     }
 
     bindEvents();
+    if (options.modalOnly) {
+      global.WHFlightLogPage.openWebDetail = openWebDetail;
+      global.WHFlightLogPage.closeWebDetail = closeWebDetail;
+      return;
+    }
     renderList();
     initFromQuery();
     syncSearchClear();

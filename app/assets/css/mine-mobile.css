@@ -404,6 +404,10 @@ body.mp-mine-page .mp-password-forgot-row {
   margin-top: 8px;
 }
 
+body.mp-mine-page .mp-password-forgot-row[hidden] {
+  display: none !important;
+}
+
 body.mp-mine-page .mp-password-forgot-btn {
   display: inline-block;
   border: 0;
@@ -1184,6 +1188,11 @@ body.mp-todo-page .mp-detail-footer--split {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+body.mp-todo-page #wb-todo-select-all:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 body.mp-todo-page .mp-todo-detail-block {

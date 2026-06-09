@@ -141,6 +141,7 @@
       if (searchInput && typeof qOverride === "string") searchInput.value = qOverride;
       var f = readFilters();
       if (typeof qOverride === "string") f.keyword = q;
+      state.selected = {};
       state.filtered = allTodoRows().filter(function (row) {
         return rowMatches(row, f);
       });
@@ -175,6 +176,42 @@
       if (state.activeTab === "approval") return row.tab === "approval" && row.status === "待审批";
       if (state.activeTab === "alert") return row.tab === "alert" && row.status === "未复核";
       return false;
+    }
+
+    function getSelectableIndices() {
+      return state.filtered.reduce(function (acc, row, index) {
+        if (rowBatchSelectable(row)) acc.push(index);
+        return acc;
+      }, []);
+    }
+
+    function isAllSelectableChecked() {
+      var indices = getSelectableIndices();
+      if (!indices.length) return false;
+      return indices.every(function (i) {
+        return !!state.selected[String(i)];
+      });
+    }
+
+    function syncSelectAllButton() {
+      var btn = $("wb-todo-select-all");
+      if (!btn) return;
+      var indices = getSelectableIndices();
+      btn.disabled = !indices.length;
+      btn.textContent = isAllSelectableChecked() ? "取消全选" : "全选";
+    }
+
+    function toggleSelectAll() {
+      var indices = getSelectableIndices();
+      if (!indices.length) {
+        toast("当前列表没有可选项");
+        return;
+      }
+      var selectAll = !isAllSelectableChecked();
+      indices.forEach(function (i) {
+        state.selected[String(i)] = selectAll;
+      });
+      renderList();
     }
 
     function syncApprovalFooter(mode) {
@@ -642,15 +679,19 @@
       if (!listEl) return;
       if (!state.filtered.length) {
         listEl.innerHTML = '<div class="mp-project-empty">暂无数据</div>';
+        syncSelectAllButton();
         return;
       }
       listEl.innerHTML = state.filtered
         .map(function (row, index) {
           var status = row.status || "—";
+          var checked = state.selected[String(index)] ? " checked" : "";
           var check = rowBatchSelectable(row)
               ? '<label class="mp-wb-check"><input type="checkbox" data-action="wb-check" data-index="' +
                 index +
-                '" /></label>'
+                '"' +
+                checked +
+                " /></label>"
               : "";
           return (
             '<article class="mp-project-card mp-wb-card mp-wb-card--todo" data-index="' +
@@ -679,6 +720,7 @@
           );
         })
         .join("");
+      syncSelectAllButton();
     }
 
     function renderTabs() {
@@ -752,6 +794,10 @@
           toast("筛选已重置");
           return;
         }
+        if (action === "wb-toggle-select-all") {
+          toggleSelectAll();
+          return;
+        }
         if (action === "wb-batch-approve") {
           var picked = Object.keys(state.selected).filter(function (k) {
             return state.selected[k];
@@ -817,6 +863,7 @@
         var cb = e.target.closest('[data-action="wb-check"]');
         if (!cb) return;
         state.selected[cb.getAttribute("data-index")] = cb.checked;
+        syncSelectAllButton();
       });
 
       var tabBar = $("wb-tab-bar");

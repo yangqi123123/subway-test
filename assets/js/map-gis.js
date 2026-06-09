@@ -780,8 +780,7 @@
         }
         var detailUrl = btn.getAttribute("data-detail-url");
         if (detailUrl) {
-          window.location.href =
-            typeof whPageHref === "function" ? whPageHref(detailUrl) : detailUrl;
+          window.location.href = detailUrl;
         }
       });
     });

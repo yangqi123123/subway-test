@@ -23,11 +23,6 @@
   <div id="ops-app" class="mp-disease-app mp-project-app">
     <section id="ops-monitor-view" class="mp-project-view">
       <div class="mp-list-scroll">
-        <div class="mp-project-searchbar mp-ops-filterbar">
-          <p id="ops-filter-hint" class="mp-ops-filter-hint" hidden aria-live="polite"></p>
-          <button type="button" class="mp-filter-text-btn" data-action="open-ops-filter">筛选 <i class="fa-solid fa-filter" aria-hidden="true"></i></button>
-        </div>
-
         <section class="mp-ops-section mp-ops-section--topology">
           <h2 class="mp-ops-section__title">服务器的拓扑图</h2>
           <div class="topo-scene" id="topo-scene">
@@ -183,28 +178,6 @@
         </section>
       </div>
     </section>
-  </div>
-
-  <div id="ops-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
-    <div class="mp-filter-sheet__mask" data-action="close-ops-filter"></div>
-    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
-      <div class="mp-filter-sheet__head">
-        <h2>时间范围</h2>
-        <button type="button" class="mp-icon-btn" data-action="close-ops-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="mp-filter-sheet__body project-filter-panel">
-        <label class="mp-filter-field mp-filter-field--full"><span>开始时间</span>
-          <input id="ops-filter-start" type="datetime-local" class="wh-input w-full px-2" value="2026-05-12T00:00" />
-        </label>
-        <label class="mp-filter-field mp-filter-field--full"><span>结束时间</span>
-          <input id="ops-filter-end" type="datetime-local" class="wh-input w-full px-2" value="2026-05-19T23:59" />
-        </label>
-      </div>
-      <div class="mp-filter-sheet__foot">
-        <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-ops-filter">重置</button>
-        <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-ops-filter">搜索</button>
-      </div>
-    </div>
   </div>
 
   <div class="project-toast" id="ops-toast" aria-live="polite"></div>

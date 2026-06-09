@@ -25,6 +25,26 @@
     var isMobile = !!options.mobile;
     var deviceSelect = options.deviceSelect || null;
     var uploaders = options.uploaders || {};
+    if (isMobile && !uploaders.doc && global.WHUpload) {
+      uploaders.doc = global.WHUpload.createDocUploader({
+        inputId: "f-doc-input",
+        listId: "f-doc-list",
+        tileId: "f-doc-tile",
+        hintId: "f-doc-hint",
+      });
+      uploaders.photo = global.WHUpload.createPhotoUploader({
+        inputId: "f-photo-input",
+        listId: "f-photo-list",
+        tileId: "f-photo-tile",
+        hintId: "f-photo-hint",
+      });
+      uploaders.video = global.WHUpload.createVideoUploader({
+        inputId: "f-video-input",
+        listId: "f-video-list",
+        tileId: "f-video-tile",
+        hintId: "f-video-hint",
+      });
+    }
 
     var rows = (global.WH_MAINTENANCE_ROWS || []).map(function (row) {
       return Object.assign({}, row, {
@@ -657,9 +677,9 @@
       preservedMedia = row
         ? { docs: (row.docs || []).slice(), photos: (row.photos || []).slice(), videos: (row.videos || []).slice() }
         : { docs: [], photos: [], videos: [] };
-      if (!isMobile && uploaders.doc) uploaders.doc.setFromItems(preservedMedia.docs);
-      if (!isMobile && uploaders.photo) uploaders.photo.setFromItems(preservedMedia.photos);
-      if (!isMobile && uploaders.video) uploaders.video.setFromItems(preservedMedia.videos);
+      if (uploaders.doc && uploaders.doc.setFromItems) uploaders.doc.setFromItems(preservedMedia.docs);
+      if (uploaders.photo && uploaders.photo.setFromItems) uploaders.photo.setFromItems(preservedMedia.photos);
+      if (uploaders.video && uploaders.video.setFromItems) uploaders.video.setFromItems(preservedMedia.videos);
     }
 
     function setFormTitle(text) {
@@ -702,11 +722,9 @@
       var docs = preservedMedia ? preservedMedia.docs.slice() : [];
       var photos = preservedMedia ? preservedMedia.photos.slice() : [];
       var videos = preservedMedia ? preservedMedia.videos.slice() : [];
-      if (!isMobile) {
-        if (uploaders.doc && uploaders.doc.serialize) docs = uploaders.doc.serialize();
-        if (uploaders.photo && uploaders.photo.getPhotoUrls) photos = uploaders.photo.getPhotoUrls();
-        if (uploaders.video && uploaders.video.serialize) videos = uploaders.video.serialize();
-      }
+      if (uploaders.doc && uploaders.doc.serialize) docs = uploaders.doc.serialize();
+      if (uploaders.photo && uploaders.photo.getPhotoUrls) photos = uploaders.photo.getPhotoUrls();
+      if (uploaders.video && uploaders.video.serialize) videos = uploaders.video.serialize();
       return {
         deviceType: fieldVal("f-device-type"),
         device: readDeviceValue(),
@@ -741,8 +759,12 @@
       editingId = null;
       preservedMedia = null;
       showToast(wasEdit ? "维修记录已更新" : "维修记录已新增");
-      if (isMobile) showList();
-      else {
+      if (isMobile) {
+        if (uploaders.doc && uploaders.doc.clear) uploaders.doc.clear();
+        if (uploaders.photo && uploaders.photo.clear) uploaders.photo.clear();
+        if (uploaders.video && uploaders.video.clear) uploaders.video.clear();
+        showList();
+      } else {
         closeWebModal("form-modal");
         if (uploaders.doc && uploaders.doc.clear) uploaders.doc.clear();
         if (uploaders.photo && uploaders.photo.clear) uploaders.photo.clear();
@@ -878,6 +900,9 @@
           return;
         }
         if (action === "cancel-maintenance-form") {
+          if (uploaders.doc && uploaders.doc.clear) uploaders.doc.clear();
+          if (uploaders.photo && uploaders.photo.clear) uploaders.photo.clear();
+          if (uploaders.video && uploaders.video.clear) uploaders.video.clear();
           showList();
           return;
         }

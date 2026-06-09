@@ -131,6 +131,39 @@
             <label class="project-form-label project-required">维护内容摘要</label>
             <textarea id="f-summary" class="wh-input mp-field mp-field--textarea" placeholder="请输入维护内容摘要"></textarea>
           </div>
+          <div class="mp-form-row mp-form-row--full mp-disease-upload-row">
+            <label class="project-form-label">维修资料</label>
+            <div class="mp-disease-upload-wrap">
+              <label id="f-doc-tile" class="mp-disease-upload-tile">
+                <i class="fa-solid fa-plus"></i><span>上传</span>
+                <input id="f-doc-input" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar" />
+              </label>
+              <div id="f-doc-list" class="mp-disease-upload-list"></div>
+              <p id="f-doc-hint" class="mp-disease-upload-hint">支持 PDF、Word（doc/docx）、Excel（xls/xlsx）、ZIP/RAR，单文件不超过 50MB</p>
+            </div>
+          </div>
+          <div class="mp-form-row mp-form-row--full mp-disease-upload-row">
+            <label class="project-form-label">维修照片</label>
+            <div class="mp-disease-upload-wrap">
+              <label id="f-photo-tile" class="mp-disease-upload-tile">
+                <i class="fa-solid fa-plus"></i><span>上传</span>
+                <input id="f-photo-input" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif" />
+              </label>
+              <div id="f-photo-list" class="mp-disease-upload-list"></div>
+              <p id="f-photo-hint" class="mp-disease-upload-hint">支持 JPG、PNG、WEBP、GIF，最多上传 9 张，单张不超过 20MB</p>
+            </div>
+          </div>
+          <div class="mp-form-row mp-form-row--full mp-disease-upload-row">
+            <label class="project-form-label">维修视频</label>
+            <div class="mp-disease-upload-wrap">
+              <label id="f-video-tile" class="mp-disease-upload-tile">
+                <i class="fa-solid fa-plus"></i><span>上传</span>
+                <input id="f-video-input" type="file" multiple accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" />
+              </label>
+              <div id="f-video-list" class="mp-disease-upload-list"></div>
+              <p id="f-video-hint" class="mp-disease-upload-hint">支持 MP4、WEBM、MOV，最多上传 9 个，单个不超过 200MB</p>
+            </div>
+          </div>
         </div>
       </div>
       <footer class="mp-detail-footer">
@@ -216,6 +249,7 @@
 
   <script src="../../../assets/js/project-preview-mock.js"></script>
   <script src="../../../assets/js/project-doc-shared.js"></script>
+  <script src="../../../assets/js/upload-widget.js"></script>
   <script src="../../../assets/js/am-maintenance-data.js"></script>
   <script src="../../../assets/js/am-maintenance-page.js"></script>
   <script src="../../../assets/js/in-project-mobile.js"></script>

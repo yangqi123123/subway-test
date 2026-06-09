@@ -15,14 +15,6 @@
       --ops-border: rgba(34, 211, 238, 0.22);
       --ops-panel: rgba(5, 10, 26, 0.92);
     }
-    .disease-filter-dates {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .disease-filter-panel label.disease-filter-span-2 > span:first-child {
-      color: #94a3b8;
-    }
     .ops-board {
       display: flex;
       flex-direction: column;
@@ -526,23 +518,7 @@
     <div class="ops-footer">© 2020-2026 All Rights Reserved Wuhan</div>
         </div>
 
-        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
-          <div class="disease-filter-panel">
-            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
-            <div class="disease-panel-body">
-              <label class="disease-filter-span-2">
-                <span>时间范围</span>
-                <div class="disease-filter-dates">
-                  <input id="ops-filter-start" type="datetime-local" class="wh-input w-full px-2" value="2026-05-12T00:00" />
-                  <input id="ops-filter-end" type="datetime-local" class="wh-input w-full px-2" value="2026-05-19T23:59" />
-                </div>
-              </label>
-              <div class="disease-filter-actions">
-                <button type="button" id="ops-filter-search" class="wh-btn-primary">搜索</button>
-                <button type="button" id="ops-filter-reset" class="wh-btn-ghost">重置</button>
-              </div>
-            </div>
-          </div>
+        <aside class="disease-layout__right" aria-label="快捷操作">
           <div class="disease-quick-panel">
             <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
             <div class="disease-panel-body" id="ops-quick-links"></div>

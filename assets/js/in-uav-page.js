@@ -78,14 +78,13 @@
 
     function rowMatchesSearch(row, q) {
       if (!q) return true;
-      return String(row.taskId).indexOf(q) >= 0;
+      return String(row.projectName || "").indexOf(q) >= 0;
     }
 
     function readFilters() {
       return {
         line: fieldVal("filter-line"),
         section: fieldVal("filter-section"),
-        project: fieldVal("filter-project"),
         dateStart: fieldVal("filter-date-start"),
         dateEnd: fieldVal("filter-date-end"),
       };
@@ -94,7 +93,6 @@
     function rowMatchesFilters(row, f) {
       if (f.line && row.line !== f.line) return false;
       if (f.section && row.section !== f.section) return false;
-      if (f.project && row.projectName !== f.project) return false;
       var rowTime = parseDateTime(row.takeoff);
       if (rowTime !== null) {
         var start = f.dateStart ? parseDateTime(f.dateStart) : null;
@@ -124,7 +122,7 @@
         typeof qOverride === "string" ? qOverride : input && input.value ? input.value.trim() : "";
       if (input && typeof qOverride === "string") input.value = qOverride;
       var f = readFilters();
-      var hasFilter = !!(q || f.line || f.section || f.project || f.dateStart || f.dateEnd);
+      var hasFilter = !!(q || f.line || f.section || f.dateStart || f.dateEnd);
       filteredRows = hasFilter
         ? rows.filter(function (row) {
             if (q && !rowMatchesSearch(row, q)) return false;
@@ -138,7 +136,7 @@
     }
 
     function resetFilters() {
-      ["filter-line", "filter-section", "filter-project", "filter-date-start", "filter-date-end"].forEach(
+      ["filter-line", "filter-section", "filter-date-start", "filter-date-end"].forEach(
         function (id) {
           var el = $(id);
           if (!el) return;

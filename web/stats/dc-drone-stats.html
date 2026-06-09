@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>鏃犱汉鏈烘暟鎹粺璁?/title>
+  <title>无人机数据统计</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/flight-report-modal.css" />
   <style>
     .dc-panel { border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.14); background: rgba(7, 20, 38, 0.9); }
     .dc-chart-title { font-size: 14px; font-weight: 600; color: #f8fafc; }
     .dc-chart-note { font-size: 12px; color: #94a3b8; }
     .dc-chart-shell { padding: 18px 20px; min-height: 320px; }
     .dc-filter-btn { min-width: 74px; height: 32px; border-radius: 6px; font-size: 12px; font-weight: 600; }
-    .dc-table-op { color: #38bdf8; font-size: 12px; }
+    .dc-table-op { color: #38bdf8; font-size: 12px; border: none; background: none; padding: 0; cursor: pointer; }
     .dc-table-op:hover { color: #67e8f9; text-decoration: underline; }
     .dc-canvas { width: 100%; height: 214px; display: block; }
     .dc-legend { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-top: 12px; }
@@ -94,212 +96,229 @@
     .disease-quick-link:hover { border-color: rgba(34, 211, 238, 0.4); background: rgba(34, 211, 238, 0.08); color: #fff; }
     .disease-quick-link.is-active { border-color: rgba(34, 211, 238, 0.55); background: rgba(34, 211, 238, 0.12); color: #a5f3fc; }
     .disease-quick-link i { width: 16px; text-align: center; color: #67e8f9; font-size: 12px; }
+    .fl-modal-mask { position: fixed; inset: 0; background: rgba(2, 8, 23, 0.72); display: none; align-items: flex-start; justify-content: center; z-index: 1200; padding: 72px 20px 32px; overflow-y: auto; box-sizing: border-box; }
+    .fl-modal-mask.show { display: flex; }
+    .fl-modal { width: min(1260px, 96vw); max-height: calc(100vh - 104px); margin: 0 auto; overflow: auto; flex-shrink: 0; background: #071b33; border: 1px solid rgba(34, 211, 238, 0.22); border-radius: 10px; box-shadow: 0 18px 56px rgba(0, 0, 0, 0.45); }
+    .fl-dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
+    .fl-detail-grid { display: grid; grid-template-columns: 330px 1fr; gap: 20px; }
+    .fl-map-shell { position: relative; }
+    .fl-map { width: 100%; height: 520px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(34, 211, 238, 0.14); }
+    .fl-detail-link { color: #38bdf8; text-decoration: none; cursor: pointer; }
+    .fl-detail-link:hover { text-decoration: underline; }
+    .fl-detail-list { display: flex; flex-direction: column; gap: 10px; }
+    .fl-detail-row { display: flex; align-items: flex-start; gap: 4px; font-size: 13px; line-height: 1.55; }
+    .fl-detail-row__label { flex-shrink: 0; width: 92px; color: #94a3b8; white-space: nowrap; }
+    .fl-detail-row__value { flex: 1; min-width: 0; color: #e2e8f0; word-break: break-word; }
+    .fl-landing-warn { color: #f87171; }
+    .fl-detail-status { display: inline-flex; align-items: center; gap: 6px; }
+    .leaflet-container { background: #e8ecf1; }
+    @media (max-width: 1180px) { .fl-detail-grid { grid-template-columns: 1fr; } .fl-map { height: 420px; } }
     @media (max-width: 1400px) { .disease-layout { grid-template-columns: 1fr; } .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .disease-layout__right { position: static; width: 100%; max-height: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } }
     @media (max-width: 768px) { .disease-stats { grid-template-columns: 1fr; } .disease-layout__right { grid-template-columns: 1fr; } }
   </style>
 </head>
-<body data-shell="default" data-top="wb" data-sidebar-key="dc-drone-stats" data-wb-view="page">
+<body data-shell="default" data-top="st" data-sidebar-key="dc-drone-stats">
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
-      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">璧勬簮璋冨害涓庝娇鐢ㄨ褰?/h1>
-      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">鏃犱汉鏈烘暟鎹粺璁?/span>
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">资源调度与使用记录</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">无人机数据统计</span>
     </div>
 
     <section id="drone-stats-list-view">
       <div class="disease-layout">
         <div class="disease-layout__left">
-          <div class="disease-stats" aria-label="鏃犱汉鏈烘暟鎹粺璁℃瑙?>
+          <div class="disease-stats" aria-label="无人机数据统计概览">
             <div class="disease-stat-card disease-stat-card--blue">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-list"></i></div>
               <div>
                 <div id="stat-records" class="disease-stat-card__value">12</div>
-                <div class="disease-stat-card__label">鏈湀鏂板杩濊椤圭洰</div>
-                <div class="disease-stat-card__trend">褰撴湀绱</div>
+                <div class="disease-stat-card__label">本月新增违规项目</div>
+                <div class="disease-stat-card__trend">当月累计</div>
               </div>
             </div>
             <div class="disease-stat-card disease-stat-card--cyan">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-hard-hat"></i></div>
               <div>
                 <div id="stat-airports" class="disease-stat-card__value">2</div>
-                <div class="disease-stat-card__label">鏈湀骞冲潎姣忔椋炶鏃犱汉鏈哄彂鐜扮殑鏂藉伐鏁伴噺</div>
-                <div class="disease-stat-card__trend">娆″潎鍙戠幇</div>
+                <div class="disease-stat-card__label">本月平均每次飞行无人机发现的施工数量</div>
+                <div class="disease-stat-card__trend">次均发现</div>
               </div>
             </div>
             <div class="disease-stat-card disease-stat-card--green">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-plane"></i></div>
               <div>
                 <div id="stat-devices" class="disease-stat-card__value">3</div>
-                <div class="disease-stat-card__label">鏈湀鏃犱汉鏈洪琛岃稛娆?/div>
-                <div class="disease-stat-card__trend">褰撴湀绱</div>
+                <div class="disease-stat-card__label">本月无人机飞行趟次</div>
+                <div class="disease-stat-card__trend">当月累计</div>
               </div>
             </div>
             <div class="disease-stat-card disease-stat-card--amber">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-clock"></i></div>
               <div>
                 <div id="stat-operators" class="disease-stat-card__value">18.5h</div>
-                <div class="disease-stat-card__label">鏈湀鏃犱汉鏈洪琛屾€绘椂闂?/div>
-                <div class="disease-stat-card__trend">绱鏃堕暱</div>
+                <div class="disease-stat-card__label">本月无人机飞行总时间</div>
+                <div class="disease-stat-card__trend">累计时长</div>
               </div>
             </div>
           </div>
 
-    <section class="mb-6">
-      <div class="dc-overview-head">
-        <div class="dc-overview-head__title">璧勬簮浣跨敤姒傝</div>
-      </div>
+          <section class="mb-6">
+            <div class="dc-overview-head">
+              <div class="dc-overview-head__title">资源使用概览</div>
+            </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div class="dc-panel dc-chart-shell">
-          <div class="flex items-center justify-between mb-2">
-            <div class="dc-chart-title">鏈堝害鏂板杩濊椤圭洰缁熻</div>
-            <div class="dc-chart-note">鍗曚綅锛氫釜</div>
-          </div>
-          <canvas id="violation-month-chart" class="dc-canvas" width="420" height="214"></canvas>
-          <div class="dc-legend">
-            <span class="dc-legend-item"><span class="dc-dot bg-[#22d3ee]"></span>鍩轰簬鏃犱汉鏈虹洃娴嬬殑鏈堝害鏂板杩濊椤圭洰鏁伴噺</span>
-          </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+              <div class="dc-panel dc-chart-shell">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="dc-chart-title">月度新增违规项目统计</div>
+                  <div class="dc-chart-note">单位：个</div>
+                </div>
+                <canvas id="violation-month-chart" class="dc-canvas" width="420" height="214"></canvas>
+                <div class="dc-legend">
+                  <span class="dc-legend-item"><span class="dc-dot bg-[#22d3ee]"></span>基于无人机监测的月度新增违规项目数量</span>
+                </div>
+              </div>
+
+              <div class="dc-panel dc-chart-shell">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="dc-chart-title">新增违规项目分布图</div>
+                  <div class="dc-chart-note">单位：个</div>
+                </div>
+                <div class="dc-pie-chart-wrap">
+                  <canvas id="violation-pie-chart" class="dc-pie-canvas-main" width="168" height="168" aria-label="新增违规项目分布图"></canvas>
+                </div>
+                <div id="violation-pie-legend" class="dc-legend dc-legend--pie"></div>
+              </div>
+
+              <div class="dc-panel dc-chart-shell">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="dc-chart-title">设备使用率趋势图</div>
+                  <div class="dc-chart-note">单位：百分比</div>
+                </div>
+                <canvas id="trend-chart" class="dc-canvas" width="420" height="214"></canvas>
+                <div class="dc-legend">
+                  <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>无人机</span>
+                  <span class="dc-legend-item"><span class="dc-dot bg-[#22d3ee]"></span>机场设备</span>
+                </div>
+              </div>
+
+              <div class="dc-panel dc-chart-shell">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="dc-chart-title">设备使用时长</div>
+                  <div class="dc-chart-note">单位：月份 / 小时</div>
+                </div>
+                <canvas id="duration-chart" class="dc-canvas" width="420" height="214"></canvas>
+                <div class="dc-legend">
+                  <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>无人机</span>
+                  <span class="dc-legend-item"><span class="dc-dot bg-[#31c5e4]"></span>机场设备</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="disease-list-area">
+            <div class="disease-list-toolbar">
+              <div class="text-sm font-semibold text-white">使用记录明细</div>
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost"><i class="fa-solid fa-file-export mr-1"></i>导出</button>
+            </div>
+            <div class="wh-table-shell bg-slate-950/35">
+              <div class="overflow-x-auto max-h-[min(520px,calc(100vh-300px))]">
+                <table class="w-full min-w-[1560px] text-left">
+                  <thead>
+                    <tr>
+                      <th class="px-3">任务ID</th>
+                      <th class="px-3">设备名称</th>
+                      <th class="px-3">所属机场</th>
+                      <th class="px-3">任务类型</th>
+                      <th class="px-3">起飞时间</th>
+                      <th class="px-3">降落时间</th>
+                      <th class="px-3">使用时长</th>
+                      <th class="px-3">最大飞行高度（单位：米）</th>
+                      <th class="px-3">电池消耗</th>
+                      <th class="px-3">操作员姓名</th>
+                      <th class="px-3">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usage-record-body"></tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+                <span>共 <b id="usage-record-total" class="text-cyan-200">4</b> 条</span>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-left"></i></button>
+                  <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary" type="button">1</button>
+                  <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-right"></i></button>
+                  <select class="wh-input px-2 py-1 text-[11px]">
+                    <option>10 条/页</option>
+                  </select>
+                  <span>跳至</span>
+                  <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+                  <span>页</span>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
-        <div class="dc-panel dc-chart-shell">
-          <div class="flex items-center justify-between mb-3">
-            <div class="dc-chart-title">鏂板杩濊椤圭洰鍒嗗竷鍥?/div>
-            <div class="dc-chart-note">鍗曚綅锛氫釜</div>
-          </div>
-          <div class="dc-pie-chart-wrap">
-            <canvas id="violation-pie-chart" class="dc-pie-canvas-main" width="168" height="168" aria-label="鏂板杩濊椤圭洰鍒嗗竷鍥?></canvas>
-          </div>
-          <div id="violation-pie-legend" class="dc-legend dc-legend--pie"></div>
-        </div>
-
-        <div class="dc-panel dc-chart-shell">
-          <div class="flex items-center justify-between mb-3">
-            <div class="dc-chart-title">璁惧浣跨敤鐜囪秼鍔垮浘</div>
-            <div class="dc-chart-note">鍗曚綅锛氱櫨鍒嗘瘮</div>
-          </div>
-          <canvas id="trend-chart" class="dc-canvas" width="420" height="214"></canvas>
-          <div class="dc-legend">
-            <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>鏃犱汉鏈?/span>
-            <span class="dc-legend-item"><span class="dc-dot bg-[#22d3ee]"></span>鏈哄満璁惧</span>
-          </div>
-        </div>
-
-        <div class="dc-panel dc-chart-shell">
-          <div class="flex items-center justify-between mb-3">
-            <div class="dc-chart-title">璁惧浣跨敤鏃堕暱</div>
-            <div class="dc-chart-note">鍗曚綅锛氭湀浠?/ 灏忔椂</div>
-          </div>
-          <canvas id="duration-chart" class="dc-canvas" width="420" height="214"></canvas>
-          <div class="dc-legend">
-            <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>鏃犱汉鏈?/span>
-            <span class="dc-legend-item"><span class="dc-dot bg-[#31c5e4]"></span>鏈哄満璁惧</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="disease-list-area">
-      <div class="disease-list-toolbar">
-        <div class="text-sm font-semibold text-white">浣跨敤璁板綍鏄庣粏</div>
-        <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost"><i class="fa-solid fa-file-export mr-1"></i>瀵煎嚭</button>
-      </div>
-      <div class="wh-table-shell bg-slate-950/35">
-        <div class="overflow-x-auto max-h-[min(520px,calc(100vh-300px))]">
-          <table class="w-full min-w-[1560px] text-left">
-            <thead>
-              <tr>
-                <th class="px-3">浠诲姟ID</th>
-                <th class="px-3">璁惧鍚嶇О</th>
-                <th class="px-3">鎵€灞炴満鍦?/th>
-                <th class="px-3">浠诲姟绫诲瀷</th>
-                <th class="px-3">璧烽鏃堕棿</th>
-                <th class="px-3">闄嶈惤鏃堕棿</th>
-                <th class="px-3">浣跨敤鏃堕暱</th>
-                <th class="px-3">鏈€澶ч琛岄珮搴︼紙鍗曚綅锛氱背锛?/th>
-                <th class="px-3">鐢垫睜娑堣€?/th>
-                <th class="px-3">鎿嶄綔鍛樺鍚?/th>
-                <th class="px-3">鎿嶄綔</th>
-              </tr>
-            </thead>
-            <tbody id="usage-record-body"></tbody>
-          </table>
-        </div>
-        <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
-          <span>鍏?<b id="usage-record-total" class="text-cyan-200">4</b> 鏉?/span>
-          <div class="flex items-center gap-2 flex-wrap">
-            <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-left"></i></button>
-            <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary" type="button">1</button>
-            <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-right"></i></button>
-            <select class="wh-input px-2 py-1 text-[11px]">
-              <option>10 鏉?椤?/option>
-            </select>
-            <span>璺宠嚦</span>
-            <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
-            <span>椤?/span>
-          </div>
-        </div>
-      </div>
-    </section>
-        </div>
-
-        <aside class="disease-layout__right" aria-label="绛涢€変笌蹇嵎鎿嶄綔">
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
           <div class="disease-filter-panel">
-            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>蹇嵎绛涢€?/div>
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
             <div class="disease-panel-body">
               <label>
-                <span>鎵€灞炵嚎璺?/span>
+                <span>所属线路</span>
                 <select id="filter-line" class="wh-input w-full px-2">
-                  <option value="">鍏ㄩ儴绾胯矾</option>
-                  <option value="1">1鍙风嚎</option>
-                  <option value="2">2鍙风嚎</option>
-                  <option value="3">3鍙风嚎</option>
-                  <option value="4">4鍙风嚎</option>
-                  <option value="7">7鍙风嚎</option>
-                  <option value="8" selected>8鍙风嚎</option>
-                  <option value="11">11鍙风嚎</option>
-                  <option value="19">19鍙风嚎</option>
+                  <option value="">全部线路</option>
+                  <option value="1">1号线</option>
+                  <option value="2">2号线</option>
+                  <option value="3">3号线</option>
+                  <option value="4">4号线</option>
+                  <option value="7">7号线</option>
+                  <option value="8" selected>8号线</option>
+                  <option value="11">11号线</option>
+                  <option value="19">19号线</option>
                 </select>
               </label>
               <label>
-                <span>鎵€灞炴満鍦?/span>
+                <span>所属机场</span>
                 <select id="filter-airport" class="wh-input w-full px-2">
-                  <option value="">鍏ㄩ儴鏈哄満</option>
-                  <option value="杞﹁締娈垫満鍦?>杞﹁締娈垫満鍦?/option>
-                  <option value="闈掑北鏈哄満">闈掑北鏈哄満</option>
-                  <option value="鍏夎胺骞垮満鏈哄満">鍏夎胺骞垮満鏈哄満</option>
-                  <option value="寰愬妫氭満鍦?>寰愬妫氭満鍦?/option>
+                  <option value="">全部机场</option>
+                  <option value="车辆段机场">车辆段机场</option>
+                  <option value="青山机场">青山机场</option>
+                  <option value="光谷广场机场">光谷广场机场</option>
+                  <option value="徐家棚机场">徐家棚机场</option>
                 </select>
               </label>
               <label>
-                <span>璁惧鍚嶇О</span>
+                <span>设备名称</span>
                 <select id="filter-device" class="wh-input w-full px-2">
-                  <option value="">鍏ㄩ儴璁惧</option>
-                  <option value="A鍖哄贰妫€鏈?1">A鍖哄贰妫€鏈?1</option>
-                  <option value="闈掑北宸℃鏃犱汉鏈?>闈掑北宸℃鏃犱汉鏈?/option>
+                  <option value="">全部设备</option>
+                  <option value="A区巡检机01">A区巡检机01</option>
+                  <option value="青山巡检无人机">青山巡检无人机</option>
                   <option value="DJI-M300E-01">DJI-M300E-01</option>
-                  <option value="寰愬妫氬贰妫€鏈?2">寰愬妫氬贰妫€鏈?2</option>
+                  <option value="徐家棚巡检机02">徐家棚巡检机02</option>
                 </select>
               </label>
               <label>
-                <span>寮€濮嬫椂闂?/span>
+                <span>开始时间</span>
                 <input id="filter-time-start" type="date" class="wh-input w-full" />
               </label>
               <label>
-                <span>缁撴潫鏃堕棿</span>
+                <span>结束时间</span>
                 <input id="filter-time-end" type="date" class="wh-input w-full" />
               </label>
               <div class="disease-filter-actions">
-                <button type="button" id="usage-filter-search" class="wh-btn-primary">鏌ヨ</button>
-                <button type="button" id="usage-filter-reset" class="wh-btn-ghost">閲嶇疆</button>
+                <button type="button" id="usage-filter-search" class="wh-btn-primary">查询</button>
+                <button type="button" id="usage-filter-reset" class="wh-btn-ghost">重置</button>
               </div>
             </div>
           </div>
           <div class="disease-quick-panel">
-            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>蹇嵎鎿嶄綔</div>
+            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
             <div class="disease-panel-body">
-              <a class="disease-quick-link" data-quick-href="stats/dc-line-stats.html" href="dc-line-stats.html"><i class="fa-solid fa-chart-line"></i><span>绾胯矾椤圭洰缁熻</span></a>
-              <a class="disease-quick-link is-active" data-quick-href="stats/dc-drone-stats.html" href="dc-drone-stats.html"><i class="fa-solid fa-chart-pie"></i><span>鏃犱汉鏈烘暟鎹粺璁?/span></a>
-              <a class="disease-quick-link" data-quick-href="stats/dc-system-stats.html" href="dc-system-stats.html"><i class="fa-solid fa-table"></i><span>鍏ㄦ椂鍏ㄥ煙鏁版嵁缁熻鎶ヨ〃</span></a>
-              <a class="disease-quick-link" data-quick-href="stats/dc-library.html" href="dc-library.html"><i class="fa-solid fa-database"></i><span>璧勬枡搴?/span></a>
+              <a class="disease-quick-link" data-quick-href="stats/dc-line-stats.html" href="dc-line-stats.html"><i class="fa-solid fa-chart-line"></i><span>线路项目统计</span></a>
+              <a class="disease-quick-link is-active" data-quick-href="stats/dc-drone-stats.html" href="dc-drone-stats.html"><i class="fa-solid fa-chart-pie"></i><span>无人机数据统计</span></a>
+              <a class="disease-quick-link" data-quick-href="stats/dc-system-stats.html" href="dc-system-stats.html"><i class="fa-solid fa-table"></i><span>全时全域数据统计报表</span></a>
+              <a class="disease-quick-link" data-quick-href="stats/dc-library.html" href="dc-library.html"><i class="fa-solid fa-database"></i><span>资料库</span></a>
             </div>
           </div>
         </aside>
@@ -307,11 +326,57 @@
     </section>
   </div>
 
+  <div id="detail-modal" class="fl-modal-mask">
+    <div class="fl-modal">
+      <div class="flex items-center justify-between gap-3 px-6 py-4 border-b border-white/10">
+        <h3 class="text-base font-semibold text-white">飞行日志详情</h3>
+        <button type="button" class="wh-modal-close" data-close="detail-modal" aria-label="关闭">×</button>
+      </div>
+      <div class="p-6">
+        <div class="fl-detail-grid">
+          <section>
+            <h4 class="text-sm font-semibold text-white mb-4">基本信息</h4>
+            <div id="detail-info" class="text-sm"></div>
+          </section>
+          <section>
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <h4 class="text-sm font-semibold text-white">飞行轨迹</h4>
+              <div class="flex flex-wrap gap-2">
+                <button id="detail-play-track-btn" type="button" class="wh-btn-primary px-4 py-2 text-sm"><i class="fa-solid fa-play mr-1"></i>播放轨迹</button>
+                <button id="detail-map-reset-btn" type="button" class="wh-btn-ghost px-4 py-2 text-sm"><i class="fa-solid fa-location-crosshairs mr-1"></i>重置视角</button>
+                <button id="detail-export-btn" type="button" class="wh-btn-ghost px-4 py-2 text-sm"><i class="fa-solid fa-file-export mr-1"></i>导出</button>
+              </div>
+            </div>
+            <div class="fl-map-shell track-map-shell">
+              <div id="detail-map" class="fl-map"></div>
+              <div class="track-map-panel">
+                <div class="track-map-panel__row"><span class="track-map-panel__label">轨迹状态</span><span id="fl-map-status-text">待播放</span></div>
+                <div class="track-map-panel__row"><span class="track-map-panel__label">当前位置</span><span id="fl-map-current-name">--</span></div>
+                <div class="track-map-panel__row"><span class="track-map-panel__label">定位时间</span><span id="fl-map-current-time">--</span></div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div class="mt-6 pt-4 border-t border-white/10 flex justify-center">
+          <button type="button" class="wh-btn-ghost px-6 py-2 text-sm" data-close="detail-modal">返回</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="../../assets/js/menu-config.js"></script>
   <script src="../../assets/js/shell.js"></script>
   <script src="../../assets/js/dc-drone-stats-data.js"></script>
+  <script src="../../assets/js/am-flight-log-data.js"></script>
+  <script src="../../assets/js/track-playback.js"></script>
+  <script src="../../assets/js/flight-report-modal.js"></script>
+  <script src="../../assets/js/am-flight-log-page.js"></script>
   <script src="../../assets/js/dc-drone-stats-page.js"></script>
   <script>
+    if (window.WHFlightLogPage && window.WHFlightLogPage.boot) {
+      window.WHFlightLogPage.boot({ mobile: false, modalOnly: true });
+    }
     if (window.WHDroneStatsPage && window.WHDroneStatsPage.boot) {
       window.WHDroneStatsPage.boot({ mobile: false });
     }

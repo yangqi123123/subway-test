@@ -185,6 +185,7 @@
     ],
     st: [
       { type: "item", key: "dc-line-stats", label: "线路项目统计", href: "stats/dc-line-stats.html" },
+      { type: "item", key: "dc-drone-stats", label: "无人机数据统计", href: "stats/dc-drone-stats.html" },
       {
         type: "item",
         key: "dc-system-stats",

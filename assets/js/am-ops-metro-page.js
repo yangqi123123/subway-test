@@ -94,91 +94,6 @@
       });
     }
 
-    function fieldVal(id) {
-      var el = document.getElementById(id);
-      return el ? String(el.value || "").trim() : "";
-    }
-
-    function syncFilterHint() {
-      var hintEl = document.getElementById("ops-filter-hint");
-      if (!hintEl) return;
-      var start = fieldVal("ops-filter-start");
-      var end = fieldVal("ops-filter-end");
-      if (start && end) {
-        hintEl.textContent = start.replace("T", " ") + " ~ " + end.replace("T", " ");
-        hintEl.hidden = false;
-      } else {
-        hintEl.hidden = true;
-        hintEl.textContent = "";
-      }
-    }
-
-    function bindEvents() {
-      document.addEventListener("click", function (event) {
-        var trigger = event.target.closest("[data-action]");
-        if (!trigger) return;
-        var action = trigger.getAttribute("data-action");
-
-        if (action === "open-ops-filter") {
-          var sheet = document.getElementById("ops-filter-sheet");
-          if (sheet) {
-            sheet.classList.add("is-open");
-            sheet.setAttribute("aria-hidden", "false");
-          }
-          return;
-        }
-        if (action === "close-ops-filter") {
-          var closeSheet = document.getElementById("ops-filter-sheet");
-          if (closeSheet) {
-            closeSheet.classList.remove("is-open");
-            closeSheet.setAttribute("aria-hidden", "true");
-          }
-          return;
-        }
-        if (action === "search-ops-filter") {
-          var filterSheet = document.getElementById("ops-filter-sheet");
-          if (filterSheet) {
-            filterSheet.classList.remove("is-open");
-            filterSheet.setAttribute("aria-hidden", "true");
-          }
-          applyServer(serverId);
-          syncFilterHint();
-          showToast("已按时间范围刷新监控数据");
-          return;
-        }
-        if (action === "reset-ops-filter") {
-          var defaults = global.WH_OPS_METRO_DEFAULT_FILTER || {};
-          var startEl = document.getElementById("ops-filter-start");
-          var endEl = document.getElementById("ops-filter-end");
-          if (startEl) startEl.value = defaults.start || "";
-          if (endEl) endEl.value = defaults.end || "";
-          applyServer(serverId);
-          syncFilterHint();
-          showToast("筛选条件已重置");
-        }
-      });
-
-      var searchBtn = document.getElementById("ops-filter-search");
-      var resetBtn = document.getElementById("ops-filter-reset");
-      if (searchBtn) {
-        searchBtn.addEventListener("click", function () {
-          applyServer(serverId);
-          showToast("已按时间范围刷新监控数据");
-        });
-      }
-      if (resetBtn) {
-        resetBtn.addEventListener("click", function () {
-          var defaults = global.WH_OPS_METRO_DEFAULT_FILTER || {};
-          var startEl = document.getElementById("ops-filter-start");
-          var endEl = document.getElementById("ops-filter-end");
-          if (startEl) startEl.value = defaults.start || "";
-          if (endEl) endEl.value = defaults.end || "";
-          applyServer(serverId);
-          showToast("筛选条件已重置");
-        });
-      }
-    }
-
     function initQuickLinks() {
       var mountEl = document.getElementById("ops-quick-links");
       if (mountEl && global.SystemMgmtQuickLinks) {
@@ -186,9 +101,7 @@
       }
     }
 
-    bindEvents();
     initQuickLinks();
-    syncFilterHint();
     applyServer(serverId);
   }
 

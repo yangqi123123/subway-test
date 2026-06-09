@@ -9,22 +9,6 @@ body.mp-ops-page #ops-monitor-view {
   background: var(--mp-bg-subtle);
 }
 
-body.mp-ops-page .mp-ops-filterbar {
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-}
-
-body.mp-ops-page .mp-ops-filter-hint {
-  flex: 1;
-  margin: 0;
-  font-size: 12px;
-  color: var(--mp-text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 body.mp-ops-page .mp-ops-section {
   border-radius: 12px;
   border: 1px solid var(--mp-border-subtle);
@@ -256,14 +240,6 @@ body.mp-ops-page .ops-cap-total__foot {
   justify-content: space-between;
   font-size: 11px;
   color: var(--mp-text-muted);
-}
-
-body.mp-ops-page .mp-filter-sheet__body.project-filter-panel {
-  grid-template-columns: 1fr;
-}
-
-body.mp-ops-page .mp-filter-sheet__body .mp-filter-field {
-  grid-column: 1 / -1;
 }
 
 body.mp-ops-page #ops-toast.project-toast {
