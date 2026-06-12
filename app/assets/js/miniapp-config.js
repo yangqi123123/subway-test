@@ -103,11 +103,10 @@
         pilotCert: "",
       },
       cells: [
-        { label: "设置", icon: "fa-gear", href: "pages/settings.html" },
         { label: "待办", icon: "fa-list-check", href: "pages/todo.html", list: "todo" },
         { label: "系统通知", icon: "fa-bell", href: "pages/notify.html", list: "notify" },
         { label: "已处理事项", icon: "fa-circle-check", href: "pages/done.html" },
-        { label: "修改密码", icon: "fa-lock", href: "pages/change-password.html" },
+        { label: "设置", icon: "fa-gear", href: "pages/settings.html" },
       ],
       logoutHref: "app-login.html",
     },

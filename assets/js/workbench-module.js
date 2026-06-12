@@ -434,7 +434,7 @@
     var buttons = (current.toolbar || [])
       .map(function (name) {
         var hidden =
-          key === "wb-todo" && name === "批量审批" && current.activeTab !== "approval" && current.activeTab !== "alert"
+          key === "wb-todo" && name === "批量审批" && !todoBatchUiVisible()
             ? " hidden"
             : "";
         var label = key === "wb-todo" && name === "批量审批" && current.activeTab === "alert" ? "批量复核" : name;
@@ -559,9 +559,13 @@
     if (el) el.textContent = title;
   }
 
+  function todoBatchUiVisible() {
+    return !!(current && current.activeTab === "approval");
+  }
+
   function tableColumnCount(key) {
     var count = (current.columns || []).length;
-    if (key === "wb-todo" && (current.activeTab === "approval" || current.activeTab === "alert")) count += 1;
+    if (key === "wb-todo" && todoBatchUiVisible()) count += 1;
     return count;
   }
 
@@ -616,7 +620,7 @@
 
   function todoTableHeadHtml(key) {
     var cols = current.columns || [];
-    if (key === "wb-todo" && (current.activeTab === "approval" || current.activeTab === "alert")) {
+    if (key === "wb-todo" && todoBatchUiVisible()) {
       return (
         '<th class="w-10 px-3"><input type="checkbox" id="wb-todo-check-all" title="全选" /></th>' +
         cols
@@ -714,7 +718,7 @@
   function rowCells(key, row, index) {
     if (key === "wb-todo") {
       var cells = [row.title, row.source, row.user, row.time, tag(row.status), todoActions(row, index)];
-      if (current.activeTab === "approval" || current.activeTab === "alert") cells.unshift(todoCheckboxCell(row));
+      if (todoBatchUiVisible()) cells.unshift(todoCheckboxCell(row));
       return cells;
     }
     if (key === "wb-sys-notify") return [row.title, tag(row.type), row.time, tag(row.read), actions(row, index)];
@@ -812,7 +816,7 @@
     if (window.WHTableRowClick) WHTableRowClick.injectStyles();
     if (!rows.length) {
       document.getElementById("wb-body").innerHTML = renderTodoEmptyRow(key);
-      if (key === "wb-todo" && (current.activeTab === "approval" || current.activeTab === "alert")) syncTodoCheckAllState();
+      if (key === "wb-todo" && todoBatchUiVisible()) syncTodoCheckAllState();
       return;
     }
     document.getElementById("wb-body").innerHTML = rows
@@ -836,7 +840,7 @@
         );
       })
       .join("");
-    if (key === "wb-todo" && (current.activeTab === "approval" || current.activeTab === "alert")) syncTodoCheckAllState();
+    if (key === "wb-todo" && todoBatchUiVisible()) syncTodoCheckAllState();
   }
 
   function rowByTitle(title) {
@@ -1259,7 +1263,7 @@
   function syncTodoBatchToolbar() {
     var btn = document.querySelector('#wb-app [data-action="批量审批"]');
     if (!btn) return;
-    btn.classList.toggle("hidden", current.activeTab !== "approval" && current.activeTab !== "alert");
+    btn.classList.toggle("hidden", !todoBatchUiVisible());
     var label = current.activeTab === "alert" ? "批量复核" : "批量审批";
     btn.innerHTML = '<i class="fa-solid fa-check-double mr-1"></i>' + label;
   }

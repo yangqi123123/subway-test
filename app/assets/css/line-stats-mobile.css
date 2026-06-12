@@ -31,20 +31,44 @@ body.mp-line-stats-page .mp-line-stats-filter-btn {
 
 body.mp-line-stats-page .mp-stats-chart-head {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
   margin-bottom: 8px;
 }
 
-body.mp-line-stats-page .mp-stats-chart-head__main {
+body.mp-line-stats-page .mp-stats-chart-head__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+body.mp-line-stats-page .mp-stats-chart-head .line-chart-title,
+body.mp-line-stats-page .mp-stats-chart-head .sys-chart-title {
   flex: 1;
   min-width: 0;
 }
 
 body.mp-line-stats-page .mp-stats-chart-head .dc-chart-tools-slot {
-  flex-shrink: 0;
-  margin-left: auto;
+  flex: 0 0 auto;
+  margin-left: 0;
+}
+
+body.mp-line-stats-page .mp-stats-chart-head .dc-chart-tools {
+  gap: 4px;
+}
+
+body.mp-line-stats-page .mp-stats-chart-head .dc-chart-tool {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  font-size: 11px;
+}
+
+body.mp-line-stats-page .mp-stats-chart-head .dc-chart-download-menu {
+  min-width: 118px;
+  font-size: 11px;
 }
 
 body.mp-line-stats-page .mp-line-stats-tabs {
@@ -116,14 +140,35 @@ body.mp-line-stats-page .sys-chart-title {
   font-weight: 700;
   margin: 0;
   line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 body.mp-line-stats-page .line-chart-sub,
 body.mp-line-stats-page .sys-chart-sub {
   text-align: left;
   color: var(--mp-text-muted);
-  font-size: 12px;
-  margin: 4px 0 0;
+  font-size: 11px;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+  line-height: 1.35;
+  overflow: visible;
+}
+
+body.mp-line-stats-page .line-chart-sub__item {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+body.mp-line-stats-page .line-chart-sub__sep {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 body.mp-line-stats-page .dc-chart-legend-item {
@@ -329,4 +374,96 @@ body.mp-line-stats-page #line-stats-toast.project-toast {
 body.mp-line-stats-page #line-stats-toast.project-toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
+}
+
+body.mp-line-stats-chart-fullscreen {
+  overflow: hidden;
+}
+
+body.mp-line-stats-chart-fullscreen .miniapp-navbar,
+body.mp-line-stats-chart-fullscreen .mp-list-scroll {
+  visibility: hidden;
+}
+
+.mp-line-stats-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mp-bg-subtle);
+}
+
+.mp-line-stats-fullscreen[hidden] {
+  display: none !important;
+}
+
+.mp-line-stats-fullscreen__rotator {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) calc(10px + env(safe-area-inset-right, 0px))
+    calc(10px + env(safe-area-inset-bottom, 0px)) calc(10px + env(safe-area-inset-left, 0px));
+}
+
+.mp-line-stats-fullscreen__rotator--landscape {
+  width: 100vh;
+  height: 100vw;
+  max-width: 100vh;
+  max-height: 100vw;
+  transform: rotate(90deg);
+}
+
+.mp-line-stats-fullscreen__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.mp-line-stats-fullscreen__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--mp-text-primary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mp-line-stats-fullscreen__exit {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  background: #fff;
+  color: var(--mp-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mp-line-stats-fullscreen__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mp-line-stats-fullscreen__body .mp-line-stats-chart-card {
+  min-height: 100%;
+  box-shadow: none;
+}
+
+.mp-line-stats-chart-placeholder {
+  display: none;
 }

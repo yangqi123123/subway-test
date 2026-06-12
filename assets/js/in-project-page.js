@@ -861,6 +861,10 @@
         if (isMobile) {
           if (mode === "new") loadProjectToForm(null);
           else if (currentProjectIndex >= 0) loadProjectToForm(projects[currentProjectIndex]);
+        } else {
+          if (mode === "new") loadProjectToForm(null);
+          else if (currentProjectIndex >= 0) loadProjectToForm(projects[currentProjectIndex]);
+          syncProjectFieldSelectsFromForm();
         }
         applyProjectMode(mode);
         switchTab("base");
@@ -914,6 +918,27 @@
         document.getElementById("project-list-view").classList.remove("hidden");
         if (isMobile) {
           global.dispatchEvent(new Event("wh-project-view-change"));
+        }
+      }
+
+      function syncProjectFieldSelectsFromForm() {
+        if (isMobile || !projectFieldSelects.length) return;
+        var addrInst = projectFieldSelects[0];
+        var categoryInst = projectFieldSelects[1];
+        var structTypeInst = projectFieldSelects[2];
+        var structStatusInst = projectFieldSelects[3];
+        if (addrInst && addrInst.setValue) addrInst.setValue(fieldVal("proj-addr-type"));
+        if (categoryInst && categoryInst.setValues) {
+          var categoryVal = fieldVal("proj-category");
+          categoryInst.setValues(categoryVal ? categoryVal.split("、").filter(Boolean) : []);
+        }
+        if (structTypeInst && structTypeInst.setValues) {
+          var structTypeVal = fieldVal("proj-struct-type");
+          structTypeInst.setValues(structTypeVal ? structTypeVal.split("、").filter(Boolean) : []);
+        }
+        if (structStatusInst && structStatusInst.setValues) {
+          var structStatusVal = fieldVal("proj-struct-status");
+          structStatusInst.setValues(structStatusVal ? structStatusVal.split("、").filter(Boolean) : []);
         }
       }
 

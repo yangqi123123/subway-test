@@ -26,7 +26,7 @@
 
   DCChartToolbar.prototype._isCompact = function () {
     if (this.options.compact) return true;
-    return !!(this.canvas && this.canvas.closest && this.canvas.closest(".mp-line-stats-page"));
+    return !!(this.canvas && this.canvas.closest && (this.canvas.closest(".mp-line-stats-page") || this.canvas.closest(".mp-system-stats-page")));
   };
 
   DCChartToolbar.prototype._theme = function () {
@@ -175,6 +175,12 @@
       }
       if (tool === "download") {
         self._toggleDownloadMenu(btn);
+        return;
+      }
+      if (tool === "fullscreen") {
+        if (typeof self.options.onFullscreenClick === "function") {
+          self.options.onFullscreenClick();
+        }
       }
     });
 
@@ -518,6 +524,7 @@
 
   DCChartToolbar.prototype._showCanvas = function () {
     this.canvas.classList.remove("is-hidden");
+    this.canvas.style.display = "block";
     if (this.tableWrap) {
       this.tableWrap.classList.remove("is-visible");
       this.tableWrap.classList.remove("dc-chart-table-wrap--split");
@@ -632,6 +639,7 @@
 
   DCChartToolbar.prototype._showTable = function (config) {
     this.canvas.classList.add("is-hidden");
+    this.canvas.style.display = "none";
     if (!this.tableWrap) return;
     this.tableWrap.classList.add("is-visible");
     var series = config.series || [];
@@ -705,7 +713,11 @@
     URL.revokeObjectURL(link.href);
   };
 
-  DCChartToolbar.createToolsHtml = function () {
+  DCChartToolbar.createToolsHtml = function (options) {
+    options = options || {};
+    var fullscreenBtn = options.fullscreen
+      ? '<button type="button" class="dc-chart-tool" data-tool="fullscreen" title="全屏"><i class="fa-solid fa-expand"></i></button>'
+      : "";
     return (
       '<div class="dc-chart-tools">' +
       '<button type="button" class="dc-chart-tool" data-tool="stack-group" title="堆叠/分组切换"><i class="fa-solid fa-layer-group"></i></button>' +
@@ -713,7 +725,9 @@
       '<button type="button" class="dc-chart-tool" data-tool="table" title="表格展示"><i class="fa-solid fa-table"></i></button>' +
       '<div class="dc-chart-tool-wrap">' +
       '<button type="button" class="dc-chart-tool" data-tool="download" title="下载"><i class="fa-solid fa-download"></i></button>' +
-      "</div></div>"
+      "</div>" +
+      fullscreenBtn +
+      "</div>"
     );
   };
 

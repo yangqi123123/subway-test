@@ -66,11 +66,11 @@
         <div class="mp-line-stats-chart-card">
           <section id="tab-panel-line" class="stats-tab-panel line-panel">
             <div class="mp-stats-chart-head">
-              <div class="mp-stats-chart-head__main">
+              <div class="mp-stats-chart-head__title-row">
                 <div class="line-chart-title">线路项目统计图</div>
-                <div class="line-chart-sub">一般项目456个，重点项目224个</div>
+                <div class="dc-chart-tools-slot"><div id="line-chart-tools"></div></div>
               </div>
-              <div class="dc-chart-tools-slot"><div id="line-chart-tools"></div></div>
+              <div class="line-chart-sub"><span class="line-chart-sub__item">一般项目456个</span><span class="line-chart-sub__sep">，</span><span class="line-chart-sub__item">重点项目224个</span></div>
             </div>
             <div class="dc-chart-legend">
               <span class="dc-chart-legend-item"><span class="dc-chart-legend-dot" style="background:#2dd4bf"></span>一般项目</span>
@@ -84,11 +84,11 @@
 
           <section id="tab-panel-system" class="stats-tab-panel sys-chart-panel hidden">
             <div class="mp-stats-chart-head">
-              <div class="mp-stats-chart-head__main">
+              <div class="mp-stats-chart-head__title-row">
                 <div id="chart-title" class="sys-chart-title">项目类型图</div>
-                <div id="chart-sub" class="sys-chart-sub">总计701个项目</div>
+                <div class="dc-chart-tools-slot"><div id="system-chart-tools"></div></div>
               </div>
-              <div class="dc-chart-tools-slot"><div id="system-chart-tools"></div></div>
+              <div id="chart-sub" class="sys-chart-sub">总计701个项目</div>
             </div>
             <div id="system-chart-legend" class="dc-chart-legend"></div>
             <div class="dc-chart-stage">
@@ -149,6 +149,18 @@
         <button type="button" class="mp-btn mp-btn--ghost flex-1" data-action="reset-line-stats-filter">重置</button>
         <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-line-stats-filter">搜索</button>
       </div>
+    </div>
+  </div>
+
+  <div id="line-stats-fullscreen" class="mp-line-stats-fullscreen" hidden aria-hidden="true">
+    <div id="line-stats-fullscreen-rotator" class="mp-line-stats-fullscreen__rotator">
+      <div class="mp-line-stats-fullscreen__top">
+        <span id="line-stats-fullscreen-title" class="mp-line-stats-fullscreen__title">线路项目统计图</span>
+        <button type="button" class="mp-line-stats-fullscreen__exit" data-action="line-stats-exit-fullscreen">
+          <i class="fa-solid fa-compress" aria-hidden="true"></i>退出全屏
+        </button>
+      </div>
+      <div id="line-stats-fullscreen-body" class="mp-line-stats-fullscreen__body"></div>
     </div>
   </div>
 

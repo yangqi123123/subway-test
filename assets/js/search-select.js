@@ -32,6 +32,30 @@
     return String(str).replace(/"/g, "&quot;");
   }
 
+  function mountDropdownToBody(dropdown) {
+    if (dropdown && dropdown.parentNode !== document.body) {
+      document.body.appendChild(dropdown);
+    }
+  }
+
+  function restoreDropdown(dropdown, wrapEl) {
+    if (dropdown && wrapEl && dropdown.parentNode === document.body) {
+      wrapEl.appendChild(dropdown);
+    }
+  }
+
+  function bindDropdownReposition(inst, wrapEl, positionDropdown) {
+    if (inst._repositionBound) return;
+    inst._repositionBound = true;
+    var onReposition = function () {
+      if (!wrapEl.classList.contains("is-open")) return;
+      positionDropdown();
+    };
+    inst._repositionHandler = onReposition;
+    window.addEventListener("scroll", onReposition, true);
+    window.addEventListener("resize", onReposition);
+  }
+
   /**
    * @param {HTMLElement} wrapEl 容器，需带 data-input-id
    * @param {string[]} options
@@ -66,6 +90,10 @@
       '<input type="text" class="wh-search-select__search wh-input" placeholder="输入关键词搜索" autocomplete="off" />' +
       '<ul class="wh-search-select__list"></ul>';
     wrapEl.appendChild(dropdown);
+
+    dropdown.addEventListener("click", function (e) {
+      e.stopPropagation();
+    });
 
     var valueEl = trigger.querySelector(".wh-search-select__value");
     var searchInput = dropdown.querySelector(".wh-search-select__search");
@@ -132,15 +160,20 @@
     function open() {
       closeAll(inst);
       wrapEl.classList.add("is-open");
+      mountDropdownToBody(dropdown);
       searchInput.value = "";
       renderList("");
       positionDropdown();
+      dropdown.style.display = "flex";
+      bindDropdownReposition(inst, wrapEl, positionDropdown);
       searchInput.focus();
     }
 
     function close() {
       wrapEl.classList.remove("is-open");
+      dropdown.style.display = "";
       resetDropdownPosition();
+      restoreDropdown(dropdown, wrapEl);
     }
 
     function setDisabled(disabled) {
@@ -228,6 +261,10 @@
       '<ul class="wh-search-select__list"></ul>' +
       '<div class="wh-search-select__foot"><button type="button" class="wh-search-select__done">确定</button></div>';
     wrapEl.appendChild(dropdown);
+
+    dropdown.addEventListener("click", function (e) {
+      e.stopPropagation();
+    });
 
     var tagsEl = trigger.querySelector(".wh-search-select__tags");
     var valueEl = trigger.querySelector(".wh-search-select__value");
@@ -327,15 +364,20 @@
     function open() {
       closeAll(inst);
       wrapEl.classList.add("is-open");
+      mountDropdownToBody(dropdown);
       searchInput.value = "";
       renderList("");
       positionDropdown();
+      dropdown.style.display = "flex";
+      bindDropdownReposition(inst, wrapEl, positionDropdown);
       searchInput.focus();
     }
 
     function close() {
       wrapEl.classList.remove("is-open");
+      dropdown.style.display = "";
       resetDropdownPosition();
+      restoreDropdown(dropdown, wrapEl);
     }
 
     function setDisabled(disabled) {
@@ -398,7 +440,8 @@
 
   if (!global._whSearchSelectDocBound) {
     global._whSearchSelectDocBound = true;
-    document.addEventListener("click", function () {
+    document.addEventListener("click", function (e) {
+      if (e.target.closest(".wh-search-select__dropdown") || e.target.closest(".wh-search-select")) return;
       closeAll(null);
     });
   }

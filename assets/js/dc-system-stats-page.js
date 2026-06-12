@@ -42,6 +42,12 @@
     var chartToolbar = null;
     var mobileToolbars = {};
     var isDualMobileCharts = isMobile && !!document.getElementById("alert-chart-workflow");
+    var chartFullscreen = {
+      active: false,
+      key: null,
+      placeholder: null,
+      chartCard: null,
+    };
 
     function $(id) {
       return document.getElementById(id);
@@ -260,6 +266,119 @@
       if (isMobile) showToast("筛选条件已重置");
     }
 
+    function getChartMeta(key) {
+      for (var i = 0; i < MOBILE_CHARTS.length; i++) {
+        if (MOBILE_CHARTS[i].key === key) return MOBILE_CHARTS[i];
+      }
+      return null;
+    }
+
+    function getActiveChartTitle() {
+      var meta = chartFullscreen.key ? getChartMeta(chartFullscreen.key) : null;
+      if (meta) {
+        var titleEl = $(meta.titleId);
+        return titleEl ? titleEl.textContent : "统计图表";
+      }
+      return "统计图表";
+    }
+
+    function syncFullscreenRotator() {
+      var rotator = $("system-stats-fullscreen-rotator");
+      if (!rotator) return;
+      var portrait = window.innerWidth < window.innerHeight;
+      rotator.classList.toggle("mp-system-stats-fullscreen__rotator--landscape", portrait);
+    }
+
+    function ensureToolbarChartView(toolbar) {
+      if (!toolbar) return;
+      toolbar.state.viewMode = "chart";
+      toolbar.render();
+    }
+
+    function prepareToolbarForChartDisplay(key) {
+      ensureToolbarChartView(mobileToolbars[key]);
+    }
+
+    function resizeChartForFullscreen(key, isFullscreen) {
+      var meta = getChartMeta(key);
+      if (!meta) return;
+      var longSide = Math.max(window.innerWidth, window.innerHeight);
+      var shortSide = Math.min(window.innerWidth, window.innerHeight);
+      var chartW = isFullscreen ? Math.max(640, longSide - 72) : 720;
+      var chartH = isFullscreen ? Math.max(260, shortSide - 148) : 320;
+      var canvas = $(meta.canvasId);
+      if (canvas) {
+        canvas.width = chartW;
+        canvas.height = chartH;
+      }
+      if (mobileToolbars[key]) mobileToolbars[key].render();
+    }
+
+    function enterChartFullscreen(key) {
+      if (!isMobile || !isDualMobileCharts || chartFullscreen.active) return;
+      var meta = getChartMeta(key);
+      if (!meta) return;
+      var fsEl = $("system-stats-fullscreen");
+      var fsBody = $("system-stats-fullscreen-body");
+      var chartCard = document.querySelector('.mp-system-stats-chart-card[data-chart-key="' + key + '"]');
+      if (!fsEl || !fsBody || !chartCard) return;
+
+      prepareToolbarForChartDisplay(key);
+      chartFullscreen.placeholder = document.createElement("div");
+      chartFullscreen.placeholder.className = "mp-system-stats-chart-placeholder";
+      chartCard.parentNode.insertBefore(chartFullscreen.placeholder, chartCard);
+      fsBody.appendChild(chartCard);
+      chartFullscreen.chartCard = chartCard;
+      chartFullscreen.key = key;
+      chartFullscreen.active = true;
+
+      var titleEl = $("system-stats-fullscreen-title");
+      if (titleEl) titleEl.textContent = getActiveChartTitle();
+
+      fsEl.hidden = false;
+      fsEl.setAttribute("aria-hidden", "false");
+      document.body.classList.add("mp-system-stats-chart-fullscreen");
+      syncFullscreenRotator();
+      setTimeout(function () {
+        resizeChartForFullscreen(key, true);
+      }, 60);
+    }
+
+    function exitChartFullscreen() {
+      if (!chartFullscreen.active || !chartFullscreen.chartCard) return;
+      var key = chartFullscreen.key;
+      var fsEl = $("system-stats-fullscreen");
+      var placeholder = chartFullscreen.placeholder;
+      if (placeholder && placeholder.parentNode) {
+        placeholder.parentNode.insertBefore(chartFullscreen.chartCard, placeholder);
+        placeholder.remove();
+      }
+      chartFullscreen.placeholder = null;
+      chartFullscreen.chartCard = null;
+      chartFullscreen.key = null;
+      chartFullscreen.active = false;
+      if (key) prepareToolbarForChartDisplay(key);
+      if (fsEl) {
+        fsEl.hidden = true;
+        fsEl.setAttribute("aria-hidden", "true");
+      }
+      document.body.classList.remove("mp-system-stats-chart-fullscreen");
+      if (key) {
+        resizeChartForFullscreen(key, false);
+        setTimeout(function () {
+          resizeChartForFullscreen(key, false);
+        }, 80);
+      }
+    }
+
+    function toggleChartFullscreen(key) {
+      if (chartFullscreen.active && chartFullscreen.key === key) exitChartFullscreen();
+      else if (chartFullscreen.active) {
+        exitChartFullscreen();
+        enterChartFullscreen(key);
+      } else enterChartFullscreen(key);
+    }
+
     function mountTabs() {
       if (isDualMobileCharts) return;
       var nav = $("system-stats-tabs");
@@ -283,10 +402,11 @@
 
       if (isDualMobileCharts) {
         var ready = true;
+        var toolsOptions = { fullscreen: true };
         MOBILE_CHARTS.forEach(function (meta) {
           var toolsEl = $(meta.toolsId);
           if (toolsEl && !toolsEl.innerHTML) {
-            toolsEl.innerHTML = global.DCChartToolbar.createToolsHtml();
+            toolsEl.innerHTML = global.DCChartToolbar.createToolsHtml(toolsOptions);
           }
           if (!mobileToolbars[meta.key] && $(meta.canvasId)) {
             mobileToolbars[meta.key] = new global.DCChartToolbar({
@@ -295,6 +415,11 @@
               tableWrap: $(meta.tableId),
               fileName: meta.fileName,
               compact: true,
+              onFullscreenClick: (function (chartKey) {
+                return function () {
+                  toggleChartFullscreen(chartKey);
+                };
+              })(meta.key),
               getConfig: (function (chartKey) {
                 return function () {
                   return chartConfigs[chartKey] || chartConfigs.projectAlert;
@@ -360,6 +485,10 @@
             resetFilter();
             return;
           }
+          if (action === "system-stats-exit-fullscreen") {
+            exitChartFullscreen();
+            return;
+          }
         }
 
         if (!isDualMobileCharts) {
@@ -372,6 +501,17 @@
       var resetBtn = $("filter-reset-btn");
       if (searchBtn) searchBtn.addEventListener("click", applyFilter);
       if (resetBtn) resetBtn.addEventListener("click", resetFilter);
+
+      if (isMobile && isDualMobileCharts) {
+        global.addEventListener("resize", function () {
+          if (!chartFullscreen.active || !chartFullscreen.key) return;
+          syncFullscreenRotator();
+          resizeChartForFullscreen(chartFullscreen.key, true);
+        });
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "Escape" && chartFullscreen.active) exitChartFullscreen();
+        });
+      }
     }
 
     function initQuickLinks() {

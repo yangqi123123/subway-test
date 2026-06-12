@@ -12,6 +12,17 @@
     var activeSystemTab = "projectType";
     var lineToolbar = null;
     var systemToolbar = null;
+    var chartFullscreen = {
+      active: false,
+      placeholder: null,
+      chartCard: null,
+    };
+
+    function esc(s) {
+      return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+      });
+    }
 
     function $(id) {
       return document.getElementById(id);
@@ -80,7 +91,7 @@
       var hints = [];
       if (section) hints.push("区间：" + section);
       if (station) hints.push("站点：" + station);
-      if (start || end) hints.push((start || "…") + " ~ " + (end || "…"));
+      if (!isMobile && (start || end)) hints.push((start || "…") + " ~ " + (end || "…"));
       if (hints.length) cfg.sub = hints.join(" · ") + " · " + lineChartBase.sub;
 
       if (line) {
@@ -144,11 +155,28 @@
       return el ? String(el.value || "").trim() : "";
     }
 
+    function renderLineChartSub(text) {
+      var subEl = document.querySelector("#tab-panel-line .line-chart-sub");
+      if (!subEl) return;
+      if (isMobile && text === lineChartBase.sub) {
+        var parts = String(lineChartBase.sub || "").split("，");
+        if (parts.length >= 2) {
+          subEl.innerHTML =
+            '<span class="line-chart-sub__item">' +
+            esc(parts[0]) +
+            '</span><span class="line-chart-sub__sep">，</span><span class="line-chart-sub__item">' +
+            esc(parts.slice(1).join("，")) +
+            "</span>";
+          return;
+        }
+      }
+      subEl.textContent = text;
+    }
+
     function updateLineChartTitles(cfg) {
       var titleEl = document.querySelector("#tab-panel-line .line-chart-title");
-      var subEl = document.querySelector("#tab-panel-line .line-chart-sub");
       if (titleEl) titleEl.textContent = cfg.title;
-      if (subEl) subEl.textContent = cfg.sub;
+      renderLineChartSub(cfg.sub);
     }
 
     function applyGeoFilter(silent) {
@@ -163,7 +191,7 @@
 
     function resetGeoFilter() {
       if (isMobile) {
-        ["filter-section", "filter-station"].forEach(function (id) {
+        ["filter-section", "filter-station", "filter-date-start", "filter-date-end"].forEach(function (id) {
           var el = $(id);
           if (el) el.value = "";
         });
@@ -243,6 +271,10 @@
       });
       if ($("tab-panel-line")) $("tab-panel-line").classList.toggle("hidden", !isLine);
       if ($("tab-panel-system")) $("tab-panel-system").classList.toggle("hidden", isLine);
+      if (chartFullscreen.active) {
+        var titleEl = $("line-stats-fullscreen-title");
+        if (titleEl) titleEl.textContent = getActiveChartTitle();
+      }
       if (isLine) applyGeoFilter(true);
       else activateSystemTab(key);
     }
@@ -267,16 +299,121 @@
       nav.dataset.mounted = "1";
     }
 
+    function getActiveChartTitle() {
+      var linePanel = $("tab-panel-line");
+      if (linePanel && !linePanel.classList.contains("hidden")) {
+        var titleEl = linePanel.querySelector(".line-chart-title");
+        return titleEl ? titleEl.textContent : "线路项目统计图";
+      }
+      var titleEl = $("chart-title");
+      return titleEl ? titleEl.textContent : "统计图表";
+    }
+
+    function syncFullscreenRotator() {
+      var rotator = $("line-stats-fullscreen-rotator");
+      if (!rotator) return;
+      var portrait = window.innerWidth < window.innerHeight;
+      rotator.classList.toggle("mp-line-stats-fullscreen__rotator--landscape", portrait);
+    }
+
+    function resizeChartsForFullscreen(isFullscreen) {
+      var longSide = Math.max(window.innerWidth, window.innerHeight);
+      var shortSide = Math.min(window.innerWidth, window.innerHeight);
+      var chartW = isFullscreen ? Math.max(640, longSide - 72) : 720;
+      var chartH = isFullscreen ? Math.max(260, shortSide - 148) : 320;
+      var lineCanvas = $("line-project-chart");
+      var sysCanvas = $("system-chart");
+      if (lineCanvas) {
+        lineCanvas.width = chartW;
+        lineCanvas.height = chartH;
+      }
+      if (sysCanvas) {
+        sysCanvas.width = chartW;
+        sysCanvas.height = chartH;
+      }
+      if (lineToolbar) lineToolbar.render();
+      if (systemToolbar) systemToolbar.render();
+    }
+
+    function ensureToolbarChartView(toolbar) {
+      if (!toolbar) return;
+      toolbar.state.viewMode = "chart";
+      toolbar.render();
+    }
+
+    function prepareToolbarsForChartDisplay() {
+      ensureToolbarChartView(lineToolbar);
+      ensureToolbarChartView(systemToolbar);
+    }
+
+    function enterChartFullscreen() {
+      if (!isMobile || chartFullscreen.active) return;
+      var fsEl = $("line-stats-fullscreen");
+      var fsBody = $("line-stats-fullscreen-body");
+      var chartCard = document.querySelector(".mp-line-stats-chart-card");
+      if (!fsEl || !fsBody || !chartCard) return;
+
+      prepareToolbarsForChartDisplay();
+      chartFullscreen.placeholder = document.createElement("div");
+      chartFullscreen.placeholder.id = "line-stats-chart-placeholder";
+      chartFullscreen.placeholder.className = "mp-line-stats-chart-placeholder";
+      chartCard.parentNode.insertBefore(chartFullscreen.placeholder, chartCard);
+      fsBody.appendChild(chartCard);
+      chartFullscreen.chartCard = chartCard;
+      chartFullscreen.active = true;
+
+      var titleEl = $("line-stats-fullscreen-title");
+      if (titleEl) titleEl.textContent = getActiveChartTitle();
+
+      fsEl.hidden = false;
+      fsEl.setAttribute("aria-hidden", "false");
+      document.body.classList.add("mp-line-stats-chart-fullscreen");
+      syncFullscreenRotator();
+      setTimeout(function () {
+        resizeChartsForFullscreen(true);
+      }, 60);
+    }
+
+    function exitChartFullscreen() {
+      if (!chartFullscreen.active || !chartFullscreen.chartCard) return;
+      var fsEl = $("line-stats-fullscreen");
+      var placeholder = chartFullscreen.placeholder;
+      if (placeholder && placeholder.parentNode) {
+        placeholder.parentNode.insertBefore(chartFullscreen.chartCard, placeholder);
+        placeholder.remove();
+      }
+      chartFullscreen.placeholder = null;
+      chartFullscreen.chartCard = null;
+      chartFullscreen.active = false;
+      prepareToolbarsForChartDisplay();
+      if (fsEl) {
+        fsEl.hidden = true;
+        fsEl.setAttribute("aria-hidden", "true");
+      }
+      document.body.classList.remove("mp-line-stats-chart-fullscreen");
+      resizeChartsForFullscreen(false);
+      setTimeout(function () {
+        resizeChartsForFullscreen(false);
+      }, 80);
+    }
+
+    function toggleChartFullscreen() {
+      if (chartFullscreen.active) exitChartFullscreen();
+      else enterChartFullscreen();
+    }
+
     function initToolbars() {
       if (!global.DCChartToolbar) return false;
       var lineTools = $("line-chart-tools");
       var systemTools = $("system-chart-tools");
+      var toolsOptions = isMobile ? { fullscreen: true } : null;
       if (lineTools && !lineTools.innerHTML) {
-        lineTools.innerHTML = DCChartToolbar.createToolsHtml();
+        lineTools.innerHTML = DCChartToolbar.createToolsHtml(toolsOptions);
       }
       if (systemTools && !systemTools.innerHTML) {
-        systemTools.innerHTML = DCChartToolbar.createToolsHtml();
+        systemTools.innerHTML = DCChartToolbar.createToolsHtml(toolsOptions);
       }
+      var fullscreenHandler = isMobile ? toggleChartFullscreen : null;
       if (!lineToolbar && $("line-project-chart")) {
         lineToolbar = new DCChartToolbar({
           canvas: $("line-project-chart"),
@@ -284,6 +421,7 @@
           tableWrap: $("line-chart-table"),
           fileName: "线路项目统计",
           compact: isMobile,
+          onFullscreenClick: fullscreenHandler,
           getConfig: function () {
             return getFilteredLineChartConfig();
           },
@@ -296,6 +434,7 @@
           tableWrap: $("system-chart-table"),
           fileName: "线路项目统计-全时全域",
           compact: isMobile,
+          onFullscreenClick: fullscreenHandler,
           getConfig: function () {
             return chartConfigs[activeSystemTab];
           },
@@ -338,6 +477,10 @@
         if (action === "reset-line-stats-filter") {
           resetGeoFilter();
           if (isMobile) showToast("筛选条件已重置");
+          return;
+        }
+        if (action === "line-stats-exit-fullscreen") {
+          exitChartFullscreen();
         }
       });
 
@@ -351,6 +494,17 @@
       var resetBtn = $("filter-reset-btn");
       if (searchBtn) searchBtn.addEventListener("click", function () { applyGeoFilter(); });
       if (resetBtn) resetBtn.addEventListener("click", resetGeoFilter);
+
+      if (isMobile) {
+        global.addEventListener("resize", function () {
+          if (!chartFullscreen.active) return;
+          syncFullscreenRotator();
+          resizeChartsForFullscreen(true);
+        });
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "Escape" && chartFullscreen.active) exitChartFullscreen();
+        });
+      }
     }
 
     function initQuickLinks() {

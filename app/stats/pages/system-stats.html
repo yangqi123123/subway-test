@@ -31,13 +31,13 @@
         </div>
 
         <div class="mp-system-stats-chart-stack">
-          <div class="mp-system-stats-chart-card">
+          <div class="mp-system-stats-chart-card" data-chart-key="projectAlert">
             <div class="mp-stats-chart-head">
-              <div class="mp-stats-chart-head__main">
-                <div id="chart-title-project" class="mp-stats-chart-title">项目告警统计图</div>
-                <div id="chart-sub-project" class="mp-stats-chart-sub"></div>
+              <div class="mp-stats-chart-head__title-row">
+                <div id="chart-title-project" class="mp-stats-chart-title line-chart-title">项目告警统计图</div>
+                <div class="dc-chart-tools-slot"><div id="alert-chart-tools-project"></div></div>
               </div>
-              <div class="dc-chart-tools-slot"><div id="alert-chart-tools-project"></div></div>
+              <div id="chart-sub-project" class="mp-stats-chart-sub line-chart-sub"></div>
             </div>
             <div id="alert-chart-legend-project" class="dc-chart-legend"></div>
             <div class="dc-chart-stage">
@@ -46,13 +46,13 @@
             </div>
           </div>
 
-          <div class="mp-system-stats-chart-card">
+          <div class="mp-system-stats-chart-card" data-chart-key="workflowStatus">
             <div class="mp-stats-chart-head">
-              <div class="mp-stats-chart-head__main">
-                <div id="chart-title-workflow" class="mp-stats-chart-title">处理状态统计图</div>
-                <div id="chart-sub-workflow" class="mp-stats-chart-sub"></div>
+              <div class="mp-stats-chart-head__title-row">
+                <div id="chart-title-workflow" class="mp-stats-chart-title line-chart-title">处理状态统计图</div>
+                <div class="dc-chart-tools-slot"><div id="alert-chart-tools-workflow"></div></div>
               </div>
-              <div class="dc-chart-tools-slot"><div id="alert-chart-tools-workflow"></div></div>
+              <div id="chart-sub-workflow" class="mp-stats-chart-sub line-chart-sub"></div>
             </div>
             <div id="alert-chart-legend-workflow" class="dc-chart-legend"></div>
             <div class="dc-chart-stage">
@@ -63,6 +63,18 @@
         </div>
       </div>
     </section>
+  </div>
+
+  <div id="system-stats-fullscreen" class="mp-system-stats-fullscreen" hidden aria-hidden="true">
+    <div id="system-stats-fullscreen-rotator" class="mp-system-stats-fullscreen__rotator">
+      <div class="mp-system-stats-fullscreen__top">
+        <span id="system-stats-fullscreen-title" class="mp-system-stats-fullscreen__title">统计图表</span>
+        <button type="button" class="mp-system-stats-fullscreen__exit" data-action="system-stats-exit-fullscreen">
+          <i class="fa-solid fa-compress" aria-hidden="true"></i>退出全屏
+        </button>
+      </div>
+      <div id="system-stats-fullscreen-body" class="mp-system-stats-fullscreen__body"></div>
+    </div>
   </div>
 
   <div id="system-stats-filter-sheet" class="mp-filter-sheet" aria-hidden="true">

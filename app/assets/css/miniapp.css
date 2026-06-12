@@ -808,6 +808,92 @@ body.miniapp-page {
   z-index: 1;
 }
 
+.miniapp-profile-card__actions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.miniapp-profile-card__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--mp-primary);
+  text-decoration: none;
+}
+
+.miniapp-profile-card__action:active {
+  opacity: 0.72;
+}
+
+.miniapp-mine-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.miniapp-mine-menu .miniapp-cell--solo {
+  margin: 0;
+}
+
+/* 我的 — 菜单紧凑布局 */
+.miniapp-content--mine {
+  padding-top: 10px;
+}
+
+.miniapp-content--mine .miniapp-profile-card {
+  gap: 12px;
+  padding: 14px 14px 12px;
+  margin-bottom: 10px;
+}
+
+.miniapp-content--mine .miniapp-profile-card__actions {
+  margin-top: 4px;
+  gap: 14px;
+}
+
+.miniapp-content--mine .miniapp-mine-menu .miniapp-cell--solo {
+  padding: 11px 14px;
+  gap: 8px;
+  border-radius: 10px;
+  border-color: rgba(35, 106, 255, 0.12);
+  background: linear-gradient(165deg, #ffffff 0%, #f8faff 100%);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.miniapp-content--mine .miniapp-mine-menu .miniapp-cell--solo > i:first-child {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--mp-primary);
+  background: linear-gradient(145deg, rgba(35, 106, 255, 0.12) 0%, rgba(35, 106, 255, 0.05) 100%);
+  filter: none;
+  flex-shrink: 0;
+}
+
+.miniapp-content--mine .miniapp-mine-menu .miniapp-cell--solo:active {
+  transform: scale(0.99);
+}
+
+.miniapp-content--mine .miniapp-btn--logout {
+  margin-top: 10px;
+}
+
 .miniapp-form {
   display: flex;
   flex-direction: column;

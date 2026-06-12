@@ -176,7 +176,7 @@
     var cellHtml = cells
       .map(function (item) {
         return (
-          '<a class="miniapp-cell" href="' +
+          '<a class="miniapp-cell miniapp-cell--solo" href="' +
           esc(resolveHref(item.href)) +
           '"' +
           (item.list ? ' data-list="' + esc(item.list) + '"' : "") +
@@ -194,9 +194,7 @@
     document.body.innerHTML =
       buildNavbar({ title: mod.label, showBack: false }) +
       '<main class="miniapp-content miniapp-content--mine">' +
-      '<a class="miniapp-profile-card" href="' +
-      esc(resolveHref("pages/profile.html")) +
-      '">' +
+      '<div class="miniapp-profile-card">' +
       '<img class="miniapp-profile-card__avatar" src="' +
       esc(profile.avatar) +
       '" alt="" />' +
@@ -214,11 +212,18 @@
       esc(profile.dept) +
       "</b></p>" +
       "</div>" +
-      '<span class="miniapp-profile-card__meta"><i class="fa-solid fa-pen-to-square"></i> 编辑资料</span></a>' +
-      '<div class="miniapp-cell-group">' +
+      '<div class="miniapp-profile-card__actions">' +
+      '<a class="miniapp-profile-card__action" href="' +
+      esc(resolveHref("pages/change-password.html")) +
+      '"><i class="fa-solid fa-lock" aria-hidden="true"></i>修改密码</a>' +
+      '<a class="miniapp-profile-card__action" href="' +
+      esc(resolveHref("pages/profile.html")) +
+      '"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>编辑资料</a>' +
+      "</div></div>" +
+      '<div class="miniapp-mine-menu">' +
       cellHtml +
       "</div>" +
-      '<button type="button" class="miniapp-btn miniapp-btn--ghost miniapp-btn--logout w-full mt-4" data-action="logout">退出登录</button>' +
+      '<button type="button" class="miniapp-btn miniapp-btn--ghost miniapp-btn--logout w-full" data-action="logout">退出登录</button>' +
       "</main>" +
       buildLogoutConfirmModalHtml();
 
@@ -231,7 +236,7 @@
     }
     global.addEventListener("pageshow", function onMineHubPageShow() {
       if (global.document.body.getAttribute("data-module") !== "mine") return;
-      if (!global.document.querySelector(".miniapp-cell-group")) return;
+      if (!global.document.querySelector(".miniapp-mine-menu")) return;
       if (global.WHHeaderBadges && global.WHHeaderBadges.refreshMineHubBadges) {
         global.WHHeaderBadges.refreshMineHubBadges();
       }

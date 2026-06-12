@@ -210,6 +210,17 @@
       line-height: 32px;
     }
 
+    #done-detail-shell,
+    #done-detail-shell .done-tab-panel {
+      overflow: visible;
+    }
+
+    #done-form-view .project-form-row--select .wh-search-select {
+      width: 100%;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
     .project-hidden-when-readonly {
       display: inline-flex;
     }
@@ -824,7 +835,7 @@
               <label class="project-form-label">站点：</label>
               <select class="wh-input h-8 flex-1 px-2"><option>请选择站点</option></select>
             </div>
-            <div class="flex items-start gap-3 project-form-row--select">
+            <div class="flex items-start gap-3 project-form-row--select xl:col-span-2">
               <label class="project-form-label project-required">地址类型：</label>
               <div id="proj-addr-type-select" class="wh-search-select flex-1 min-w-0" data-input-id="proj-addr-type"></div>
             </div>

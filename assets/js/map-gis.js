@@ -2229,8 +2229,10 @@
       });
     });
 
-    if (window.WuhanGIS.mountPatrolLayers) {
-      window.WuhanGIS.mountPatrolLayers(map, {
+    var PATROL_OVERLAY_CATEGORIES = ["patrolDone", "patrolTodo", "patrolPhotos"];
+
+    function getPatrolMountOptions() {
+      return {
         layers: layers,
         registerFeature: registerFeature,
         makePhotoDropIcon: makePhotoDropIcon,
@@ -2251,7 +2253,65 @@
             ]) + buildDetailNavHtml(manualPatrolDetailUrl(drop))
           );
         },
+      };
+    }
+
+    function purgePatrolOverlayRecords() {
+      filteredFeatures = filteredFeatures.filter(function (f) {
+        return PATROL_OVERLAY_CATEGORIES.indexOf(f.category) < 0;
       });
+      for (var i = layerSearchIndex.length - 1; i >= 0; i--) {
+        if (PATROL_OVERLAY_CATEGORIES.indexOf(layerSearchIndex[i].category) >= 0) {
+          layerSearchIndex.splice(i, 1);
+        }
+      }
+    }
+
+    function clearPatrolLayerGroups() {
+      layers.patrolDone.clearLayers();
+      layers.patrolTodo.clearLayers();
+      layers.patrolPhotos.clearLayers();
+    }
+
+    function publishPatrolSearchIndex() {
+      if (window.__whGisRuntime) {
+        window.__whGisRuntime.layerSearchIndex = layerSearchIndex;
+        if (typeof window.__whGisRuntime.publishIndex === "function") {
+          window.__whGisRuntime.publishIndex();
+        }
+      } else if (window.WuhanGIS.publishLayerSearchIndex) {
+        window.WuhanGIS.publishLayerSearchIndex(layerSearchIndex);
+      }
+    }
+
+    function mountPatrolOverlay() {
+      if (!window.WuhanGIS.mountPatrolLayers) return;
+      window.WuhanGIS.mountPatrolLayers(map, getPatrolMountOptions());
+    }
+
+    function remountPatrolOverlay() {
+      purgePatrolOverlayRecords();
+      clearPatrolLayerGroups();
+      mountPatrolOverlay();
+      publishPatrolSearchIndex();
+    }
+
+    /** 后台「立即清空」后，用户再次勾选已巡查/待巡查时恢复演示色块 */
+    function restorePatrolZonesIfCleared() {
+      var settings = window.MapPatrolClearSettings;
+      if (!settings) return;
+      var suppressed = settings.getState().zonesSuppressed;
+      var empty = !layers.patrolDone.getLayers().length && !layers.patrolTodo.getLayers().length;
+      if (!suppressed && !empty) return;
+      if (suppressed) settings.restoreDemoZones();
+      remountPatrolOverlay();
+    }
+
+    mountPatrolOverlay();
+
+    if (window.MapPatrolClearSettings && MapPatrolClearSettings.getState().zonesSuppressed) {
+      state.patrolDone = false;
+      state.patrolTodo = false;
     }
 
     emKeys.forEach(function (ek, idx) {
@@ -2468,8 +2528,10 @@
     ].forEach(function (def) {
       document.querySelectorAll(def.selector).forEach(function (btn) {
         btn.addEventListener("click", function () {
-          state[def.key] = !state[def.key];
-          setToggleBtn(btn, state[def.key]);
+          var next = !state[def.key];
+          state[def.key] = next;
+          setToggleBtn(btn, next);
+          if (next) restorePatrolZonesIfCleared();
           applyPatrol();
           refreshPatrolBatchSwitch();
         });
@@ -2486,6 +2548,7 @@
         state.patrolTodo = next;
         setToggleBtn(document.querySelector('[data-patrol="done"]'), next);
         setToggleBtn(document.querySelector('[data-patrol="todo"]'), next);
+        if (next) restorePatrolZonesIfCleared();
         applyPatrol();
         refreshPatrolBatchSwitch();
       });
@@ -2924,6 +2987,7 @@
           document.querySelectorAll('[data-patrol="done"]').forEach(function (btn) {
             setToggleBtn(btn, true);
           });
+          restorePatrolZonesIfCleared();
           applyPatrol();
           refreshPatrolBatchSwitch();
         }
@@ -2933,6 +2997,7 @@
           document.querySelectorAll('[data-patrol="todo"]').forEach(function (btn) {
             setToggleBtn(btn, true);
           });
+          restorePatrolZonesIfCleared();
           applyPatrol();
           refreshPatrolBatchSwitch();
         }

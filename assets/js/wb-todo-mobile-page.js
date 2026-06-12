@@ -178,6 +178,18 @@
       return false;
     }
 
+    function batchUiVisible() {
+      return state.activeTab !== "alert";
+    }
+
+    function syncTodoBatchUi() {
+      var footer = $("wb-todo-list-footer");
+      if (!footer) return;
+      var visible = batchUiVisible();
+      footer.classList.toggle("hidden", !visible);
+      footer.hidden = !visible;
+    }
+
     function getSelectableIndices() {
       return state.filtered.reduce(function (acc, row, index) {
         if (rowBatchSelectable(row)) acc.push(index);
@@ -336,6 +348,7 @@
       state.approvalTargets = null;
       state.approvalMode = "approval";
       syncApprovalFooter("approval");
+      syncTodoBatchUi();
       dispatchViewChange();
       if (global.MiniAppFrame && global.MiniAppFrame.syncTabbar) global.MiniAppFrame.syncTabbar();
     }
@@ -680,13 +693,14 @@
       if (!state.filtered.length) {
         listEl.innerHTML = '<div class="mp-project-empty">暂无数据</div>';
         syncSelectAllButton();
+        syncTodoBatchUi();
         return;
       }
       listEl.innerHTML = state.filtered
         .map(function (row, index) {
           var status = row.status || "—";
           var checked = state.selected[String(index)] ? " checked" : "";
-          var check = rowBatchSelectable(row)
+          var check = batchUiVisible() && rowBatchSelectable(row)
               ? '<label class="mp-wb-check"><input type="checkbox" data-action="wb-check" data-index="' +
                 index +
                 '"' +
@@ -721,6 +735,7 @@
         })
         .join("");
       syncSelectAllButton();
+      syncTodoBatchUi();
     }
 
     function renderTabs() {
@@ -739,10 +754,7 @@
           );
         })
         .join("");
-      var footer = $("wb-todo-list-footer");
-      if (footer) {
-        footer.hidden = false;
-      }
+      syncTodoBatchUi();
     }
 
     function bindEvents() {

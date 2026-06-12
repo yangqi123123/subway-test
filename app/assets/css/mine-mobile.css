@@ -1190,6 +1190,11 @@ body.mp-todo-page .mp-detail-footer--split {
   gap: 10px;
 }
 
+body.mp-todo-page #wb-todo-list-footer.hidden,
+body.mp-todo-page #wb-todo-list-footer[hidden] {
+  display: none !important;
+}
+
 body.mp-todo-page #wb-todo-select-all:disabled {
   opacity: 0.45;
   cursor: not-allowed;
