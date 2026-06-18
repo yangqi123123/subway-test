@@ -1,0 +1,57 @@
+---
+description: 全站弹窗/遮罩层须从顶栏下方起展示，不得贴顶或被顶栏遮挡
+globs: "**/*.html,assets/css/**/*.css,web/**/*.html"
+alwaysApply: true
+---
+
+# 弹窗与顶栏间距（全站约束）
+
+## 原则
+
+带固定顶栏（`--header-h`，默认 **64px**）的页面中，**所有全屏遮罩弹窗**（含详情、表单、审批、报告等）须：
+
+1. **从顶栏下方开始展示**，不与顶栏重叠、不贴屏幕最顶端；
+2. **水平居中**（`justify-content: center` + 卡片 `margin: 0 auto`）；
+3. 遮罩层可滚动（`overflow-y: auto`），卡片限制高度并在内部滚动。
+
+## 推荐 CSS（遮罩 + 卡片）
+
+```css
+/* 遮罩：类名可为 .modal-mask、.mm-modal-mask、.fl-modal-mask、#report-modal.modal-mask 等 */
+.xxx-modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1200; /* 高于顶栏 */
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: calc(var(--header-h, 64px) + 16px) 22px 32px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+.xxx-modal-mask.show {
+  display: flex;
+}
+
+/* 卡片 */
+.xxx-modal-card {
+  max-height: calc(100vh - var(--header-h, 64px) - 48px);
+  margin: 0 auto;
+  flex-shrink: 0;
+  overflow: auto; /* 或由内部 body 区滚动 */
+}
+```
+
+## 禁止写法
+
+- `align-items: center` + `padding: 22px` 且无顶栏留白（易导致视觉上贴顶或与顶栏重叠）；
+- 遮罩 `z-index` 低于顶栏（如 `80`）导致弹窗被挡；
+- 仅改页面内联样式却忽略 **JS 动态注入** 的样式表（如 `flight-report-modal.css` 由 `flight-report-modal.js` 加载，须在源 CSS 中改）。
+
+## 已对齐页面（维护时保持一致）
+
+- 飞行计划：`web/map/map-flight-plan.html`、`assets/css/flight-report-modal.css`
+- 飞行日志详情：`web/wb/am-flight-log.html`、`assets/js/flight-log-shared.js`
+- 维修与检修记录：`web/wb/am-maintenance.html`（含详情/表单/删除弹窗）
+
+新增或修改弹窗时，默认套用本约束，勿单独居中贴顶。

@@ -1,15 +1,121 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>态势感知</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>&#24577;&#21183;&#24863;&#30693;</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/drone-stats-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/situation-mobile.css" />
 </head>
-<body data-miniapp="placeholder" data-module="map" data-title="态势感知" data-base="../" data-desc="对接后台「态势感知」模块，当前为页面框架占位。">
-  <script src="../../assets/js/miniapp-config.js"></script>
-  <script src="../../assets/js/miniapp-ui.js"></script>
+<body class="mp-disease-page mp-drone-stats-page mp-project-page mp-situation-page miniapp-page" data-miniapp="page" data-module="patrol" data-title="&#24577;&#21183;&#24863;&#30693;" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="&#36820;&#22238;">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title">&#24577;&#21183;&#24863;&#30693;</h1>
+  </header>
+
+  <div id="situation-mobile-app" class="mp-disease-app mp-project-app">
+    <section id="situation-mobile-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-project-stats mp-situation-stats">
+          <div class="mp-stat-card mp-stat-card--total">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-bell"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="situation-stat-total">0</div>
+              <div class="mp-stat-card__label">&#21578;&#35686;&#24635;&#25968;</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--key">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-clock"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="situation-stat-pending">0</div>
+              <div class="mp-stat-card__label">&#26410;&#22797;&#26680;</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--general">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="situation-stat-reviewed">0</div>
+              <div class="mp-stat-card__label">&#24050;&#22797;&#26680;</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--month">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="situation-stat-lines">0</div>
+              <div class="mp-stat-card__label">&#21578;&#35686;&#21306;&#38388;</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mp-project-searchbar mp-drone-stats-filterbar">
+          <p id="situation-filter-hint" class="mp-drone-stats-filter-hint">&#27494;&#27721;&#32447;&#32593;&#25253;&#35686;&#24577;&#21183;&#24635;&#35272;</p>
+        </div>
+
+        <div class="mp-drone-chart-stack mp-situation-stack">
+          <section class="mp-drone-chart-card mp-situation-map-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">GIS&#22320;&#22270;</div>
+            </div>
+            <div id="situation-map" class="mp-situation-map"></div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-situation-list-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">&#20840;&#32447;&#25253;&#35686;&#21015;&#34920;</div>
+            </div>
+            <div id="situation-rows" class="mp-project-list mp-situation-card-list" role="list"></div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-situation-waterfall-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">&#24038;&#32447;&#28689;&#24067;&#22270;</div>
+            </div>
+            <div class="mp-situation-waterfall-wrap">
+              <img
+                class="mp-situation-waterfall-img"
+                src="file:///C:/Users/10208/AppData/Local/Temp/codex-clipboard-8e635677-44f5-40c3-bbe9-bc79a61440fd.png"
+                alt="&#24038;&#32447;&#28689;&#24067;&#22270;"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-situation-waterfall-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">&#21491;&#32447;&#28689;&#24067;&#22270;</div>
+            </div>
+            <div class="mp-situation-waterfall-wrap">
+              <img
+                class="mp-situation-waterfall-img"
+                src="file:///C:/Users/10208/AppData/Local/Temp/codex-clipboard-8f1906d7-e84d-4bea-9052-c8648564e419.png"
+                alt="&#21491;&#32447;&#28689;&#24067;&#22270;"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="situation-toast" class="project-toast mp-situation-toast" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="../../../assets/js/map-gis.js"></script>
+  <script src="../../../assets/js/map-situation-gis.js"></script>
+  <script src="../../../assets/js/map-situation.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/situation-page-boot.js"></script>
 </body>
 </html>
+

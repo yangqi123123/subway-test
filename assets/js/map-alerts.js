@@ -1291,10 +1291,14 @@
   }
 
   function traditionalDetailSpectrumRows(item) {
-    if (isPatrolMobileAlertPage()) return [];
     var rows = [["频谱图", item.moment || "已生成"]];
     rows.push(["频谱图操作", renderSpectrumOpsHtml(item)]);
     return rows;
+  }
+
+  function buildMiniAppShellHref(targetPage) {
+    if (!targetPage) return "";
+    return "../../index.html?page=" + encodeURIComponent(targetPage);
   }
 
   function renderDisposal(item) {
@@ -1330,8 +1334,14 @@
     var loc = item.section || item.alarmArea || item.location || "";
     if (loc) params.push("location=" + encodeURIComponent(loc));
     if (extraParams && extraParams.length) params = params.concat(extraParams);
+    var isAnnotate = !!(extraParams && extraParams.indexOf("annotate=1") >= 0);
+    var target = isAnnotate ? "map/map-event-annotate.html" : "map/map-expert.html";
     var base =
-      typeof whPageHref === "function" ? whPageHref("map/map-expert.html") : "map-expert.html";
+      typeof whPageHref === "function"
+        ? whPageHref(target)
+        : isAnnotate
+          ? "map-event-annotate.html"
+          : "map-expert.html";
     return base + (base.indexOf("?") >= 0 ? "&" : "?") + params.join("&");
   }
 
@@ -1365,10 +1375,14 @@
   }
 
   function renderSpectrumOpsHtml(item) {
+    var viewHref = buildExpertToolsHref(item);
+    if (isPatrolMobileAlertPage()) {
+      viewHref = buildMiniAppShellHref("map/pages/expert.html" + viewHref.slice(viewHref.indexOf("?")));
+    }
     return (
       '<span class="alert-detail-link" data-spectrum-action="generate" role="button" tabindex="0">生成</span>' +
       '<a href="' +
-      escHtml(buildExpertToolsHref(item)) +
+      escHtml(viewHref) +
       '" class="alert-detail-link" data-spectrum-action="view" target="_top" rel="noopener noreferrer">查看</a>' +
       '<a href="' +
       escHtml(buildExpertToolsHref(item, ["annotate=1"])) +
@@ -1409,6 +1423,11 @@
       var actionEl = e.target.closest("[data-spectrum-action]");
       if (!actionEl || !actionEl.closest("#alert-detail-grid")) return;
       var action = actionEl.getAttribute("data-spectrum-action");
+      if (action === "annotate" && isPatrolMobileAlertPage()) {
+        e.preventDefault();
+        showAlertDetailToast("移动端暂不跳转典型事件标注");
+        return;
+      }
       if (action === "view" || action === "annotate") {
         if (!shouldNavigateSpectrumInTop()) return;
         var href = actionEl.getAttribute("href");

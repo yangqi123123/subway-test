@@ -105,6 +105,8 @@
     { postId: "2", deptName: "平台运维组", postCode: "OPS_ENGINEER", postName: "运维工程师", postSort: "2", status: true, createTime: "2026-04-05 08:30", remark: "负责平台运行维护" },
     { postId: "3", deptName: "人工巡检组", postCode: "PATROL_MANAGER", postName: "巡检主管", postSort: "3", status: false, createTime: "2026-04-08 09:00", remark: "负责巡检任务分派" },
   ];
+  // 暴露给全局，供岗位搜索选择框使用
+  window.__postRows = postRows;
 
   var dictTree = [
     {
@@ -128,6 +130,12 @@
     { dictType: "notice_type", dictLabel: "公告", dictValue: "announce", dictSort: "2", status: true, cssClass: "", listClass: "warning", createTime: "2026-04-03 09:10", remark: "系统公告" },
   ];
 
+  var dictTypeRows = [
+    { dictName: "线路状态", dictType: "line_status", status: true, remark: "地铁线路运营状态", createTime: "2026-04-01 10:00" },
+    { dictName: "用户性别", dictType: "user_sex", status: true, remark: "系统用户性别", createTime: "2026-04-02 10:00" },
+    { dictName: "公告类型", dictType: "notice_type", status: true, remark: "系统公告分类", createTime: "2026-04-03 09:00" },
+  ];
+
   if (typeof DiseaseDict !== "undefined" && DiseaseDict.rows) {
     DiseaseDict.rows.forEach(function (r) {
       dictRows.push({
@@ -147,6 +155,7 @@
         return row.dictType === typeId;
       }).length;
       dictTree[0].children.push({ id: typeId, name: DiseaseDict.types[typeId], count: count });
+      dictTypeRows.push({ dictName: DiseaseDict.types[typeId], dictType: typeId, status: true, remark: "病害巡查字典", createTime: "2026-05-12 10:00" });
     });
     dictTree[0].count = dictRows.length;
   }
@@ -560,7 +569,7 @@
         columns: [
           { key: "deptName", label: "部门名称" },
           { key: "orderNum", label: "排序" },
-          { key: "leader", label: "负责人" },
+          { key: "leader", label: "管理员" },
           { key: "phone", label: "联系电话" },
           { key: "email", label: "邮箱" },
           { key: "status", label: "状态", type: "switch" },
@@ -573,15 +582,97 @@
           }, this);
         },
         pageState: { page: 1, pageSize: 10 },
-        formFields: [
-          { key: "parentId", label: "上级部门", type: "select", options: treeSelectOptions(), required: true },
-          { key: "deptName", label: "部门名称", required: true },
-          { key: "orderNum", label: "显示排序", required: true },
-          { key: "leader", label: "负责人" },
-          { key: "phone", label: "联系电话" },
-          { key: "email", label: "邮箱" },
-          { key: "statusText", label: "状态", type: "select", options: ["启用", "停用"], required: true },
-        ],
+        buildFormHtml: function (row) {
+          var isEdit = !!row;
+          var html = '<div class="wb-form-grid">';
+          function v(key) { return row ? (row[key] || "") : ""; }
+          function parentName(pid) {
+            if (!pid) return "武汉地铁保护区管理平台";
+            var found = deptRows.find(function (d) { return d.deptId === pid; });
+            return found ? found.deptName : "武汉地铁保护区管理平台";
+          }
+          // parentId
+          html += '<div class="wb-form-item"><label><span class="text-rose-400">*</span> 上级部门</label>' +
+            '<select class="wh-input" data-form="parentId">';
+          treeSelectOptions().forEach(function (opt) {
+            var sel = isEdit && parentName(row.parentId) === opt ? ' selected' : '';
+            html += '<option value="' + opt + '"' + sel + '>' + opt + '</option>';
+          });
+          html += '</select></div>';
+          // deptName
+          html += '<div class="wb-form-item"><label><span class="text-rose-400">*</span> 部门名称</label>' +
+            '<input class="wh-input" data-form="deptName" value="' + v("deptName") + '" /></div>';
+          // orderNum
+          html += '<div class="wb-form-item"><label><span class="text-rose-400">*</span> 显示排序</label>' +
+            '<input class="wh-input" data-form="orderNum" value="' + v("orderNum") + '" /></div>';
+          // leader
+          html += '<div class="wb-form-item"><label>管理员</label>';
+          if (!isEdit) {
+            html += '<input class="wh-input" data-form="leader" disabled value="" placeholder="仅在编辑时可选择管理员" />';
+          } else {
+            html += '<div id="dept-leader-select"></div>' +
+              '<input type="hidden" data-form="leader" id="dept-leader-value" value="' + v("leader") + '" />';
+          }
+          html += '</div>';
+          // phone
+          html += '<div class="wb-form-item"><label>联系电话</label>' +
+            '<input class="wh-input" data-form="phone" value="' + v("phone") + '" /></div>';
+          // email
+          html += '<div class="wb-form-item"><label>邮箱</label>' +
+            '<input class="wh-input" data-form="email" value="' + v("email") + '" /></div>';
+          // status
+          var st = v("statusText") || (row && row.status !== false ? "启用" : "停用");
+          html += '<div class="wb-form-item"><label><span class="text-rose-400">*</span> 状态</label>' +
+            '<select class="wh-input" data-form="statusText">' +
+            '<option value="启用"' + (st === "启用" ? " selected" : "") + '>启用</option>' +
+            '<option value="停用"' + (st === "停用" ? " selected" : "") + '>停用</option>' +
+            '</select></div>';
+          html += '</div>';
+          return html;
+        },
+        onFormOpen: function (row) {
+          if (!row) return;
+          var wrap = document.getElementById("dept-leader-select");
+          if (!wrap) return;
+          var deptUsers = (userRows || []).filter(function (u) {
+            return u.deptId === row.deptId || String(u.deptId).indexOf(row.deptId) === 0;
+          });
+          var userOptions = deptUsers.length ? deptUsers.map(function (u) { return u.nickName; }) : ["无可用用户"];
+          var sel = WHSearchSelect.create(wrap, userOptions, "请搜索选择用户");
+          if (row.leader) sel.setValue(row.leader);
+          var hiddenForm = document.getElementById("dept-leader-value");
+          var selHidden = wrap.querySelector('input[type="hidden"]');
+          if (selHidden && hiddenForm) {
+            selHidden.addEventListener("change", function () {
+              hiddenForm.value = selHidden.value;
+            });
+          }
+        },
+        onModalSave: function (row, data) {
+          if (!row) {
+            var newRow = {
+              deptId: String(Date.now()),
+              parentId: data.parentId || "100",
+              deptName: data.deptName || "",
+              orderNum: data.orderNum || "0",
+              leader: "",
+              phone: data.phone || "",
+              email: data.email || "",
+              status: data.statusText === "启用",
+              createTime: "2026-06-18 10:00",
+            };
+            deptRows.push(newRow);
+          } else {
+            row.deptName = data.deptName;
+            row.parentId = data.parentId;
+            row.orderNum = data.orderNum;
+            row.leader = data.leader || "";
+            row.phone = data.phone || "";
+            row.email = data.email || "";
+            row.status = data.statusText === "启用";
+          }
+          return true;
+        },
         actions: deptActions(),
       };
     }
@@ -709,9 +800,11 @@
     }
 
     if (key === "wb-dict") {
-      return {
-        pageType: "tree-table",
+      var dictPage = {
+        pageType: "table",
         diseaseLayout: true,
+        stickyActionColumn: true,
+        _noRowOpen: true,
         panelBadge: "字典管理面板",
         diseaseStatLabels: {
           total: "字典数据",
@@ -722,64 +815,197 @@
         },
         quickLinks: systemMgmtQuickLinks("wb/wb-dict.html"),
         title: "字典管理",
-        filters: [
-          { key: "dictLabel", label: "字典标签" },
-          { key: "dictValue", label: "字典键值" },
-          { key: "statusText", label: "状态", type: "select", options: ["启用", "停用"] },
-        ],
+        dictView: "types",
+        currentDictType: "",
+        selectedRows: {},
+        filters: [],
         filterState: {},
-        primaryButtons: [
-          { label: "新增", action: "add", modalTitle: "新增字典数据" },
-          { label: "导出", variant: "ghost", tip: "字典数据已导出" },
-        ],
-        treeData: clone(dictTree),
-        selectedTreeId: "d1",
-        expandedMap: { d1: true },
-        columns: [
-          { key: "dictLabel", label: "字典标签" },
-          { key: "dictValue", label: "字典键值" },
-          { key: "dictSort", label: "字典排序" },
-          { key: "status", label: "状态", type: "switch" },
-          { key: "cssClass", label: "CSS类名" },
-          { key: "listClass", label: "列表样式" },
-          { key: "createTime", label: "创建时间" },
-          { key: "remark", label: "备注" },
-        ],
-        getRows: function () {
-          if (this.selectedTreeId === "d1") return dictRows;
-          return dictRows.filter(function (row) {
-            return row.dictType === this.selectedTreeId;
-          }, this);
-        },
         pageState: { page: 1, pageSize: 10 },
-        formFields: [
-          {
-            key: "dictType",
-            label: "字典类型",
-            type: "select",
-            options: [
-              "line_status",
-              "user_sex",
-              "notice_type",
-              "disease_inspect_item",
-              "disease_structure_type",
-              "disease_type",
-              "disease_level",
-              "disease_development",
-            ],
-            required: true,
-          },
-          { key: "dictLabel", label: "字典标签", required: true },
-          { key: "dictValue", label: "字典键值", required: true },
-          { key: "dictSort", label: "排序", required: true },
-          { key: "statusText", label: "状态", type: "select", options: ["启用", "停用"], required: true },
-          { key: "remark", label: "备注", type: "textarea", full: true },
-        ],
-        actions: [
-          { label: "编辑", cls: "gold", type: "edit" },
-          { label: "删除", cls: "warn", type: "delete" },
-        ],
+
+        getRows: function () {
+          if (this.dictView === "types") return dictTypeRows;
+          return dictRows.filter(function (r) { return r.dictType === this.currentDictType; }, this);
+        },
+
+        get columns() {
+          var self = this;
+          if (self.dictView === "types") {
+            return [
+              { key: "dictName", label: "字典名称" },
+              { key: "dictType", label: "字典类型", render: function (v, row) {
+                return '<span class="dict-type-link" data-type="' + v + '" style="color:#22d3ee;cursor:pointer;text-decoration:underline">' + v + '</span>';
+              }},
+              { key: "status", label: "状态", type: "switch" },
+              { key: "remark", label: "备注" },
+              { key: "createTime", label: "创建时间" },
+            ];
+          }
+          return [
+            { key: "dictLabel", label: "字典标签" },
+            { key: "dictValue", label: "字典键值" },
+            { key: "listClass", label: "标签样式", render: function (v) {
+              var map = { default: ["默认","#94a3b8"], primary: ["主要","#3b82f6"], success: ["成功","#22c55e"], info: ["信息","#6366f1"], warning: ["警告","#f59e0b"], danger: ["危险","#ef4444"] };
+              var item = map[v] || [v || "—","#94a3b8"];
+              return '<span style="display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;color:#fff;background:' + item[1] + '">' + item[0] + '</span>';
+            }},
+            { key: "dictSort", label: "排序" },
+            { key: "remark", label: "备注" },
+            { key: "createTime", label: "创建时间" },
+          ];
+        },
+
+        get primaryButtons() {
+          var self = this;
+          if (self.dictView === "types") {
+            return [
+              { label: "新增", action: "add", modalTitle: "新增字典类型" },
+              { label: "导出", variant: "ghost", tip: "字典类型已导出" },
+            ];
+          }
+          return [
+            { label: "← 返回字典类型列表", variant: "ghost", handler: function () { self.dictView = "types"; self.currentDictType = ""; self.selectedRows = {}; self.title = "字典管理"; self.filters = []; self.filterState = {}; self.pageState.page = 1; window.__wbRender(); } },
+            { label: "新增", action: "add", modalTitle: "新增字典数据" },
+            { label: "导出", variant: "ghost", tip: "字典数据已导出" },
+          ];
+        },
+
+        get actions() {
+          var self = this;
+          return [
+            { label: "编辑", cls: "gold", type: "edit" },
+            { label: "删除", cls: "warn", type: "delete", confirmText: "确认删除该记录吗？", successText: "已删除" },
+          ];
+        },
+
+        buildFormHtml: function (row) {
+          var self = this;
+          var isEdit = !!row;
+          var html = '<div class="wb-form-grid">';
+          function v(key) { return row ? (row[key] || "") : ""; }
+
+          if (self.dictView === "types") {
+            html += '<div class="wb-form-item"><label><span class="text-rose-400">*</span> 字典名称</label>' +
+              '<input class="wh-input" data-form="dictName" value="' + v("dictName") + '" /></div>';
+            html += '<div class="wb-form-item"><label><span class="text-rose-400">*</span> 字典类型</label>' +
+              '<input class="wh-input" data-form="dictType" value="' + v("dictType") + '" placeholder="如 line_status" /></div>';
+            html += '<div class="wb-form-item wb-form-item--full"><label>备注</label>' +
+              '<textarea class="wh-input" data-form="remark" rows="3">' + v("remark") + '</textarea></div>';
+            var st = v("statusText") || (row && row.status !== false ? "启用" : "停用");
+            html += '<div class="wb-form-item"><label><span class="text-rose-400">*</span> 状态</label>' +
+              '<select class="wh-input" data-form="statusText">' +
+              '<option value="启用"' + (st === "启用" ? " selected" : "") + '>启用</option>' +
+              '<option value="停用"' + (st === "停用" ? " selected" : "") + '>停用</option></select></div>';
+          } else {
+            html += '<div class="wb-form-item"><label>字典类型</label>' +
+              '<input class="wh-input" data-form="dictType" disabled value="' + (isEdit ? v("dictType") : self.currentDictType) + '" /></div>';
+            var lc = v("listClass") || "default";
+            var lcOpts = ["default","primary","success","info","warning","danger"];
+            var lcLabels = { default:"默认", primary:"主要", success:"成功", info:"信息", warning:"警告", danger:"危险" };
+            html += '<div class="wb-form-item"><label>标签样式</label><select class="wh-input" data-form="listClass">';
+            lcOpts.forEach(function (o) {
+              html += '<option value="' + o + '"' + (lc === o ? " selected" : "") + '>' + lcLabels[o] + '</option>';
+            });
+            html += '</select></div>';
+            html += '<div class="wb-form-item"><label><span class="text-rose-400">*</span> 数据标签</label>' +
+              '<input class="wh-input" data-form="dictLabel" value="' + v("dictLabel") + '" /></div>';
+            html += '<div class="wb-form-item"><label><span class="text-rose-400">*</span> 数据键值</label>' +
+              '<input class="wh-input" data-form="dictValue" value="' + v("dictValue") + '" /></div>';
+            html += '<div class="wb-form-item"><label><span class="text-rose-400">*</span> 排序</label>' +
+              '<input class="wh-input" data-form="dictSort" type="number" value="' + v("dictSort") + '" /></div>';
+            html += '<div class="wb-form-item wb-form-item--full"><label>备注</label>' +
+              '<textarea class="wh-input" data-form="remark" rows="3">' + v("remark") + '</textarea></div>';
+          }
+          html += '</div>';
+          return html;
+        },
+
+        onModalSave: function (row, data) {
+          var self = this;
+          if (self.dictView === "types") {
+            if (!row) {
+              dictTypeRows.push({
+                dictName: data.dictName || "",
+                dictType: data.dictType || "",
+                status: data.statusText === "启用",
+                remark: data.remark || "",
+                createTime: "2026-06-18 10:00",
+              });
+            } else {
+              row.dictName = data.dictName;
+              row.dictType = data.dictType;
+              row.status = data.statusText === "启用";
+              row.remark = data.remark || "";
+            }
+          } else {
+            if (!row) {
+              dictRows.push({
+                dictType: self.currentDictType,
+                dictLabel: data.dictLabel || "",
+                dictValue: data.dictValue || "",
+                dictSort: data.dictSort || "0",
+                listClass: data.listClass || "default",
+                status: true,
+                cssClass: "",
+                remark: data.remark || "",
+                createTime: "2026-06-18 10:00",
+              });
+            } else {
+              row.dictLabel = data.dictLabel;
+              row.dictValue = data.dictValue;
+              row.dictSort = data.dictSort;
+              row.listClass = data.listClass || "default";
+              row.remark = data.remark || "";
+            }
+          }
+          return true;
+        },
+
+        _bindLinks: function () {
+          var self = this;
+          var links = document.querySelectorAll(".dict-type-link");
+          links.forEach(function (link) {
+            link.onclick = function (e) {
+              e.stopPropagation();
+              self.dictView = "data";
+              self.currentDictType = link.getAttribute("data-type");
+              self.selectedRows = {};
+              self.title = "字典数据 - " + self.currentDictType;
+              self.filters = [
+                { key: "dictLabel", label: "字典标签" },
+                { key: "dictValue", label: "字典键值" },
+              ];
+              self.filterState = {};
+              self.pageState.page = 1;
+              window.__wbRender();
+            };
+          });
+        },
+
+        onFormOpen: function () {},
       };
+
+      // 事件委托：监听 page-root 容器上的 .dict-type-link 点击
+      (function initDictLinks(p) {
+        var root = document.getElementById("page-root");
+        if (!root) { setTimeout(function () { initDictLinks(p); }, 50); return; }
+        root.addEventListener("click", function (e) {
+          var link = e.target.closest(".dict-type-link");
+          if (!link) return;
+          p.dictView = "data";
+          p.currentDictType = link.getAttribute("data-type");
+          p.selectedRows = {};
+          p.title = "字典数据 - " + p.currentDictType;
+          p.filters = [
+            { key: "dictLabel", label: "字典标签" },
+            { key: "dictValue", label: "字典键值" },
+          ];
+          p.filterState = {};
+          p.pageState.page = 1;
+          window.__wbRender();
+        });
+      })(dictPage);
+
+      return dictPage;
     }
 
     if (key === "wb-param") {

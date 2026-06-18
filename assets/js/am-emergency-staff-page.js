@@ -15,6 +15,13 @@
     var rows = (global.WH_EMERGENCY_STAFF_ROWS || []).map(function (row) {
       return Object.assign({}, row);
     });
+
+    // 根据已有数据构建部门→岗位映射
+    var deptPostsMap = {};
+    rows.forEach(function (row) {
+      if (!deptPostsMap[row.dept]) deptPostsMap[row.dept] = [];
+      if (deptPostsMap[row.dept].indexOf(row.post) === -1) deptPostsMap[row.dept].push(row.post);
+    });
     var filteredRows = null;
     var lastRenderedList = [];
     var editingNo = null;
@@ -391,6 +398,34 @@
       }
     }
 
+    // 监听部门变化，自动带出岗位
+    function bindDeptPostLink() {
+      var deptEl = $("staff-dept-select");
+      var postEl = $("staff-post");
+      if (!postEl) return;
+      // 部门是搜索选择框组件，需要监听其内部 hidden 值变化
+      function onDeptChange(val) {
+        var posts = deptPostsMap[val] || [];
+        postEl.value = posts.length ? posts[0] : "";
+      }
+      // 通过 mutation 方式监听：检查 staff-dept 隐藏域的变化
+      var hiddenEl = $("staff-dept");
+      if (hiddenEl) {
+        hiddenEl.addEventListener("change", function () {
+          onDeptChange(hiddenEl.value);
+        });
+      }
+      // 也通过 deptSelect 组件监听
+      if (deptSelect && deptSelect.wrap) {
+        var innerHidden = deptSelect.wrap.querySelector('input[type="hidden"]');
+        if (innerHidden) {
+          innerHidden.addEventListener("change", function () {
+            onDeptChange(innerHidden.value);
+          });
+        }
+      }
+    }
+
     function openForm(mode, staffNo) {
       var index = staffNo ? findRowIndex(staffNo) : -1;
       editingNo = mode === "edit" && index > -1 ? staffNo : null;
@@ -726,6 +761,7 @@
     initFromQuery();
     syncSearchClear();
     setupWebRowClick();
+    bindDeptPostLink();
 
     global.WHEmergencyStaffPage.showList = showList;
 
@@ -733,7 +769,7 @@
       var exportBtn = $("btn-export-template");
       var importBtn = $("btn-import");
       if (exportBtn) {
-        exportBtn.addEventListener("click", function () { alert("模板导出（原型演示）"); });
+        exportBtn.addEventListener("click", function () { alert("导出人员（原型演示）"); });
       }
       if (importBtn) {
         importBtn.addEventListener("click", function () { alert("导入人员（原型演示）"); });

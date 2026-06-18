@@ -497,6 +497,7 @@
           else toast("导入功能已打开");
           return;
         }
+        if (typeof btn.handler === "function") { btn.handler(); return; }
         toast(btn.tip || btn.label + "已执行");
       };
       toolbar.appendChild(button);
@@ -663,6 +664,7 @@
           else toast("导入功能已打开");
           return;
         }
+        if (typeof btn.handler === "function") { btn.handler(); return; }
         toast(btn.tip || btn.label + "已执行");
       };
       right.appendChild(button);
@@ -897,7 +899,8 @@
     if (window.WHTableRowClick) WHTableRowClick.injectStyles();
     tr.addEventListener("click", function (e) {
       if (window.WHTableRowClick && WHTableRowClick.shouldIgnore(e)) return;
-      if (e.target.closest("input,button,a,label,select,textarea,.disease-col-actions,.flight-plan-col-actions,.wb-action")) return;
+      if (e.target.closest("input,button,a,label,select,textarea,.disease-col-actions,.flight-plan-col-actions,.wb-action,.dict-type-link")) return;
+      if (page._noRowOpen) return;
       if (typeof page.buildDetailHtml === "function") {
         openDetailModal(page, row);
         return;

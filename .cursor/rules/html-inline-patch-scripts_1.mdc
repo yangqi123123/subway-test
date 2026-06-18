@@ -1,0 +1,45 @@
+---
+description: HTML 内联脚本与 Node 补丁脚本规范，禁止未定义变量泄漏到浏览器
+globs: scripts/**/*.js,**/*.html
+alwaysApply: true
+---
+
+# HTML 补丁脚本与内联 JS 规范
+
+## 核心原则
+
+**写入 `.html` 内联 `<script>` 的代码会在浏览器执行，只能使用浏览器作用域内的变量。**
+
+Node 补丁脚本里的占位变量（如 `const d = "d" + "iv"`、`const TAG = ...`）**不得**以 `+ d +`、`+ TAG +` 等形式出现在输出的内联脚本中，否则会导致 `ReferenceError`，列表不渲染、新增页打不开。
+
+## 补丁脚本（`scripts/patch-*.js`）写法
+
+1. **HTML 片段**：用 `const TAG = "d" + "iv"` 拼接标签，或模板里写 `<${TAG}>`，仅在 Node 侧替换。
+2. **将要写入浏览器的那段 JS 字符串**：
+   - 占位统一用 **`${TAG}`**，生成后：
+     ```js
+     const { joinTag, assertBrowserScriptSafe } = require("./lib/patch-html-utils");
+     const browserJs = assertBrowserScriptSafe(joinTag(rawJsTemplate));
+     ```
+   - **禁止**在输出的 JS 源码中出现：`+ d +`、`+ TAG +`、未替换的 `${TAG}`。
+3. **内联 JS 里的 HTML 字符串**：直接写 `'div'`，例如 `'<div class="flex">' + x + '</div>'`，不要拆成 `'</' + d + '>'`。
+4. 禁止使用错误标签名 `motion`（易与 `div` 混淆），统一 `div`。
+
+## 任务完成前自检（必做）
+
+修改了带内联 IIFE 的列表/表单页（如 `web/in-night.html`、`web/in-disease.html`）后，执行：
+
+```bash
+node scripts/self-check-inline-pages.js
+```
+
+可选：对单个文件 `node scripts/self-check-inline-pages.js web/in-night.html`
+
+业务 HTML 位于 `web/`；静态资源仍在根目录 `assets/`。页面内引用资源使用 `../assets/...`；补丁脚本读写 HTML 时使用 `path.join(__dirname, "..", "web", "xxx.html")`。
+
+失败则修复后再交付，不要留给用户发现白屏/无列表。
+
+## 推荐工具
+
+- `scripts/lib/patch-html-utils.js`：`joinTag()`、`assertBrowserScriptSafe()`
+- 新增补丁脚本请 `require` 上述工具并在 `writeFileSync` 前调用校验

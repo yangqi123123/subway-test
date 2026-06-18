@@ -87,21 +87,19 @@
     function updateStats(list) {
       var data = list || getListSource();
       var depts = {};
-      var names = {};
-      var emergency = 0;
       data.forEach(function (row) {
         depts[row.dept] = true;
-        names[row.name] = true;
-        if (row.dept === "应急中心") emergency += 1;
       });
+      var warehouseRows = global.WH_EMERGENCY_WAREHOUSE_ROWS || [];
+      var materialRows = global.WH_EMERGENCY_MATERIAL_ROWS || [];
       var set = function (id, val) {
         var el = $(id);
         if (el) el.textContent = String(val);
       };
       set("stat-total", data.length);
       set("stat-dept", Object.keys(depts).length);
-      set("stat-emergency", emergency);
-      set("stat-types", Object.keys(names).length);
+      set("stat-warehouse", warehouseRows.length);
+      set("stat-material", materialRows.length);
       var totalEl = $("table-total");
       if (totalEl) totalEl.textContent = String(data.length);
     }

@@ -41,9 +41,21 @@
             { label: "无人机巡检记录", icon: "fa-helicopter", tone: "blue", href: "pages/uav.html" },
           ],
         },
-      ],
-      extras: [
-        { label: "告警信息", icon: "fa-bell", href: "pages/patrol-alerts.html" },
+        {
+          title: "全时全域感知",
+          items: [
+            { label: "告警信息", icon: "fa-bell", tone: "amber", href: "pages/patrol-alerts.html" },
+            { label: "态势感知", icon: "fa-wave-square", tone: "cyan", href: "../map/pages/situation.html" },
+          ],
+        },
+        {
+          title: "数据统计",
+          items: [
+            { label: "线路项目统计", icon: "fa-chart-column", tone: "blue", href: "../stats/pages/line-stats.html" },
+            { label: "无人机数据统计", icon: "fa-helicopter", tone: "cyan", href: "../stats/pages/drone-ops.html" },
+            { label: "全时全域数据统计", icon: "fa-chart-pie", tone: "green", href: "../stats/pages/system-stats.html" },
+          ],
+        },
       ],
     },
     asset: {
@@ -70,6 +82,12 @@
             { label: "飞行日志", icon: "fa-book", tone: "blue", href: "pages/flight-log.html" },
           ],
         },
+        {
+          title: "服务器设备管理",
+          items: [
+            { label: "资源监控", icon: "fa-gauge-high", tone: "amber", href: "../stats/pages/resource-monitor.html" },
+          ],
+        },
       ],
     },
     stats: {
@@ -77,15 +95,10 @@
       label: "数据统计",
       hero: {
         title: "数据统计",
-        desc: "线路 · 无人机 · 全时全域",
+        desc: "统计入口已归入巡检菜单",
         image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",
       },
-      menus: [
-        { label: "线路项目统计", icon: "fa-chart-column", tone: "blue", href: "pages/line-stats.html" },
-        { label: "无人机数据统计", icon: "fa-helicopter", tone: "cyan", href: "pages/drone-ops.html" },
-        { label: "全时全域数据统计", icon: "fa-chart-pie", tone: "green", href: "pages/system-stats.html" },
-        { label: "资源监控", icon: "fa-gauge-high", tone: "amber", href: "pages/resource-monitor.html" },
-      ],
+      menus: [],
     },
     mine: {
       id: "mine",

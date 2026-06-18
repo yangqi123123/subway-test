@@ -1,0 +1,129 @@
+﻿body.mp-situation-page #situation-mobile-view {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-situation-page .mp-situation-stats {
+  gap: 10px;
+}
+
+body.mp-situation-page .mp-situation-stack {
+  gap: 12px;
+}
+
+body.mp-situation-page .mp-situation-map {
+  width: 100%;
+  height: 280px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #eef3f7;
+}
+
+body.mp-situation-page .leaflet-container {
+  background: #eef3f7;
+}
+
+body.mp-situation-page .mp-situation-card-list {
+  display: grid;
+  gap: 10px;
+}
+
+body.mp-situation-page .mp-situation-card {
+  padding: 12px 12px 10px;
+}
+
+body.mp-situation-page .mp-situation-card .mp-project-card__head {
+  gap: 8px;
+  align-items: center;
+}
+
+body.mp-situation-page .mp-situation-card .mp-project-card__title {
+  margin-top: 8px;
+}
+
+body.mp-situation-page .mp-situation-card__meta {
+  grid-template-columns: 1fr;
+}
+
+body.mp-situation-page .mp-situation-card__meta .mp-project-card__meta-full {
+  grid-column: 1 / -1;
+}
+
+body.mp-situation-page .mp-situation-source-tag,
+body.mp-situation-page .mp-situation-status-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+body.mp-situation-page .mp-situation-source-tag {
+  color: #0ea5e9;
+  background: rgba(14, 165, 233, 0.1);
+}
+
+body.mp-situation-page .mp-situation-status-tag {
+  color: #f8fafc;
+  background: rgba(37, 99, 235, 0.82);
+}
+
+body.mp-situation-page .mp-situation-card--active {
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.12) inset;
+}
+
+body.mp-situation-page .mp-situation-card__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+body.mp-situation-page .mp-situation-card__actions .mp-project-action {
+  flex: 1 1 100%;
+  justify-content: center;
+}
+
+body.mp-situation-page .mp-situation-waterfall-wrap {
+  border-radius: 10px;
+  overflow: hidden;
+  background: #071426;
+}
+
+body.mp-situation-page .mp-situation-waterfall-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  background: #071426;
+}
+
+body.mp-situation-page .mp-situation-toast.project-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 13px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+body.mp-situation-page .mp-situation-toast.project-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

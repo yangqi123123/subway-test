@@ -162,6 +162,15 @@
     return html;
   }
 
+  function searchSelectPlaceholder(key, label, value, placeholder) {
+    var html = '<div class="wb-form-item">' + formLabel(label, false);
+    html += '<div id="' + key + '" class="wh-form-search-select"></div>';
+    html += '<input type="hidden" data-form="' + key + '" id="' + key + '-value" value="' + escapeHtml(value || "") + '" />';
+    html += '<p class="form-hint">' + escapeHtml(placeholder || "") + '</p>';
+    html += "</div>";
+    return html;
+  }
+
   function inputField(key, label, value, required) {
     return (
       '<div class="wb-form-item">' +
@@ -211,7 +220,7 @@
       selectField("userType", "用户类型", USER_TYPE_OPTIONS, row.userType || "内部", true) +
       selectField("deptName", "所属部门", deptOptions, row.deptName, true) +
       selectField("roleName", "角色", roleOptions, row.roleName, true) +
-      inputField("postName", "岗位", row.postName || "", false) +
+      searchSelectPlaceholder("wb-post-select", "岗位", row.postName || "", "选择岗位时请先选择部门") +
       selectField("lineName", "所属线路", LINE_OPTIONS, line, true) +
       selectField("sectionStart", "起始区间", stations, section.start, true, STATION_PLACEHOLDER) +
       selectField("sectionEnd", "终点区间", stations, section.end, true, STATION_PLACEHOLDER) +
@@ -368,6 +377,36 @@
     mountSingleImageUpload("wb-avatar-input", "wb-avatar-preview", row.avatarUrl || "");
     mountSingleFileUpload("wb-pilot-cert-input", "wb-pilot-cert-name", row.pilotCertName || "");
 
+    // 岗位搜索选择框
+    (function initPostSelect() {
+      var wrap = document.getElementById("wb-post-select");
+      if (!wrap || !window.WHSearchSelect) return;
+      var hidden = document.getElementById("wb-post-select-value");
+      var sel = WHSearchSelect.create(wrap, ["请先选择部门"], "选择岗位时请先选择部门");
+      if (row.postName) sel.setValue(row.postName);
+      if (hidden) sel.wrap.addEventListener("hidden", function () { hidden.value = sel.getValue(); });
+
+      var deptSelect = document.querySelector('[data-form="deptName"]');
+      if (deptSelect) {
+        deptSelect.onchange = function () {
+          var dept = deptSelect.value;
+          var posts = (window.__postRows || []).filter(function (p) { return p.deptName === dept; });
+          var options = posts.map(function (p) { return p.postName; });
+          sel.setValue("");
+          if (!options.length) {
+            options = ["该部门暂无岗位"];
+          }
+          // Re-create the select with new options
+          sel.wrap.innerHTML = "";
+          sel = WHSearchSelect.create(wrap, options, dept ? "请选择岗位" : "选择岗位时请先选择部门");
+          if (row.postName && posts.some(function (p) { return p.postName === row.postName; })) {
+            sel.setValue(row.postName);
+          }
+          if (hidden) sel.wrap.addEventListener("hidden", function () { hidden.value = sel.getValue(); });
+        };
+      }
+    })();
+
     var lineSelect = document.querySelector('[data-form="lineName"]');
     var sectionStartSelect = document.querySelector('[data-form="sectionStart"]');
     var sectionEndSelect = document.querySelector('[data-form="sectionEnd"]');
@@ -421,13 +460,19 @@
       }
       return false;
     }
+    // 获取岗位值（可能来自搜索选择框）
+    var postName = data.postName;
+    if (!postName) {
+      var hiddenVal = document.getElementById("wb-post-select-value");
+      if (hiddenVal && hiddenVal.value) postName = hiddenVal.value;
+    }
     var patch = {
       userName: (data.userName || "").trim(),
       nickName: (data.nickName || "").trim(),
       userType: data.userType,
       deptName: data.deptName,
       roleName: data.roleName,
-      postName: (data.postName || "").trim(),
+      postName: postName || (data.postName || "").trim(),
       lineName: data.lineName,
       sectionStart: data.sectionStart,
       sectionEnd: data.sectionEnd,

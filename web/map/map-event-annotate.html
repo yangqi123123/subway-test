@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>典型事件标注</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="../../assets/css/theme.css" />
+    <link rel="stylesheet" href="../../assets/css/map-event-annotate.css?v=20260612-compare" />
+  </head>
+  <body data-shell="fullscreen" data-top="map">
+    <div id="page-root" class="annotate-page expert-page text-[#DCE8F8]">
+      <div class="annotate-page__head">
+        <div>
+          <h1 class="annotate-page__title">典型事件标注</h1>
+        </div>
+      </div>
+
+      <div class="annotate-page__inner">
+        <div id="annotate-tabs" class="annotate-tabs" aria-label="事件分类"></div>
+
+        <div class="annotate-top-row">
+          <section class="expert-panel annotate-panel">
+            <div class="panel-title">典型事件</div>
+            <div class="annotate-gallery-wrap">
+              <button type="button" class="annotate-gallery-nav annotate-gallery-nav--prev" id="annotate-gallery-prev" aria-label="上一组">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <div id="annotate-gallery" class="annotate-gallery"></div>
+              <button type="button" class="annotate-gallery-nav annotate-gallery-nav--next" id="annotate-gallery-next" aria-label="下一组">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+          </section>
+
+          <section class="expert-panel annotate-panel annotate-panel--feature">
+            <div class="panel-title">特征信息</div>
+            <div class="annotate-feature-body">
+              <div id="annotate-feature-lines" class="annotate-feature-lines"></div>
+              <div id="annotate-feature-specs" class="annotate-feature-specs"></div>
+            </div>
+          </section>
+        </div>
+
+        <div class="annotate-main">
+          <div class="annotate-compare-row">
+            <section class="expert-panel annotate-compare-card">
+              <div id="annotate-compare-panel"></div>
+            </section>
+
+            <section class="expert-panel annotate-compare-card">
+              <div class="card-title annotate-point-title" id="annotate-target-title">-</div>
+              <div class="annotate-target-toolbar">
+                <span class="annotate-toolbar-title">查看该点位</span>
+                <button type="button" class="annotate-mode-btn is-active" data-mode="period">历史时段</button>
+                <button type="button" class="annotate-mode-btn" data-mode="alarm">历史报警</button>
+              </div>
+              <div class="annotate-compare-head" id="annotate-target-head">—</div>
+              <div class="annotate-gen-row" id="annotate-gen-row">
+                <label for="annotate-gen-date">频谱图：</label>
+                <input type="date" id="annotate-gen-date" class="annotate-input" />
+                <input type="time" id="annotate-gen-time" class="annotate-input" value="03:00" />
+                <select id="annotate-gen-duration" class="annotate-input">
+                  <option value="30">30分钟</option>
+                  <option value="60">60分钟</option>
+                  <option value="120">120分钟</option>
+                </select>
+                <button type="button" class="annotate-gen-btn" id="annotate-gen-btn">生成</button>
+              </div>
+              <div class="annotate-target-spec-wrap" id="annotate-target-spec-wrap">
+                <div class="annotate-empty-compare" id="annotate-target-placeholder">点击「生成」展示当前时段频谱图</div>
+              </div>
+            </section>
+          </div>
+
+          <aside class="expert-panel annotate-sidebar">
+            <div class="panel-title" id="annotate-sidebar-title">已生成的历史时段频谱图</div>
+            <div id="annotate-history-list" class="annotate-history-list"></div>
+            <form class="annotate-form" id="annotate-form" onsubmit="return false">
+              <label for="annotate-classify">该事件归类为</label>
+              <select id="annotate-classify" class="annotate-input">
+                <option value="cat1">分类1</option>
+                <option value="drill">钻探</option>
+                <option value="demolish">破拆</option>
+                <option value="cat3">分类3</option>
+              </select>
+              <label class="annotate-check-label">
+                <input type="checkbox" id="annotate-add-typical" />
+                加入典型事件
+              </label>
+              <label for="annotate-remark">备注</label>
+              <textarea id="annotate-remark" class="annotate-input" placeholder="请填写审批备注"></textarea>
+              <button type="button" class="annotate-submit" id="annotate-submit-btn">提交</button>
+            </form>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <div id="annotate-toast" class="annotate-toast" aria-live="polite"></div>
+
+    <script src="../../assets/js/menu-config.js"></script>
+    <script src="../../assets/js/shell.js"></script>
+    <script src="../../assets/js/map-event-annotate.js?v=20260612-compare"></script>
+  </body>
+</html>

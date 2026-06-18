@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>&#19987;&#23478;&#24037;&#20855;</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/drone-stats-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/expert-mobile.css" />
+</head>
+<body class="mp-disease-page mp-drone-stats-page mp-project-page mp-expert-page miniapp-page" data-miniapp="page" data-module="patrol" data-title="&#19987;&#23478;&#24037;&#20855;" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="&#36820;&#22238;">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title">&#19987;&#23478;&#24037;&#20855;</h1>
+  </header>
+
+  <div id="expert-mobile-app" class="mp-disease-app mp-project-app">
+    <section id="expert-mobile-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-project-searchbar mp-drone-stats-filterbar">
+          <p class="mp-drone-stats-filter-hint" id="expert-mobile-location">&#20013;&#21335;&#21307;&#38498;&#31449;-&#28246;&#21271;&#26085;&#25253;&#31449;</p>
+        </div>
+
+        <div class="mp-drone-chart-stack mp-expert-stack">
+          <section class="mp-drone-chart-card mp-expert-map-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">GIS&#22320;&#22270;</div>
+            </div>
+            <div id="expert-mobile-map" class="mp-expert-map"></div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-expert-waterfall-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">&#28689;&#24067;&#22270;</div>
+            </div>
+            <div class="mp-expert-image-wrap">
+              <img
+                class="mp-expert-image"
+                src="file:///C:/Users/10208/AppData/Local/Temp/codex-clipboard-1803b4b7-ad11-4e1f-8175-74a252409e2f.png"
+                alt="&#28689;&#24067;&#22270;"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-expert-spectrum-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">&#39057;&#35889;&#22270;</div>
+            </div>
+            <div class="mp-expert-image-wrap mp-expert-image-wrap--dark">
+              <img
+                class="mp-expert-image mp-expert-image--spectrum"
+                src="file:///C:/Users/10208/AppData/Local/Temp/codex-clipboard-4d4cef7d-6f43-4f7e-8dc8-7e96fe3f0485.png"
+                alt="&#39057;&#35889;&#22270;"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-expert-info-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">&#26368;&#26032;&#21578;&#35686;&#20449;&#24687;</div>
+            </div>
+            <div id="expert-mobile-info" class="mp-project-list"></div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-expert-review-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">&#26368;&#26032;&#21578;&#35686;&#22797;&#26680;&#24773;&#20917;</div>
+            </div>
+            <div id="expert-mobile-review" class="mp-project-list"></div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-expert-history-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">&#21382;&#21490;&#21578;&#35686;&#20449;&#24687;1</div>
+            </div>
+            <div id="expert-mobile-history-1" class="mp-project-list"></div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-expert-history-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">&#21382;&#21490;&#21578;&#35686;&#20449;&#24687;2</div>
+            </div>
+            <div id="expert-mobile-history-2" class="mp-project-list"></div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-expert-history-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">&#21382;&#21490;&#21578;&#35686;&#20449;&#24687;3</div>
+            </div>
+            <div id="expert-mobile-history-3" class="mp-project-list"></div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-expert-note-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">&#24403;&#21069;&#20301;&#32622;&#22791;&#27880;</div>
+            </div>
+            <div id="expert-mobile-note" class="mp-project-list"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="expert-mobile-toast" class="project-toast mp-expert-toast" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="../../../assets/js/map-gis.js"></script>
+  <script src="../../../assets/js/map-situation-gis.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/expert-mobile-page.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 小程序原型 — 页面框架与基础交互
  */
 (function (global) {
@@ -568,8 +568,26 @@
     });
 
     frame.addEventListener("load", syncTabbarFromFrame);
+    frame.addEventListener("load", syncTabbarFromFrame);
 
-    setTab("map");
+    var pageParam = "";
+    try {
+      pageParam = new URL(global.location.href).searchParams.get("page") || "";
+    } catch (e) {}
+
+    if (pageParam) {
+      frame.src = pageParam;
+      tabs.forEach(function (btn) {
+        btn.classList.toggle("is-active", false);
+      });
+      try {
+        var cleanUrl = new URL(global.location.href);
+        cleanUrl.search = "";
+        global.history.replaceState(null, "", cleanUrl.pathname + cleanUrl.hash);
+      } catch (e) {}
+    } else {
+      setTab("map");
+    }
 
     global.addEventListener("message", function (event) {
       var data = event.data;

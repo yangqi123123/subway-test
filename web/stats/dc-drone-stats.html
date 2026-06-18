@@ -160,105 +160,105 @@
                 <div class="disease-stat-card__trend">累计时长</div>
               </div>
             </div>
-          </div>
+    </div>
 
-          <section class="mb-6">
-            <div class="dc-overview-head">
-              <div class="dc-overview-head__title">资源使用概览</div>
-            </div>
+    <section class="mb-6">
+      <div class="dc-overview-head">
+        <div class="dc-overview-head__title">资源使用概览</div>
+      </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              <div class="dc-panel dc-chart-shell">
-                <div class="flex items-center justify-between mb-2">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="dc-panel dc-chart-shell">
+          <div class="flex items-center justify-between mb-2">
                   <div class="dc-chart-title">月度新增违规项目统计</div>
-                  <div class="dc-chart-note">单位：个</div>
-                </div>
-                <canvas id="violation-month-chart" class="dc-canvas" width="420" height="214"></canvas>
-                <div class="dc-legend">
-                  <span class="dc-legend-item"><span class="dc-dot bg-[#22d3ee]"></span>基于无人机监测的月度新增违规项目数量</span>
-                </div>
-              </div>
+            <div class="dc-chart-note">单位：个</div>
+          </div>
+          <canvas id="violation-month-chart" class="dc-canvas" width="420" height="214"></canvas>
+          <div class="dc-legend">
+            <span class="dc-legend-item"><span class="dc-dot bg-[#22d3ee]"></span>基于无人机监测的月度新增违规项目数量</span>
+          </div>
+        </div>
 
-              <div class="dc-panel dc-chart-shell">
-                <div class="flex items-center justify-between mb-3">
-                  <div class="dc-chart-title">新增违规项目分布图</div>
-                  <div class="dc-chart-note">单位：个</div>
-                </div>
-                <div class="dc-pie-chart-wrap">
-                  <canvas id="violation-pie-chart" class="dc-pie-canvas-main" width="168" height="168" aria-label="新增违规项目分布图"></canvas>
-                </div>
-                <div id="violation-pie-legend" class="dc-legend dc-legend--pie"></div>
-              </div>
+        <div class="dc-panel dc-chart-shell">
+          <div class="flex items-center justify-between mb-3">
+            <div class="dc-chart-title">新增违规项目分布图</div>
+            <div class="dc-chart-note">单位：个</div>
+          </div>
+          <div class="dc-pie-chart-wrap">
+            <canvas id="violation-pie-chart" class="dc-pie-canvas-main" width="168" height="168" aria-label="新增违规项目分布图"></canvas>
+          </div>
+          <div id="violation-pie-legend" class="dc-legend dc-legend--pie"></div>
+        </div>
 
-              <div class="dc-panel dc-chart-shell">
-                <div class="flex items-center justify-between mb-3">
-                  <div class="dc-chart-title">设备使用率趋势图</div>
-                  <div class="dc-chart-note">单位：百分比</div>
-                </div>
-                <canvas id="trend-chart" class="dc-canvas" width="420" height="214"></canvas>
-                <div class="dc-legend">
-                  <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>无人机</span>
-                  <span class="dc-legend-item"><span class="dc-dot bg-[#22d3ee]"></span>机场设备</span>
-                </div>
-              </div>
+        <div class="dc-panel dc-chart-shell">
+          <div class="flex items-center justify-between mb-3">
+            <div class="dc-chart-title">设备使用率趋势图</div>
+            <div class="dc-chart-note">单位：百分比</div>
+          </div>
+          <canvas id="trend-chart" class="dc-canvas" width="420" height="214"></canvas>
+          <div class="dc-legend">
+            <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>无人机</span>
+            <span class="dc-legend-item"><span class="dc-dot bg-[#22d3ee]"></span>机场设备</span>
+          </div>
+        </div>
 
-              <div class="dc-panel dc-chart-shell">
-                <div class="flex items-center justify-between mb-3">
-                  <div class="dc-chart-title">设备使用时长</div>
-                  <div class="dc-chart-note">单位：月份 / 小时</div>
-                </div>
-                <canvas id="duration-chart" class="dc-canvas" width="420" height="214"></canvas>
-                <div class="dc-legend">
-                  <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>无人机</span>
-                  <span class="dc-legend-item"><span class="dc-dot bg-[#31c5e4]"></span>机场设备</span>
-                </div>
-              </div>
-            </div>
-          </section>
+        <div class="dc-panel dc-chart-shell">
+          <div class="flex items-center justify-between mb-3">
+            <div class="dc-chart-title">设备使用时长</div>
+            <div class="dc-chart-note">单位：月份 / 小时</div>
+          </div>
+          <canvas id="duration-chart" class="dc-canvas" width="420" height="214"></canvas>
+          <div class="dc-legend">
+            <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>无人机</span>
+            <span class="dc-legend-item"><span class="dc-dot bg-[#31c5e4]"></span>机场设备</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
           <section class="disease-list-area">
             <div class="disease-list-toolbar">
-              <div class="text-sm font-semibold text-white">使用记录明细</div>
+        <div class="text-sm font-semibold text-white">使用记录明细</div>
               <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost"><i class="fa-solid fa-file-export mr-1"></i>导出</button>
-            </div>
-            <div class="wh-table-shell bg-slate-950/35">
-              <div class="overflow-x-auto max-h-[min(520px,calc(100vh-300px))]">
-                <table class="w-full min-w-[1560px] text-left">
-                  <thead>
-                    <tr>
-                      <th class="px-3">任务ID</th>
-                      <th class="px-3">设备名称</th>
-                      <th class="px-3">所属机场</th>
-                      <th class="px-3">任务类型</th>
-                      <th class="px-3">起飞时间</th>
-                      <th class="px-3">降落时间</th>
-                      <th class="px-3">使用时长</th>
-                      <th class="px-3">最大飞行高度（单位：米）</th>
-                      <th class="px-3">电池消耗</th>
-                      <th class="px-3">操作员姓名</th>
-                      <th class="px-3">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody id="usage-record-body"></tbody>
-                </table>
-              </div>
-              <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
-                <span>共 <b id="usage-record-total" class="text-cyan-200">4</b> 条</span>
-                <div class="flex items-center gap-2 flex-wrap">
-                  <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-left"></i></button>
-                  <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary" type="button">1</button>
-                  <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-right"></i></button>
-                  <select class="wh-input px-2 py-1 text-[11px]">
-                    <option>10 条/页</option>
-                  </select>
-                  <span>跳至</span>
-                  <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
-                  <span>页</span>
-                </div>
-              </div>
-            </div>
-          </section>
+      </div>
+      <div class="wh-table-shell bg-slate-950/35">
+        <div class="overflow-x-auto max-h-[min(520px,calc(100vh-300px))]">
+          <table class="w-full min-w-[1560px] text-left">
+            <thead>
+              <tr>
+                <th class="px-3">任务ID</th>
+                <th class="px-3">设备名称</th>
+                <th class="px-3">所属机场</th>
+                <th class="px-3">任务类型</th>
+                <th class="px-3">起飞时间</th>
+                <th class="px-3">降落时间</th>
+                <th class="px-3">使用时长</th>
+                <th class="px-3">最大飞行高度（单位：米）</th>
+                <th class="px-3">电池消耗</th>
+                <th class="px-3">操作员姓名</th>
+                <th class="px-3">操作</th>
+              </tr>
+            </thead>
+            <tbody id="usage-record-body"></tbody>
+          </table>
         </div>
+        <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+          <span>共 <b id="usage-record-total" class="text-cyan-200">4</b> 条</span>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-left"></i></button>
+            <button class="min-w-[32px] h-8 rounded text-xs wh-btn-primary" type="button">1</button>
+            <button class="min-w-[28px] h-8 rounded text-xs wh-btn-ghost" type="button"><i class="fa-solid fa-angle-right"></i></button>
+            <select class="wh-input px-2 py-1 text-[11px]">
+              <option>10 条/页</option>
+            </select>
+            <span>跳至</span>
+            <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+            <span>页</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 
         <aside class="disease-layout__right" aria-label="筛选与快捷操作">
           <div class="disease-filter-panel">

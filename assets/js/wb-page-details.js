@@ -71,7 +71,7 @@
     html += detailRowHtml("上级部门", findDeptName(deptRows, row.parentId));
     html += detailRowHtml("部门名称", row.deptName);
     html += detailRowHtml("显示排序", row.orderNum);
-    html += detailRowHtml("负责人", row.leader);
+    html += detailRowHtml("管理员", row.leader);
     html += detailRowHtml("联系电话", row.phone);
     html += detailRowHtml("邮箱", row.email);
     html += detailStatusRow("状态", row.status);

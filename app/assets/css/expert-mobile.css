@@ -1,0 +1,191 @@
+﻿body.mp-expert-page #expert-mobile-view {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--mp-bg-subtle);
+}
+
+body.mp-expert-page .mp-expert-stack {
+  gap: 12px;
+}
+
+body.mp-expert-page .mp-expert-map {
+  width: 100%;
+  height: 280px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #eef3f7;
+}
+
+body.mp-expert-page .leaflet-container {
+  background: #eef3f7;
+}
+
+body.mp-expert-page .mp-expert-image-wrap {
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+body.mp-expert-page .mp-expert-image-wrap--dark {
+  background: #071426;
+}
+
+body.mp-expert-page .mp-expert-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  background: inherit;
+}
+
+body.mp-expert-page .mp-expert-image--spectrum {
+  max-height: 520px;
+  margin: 0 auto;
+}
+
+body.mp-expert-page .mp-expert-info-card .mp-project-list,
+body.mp-expert-page .mp-expert-review-card .mp-project-list,
+body.mp-expert-page .mp-expert-history-card .mp-project-list,
+body.mp-expert-page .mp-expert-note-card .mp-project-list {
+  display: grid;
+  gap: 10px;
+}
+
+body.mp-expert-page .mp-expert-info-item,
+body.mp-expert-page .mp-expert-review-item,
+body.mp-expert-page .mp-expert-history-item,
+body.mp-expert-page .mp-expert-note-item {
+  padding: 12px;
+}
+
+body.mp-expert-page .mp-expert-info-item .mp-project-card__meta,
+body.mp-expert-page .mp-expert-review-item .mp-project-card__meta,
+body.mp-expert-page .mp-expert-history-item .mp-project-card__meta,
+body.mp-expert-page .mp-expert-note-item .mp-project-card__meta {
+  grid-template-columns: 1fr;
+}
+
+body.mp-expert-page .mp-expert-info-item .mp-project-card__meta-full,
+body.mp-expert-page .mp-expert-review-item .mp-project-card__meta-full,
+body.mp-expert-page .mp-expert-history-item .mp-project-card__meta-full,
+body.mp-expert-page .mp-expert-note-item .mp-project-card__meta-full {
+  grid-column: 1 / -1;
+}
+
+body.mp-expert-page .mp-expert-source-tag,
+body.mp-expert-page .mp-expert-status-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+body.mp-expert-page .mp-expert-source-tag {
+  color: #0ea5e9;
+  background: rgba(14, 165, 233, 0.1);
+}
+
+body.mp-expert-page .mp-expert-status-tag {
+  color: #f8fafc;
+  background: rgba(37, 99, 235, 0.82);
+}
+
+body.mp-expert-page .mp-expert-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+body.mp-expert-page .mp-expert-actions .mp-project-action {
+  flex: 1 1 100%;
+  justify-content: center;
+}
+
+body.mp-expert-page .mp-expert-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+body.mp-expert-page .mp-expert-photo-grid img {
+  width: 100%;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+body.mp-expert-page .mp-expert-note-view {
+  min-height: 86px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 10px;
+  background: rgba(7, 20, 38, 0.55);
+  color: #e2e8f0;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+body.mp-expert-page .mp-expert-note-view.is-empty {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+body.mp-expert-page .mp-expert-note-input {
+  width: 100%;
+  min-height: 96px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.7);
+  color: #e2e8f0;
+  font-size: 12px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+body.mp-expert-page .mp-expert-note-actions {
+  margin-top: 10px;
+}
+
+body.mp-expert-page .mp-expert-note-actions.is-editing .mp-expert-note-actions__view {
+  display: none;
+}
+
+body.mp-expert-page .mp-expert-note-actions:not(.is-editing) .mp-expert-note-actions__edit {
+  display: none;
+}
+
+body.mp-expert-page .mp-expert-toast.project-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 13px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+body.mp-expert-page .mp-expert-toast.project-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

@@ -19,7 +19,7 @@
       if (!btn) return;
       event.preventDefault();
       event.stopPropagation();
-      global.location.href = "../home.html";
+      global.location.href = "../../patrol/home.html";
     });
 
     if (global.MiniAppFrame && global.MiniAppFrame.syncTabbar) {
