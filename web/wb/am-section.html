@@ -221,6 +221,8 @@
       align-items: center;
       gap: 10px;
     }
+    .section-form-item--select { align-items: flex-start; }
+    .section-form-item--select .section-form-label { line-height: 32px; }
     .section-form-label {
       width: 96px;
       flex: 0 0 96px;
@@ -241,7 +243,8 @@
       box-shadow: 0 24px 80px rgba(0,0,0,.48);
       overflow: hidden;
     }
-    .am-detail-mask {
+    .section-modal { overflow: visible; }
+    .section-modal .p-6 { overflow: visible; }
       position: fixed;
       inset: 0;
       z-index: 115;
@@ -468,8 +471,8 @@
           <label class="section-form-item"><span class="section-form-label is-required">起点里程：</span><input id="section-start-mile" class="wh-input h-8 flex-1 px-3" placeholder="请输入起点里程" /></label>
           <label class="section-form-item"><span class="section-form-label is-required">终点里程：</span><input id="section-end-mile" class="wh-input h-8 flex-1 px-3" placeholder="请输入终点里程" /></label>
           <label class="section-form-item"><span class="section-form-label">长度：</span><input id="section-length" class="wh-input h-8 flex-1 px-3" placeholder="请输入长度（米）" /></label>
-          <label class="section-form-item"><span class="section-form-label">所处地层：</span><input id="section-strata" class="wh-input h-8 flex-1 px-3" placeholder="请输入所处地层" /></label>
-          <label class="section-form-item"><span class="section-form-label">施工单位：</span><input id="section-builder" class="wh-input h-8 flex-1 px-3" placeholder="请输入施工单位" /></label>
+          <label class="section-form-item section-form-item--select"><span class="section-form-label">所处地层：</span><div id="section-strata-select" class="wh-search-select" data-input-id="section-strata"></div></label>
+          <label class="section-form-item section-form-item--select"><span class="section-form-label">施工单位：</span><div id="section-builder-select" class="wh-search-select" data-input-id="section-builder"></div></label>
           <label class="section-form-item"><span class="section-form-label">施工方法：</span><input id="section-method" class="wh-input h-8 flex-1 px-3" placeholder="请输入施工方法" /></label>
         </div>
       </div>
@@ -491,8 +494,38 @@
     </div>
   </div>
 
+  <script src="../../assets/js/search-select.js"></script>
   <script>
     (function () {
+      var STRATA_OPTIONS = [
+        "3-2 黏土",
+        "(20a-2-2) 中风化泥岩",
+        "1-1 杂填土",
+        "(20c-1) 强风化泥岩",
+        "(10-1d) 粉质黏土",
+        "(18c-1) 强风化泥质砂岩",
+        "(13-1) 砂砾岩残积土",
+        "(18d-1) 强风化砂质泥岩"
+      ];
+      var BUILDER_OPTIONS = [
+        "武汉地铁集团",
+        "中铁十一局",
+        "中铁隧道局",
+        "中建三局",
+        "中铁一局",
+        "中南勘基"
+      ];
+      var strataSelect = WHSearchSelect.create(
+        document.getElementById("section-strata-select"),
+        STRATA_OPTIONS,
+        "请搜索或选择所处地层"
+      );
+      var builderSelect = WHSearchSelect.create(
+        document.getElementById("section-builder-select"),
+        BUILDER_OPTIONS,
+        "请搜索或选择施工单位"
+      );
+
       var rows = [
         { id:"Q201", name:"常青花园-长港路", line:"2号线", direction:"上行", startMile:"K12+320", endMile:"K14+050", length:"1730", strata:"粉质黏土", builder:"武汉地铁集团", method:"盾构法", createdAt:"2026-05-01 10:15" },
         { id:"Q202", name:"长港路-汉口火车站", line:"2号线", direction:"下行", startMile:"K14+050", endMile:"K15+760", length:"1710", strata:"砂质黏土", builder:"中铁十一局", method:"盾构法", createdAt:"2026-05-01 10:22" },
@@ -633,6 +666,7 @@
       }
 
       function openModal(mode, index) {
+        WHSearchSelect.closeAll(null);
         editIndex = mode === "edit" ? index : -1;
         modalTitle.textContent = mode === "edit" ? "编辑区间" : "新增区间";
         var row = index > -1 ? rows[index] : null;
@@ -643,8 +677,8 @@
         document.getElementById("section-start-mile").value = row ? row.startMile : "";
         document.getElementById("section-end-mile").value = row ? row.endMile : "";
         document.getElementById("section-length").value = row ? row.length : "";
-        document.getElementById("section-strata").value = row ? row.strata : "";
-        document.getElementById("section-builder").value = row ? row.builder : "";
+        strataSelect.setValue(row ? row.strata : "");
+        builderSelect.setValue(row ? row.builder : "");
         document.getElementById("section-method").value = row ? row.method : "";
         modalMask.classList.add("show");
       }
@@ -671,8 +705,8 @@
           startMile: startMile,
           endMile: endMile,
           length: document.getElementById("section-length").value.trim() || "0",
-          strata: document.getElementById("section-strata").value.trim() || "-",
-          builder: document.getElementById("section-builder").value.trim() || "-",
+          strata: strataSelect.getValue() || "-",
+          builder: builderSelect.getValue() || "-",
           method: document.getElementById("section-method").value.trim() || "-",
           createdAt: editIndex > -1 ? rows[editIndex].createdAt : "2026-05-12 19:30"
         };

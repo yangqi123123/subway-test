@@ -1,5 +1,5 @@
-/**
- * 小程序原型 — 菜单与页面配置（对齐后台模块）
+﻿/**
+ * 小程序原型菜单与页面配置
  */
 (function (global) {
   var MODULES = {
@@ -13,7 +13,7 @@
       label: "巡检",
       hero: {
         title: "智慧巡检",
-        desc: "项目 · 质量 · 巡查记录",
+        desc: "项目、质量、巡查记录",
         image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80",
       },
       menuGroups: [
@@ -45,7 +45,6 @@
           title: "全时全域感知",
           items: [
             { label: "告警信息", icon: "fa-bell", tone: "amber", href: "pages/patrol-alerts.html" },
-            { label: "态势感知", icon: "fa-wave-square", tone: "cyan", href: "../map/pages/situation.html" },
           ],
         },
         {
@@ -54,6 +53,7 @@
             { label: "线路项目统计", icon: "fa-chart-column", tone: "blue", href: "../stats/pages/line-stats.html" },
             { label: "无人机数据统计", icon: "fa-helicopter", tone: "cyan", href: "../stats/pages/drone-ops.html" },
             { label: "全时全域数据统计", icon: "fa-chart-pie", tone: "green", href: "../stats/pages/system-stats.html" },
+            { label: "知识库", icon: "fa-book-open", tone: "amber", href: "../stats/pages/library.html" },
           ],
         },
       ],
@@ -63,7 +63,7 @@
       label: "资产",
       hero: {
         title: "资产管理",
-        desc: "应急 · 无人机设备",
+        desc: "应急、无人机设备",
         image: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=800&q=80",
       },
       menuGroups: [
@@ -135,7 +135,7 @@
 
   var TAB_ROOT_HOMES = TAB_ITEMS.map(function (item) {
     return item.home;
-  });
+  }).concat(["patrol/pages/today-task.html"]);
 
   function isTabbarRootPath(path) {
     path = String(path || "").replace(/\\/g, "/");

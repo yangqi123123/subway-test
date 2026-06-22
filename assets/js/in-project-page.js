@@ -28,6 +28,17 @@
       var PROJECT_STRUCT_TYPE_OPTIONS = ["盾构结构", "明挖结构", "高架结构", "车站结构", "附属结构", "联络通道"];
       var PROJECT_STRUCT_STATUS_OPTIONS = ["良好", "一般", "较差", "需加固", "施工中", "已停运"];
       var PROJECT_ADDR_TYPE_OPTIONS = ["区间", "车站", "出入口", "停车场", "风亭", "冷却塔", "变电所", "车辆段", "其他"];
+      var STRATA_OPTIONS = [
+        "3-2 黏土",
+        "(20a-2-2) 中风化泥岩",
+        "1-1 杂填土",
+        "(20c-1) 强风化泥岩",
+        "(10-1d) 粉质黏土",
+        "(18c-1) 强风化泥质砂岩",
+        "(13-1) 砂砾岩残积土",
+        "(18d-1) 强风化砂质泥岩",
+        "(3a-1) 淤泥质土"
+      ];
       var projectFieldSelects = [];
 
       var projects = (
@@ -967,12 +978,18 @@
             document.getElementById("proj-struct-status-select"),
             PROJECT_STRUCT_STATUS_OPTIONS,
             "请搜索或选择地铁结构状态"
+          ),
+          WHSearchSelect.createMulti(
+            document.getElementById("proj-strata-select"),
+            STRATA_OPTIONS,
+            "请搜索或选择地铁所处地层"
           )
         ].filter(Boolean);
         if (projectFieldSelects[0] && projectFieldSelects[0].setValue) projectFieldSelects[0].setValue("区间");
         if (projectFieldSelects[1] && projectFieldSelects[1].setValues) projectFieldSelects[1].setValues(["钻孔、地勘、打桩"]);
         if (projectFieldSelects[2] && projectFieldSelects[2].setValues) projectFieldSelects[2].setValues(["盾构结构"]);
         if (projectFieldSelects[3] && projectFieldSelects[3].setValues) projectFieldSelects[3].setValues(["良好"]);
+        if (projectFieldSelects[4] && projectFieldSelects[4].setValues) projectFieldSelects[4].setValues(["(3a-1) 淤泥质土"]);
         if (riskEl) riskEl.value = "二级";
       }
 

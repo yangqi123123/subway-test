@@ -238,3 +238,17 @@ body.mp-scroll-locked .mp-patrol-alerts-page .mp-list-scroll,
 body.mp-scroll-locked .mp-patrol-alerts-page .mp-disease-detail-scroll {
   overflow: hidden !important;
 }
+
+body.mp-patrol-alerts-embedded #patrol-alerts-app {
+  padding-top: 0;
+}
+
+html.mp-patrol-alerts-embedded body.mp-patrol-alerts-page .miniapp-navbar {
+  display: none !important;
+}
+html.mp-patrol-alerts-embedded body.mp-patrol-alerts-page #patrol-alerts-app {
+  padding-top: 0 !important;
+}
+html.mp-patrol-alerts-embedded body.mp-patrol-alerts-page {
+  overflow: hidden;
+}

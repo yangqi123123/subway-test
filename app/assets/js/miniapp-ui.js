@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 小程序原型 — 页面框架与基础交互
  */
 (function (global) {
@@ -566,6 +566,16 @@
         setTab(btn.getAttribute("data-tab-id"));
       });
     });
+    var todayTaskBtn = global.document.querySelector(".device-tabbar__fab");
+    if (todayTaskBtn) {
+      todayTaskBtn.addEventListener("click", function () {
+        frame.src = "patrol/pages/today-task.html";
+        tabs.forEach(function (btn) {
+          btn.classList.toggle("is-active", false);
+        });
+      });
+    }
+
 
     frame.addEventListener("load", syncTabbarFromFrame);
     frame.addEventListener("load", syncTabbarFromFrame);

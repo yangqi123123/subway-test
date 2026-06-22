@@ -252,7 +252,7 @@
           items: [
             { key: "map-situation", label: "态势感知", href: "map/map-situation.html" },
             { key: "map-alerts", label: "告警信息", href: "map/map-alerts.html" },
-            { key: "spectrum-manage", label: "频谱图管理", href: "wb/spectrum-manage.html" },
+            { key: "spectrum-manage", label: "知识库", href: "wb/spectrum-manage.html" },
           ],
         },
       ],
@@ -577,15 +577,19 @@
   }
 
   function markAllNotifyRead() {
-    saveNotifyReadSet(
-      NOTIFY_ROWS.map(function (r) {
-        return r.id;
-      })
-    );
+    var cfg = global.WH_WORKBENCH_CONFIGS && global.WH_WORKBENCH_CONFIGS["wb-sys-notify"];
+    var ids = NOTIFY_ROWS.map(function (r) {
+      return r.id;
+    });
+    if (cfg && cfg.rows) {
+      cfg.rows.forEach(function (r) {
+        if (r && r.id && ids.indexOf(r.id) < 0) ids.push(r.id);
+      });
+    }
+    saveNotifyReadSet(ids);
     NOTIFY_ROWS.forEach(function (r) {
       r.read = "已读";
     });
-    var cfg = global.WH_WORKBENCH_CONFIGS && global.WH_WORKBENCH_CONFIGS["wb-sys-notify"];
     if (cfg && cfg.rows) {
       cfg.rows.forEach(function (r) {
         r.read = "已读";

@@ -19,7 +19,7 @@
   }
 
   function bindNavBack() {
-    global.document.addEventListener("click", function (event) {
+    document.addEventListener("click", function (event) {
       var btn = event.target.closest("[data-action='mp-nav-back']");
       if (!btn) return;
 
@@ -109,6 +109,17 @@
   }
 
   function start() {
+    var params = new URLSearchParams(global.location.search);
+    var hideHeader = params.get("hideHeader") === "1";
+    if (hideHeader) {
+      var header = global.document.querySelector(".miniapp-navbar");
+      if (header) header.hidden = true;
+      var app = global.document.getElementById("patrol-alerts-app");
+      if (app) app.style.paddingTop = "0";
+      var body = global.document.body;
+      if (body) body.classList.add("mp-patrol-alerts-embedded");
+    }
+
     bindNavBack();
     if (global.MiniAppFrame && global.MiniAppFrame.syncTabbar) {
       global.MiniAppFrame.syncTabbar();
@@ -121,8 +132,8 @@
     global.addEventListener("pageshow", function (event) {
       if (!event.persisted) return;
       if (!global.document.getElementById("patrol-alerts-app")) return;
-      var params = new URLSearchParams(global.location.search);
-      if (params.get("fromGis") === "1" && params.get("id")) return;
+      var pageParams = new URLSearchParams(global.location.search);
+      if (pageParams.get("fromGis") === "1" && pageParams.get("id")) return;
       if (global.WHMapAlerts && typeof global.WHMapAlerts.resetPatrolAlertsEntryView === "function") {
         global.WHMapAlerts.resetPatrolAlertsEntryView();
       }

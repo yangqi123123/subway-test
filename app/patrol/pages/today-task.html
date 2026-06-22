@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>今日任务</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/today-task-mobile.css" />
+</head>
+<body class="mp-today-task-page miniapp-page" data-miniapp="page" data-module="patrol" data-title="今日巡务" data-base="../">
+  <div class="mp-today-task-shell">
+    <header class="miniapp-navbar miniapp-navbar--root mp-today-task-navbar">
+      <span class="miniapp-navbar__side" aria-hidden="true"></span>
+      <h1 class="miniapp-navbar__title">今日任务</h1>
+      <button type="button" class="mp-today-task-notice" aria-label="通知">
+        <i class="fa-regular fa-bell"></i>
+        <span id="today-task-notify-badge" class="mp-today-task-notify-badge" hidden>0</span>
+      </button>
+    </header>
+
+    <section class="mp-today-task-tabs" role="tablist" aria-label="巡务分类">
+      <button type="button" class="mp-today-task-tab is-active" data-tab="route" aria-selected="true">今日巡线</button>
+      <button type="button" class="mp-today-task-tab" data-tab="alert" aria-selected="false">告警</button>
+    </section>
+
+    <div class="mp-today-task-content">
+      <div id="today-task-route-view">
+        <section class="mp-today-task-map-card">
+          <div id="today-task-map" class="mp-today-task-map" aria-label="今日巡务地图"></div>
+          <div class="mp-today-task-map-tip">工班进入，默认显示此页签</div>
+        </section>
+
+        <section class="mp-today-task-toolbar">
+          <div class="mp-today-task-filter">全部项目</div>
+          <button type="button" class="mp-today-task-finish">完成当日巡线</button>
+        </section>
+
+        <section class="mp-project-stats mp-today-task-stats">
+          <article class="mp-stat-card mp-stat-card--total">
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="today-task-total">0</div>
+              <div class="mp-stat-card__label">今日待巡查项目</div>
+            </div>
+          </article>
+          <article class="mp-stat-card mp-stat-card--key">
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="today-task-key">0</div>
+              <div class="mp-stat-card__label">重点项目</div>
+            </div>
+          </article>
+          <article class="mp-stat-card mp-stat-card--general">
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="today-task-normal">0</div>
+              <div class="mp-stat-card__label">一般项目</div>
+            </div>
+          </article>
+        </section>
+
+        <section id="today-task-list" class="mp-project-list mp-today-task-list" aria-label="今日巡务项目列表"></section>
+      </div>
+
+      <iframe id="today-task-alert-frame" class="mp-today-task-alert-frame" title="告警信息" hidden></iframe>
+    </div>
+  </div>
+
+  <div id="today-task-confirm-mask" class="miniapp-modal-mask" aria-hidden="true">
+    <div class="miniapp-modal miniapp-modal--confirm" role="dialog" aria-labelledby="today-task-confirm-title" aria-describedby="today-task-confirm-text">
+      <h3 id="today-task-confirm-title">完成当日巡线</h3>
+      <p id="today-task-confirm-text">请确认是否完成今日巡线任务。</p>
+      <div class="miniapp-modal__actions">
+        <button type="button" class="miniapp-btn miniapp-btn--ghost" data-action="today-task-confirm-cancel">取消</button>
+        <button type="button" class="miniapp-btn miniapp-btn--primary" data-action="today-task-confirm-ok">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="../../../assets/js/map-gis.js"></script>
+  <script src="../../../assets/js/map-situation-gis.js"></script>
+  <script src="../../assets/js/miniapp-config.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/today-task-page-boot.js"></script>
+</body>
+</html>

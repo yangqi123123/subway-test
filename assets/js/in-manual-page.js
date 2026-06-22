@@ -1,5 +1,5 @@
-/**
- * 人工巡查记录 — Web / 移动端共用逻辑
+﻿/**
+ * 人工巡检记录 - Web / 移动端共用逻辑
  */
 (function (global) {
   "use strict";
@@ -8,6 +8,12 @@
     return (row.logs || []).some(function (log) {
       return log.action === actionName;
     });
+  }
+
+  function resolveProjectType(projectName, fallback) {
+    if (projectName === "洪山路至小洪山商业公寓项目") return "重点项目";
+    if (projectName) return fallback || "一般项目";
+    return fallback || "一般项目";
   }
 
   function statusBadge(row) {
@@ -23,7 +29,10 @@
   function bootManualPage(options) {
     options = options || {};
     var rows = (global.WH_MANUAL_ROWS || []).map(function (row) {
-      return Object.assign({}, row, { logs: (row.logs || []).slice() });
+      return Object.assign({}, row, {
+        projectType: resolveProjectType(row.projectName, row.projectType),
+        logs: (row.logs || []).slice()
+      });
     });
 
     return global.WHPatrolCrudPage.boot({
@@ -34,22 +43,22 @@
       searchPage: "manual-search.html",
       listPage: "manual.html",
       emptyIcon: "fa-solid fa-person-walking",
-      emptyText: "暂无人工巡查记录",
-      newLogAction: "新增人工巡查",
-      saveToast: "人工巡查记录已保存",
+      emptyText: "暂无人工巡检记录",
+      newLogAction: "新增人工巡检",
+      saveToast: "人工巡检记录已保存",
       uploadKinds: ["photo", "video"],
       dateField: "patrolDate",
       confirmMessages: {
         confirmTitle: "工班确认",
-        confirmMsg: "确定通过该人工巡查记录？",
+        confirmMsg: "确定通过该人工巡检记录？",
         rejectTitle: "拒绝受理",
-        rejectMsg: "确定拒绝该人工巡查记录？",
+        rejectMsg: "确定拒绝该人工巡检记录？"
       },
       formTitle: function (mode) {
-        return mode === "edit" ? "编辑人工巡查记录" : "新建人工巡查记录";
+        return mode === "edit" ? "编辑人工巡检记录" : "新建人工巡检记录";
       },
       detailTitle: function (row) {
-        return row.id + " · 人工巡查详情";
+        return row.id + " 人工巡检详情";
       },
       stats: function (allRows) {
         return {
@@ -62,12 +71,12 @@
           }).length,
           completed: allRows.filter(function (r) {
             return hasLogAction(r, "工班确认");
-          }).length,
+          }).length
         };
       },
       statusBadge: statusBadge,
       cardTitle: function (row) {
-        return row.projectName || "—";
+        return row.projectName || "-";
       },
       rowMatchesSearch: function (row, query) {
         var q = (query || "").trim();
@@ -78,13 +87,13 @@
         var place =
           [row.section, row.station].filter(function (s) {
             return s && String(s).trim();
-          }).join(" / ") || "—";
+          }).join(" / ") || "-";
         return [
           { label: "所属线路", value: row.line },
           { label: "所在区间/站点", value: place, fullWidth: true, nowrap: true },
-          { label: "巡查人", value: row.user || "—" },
+          { label: "巡查人", value: row.user || "-" },
           { label: "巡查日期", value: row.patrolDate, nowrap: true, fullWidth: true },
-          { label: "项目进展", value: row.progress, fullWidth: true },
+          { label: "项目进展", value: row.progress, fullWidth: true }
         ];
       },
       mediaProjectName: function (row) {
@@ -100,16 +109,17 @@
           h.esc(row.line) +
           "</dd></div>" +
           "<div><dt>上下行</dt><dd>" +
-          h.esc(row.direction || "—") +
+          h.esc(row.direction || "-") +
           "</dd></div>" +
           "<div><dt>所在区间</dt><dd>" +
-          h.esc(row.section || "—") +
+          h.esc(row.section || "-") +
           "</dd></div>" +
           "<div><dt>站点</dt><dd>" +
-          h.esc(row.station || "—") +
+          h.esc(row.station || "-") +
           "</dd></div>" +
           "<div><dt>所在项目</dt><dd>" +
           h.esc(row.projectName) +
+          (row.projectType ? " / " + h.esc(row.projectType) : "") +
           "</dd></div>" +
           "<div><dt>巡查日期</dt><dd>" +
           h.esc(row.patrolDate) +
@@ -124,7 +134,7 @@
           h.esc(row.progress) +
           "</dd></div>" +
           '<div class="mp-disease-detail-grid__full"><dt>协调情况及备注</dt><dd>' +
-          h.esc(row.remark || "—") +
+          h.esc(row.remark || "-") +
           "</dd></div>" +
           "<div><dt>巡查人</dt><dd>" +
           h.esc(row.user) +
@@ -145,7 +155,7 @@
           section: fv("filter-section"),
           station: fv("filter-station"),
           dateStart: fv("filter-date-start"),
-          dateEnd: fv("filter-date-end"),
+          dateEnd: fv("filter-date-end")
         };
       },
       rowMatchesFilters: function (row, f) {
@@ -164,11 +174,11 @@
           direction: fh.fieldVal("f-direction"),
           section: section,
           station: station,
-          place: (section || "—") + " / " + (station || "—"),
+          place: (section || "-") + " / " + (station || "-"),
           projectName: fh.fieldVal("f-project"),
           patrolDate: fh.fieldVal("f-patrol-date"),
           progress: fh.fieldVal("f-progress"),
-          remark: fh.fieldVal("f-remark"),
+          remark: fh.fieldVal("f-remark")
         };
       },
       resetForm: function (fh) {
@@ -220,7 +230,7 @@
         }
         return true;
       },
-      buildRowFromForm: function (data, editingRow, fh) {
+      buildRowFromForm: function (data, editingRow) {
         var now = "2026-05-12 18:30";
         return {
           id: data.id,
@@ -230,6 +240,7 @@
           station: data.station,
           place: data.place,
           projectName: data.projectName,
+          projectType: resolveProjectType(data.projectName, editingRow ? editingRow.projectType : "一般项目"),
           progress: data.progress,
           remark: data.remark,
           user: editingRow ? editingRow.user : "当前用户",
@@ -237,9 +248,9 @@
           updatedAt: now,
           logs: editingRow
             ? editingRow.logs.slice()
-            : [{ action: "新增人工巡查", user: "当前用户", time: now }],
+            : [{ action: "新增人工巡检", user: "当前用户", time: now }]
         };
-      },
+      }
     });
   }
 

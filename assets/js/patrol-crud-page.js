@@ -600,6 +600,7 @@
       if (!validateForm(formHelpers())) return;
       var data = readForm(formHelpers());
       var editingRow = editingIndex != null ? rows[editingIndex] : null;
+      var isEditing = editingIndex != null;
       var row = buildRowFromForm(data, editingRow, formHelpers());
       if (!row.logs) row.logs = [];
       if (!editingRow && !row.logs.length) {
@@ -609,11 +610,18 @@
           time: row.date || row.updatedAt || row.time || "2026-05-12 18:30",
         });
       }
-      if (editingIndex != null) rows[editingIndex] = row;
+      if (isEditing) rows[editingIndex] = row;
       else rows.unshift(row);
       filteredRows = null;
       renderList();
       showList();
+      try {
+        global.dispatchEvent(new CustomEvent("wh-patrol-form-saved", {
+          detail: { prefix: prefix, row: row, editing: isEditing }
+        }));
+      } catch (e) {
+        /* ignore */
+      }
       showToast(saveToast);
     }
 

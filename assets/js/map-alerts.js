@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 告警信息：态势感知地图 + 区间树状列表 + 详情/复核/审核流程
  */
 (function () {
@@ -1479,13 +1479,18 @@
       .join("");
   }
 
-  function setDetailSideLayout(isUavDetail) {
+  function hasUavShotRecord(item) {
+    return !!(item && ((item.uavRecord && item.uavRecord.image) || item.image));
+  }
+
+  function setDetailSideLayout(isUavDetail, item) {
     var alarmCard = document.getElementById("record-alarm-card");
     var uavCard = document.getElementById("record-uav-card");
     var disposalTitle = document.getElementById("record-disposal-title");
     var detailShell = document.querySelector(".alert-detail-shell");
+    var showUavCard = hasUavShotRecord(item);
     if (alarmCard) alarmCard.classList.toggle("hidden", !!isUavDetail);
-    if (uavCard) uavCard.classList.toggle("hidden", !isUavDetail);
+    if (uavCard) uavCard.classList.toggle("hidden", !showUavCard);
     if (disposalTitle) disposalTitle.textContent = isUavDetail ? "审批记录" : "处警记录";
     if (detailShell) detailShell.classList.toggle("alert-detail-shell--uav", !!isUavDetail);
   }
@@ -1737,7 +1742,7 @@
       return;
     }
     var isUavDetail = isUavSourceAlert(item);
-    setDetailSideLayout(isUavDetail);
+    setDetailSideLayout(isUavDetail, item);
     if (isUavDetail) fillUavSourceDetail(item);
     else fillTraditionalDetail(item);
   }

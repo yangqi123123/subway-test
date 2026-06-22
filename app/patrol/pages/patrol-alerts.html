@@ -18,6 +18,16 @@
   <link rel="stylesheet" href="../../assets/css/patrol-alerts-mobile.css" />
 </head>
 <body class="mp-disease-page mp-patrol-page mp-patrol-alerts-page mp-todo-page mp-project-page miniapp-page" data-miniapp="page" data-module="patrol" data-title="告警信息" data-base="../">
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get("hideHeader") === "1") {
+          document.documentElement.classList.add("mp-patrol-alerts-embedded");
+        }
+      } catch (e) {}
+    })();
+  </script>
   <header class="miniapp-navbar miniapp-navbar--inner">
     <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
       <i class="fa-solid fa-chevron-left"></i>

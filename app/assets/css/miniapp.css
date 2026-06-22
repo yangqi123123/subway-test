@@ -195,6 +195,50 @@ body.miniapp-device-root {
   background: rgba(35, 106, 255, 0.04);
 }
 
+.device-tabbar__fab {
+  position: relative;
+  flex: 0 0 84px;
+  margin: -28px 2px 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  cursor: default;
+}
+
+.device-tabbar__fab-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(135deg, #236aff 0%, #4d88ff 50%, #1a52cc 100%);
+  box-shadow:
+    0 14px 28px rgba(35, 106, 255, 0.28),
+    0 4px 10px rgba(26, 82, 204, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.device-tabbar__fab-icon i {
+  font-size: 23px;
+  line-height: 1;
+}
+
+.device-tabbar__fab-label {
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 600;
+  color: var(--mp-primary);
+  text-align: center;
+  white-space: nowrap;
+}
+
 /* —— iframe 内页面 —— */
 body.miniapp-page {
   margin: 0;
