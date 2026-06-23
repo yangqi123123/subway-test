@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>典型事件标注</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/in-project-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/disease-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/drone-stats-mobile.css" />
+  <link rel="stylesheet" href="../../assets/css/event-annotate-mobile.css" />
+</head>
+<body class="mp-disease-page mp-drone-stats-page mp-project-page mp-event-annotate-page miniapp-page" data-miniapp="page" data-module="patrol" data-title="典型事件标注" data-base="../">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title">典型事件标注</h1>
+  </header>
+
+  <div id="event-annotate-app" class="mp-disease-app mp-project-app">
+    <section id="event-annotate-view" class="mp-project-view">
+      <div class="mp-list-scroll">
+        <div class="mp-drone-chart-stack mp-event-annotate-stack">
+
+          <section class="mp-drone-chart-card mp-event-category-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">事件分类</div>
+              <button type="button" class="mp-event-head-btn" id="event-add-category-btn">新增分类标签</button>
+            </div>
+            <div id="event-category-tabs" class="mp-event-category-tabs" role="tablist" aria-label="事件分类"></div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-event-gallery-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">典型事件图库</div>
+            </div>
+            <div id="event-typical-gallery" class="mp-event-typical-gallery"></div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-event-spectrum-card">
+            <div class="mp-drone-chart-card__head mp-event-compare-head">
+              <div class="mp-drone-chart-card__title">典型事件对比</div>
+              <div id="event-reference-meta" class="mp-drone-chart-card__note mp-event-compare-note"></div>
+            </div>
+            <div class="mp-event-spectrum-wrap mp-event-spectrum-wrap--dark">
+              <img id="event-reference-spectrum" class="mp-event-spectrum-img" alt="典型事件对比频谱图" />
+            </div>
+            <div id="event-reference-detail" class="mp-event-reference-detail"></div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-event-feature-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">特征信息</div>
+            </div>
+            <div id="event-feature-list" class="mp-event-feature-list"></div>
+          </section>
+
+          <section class="mp-drone-chart-card mp-event-spectrum-card">
+            <div class="mp-drone-chart-card__head mp-event-current-head">
+              <div class="mp-drone-chart-card__title">当前点位频谱图</div>
+              <div id="event-current-meta" class="mp-drone-chart-card__note"></div>
+            </div>
+            <div id="event-current-tools" class="mp-event-current-tools" role="tablist" aria-label="当前点位频谱图工具栏">
+              <button type="button" class="mp-event-tool-btn is-active" data-mode="period">历史时段</button>
+              <button type="button" class="mp-event-tool-btn" data-mode="alarm">历史报警</button>
+            </div>
+            <div id="event-generate-bar" class="mp-event-generate-bar">
+              <input id="event-generate-date" type="date" class="mp-event-input" />
+              <input id="event-generate-time" type="time" class="mp-event-input" value="03:00" />
+              <select id="event-generate-duration" class="mp-event-input">
+                <option value="30">30分钟</option>
+                <option value="60">60分钟</option>
+                <option value="120">120分钟</option>
+              </select>
+              <button type="button" id="event-generate-btn" class="mp-event-generate-btn">生成</button>
+            </div>
+            <div class="mp-event-history-panel">
+              <div class="mp-event-history-panel__head">
+                <div id="event-history-title" class="mp-drone-chart-card__title mp-event-history-panel__title">历史时段记录</div>
+              </div>
+              <div id="event-history-list" class="mp-event-history-list"></div>
+            </div>
+            <div class="mp-event-spectrum-wrap mp-event-spectrum-wrap--dark">
+              <img id="event-current-spectrum" class="mp-event-spectrum-img" alt="当前点位频谱图" />
+            </div>
+            <section id="event-history-spectrum-section" class="mp-event-history-spectrum" hidden>
+              <div class="mp-drone-chart-card__head mp-event-history-spectrum__head">
+                <div class="mp-drone-chart-card__title">历史时段频谱图</div>
+                <div id="event-history-spectrum-meta" class="mp-drone-chart-card__note"></div>
+              </div>
+              <div class="mp-event-spectrum-wrap mp-event-spectrum-wrap--dark">
+                <img id="event-history-spectrum" class="mp-event-spectrum-img mp-event-spectrum-img--compact" alt="历史时段频谱图" />
+              </div>
+            </section>
+          </section>
+
+          <section class="mp-drone-chart-card mp-event-form-card">
+            <div class="mp-drone-chart-card__head">
+              <div class="mp-drone-chart-card__title">标注表单</div>
+            </div>
+            <div class="mp-event-form-grid">
+              <label class="mp-event-form-field">
+                <span>归类为</span>
+                <select id="event-classify" class="mp-event-input"></select>
+              </label>
+              <label class="mp-event-check-field">
+                <input type="checkbox" id="event-add-typical" />
+                <span>加入典型事件</span>
+              </label>
+              <label class="mp-event-form-field mp-event-form-field--full">
+                <span>备注</span>
+                <textarea id="event-remark" class="mp-event-textarea" placeholder="请填写备注信息"></textarea>
+              </label>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <footer class="mp-detail-footer mp-event-footer">
+        <button type="button" class="mp-detail-footer__btn mp-detail-footer__btn--primary" id="event-submit-btn">提交标注</button>
+      </footer>
+    </section>
+  </div>
+
+  <div id="event-annotate-toast" class="project-toast mp-event-toast" aria-live="polite"></div>
+
+  <div id="event-category-modal" class="mp-event-modal" hidden>
+    <div class="mp-event-modal__mask" data-action="event-close-category-modal"></div>
+    <div class="mp-event-modal__panel" role="dialog" aria-modal="true" aria-labelledby="event-category-modal-title">
+      <div class="mp-event-modal__head">
+        <div id="event-category-modal-title" class="mp-event-modal__title">新增分类标签</div>
+        <button type="button" class="mp-event-modal__close" data-action="event-close-category-modal" aria-label="关闭">×</button>
+      </div>
+      <div class="mp-event-modal__body">
+        <label class="mp-event-form-field">
+          <span>分类标签名称</span>
+          <input id="event-category-name" type="text" class="mp-event-input" maxlength="12" placeholder="请输入分类标签名称" />
+        </label>
+        <label class="mp-event-form-field">
+          <span>排序</span>
+          <input id="event-category-sort" type="number" class="mp-event-input" min="1" step="1" placeholder="请输入排序值" />
+        </label>
+      </div>
+      <div class="mp-event-modal__foot">
+        <button type="button" class="mp-event-modal__btn mp-event-modal__btn--ghost" data-action="event-close-category-modal">取消</button>
+        <button type="button" class="mp-event-modal__btn mp-event-modal__btn--primary" id="event-category-save-btn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/event-annotate-mobile-page.js"></script>
+</body>
+</html>

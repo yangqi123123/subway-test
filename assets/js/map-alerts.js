@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 告警信息：态势感知地图 + 区间树状列表 + 详情/复核/审核流程
  */
 (function () {
@@ -7,6 +7,7 @@
     "https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=300&q=80",
     "https://images.unsplash.com/photo-1599707254554-027aeb4deacd?auto=format&fit=crop&w=300&q=80",
   ];
+  var SPECTRUM_PREVIEW_SRC = "file:///C:/Users/10208/AppData/Local/Temp/codex-clipboard-d9e8bbc3-35f3-408d-b66f-684954fe0543.png";
   var DEFAULT_PHOTOS =
     window.WuhanExpertReviewModal && window.WuhanExpertReviewModal.DEFAULT_PHOTOS.length
       ? window.WuhanExpertReviewModal.DEFAULT_PHOTOS
@@ -1376,8 +1377,10 @@
 
   function renderSpectrumOpsHtml(item) {
     var viewHref = buildExpertToolsHref(item);
+    var annotateHref = buildExpertToolsHref(item, ["annotate=1"]);
     if (isPatrolMobileAlertPage()) {
       viewHref = buildMiniAppShellHref("map/pages/expert.html" + viewHref.slice(viewHref.indexOf("?")));
+      annotateHref = buildMiniAppShellHref("map/pages/event-annotate.html" + annotateHref.slice(annotateHref.indexOf("?")));
     }
     return (
       '<span class="alert-detail-link" data-spectrum-action="generate" role="button" tabindex="0">生成</span>' +
@@ -1385,7 +1388,7 @@
       escHtml(viewHref) +
       '" class="alert-detail-link" data-spectrum-action="view" target="_top" rel="noopener noreferrer">查看</a>' +
       '<a href="' +
-      escHtml(buildExpertToolsHref(item, ["annotate=1"])) +
+      escHtml(annotateHref) +
       '" class="alert-detail-link" data-spectrum-action="annotate" target="_top" rel="noopener noreferrer">典型事件标注</a>'
     );
   }
@@ -1405,6 +1408,37 @@
     }, 1800);
   }
 
+  function openSpectrumPreview() {
+    var sheet = document.getElementById("spectrum-preview-sheet");
+    var img = document.getElementById("spectrum-preview-img");
+    if (!sheet || !img) return;
+    img.src = SPECTRUM_PREVIEW_SRC;
+    sheet.classList.add("is-open");
+    sheet.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeSpectrumPreview() {
+    var sheet = document.getElementById("spectrum-preview-sheet");
+    var img = document.getElementById("spectrum-preview-img");
+    if (!sheet || !img) return;
+    sheet.classList.remove("is-open");
+    sheet.setAttribute("aria-hidden", "true");
+    img.removeAttribute("src");
+    document.body.style.overflow = "";
+  }
+
+
+  function bindSpectrumPreviewCloseButton() {
+    var btn = document.querySelector('#spectrum-preview-sheet [data-action="close-spectrum-preview"]');
+    if (!btn || btn.dataset.boundClose === "1") return;
+    btn.dataset.boundClose = "1";
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeSpectrumPreview();
+    });
+  }
   function refreshSpectrumStatusCell() {
     var grid = document.getElementById("alert-detail-grid");
     if (!grid || !currentAlert) return;
@@ -1420,12 +1454,30 @@
     if (initAlertDetailSpectrumOps.bound) return;
     initAlertDetailSpectrumOps.bound = true;
     document.addEventListener("click", function (e) {
+      var closeEl = e.target.closest('[data-action="close-spectrum-preview"]');
+      if (closeEl) {
+        e.preventDefault();
+        closeSpectrumPreview();
+        return;
+      }
       var actionEl = e.target.closest("[data-spectrum-action]");
       if (!actionEl || !actionEl.closest("#alert-detail-grid")) return;
       var action = actionEl.getAttribute("data-spectrum-action");
-      if (action === "annotate" && isPatrolMobileAlertPage()) {
+      var sheet = document.getElementById("spectrum-preview-sheet");
+      if (sheet && e.target === sheet) {
+        closeSpectrumPreview();
+        return;
+      }
+      if (action === "view") {
         e.preventDefault();
-        showAlertDetailToast("移动端暂不跳转典型事件标注");
+        openSpectrumPreview();
+        return;
+      }
+      if (action === "annotate" && isPatrolMobileAlertPage()) {
+        var annotateHref = actionEl.getAttribute("href");
+        if (!annotateHref) return;
+        e.preventDefault();
+        navigateSpectrumExternal(annotateHref);
         return;
       }
       if (action === "view" || action === "annotate") {
@@ -1445,6 +1497,10 @@
       }
     });
     document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closeSpectrumPreview();
+        return;
+      }
       if (e.key !== "Enter" && e.key !== " ") return;
       var actionEl = e.target.closest('[data-spectrum-action="generate"]');
       if (!actionEl || !actionEl.closest("#alert-detail-grid")) return;
@@ -1903,6 +1959,7 @@
     }
     var mapEl = document.getElementById("alert-detail-map");
     if (mapEl) mapEl.innerHTML = "";
+    bindSpectrumPreviewCloseButton();
     if (document.getElementById("patrol-alerts-app")) {
       finishPatrolAlertsDeepLink();
     }
@@ -2011,6 +2068,7 @@
   function init() {
     initPortalDetailModal();
     initAlertDetailSpectrumOps();
+    bindSpectrumPreviewCloseButton();
     if (document.getElementById("patrol-alerts-app")) {
       applyAlertFlightPlanSubmission();
       populateIntervalFilterOptions();
@@ -2081,3 +2139,5 @@
     init();
   }
 })();
+
+

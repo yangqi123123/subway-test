@@ -252,3 +252,85 @@ html.mp-patrol-alerts-embedded body.mp-patrol-alerts-page #patrol-alerts-app {
 html.mp-patrol-alerts-embedded body.mp-patrol-alerts-page {
   overflow: hidden;
 }
+
+body.mp-patrol-alerts-page .mp-photo-preview-sheet {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 700;
+}
+
+body.mp-patrol-alerts-page .mp-photo-preview-sheet.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body.mp-patrol-alerts-page .mp-photo-preview-sheet__mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.56);
+}
+
+body.mp-patrol-alerts-page .mp-photo-preview-sheet__panel {
+  position: relative;
+  width: 100%;
+  max-height: min(86vh, 760px);
+  border-radius: 18px 18px 0 0;
+  background: #ffffff;
+  box-shadow: 0 -12px 28px rgba(15, 23, 42, 0.18);
+  transform: translateY(24px);
+  transition: transform 0.22s ease;
+  overflow: hidden;
+}
+
+body.mp-patrol-alerts-page .mp-photo-preview-sheet.is-open .mp-photo-preview-sheet__panel {
+  transform: translateY(0);
+}
+
+body.mp-patrol-alerts-page .mp-photo-preview-sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--mp-border-light);
+  background: #ffffff;
+}
+
+body.mp-patrol-alerts-page .mp-photo-preview-sheet__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--mp-text);
+}
+
+body.mp-patrol-alerts-page .mp-photo-preview-sheet__body {
+  padding: 12px;
+  max-height: calc(min(86vh, 760px) - 62px);
+  overflow: auto;
+  background: #f8fafc;
+}
+
+body.mp-patrol-alerts-page .mp-photo-preview-sheet__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  background: #ffffff;
+  object-fit: contain;
+}
+
+body.mp-patrol-alerts-page .mp-spectrum-preview-sheet__body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+body.mp-patrol-alerts-page .mp-spectrum-preview-sheet__img {
+  max-height: calc(min(86vh, 760px) - 86px);
+  border: 1px solid var(--mp-border-light);
+}

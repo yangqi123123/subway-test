@@ -560,6 +560,82 @@
       .expert-location-note-actions:not(.is-editing) .expert-location-note-actions__edit {
         display: none;
       }
+
+      .expert-range-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 38px;
+        padding: 0 10px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: linear-gradient(180deg, rgba(9, 18, 36, 0.96) 0%, rgba(7, 14, 29, 0.96) 100%);
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.08), 0 10px 28px rgba(0, 0, 0, 0.4);
+      }
+
+      .expert-range-bar__title {
+        flex: 0 0 auto;
+        font-size: 12px;
+        font-weight: 700;
+        color: #ffffff;
+        white-space: nowrap;
+      }
+
+      .expert-range-config {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+      }
+
+      .expert-range-config__label {
+        font-size: 12px;
+        color: #dce8f8;
+      }
+
+      .expert-range-step,
+      .expert-range-generate {
+        flex: 0 0 auto;
+        height: 24px;
+        border-radius: 4px;
+        font-size: 12px;
+        line-height: 1;
+      }
+
+      .expert-range-step {
+        width: 24px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: rgba(255, 255, 255, 0.98);
+        color: #475569;
+      }
+
+      .expert-range-input {
+        width: 54px;
+        height: 24px;
+        padding: 0 6px;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.98);
+        color: #0f172a;
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .expert-range-unit {
+        font-size: 12px;
+        color: #dce8f8;
+      }
+
+      .expert-range-generate {
+        min-width: 52px;
+        padding: 0 12px;
+        border: none;
+        background: linear-gradient(180deg, #0f87d9 0%, #0967b8 100%);
+        color: #ffffff;
+        font-weight: 700;
+        box-shadow: 0 0 14px rgba(23, 141, 242, 0.26);
+      }
     </style>
   </head>
   <body data-shell="fullscreen" data-top="map">
@@ -604,6 +680,20 @@
               </div>
             </div>
           </section>
+
+          <div class="expert-range-bar">
+            <div class="expert-range-bar__title">点位信息</div>
+            <div class="expert-range-config" aria-label="历史告警信息查看范围配置">
+              <span class="expert-range-config__label">历史告警信息查看范围配置</span>
+              <button id="expert-range-decrease" type="button" class="expert-range-step" aria-label="减少">−</button>
+              <input id="expert-range-left" type="number" class="expert-range-input" value="0" min="0" />
+              <span class="expert-range-unit">m</span>
+              <button id="expert-range-increase" type="button" class="expert-range-step" aria-label="增加">+</button>
+              <input id="expert-range-right" type="number" class="expert-range-input" value="50" min="0" />
+              <span class="expert-range-unit">m</span>
+              <button id="expert-range-generate" type="button" class="expert-range-generate">生成</button>
+            </div>
+          </div>
 
           <section class="grid grid-cols-[1.08fr_1.08fr_1.18fr_1.18fr_1.18fr_0.92fr] gap-2.5 flex-1 min-h-0">
             <article class="expert-panel min-h-0 flex flex-col">

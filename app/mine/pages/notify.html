@@ -84,21 +84,21 @@
 
   <div id="wb-filter-sheet" class="mp-filter-sheet" aria-hidden="true">
     <div class="mp-filter-sheet__mask" data-action="close-wb-filter"></div>
-    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件>
+    <div class="mp-filter-sheet__panel" role="dialog" aria-label="筛选条件">
       <div class="mp-filter-sheet__head">
-        <h2>快捷筛选/h2>
+        <h2>快捷筛选</h2>
         <button type="button" class="mp-icon-btn" data-action="close-wb-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="mp-filter-sheet__body project-filter-panel">
         <label class="mp-filter-field"><span>通知类型</span>
           <select id="wb-filter-type" class="wh-input w-full px-2">
             <option value="全部">全部</option>
-            <option value="空域许可鎻愰啋">空域许可鎻愰啋</option>
+            <option value="空域许可提醒">空域许可提醒</option>
             <option value="审批消息">审批消息</option>
             <option value="项目巡查">项目巡查</option>
           </select>
         </label>
-        <label class="mp-filter-field"><span>发布开始/span>
+        <label class="mp-filter-field"><span>发布开始</span>
           <input id="wb-filter-start" type="date" class="wh-input w-full px-2" />
         </label>
         <label class="mp-filter-field"><span>发布结束</span>
@@ -110,6 +110,7 @@
         <button type="button" class="mp-btn mp-btn--primary flex-1" data-action="search-wb-filter">搜索</button>
       </div>
     </div>
+  </div>
   </div>
 
   <div id="wb-mobile-toast" aria-live="polite"></div>

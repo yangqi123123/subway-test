@@ -14,7 +14,10 @@
   var TASK_ROWS = [
     { id: "T-001", name: "新建商业文化设施项目", distance: 13, type: "一般项目", lastTime: "2025-06-27 10:54:00", progress: "现场混凝土养护", lat: 30.5864, lng: 114.3098, level: "normal", done: true },
     { id: "T-002", name: "洪山路至小洪山商业公寓项目", distance: 156, type: "重点项目", lastTime: "2025-06-27 10:54:00", progress: "现场混凝土养护", lat: 30.5852, lng: 114.3146, level: "key", done: false },
-    { id: "T-003", name: "三金潭车辆段上盖物业综合开发项目", distance: 1543, type: "一般项目", lastTime: "2025-06-27 10:54:00", progress: "现场钢筋绑扎施工", lat: 30.5812, lng: 114.3201, level: "normal", done: false }
+    { id: "T-003", name: "三金潭车辆段上盖物业综合开发项目", distance: 1543, type: "一般项目", lastTime: "2025-06-27 10:54:00", progress: "现场钢筋绑扎施工", lat: 30.5812, lng: 114.3201, level: "normal", done: false },
+    { id: "T-004", name: "中北路地下商业连通道项目", distance: 268, type: "一般项目", lastTime: "2025-06-27 09:42:00", progress: "围护结构施工准备", lat: 30.5844, lng: 114.3168, level: "normal", done: false },
+    { id: "T-005", name: "东亭停车场附属配套工程", distance: 836, type: "重点项目", lastTime: "2025-06-27 08:35:00", progress: "基坑支护监测中", lat: 30.5891, lng: 114.3187, level: "key", done: false },
+    { id: "T-006", name: "楚河汉街区间市政接驳改造项目", distance: 1124, type: "一般项目", lastTime: "2025-06-27 11:18:00", progress: "临边围挡加固施工", lat: 30.5827, lng: 114.3129, level: "normal", done: false }
   ];
 
   var currentTab = "route";

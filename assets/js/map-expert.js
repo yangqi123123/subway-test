@@ -455,12 +455,46 @@
     window.addEventListener("resize", drawExpertSpectrum);
   }
 
+
+  function clampRangeInput(input, fallback) {
+    if (!input) return fallback;
+    var value = parseInt(input.value, 10);
+    if (!Number.isFinite(value) || value < 0) value = fallback;
+    input.value = String(value);
+    return value;
+  }
+
+  function initRangeConfig() {
+    var leftInput = document.getElementById("expert-range-left");
+    var rightInput = document.getElementById("expert-range-right");
+    var decBtn = document.getElementById("expert-range-decrease");
+    var incBtn = document.getElementById("expert-range-increase");
+    var genBtn = document.getElementById("expert-range-generate");
+    if (!leftInput || !rightInput || !decBtn || !incBtn || !genBtn) return;
+
+    decBtn.addEventListener("click", function () {
+      var value = clampRangeInput(leftInput, 0);
+      leftInput.value = String(Math.max(0, value - 1));
+    });
+
+    incBtn.addEventListener("click", function () {
+      var value = clampRangeInput(rightInput, 50);
+      rightInput.value = String(value + 1);
+    });
+
+    genBtn.addEventListener("click", function () {
+      var left = clampRangeInput(leftInput, 0);
+      var right = clampRangeInput(rightInput, 50);
+      showToast("已生成查看范围：" + left + "m - " + right + "m");
+    });
+  }
   function init() {
     initExpertMap();
     initExpertSpectrum();
     initReviewEdit();
     initGoAlertDetail();
     initLocationNote();
+    initRangeConfig();
   }
 
   if (document.readyState === "loading") {

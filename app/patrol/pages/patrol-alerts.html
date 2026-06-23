@@ -234,6 +234,19 @@
     </div>
   </div>
 
+  <div id="spectrum-preview-sheet" class="mp-photo-preview-sheet mp-spectrum-preview-sheet" aria-hidden="true">
+    <div class="mp-photo-preview-sheet__mask" data-action="close-spectrum-preview"></div>
+    <div class="mp-photo-preview-sheet__panel" role="dialog" aria-label="频谱图预览">
+      <div class="mp-photo-preview-sheet__head">
+        <h3 class="mp-photo-preview-sheet__title">频谱图预览</h3>
+        <button type="button" class="mp-icon-btn" data-action="close-spectrum-preview" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-photo-preview-sheet__body mp-spectrum-preview-sheet__body">
+        <img id="spectrum-preview-img" class="mp-photo-preview-sheet__img mp-spectrum-preview-sheet__img" alt="频谱图预览" />
+      </div>
+    </div>
+  </div>
+
   <div id="wh-alert-detail-modal-mask" class="project-modal-mask wh-alert-detail-modal-mask" aria-hidden="true">
     <div class="project-modal mp-project-modal mp-patrol-alert-modal" role="dialog" aria-labelledby="wh-alert-detail-title">
       <div class="mp-project-modal__head">

@@ -130,17 +130,31 @@
   function bindTodayTaskSave(query) {
     global.addEventListener("wh-patrol-form-saved", function (event) {
       var detail = event.detail || {};
+      var href = resolvePatrolHome(query);
       if (detail.prefix !== "manual") return;
       if (query.source !== "today-task") return;
       var projectName = (detail.row && detail.row.projectName) || query.project;
       markTodayTaskDone(query.taskId);
       pushTaskNotify(projectName || "项目", query.taskId);
-      if (global.top && global.top.WHHeaderBadges && global.top.WHHeaderBadges.refreshMineHubBadges) {
-        global.top.WHHeaderBadges.refreshMineHubBadges();
-      }
+      try {
+        if (global.top && global.top.WHHeaderBadges && global.top.WHHeaderBadges.refreshMineHubBadges) {
+          global.top.WHHeaderBadges.refreshMineHubBadges();
+        }
+      } catch (e) {}
+      global.setTimeout(function () {
+        try {
+          if (global.top && global.top !== global && global.top.document) {
+            var frame = global.top.document.getElementById("app-frame");
+            if (frame) {
+              frame.src = "patrol/pages/" + href;
+              return;
+            }
+          }
+        } catch (e) {}
+        global.location.href = href;
+      }, 120);
     });
   }
-
   function start() {
     var query = readQuery();
     bindNavBack(query);
