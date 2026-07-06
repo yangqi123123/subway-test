@@ -158,6 +158,17 @@ body.mp-today-task-page .miniapp-navbar {
   font-size: 19px;
 }
 
+.mp-today-task-stats .mp-stat-card__num {
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.mp-today-task-stats .mp-stat-card__unit {
+  font-size: 11px;
+  font-weight: 400;
+  margin-left: 1px;
+}
+
 .mp-today-task-stats .mp-stat-card__label {
   font-size: 11px;
   white-space: nowrap;
@@ -175,6 +186,9 @@ body.mp-today-task-page .miniapp-navbar {
   border: 1px solid rgba(35, 106, 255, 0.1);
   box-shadow: 0 10px 24px rgba(35, 106, 255, 0.08);
   padding: 14px;
+}
+
+.mp-today-task-item__click {
   cursor: pointer;
 }
 
@@ -269,11 +283,22 @@ body.mp-today-task-page .miniapp-navbar {
   font-weight: 700;
   background: linear-gradient(135deg, #53b2ff 0%, #2b7bff 100%);
   box-shadow: 0 8px 18px rgba(43, 123, 255, 0.2);
+  touch-action: manipulation;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
 }
 
 .mp-today-task-item.is-completed .mp-today-task-item__fill {
   background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
   box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.mp-today-task-item__fill:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .mp-today-task-item__fill-text {
@@ -316,4 +341,14 @@ body.mp-today-task-page .miniapp-navbar {
 #today-task-route-view[hidden],
 .mp-today-task-alert-frame[hidden] {
   display: none !important;
+}
+
+body.mp-today-task-page #today-task-confirm-mask.miniapp-modal-mask {
+  z-index: 1200;
+}
+
+body.mp-today-task-page.today-task-confirm-open .mp-today-task-map-card,
+body.mp-today-task-page.today-task-confirm-open .mp-today-task-map .leaflet-container,
+body.mp-today-task-page.today-task-confirm-open .mp-today-task-map .leaflet-pane {
+  z-index: 1 !important;
 }

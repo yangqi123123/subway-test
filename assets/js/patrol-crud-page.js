@@ -144,7 +144,13 @@
 
     function setStatText(id, val) {
       var el = $(id);
-      if (el) el.textContent = String(val);
+      if (!el) return;
+      var numEl = el.querySelector(".mp-stat-card__num") || el.querySelector(".disease-stat-card__num");
+      if (numEl) {
+        numEl.textContent = String(val);
+        return;
+      }
+      el.textContent = String(val);
     }
 
     function updateDashboardStats(list) {
@@ -401,6 +407,11 @@
     function openDetail(index) {
       var row = lastRenderedList[index];
       if (!row) return;
+      openDetailByRow(row);
+    }
+
+    function openDetailByRow(row) {
+      if (!row) return;
       var titleEl = $("detail-" + prefix + "-title");
       var titleText = resolveDetailTitle(row);
       if (titleEl) titleEl.textContent = titleText;
@@ -606,7 +617,7 @@
       if (!editingRow && !row.logs.length) {
         row.logs.push({
           action: newLogAction,
-          user: "当前用户",
+          user: "李明",
           time: row.date || row.updatedAt || row.time || "2026-05-12 18:30",
         });
       }
@@ -888,12 +899,17 @@
     pageGlobal.showList = showList;
     pageGlobal.showForm = showForm;
     pageGlobal.openDetail = openDetail;
+    pageGlobal.openDetailByRow = openDetailByRow;
+    pageGlobal.getRows = function () {
+      return rows;
+    };
     global[pageGlobalName(prefix)] = pageGlobal;
 
     return {
       showList: showList,
       showForm: showForm,
       openDetail: openDetail,
+      openDetailByRow: openDetailByRow,
       renderList: renderList,
       applyFilter: applyFilter,
       clearSearch: clearSearch,

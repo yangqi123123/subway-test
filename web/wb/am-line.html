@@ -56,6 +56,7 @@
     .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
     .disease-stat-card--rose .disease-stat-card__icon { background: rgba(251, 113, 133, 0.12); color: #fda4af; border: 1px solid rgba(251, 113, 133, 0.35); }
     .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__unit { font-size: 12px; font-weight: 400; margin-left: 2px; color: #94a3b8; }
     .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
     .disease-filter-panel,
@@ -333,7 +334,7 @@
             <div class="disease-stat-card disease-stat-card--blue">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-train-subway"></i></div>
               <div>
-                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div id="stat-total" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">条</span></div>
                 <div class="disease-stat-card__label">线路总数</div>
                 <div class="disease-stat-card__trend">基础台账</div>
               </div>
@@ -341,7 +342,7 @@
             <div class="disease-stat-card disease-stat-card--green">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-circle-check"></i></div>
               <div>
-                <div id="stat-enabled" class="disease-stat-card__value">0</div>
+                <div id="stat-enabled" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">条</span></div>
                 <div class="disease-stat-card__label">可用线路</div>
                 <div class="disease-stat-card__trend">正常运营</div>
               </div>
@@ -349,7 +350,7 @@
             <div class="disease-stat-card disease-stat-card--rose">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-ban"></i></div>
               <div>
-                <div id="stat-disabled" class="disease-stat-card__value">0</div>
+                <div id="stat-disabled" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">条</span></div>
                 <div class="disease-stat-card__label">禁用线路</div>
                 <div class="disease-stat-card__trend">暂停使用</div>
               </div>
@@ -357,7 +358,7 @@
             <div class="disease-stat-card disease-stat-card--cyan">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-location-dot"></i></div>
               <div>
-                <div id="stat-stations" class="disease-stat-card__value">0</div>
+                <div id="stat-stations" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">站点合计</div>
                 <div class="disease-stat-card__trend">全线站点数</div>
               </div>
@@ -552,6 +553,17 @@
         return rows.findIndex(function (row) { return row.id === id; });
       }
 
+      function setStatNum(id, val) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var numEl = el.querySelector(".disease-stat-card__num");
+        if (numEl) {
+          numEl.textContent = String(val);
+          return;
+        }
+        el.textContent = String(val);
+      }
+
       function updateLineStats(data) {
         var list = data || [];
         var enabled = 0;
@@ -562,10 +574,10 @@
           else disabled += 1;
           stations += Number(row.stationCount) || 0;
         });
-        document.getElementById("stat-total").textContent = String(list.length);
-        document.getElementById("stat-enabled").textContent = String(enabled);
-        document.getElementById("stat-disabled").textContent = String(disabled);
-        document.getElementById("stat-stations").textContent = String(stations);
+        setStatNum("stat-total", list.length);
+        setStatNum("stat-enabled", enabled);
+        setStatNum("stat-disabled", disabled);
+        setStatNum("stat-stations", stations);
         if (tableTotal) tableTotal.textContent = String(list.length);
       }
 

@@ -57,7 +57,13 @@
       var summary = global.WH_LINE_STATS_SUMMARY || {};
       var set = function (id, val) {
         var el = $(id);
-        if (el) el.textContent = String(val);
+        if (!el) return;
+        var numEl = el.querySelector(".mp-stat-card__num") || el.querySelector(".disease-stat-card__num");
+        if (numEl) {
+          numEl.textContent = String(val);
+          return;
+        }
+        el.textContent = String(val);
       };
       set("stat-line", summary.line || 0);
       set("stat-station", summary.station || 0);

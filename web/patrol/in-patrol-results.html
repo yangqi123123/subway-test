@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>巡检成果</title>
+  <title>巡查成果</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
@@ -14,18 +14,18 @@
   <script src="../../assets/js/page-embed-bootstrap.js"></script>
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
-      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">巡检成果</h1>
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">巡查成果</h1>
       <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">无人机与人工巡检媒体汇总</span>
     </div>
 
     <section id="pr-list-view">
       <div class="disease-layout">
         <div class="disease-layout__left">
-          <div class="disease-stats" aria-label="巡检成果统计">
+          <div class="disease-stats" aria-label="巡查成果统计">
             <div class="disease-stat-card disease-stat-card--blue">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-photo-film"></i></div>
               <div>
-                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div id="stat-total" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">成果总数</div>
                 <div class="disease-stat-card__trend">全库</div>
               </div>
@@ -33,7 +33,7 @@
             <div class="disease-stat-card disease-stat-card--cyan">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-list"></i></div>
               <div>
-                <div id="stat-filtered" class="disease-stat-card__value">0</div>
+                <div id="stat-filtered" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">当前列表</div>
                 <div class="disease-stat-card__trend">筛选结果</div>
               </div>
@@ -41,7 +41,7 @@
             <div class="disease-stat-card disease-stat-card--green">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-calendar-check"></i></div>
               <div>
-                <div id="stat-plans" class="disease-stat-card__value">0</div>
+                <div id="stat-plans" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">计划数量</div>
                 <div class="disease-stat-card__trend">按计划统计</div>
               </div>
@@ -49,7 +49,7 @@
             <div class="disease-stat-card disease-stat-card--amber">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-building"></i></div>
               <div>
-                <div id="stat-projects" class="disease-stat-card__value">0</div>
+                <div id="stat-projects" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">关联项目</div>
                 <div class="disease-stat-card__trend">按项目统计</div>
               </div>
@@ -82,10 +82,10 @@
               <div class="lib-main">
                 <section class="neon-panel neon-panel--tight p-4 pr-results-panel">
                   <div class="pr-main-head">
-                    <h2 class="pr-main-head__title"><i class="fa-solid fa-photo-film"></i>巡检成果列表</h2>
+                    <h2 class="pr-main-head__title"><i class="fa-solid fa-photo-film"></i>巡查成果列表</h2>
                     <span class="text-xs text-slate-400">共 <b id="pr-result-count" class="text-cyan-200">0</b> 项</span>
                   </div>
-                  <div class="pr-card-scroll" aria-label="巡检成果卡片列表">
+                  <div class="pr-card-scroll" aria-label="巡查成果卡片列表">
                     <div id="pr-card-grid" class="lib-card-grid pr-card-grid"></div>
                   </div>
                   <div id="pr-card-pager"></div>
@@ -143,16 +143,7 @@
             </div>
           </div>
 
-          <div class="disease-quick-panel">
-            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
-            <div class="disease-panel-body">
-              <a class="disease-quick-link" data-quick-href="patrol/in-disease.html" href="in-disease.html"><i class="fa-solid fa-stethoscope"></i><span>病害巡查</span></a>
-              <a class="disease-quick-link" data-quick-href="patrol/in-night.html" href="in-night.html"><i class="fa-solid fa-moon"></i><span>夜班作业</span></a>
-              <a class="disease-quick-link" data-quick-href="patrol/in-uav-report.html" href="in-uav-report.html"><i class="fa-solid fa-helicopter"></i><span>无人机巡查记录</span></a>
-              <a class="disease-quick-link" data-quick-href="patrol/in-manual.html" href="in-manual.html"><i class="fa-solid fa-person-walking"></i><span>人工巡查记录</span></a>
-              <a class="disease-quick-link is-active" data-quick-href="patrol/in-patrol-results.html" href="in-patrol-results.html"><i class="fa-solid fa-images"></i><span>巡检成果</span></a>
-            </div>
-          </div>
+          <div id="patrol-quick-links"></div>
         </aside>
       </div>
     </section>
@@ -203,6 +194,8 @@
   <script src="../../assets/js/menu-config.js"></script>
   <script src="../../assets/js/card-grid-pager.js"></script>
   <script src="../../assets/js/in-patrol-results.js"></script>
+  <script src="../../assets/js/patrol-quick-links.js"></script>
+  <script>renderPatrolQuickLinks('patrol-quick-links', 'in-patrol-results');</script>
   <script src="../../assets/js/shell.js"></script>
 </body>
 </html>

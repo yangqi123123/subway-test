@@ -280,16 +280,23 @@
     }, 0);
   }
 
+  function setStatNum(id, val) {
+    var el = $(id);
+    if (!el) return;
+    var numEl = el.querySelector(".disease-stat-card__num");
+    if (numEl) {
+      numEl.textContent = String(val);
+      return;
+    }
+    el.textContent = String(val);
+  }
+
   function updateLibraryStats(filteredList) {
     var list = filteredList || getFilteredMaterials();
-    var totalEl = $("stat-total");
-    var filteredEl = $("stat-filtered");
-    var catEl = $("stat-categories");
-    var filesEl = $("stat-files");
-    if (totalEl) totalEl.textContent = String(materials.length);
-    if (filteredEl) filteredEl.textContent = String(list.length);
-    if (catEl) catEl.textContent = String(categories.length);
-    if (filesEl) filesEl.textContent = String(countFilesInList(list));
+    setStatNum("stat-total", materials.length);
+    setStatNum("stat-filtered", list.length);
+    setStatNum("stat-categories", categories.length);
+    setStatNum("stat-files", countFilesInList(list));
   }
 
   function initQuickLinks() {

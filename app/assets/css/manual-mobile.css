@@ -212,3 +212,17 @@ body.mp-scroll-locked #manual-record-mask .mp-record-modal__body {
   -webkit-overflow-scrolling: touch !important;
   overscroll-behavior: contain;
 }
+/* 从今日任务带入的字段：只读样式 */
+body.mp-manual-page .wh-input:disabled,
+body.mp-manual-page .wh-input[data-locked] {
+  background: #f1f5f9;
+  color: #475569;
+  opacity: 1;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+body.mp-manual-page select.wh-input:disabled,
+body.mp-manual-page select.wh-input[data-locked] {
+  background-image: none;
+}

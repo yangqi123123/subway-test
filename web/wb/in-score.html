@@ -56,6 +56,7 @@
     .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
     .disease-stat-card--rose .disease-stat-card__icon { background: rgba(251, 113, 133, 0.12); color: #fda4af; border: 1px solid rgba(251, 113, 133, 0.35); }
     .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__unit { font-size: 12px; font-weight: 400; margin-left: 2px; color: #94a3b8; }
     .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
     .disease-filter-panel,
@@ -298,7 +299,7 @@
             <div class="disease-stat-card disease-stat-card--blue">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-clipboard-list"></i></div>
               <div>
-                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div id="stat-total" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">条</span></div>
                 <div class="disease-stat-card__label">评分记录</div>
                 <div class="disease-stat-card__trend">台账条数</div>
               </div>
@@ -306,7 +307,7 @@
             <div class="disease-stat-card disease-stat-card--cyan">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-users"></i></div>
               <div>
-                <div id="stat-people" class="disease-stat-card__value">0</div>
+                <div id="stat-people" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">巡查人员</div>
                 <div class="disease-stat-card__trend">去重统计</div>
               </div>
@@ -314,7 +315,7 @@
             <div class="disease-stat-card disease-stat-card--amber">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-chart-line"></i></div>
               <div>
-                <div id="stat-avg" class="disease-stat-card__value">0</div>
+                <div id="stat-avg" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">分</span></div>
                 <div class="disease-stat-card__label">平均最低分</div>
                 <div class="disease-stat-card__trend">当前列表</div>
               </div>
@@ -322,7 +323,7 @@
             <div class="disease-stat-card disease-stat-card--rose">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
               <div>
-                <div id="stat-low" class="disease-stat-card__value">0</div>
+                <div id="stat-low" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">条</span></div>
                 <div class="disease-stat-card__label">低分预警</div>
                 <div class="disease-stat-card__trend">最低分 &lt; 60</div>
               </div>
@@ -484,6 +485,17 @@
         return Number.isNaN(time) ? null : time;
       }
 
+      function setStatNum(id, val) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var numEl = el.querySelector(".disease-stat-card__num");
+        if (numEl) {
+          numEl.textContent = String(val);
+          return;
+        }
+        el.textContent = String(val);
+      }
+
       function updateScoreStats(rows) {
         var data = rows || [];
         var people = {};
@@ -494,10 +506,10 @@
           sum += row.minScore;
           if (row.minScore < 60) low += 1;
         });
-        document.getElementById("stat-total").textContent = String(data.length);
-        document.getElementById("stat-people").textContent = String(Object.keys(people).length);
-        document.getElementById("stat-avg").textContent = data.length ? (sum / data.length).toFixed(1) : "0";
-        document.getElementById("stat-low").textContent = String(low);
+        setStatNum("stat-total", data.length);
+        setStatNum("stat-people", Object.keys(people).length);
+        setStatNum("stat-avg", data.length ? (sum / data.length).toFixed(1) : "0");
+        setStatNum("stat-low", low);
         if (tableTotal) tableTotal.textContent = String(data.length);
       }
 

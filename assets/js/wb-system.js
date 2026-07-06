@@ -268,6 +268,45 @@
     return { enabled: enabled, disabled: disabled };
   }
 
+  var DISEASE_STAT_UNIT_BY_KEY = {
+    "wb-user": "个",
+    "wb-role": "个",
+    "wb-dept": "个",
+    "wb-post": "个",
+    "wb-menu": "个",
+    "wb-dict": "个",
+    "wb-log": "条",
+  };
+
+  function getDiseaseStatUnit(page) {
+    if (page && page.diseaseStatUnit) return page.diseaseStatUnit;
+    var key = document.body && document.body.dataset.sidebarKey;
+    if (key && DISEASE_STAT_UNIT_BY_KEY[key]) return DISEASE_STAT_UNIT_BY_KEY[key];
+    return "";
+  }
+
+  function buildDiseaseStatValueHtml(num, unit) {
+    if (!unit) return String(num);
+    return (
+      '<span class="disease-stat-card__num">' +
+      num +
+      '</span><span class="disease-stat-card__unit">' +
+      unit +
+      "</span>"
+    );
+  }
+
+  function setDiseaseStatNum(id, val) {
+    var node = $(id);
+    if (!node) return;
+    var numEl = node.querySelector(".disease-stat-card__num");
+    if (numEl) {
+      numEl.textContent = String(val);
+      return;
+    }
+    node.textContent = String(val);
+  }
+
   function getFilteredRows(page) {
     return filterRows(page, getTreeScopedRows(page));
   }
@@ -301,16 +340,10 @@
     var pair = countDiseaseStatPair(page, filtered);
     var enabled = pair.enabled;
     var disabled = pair.disabled;
-    var map = {
-      "wb-stat-total": String(scoped.length),
-      "wb-stat-filtered": String(filtered.length),
-      "wb-stat-enabled": String(enabled),
-      "wb-stat-disabled": String(disabled),
-    };
-    Object.keys(map).forEach(function (id) {
-      var node = $(id);
-      if (node) node.textContent = map[id];
-    });
+    setDiseaseStatNum("wb-stat-total", scoped.length);
+    setDiseaseStatNum("wb-stat-filtered", filtered.length);
+    setDiseaseStatNum("wb-stat-enabled", enabled);
+    setDiseaseStatNum("wb-stat-disabled", disabled);
   }
 
   function bindFilterInputs(panel, page) {
@@ -434,34 +467,35 @@
     var disabledLabel = labels.disabled || "停用";
     var enabledTrend = labels.enabledTrend || "账号状态";
     var disabledTrend = labels.disabledTrend || "账号状态";
+    var unit = getDiseaseStatUnit(page);
     var wrap = el("div", "disease-stats");
     wrap.setAttribute("aria-label", page.title + "统计");
     wrap.innerHTML =
       '<div class="disease-stat-card disease-stat-card--blue"><div class="disease-stat-card__icon"><i class="fa-solid ' +
       totalIcon +
       '"></i></div><div><div id="wb-stat-total" class="disease-stat-card__value">' +
-      scoped.length +
+      buildDiseaseStatValueHtml(scoped.length, unit) +
       '</div><div class="disease-stat-card__label">' +
       totalLabel +
       '</div><div class="disease-stat-card__trend">' +
       totalTrend +
       '</div></div></div>' +
       '<div class="disease-stat-card disease-stat-card--cyan"><div class="disease-stat-card__icon"><i class="fa-solid fa-list"></i></div><div><div id="wb-stat-filtered" class="disease-stat-card__value">' +
-      filtered.length +
+      buildDiseaseStatValueHtml(filtered.length, unit) +
       '</div><div class="disease-stat-card__label">' +
       filteredLabel +
       '</div><div class="disease-stat-card__trend">' +
       filteredTrend +
       '</div></div></div>' +
       '<div class="disease-stat-card disease-stat-card--green"><div class="disease-stat-card__icon"><i class="fa-solid fa-circle-check"></i></div><div><div id="wb-stat-enabled" class="disease-stat-card__value">' +
-      enabled +
+      buildDiseaseStatValueHtml(enabled, unit) +
       '</div><div class="disease-stat-card__label">' +
       enabledLabel +
       '</div><div class="disease-stat-card__trend">' +
       enabledTrend +
       '</div></div></div>' +
       '<div class="disease-stat-card disease-stat-card--amber"><div class="disease-stat-card__icon"><i class="fa-solid fa-ban"></i></div><div><div id="wb-stat-disabled" class="disease-stat-card__value">' +
-      disabled +
+      buildDiseaseStatValueHtml(disabled, unit) +
       '</div><div class="disease-stat-card__label">' +
       disabledLabel +
       '</div><div class="disease-stat-card__trend">' +

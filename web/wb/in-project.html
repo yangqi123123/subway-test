@@ -405,7 +405,7 @@
             <div class="disease-stat-card disease-stat-card--blue">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-folder-tree"></i></div>
               <div>
-                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div id="stat-total" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">项目总数</div>
                 <div class="disease-stat-card__trend">在管项目</div>
           </div>
@@ -413,7 +413,7 @@
             <div class="disease-stat-card disease-stat-card--amber">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-star"></i></div>
               <div>
-                <div id="stat-key" class="disease-stat-card__value">0</div>
+                <div id="stat-key" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">重点项目</div>
                 <div class="disease-stat-card__trend">重点监管</div>
           </div>
@@ -421,7 +421,7 @@
             <div class="disease-stat-card disease-stat-card--cyan">
               <div class="disease-stat-card__icon"><i class="fa-regular fa-folder-open"></i></div>
               <div>
-                <div id="stat-general" class="disease-stat-card__value">0</div>
+                <div id="stat-general" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">一般项目</div>
                 <div class="disease-stat-card__trend">常规管理</div>
               </div>
@@ -429,7 +429,7 @@
             <div class="disease-stat-card disease-stat-card--green">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
               <div>
-                <div id="stat-month" class="disease-stat-card__value">0</div>
+                <div id="stat-month" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">本月更新</div>
                 <div class="disease-stat-card__trend">近 30 天有变更</div>
               </div>
@@ -588,8 +588,8 @@
               <select class="wh-input h-8 flex-1 px-2"><option>请选择站点</option></select>
             </div>
             <div class="flex items-start gap-3 project-form-row--select xl:col-span-2">
-              <label class="project-form-label project-required">地址类型：</label>
-              <div id="proj-addr-type-select" class="wh-search-select flex-1 min-w-0" data-input-id="proj-addr-type"></div>
+              <!-- <label class="project-form-label project-required">地址类型：</label>
+              <div id="proj-addr-type-select" class="wh-search-select flex-1 min-w-0" data-input-id="proj-addr-type"></div> -->
             </div>
             <div class="flex items-center gap-3">
               <label class="project-form-label project-required">项目类型：</label>

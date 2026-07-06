@@ -103,16 +103,41 @@
       hintEl.hidden = !parts.length;
     }
 
+    function setStatNum(id, val) {
+      var el = $(id);
+      if (!el) return;
+      var numEl = el.querySelector(".mp-stat-card__num") || el.querySelector(".disease-stat-card__num");
+      if (numEl) {
+        numEl.textContent = String(val);
+        return;
+      }
+      el.textContent = String(val);
+    }
+
+    function setFlightTimeStat(totalSeconds) {
+      var el = $("stat-operators");
+      if (!el) return;
+      var numEl = el.querySelector(".mp-stat-card__num") || el.querySelector(".disease-stat-card__num");
+      var unitEl = el.querySelector(".mp-stat-card__unit") || el.querySelector(".disease-stat-card__unit");
+      var hours = totalSeconds / 3600;
+      if (hours >= 1) {
+        if (numEl) numEl.textContent = hours.toFixed(1);
+        if (unitEl) unitEl.textContent = "小时";
+      } else {
+        if (numEl) numEl.textContent = String(Math.round(totalSeconds / 60));
+        if (unitEl) unitEl.textContent = "分钟";
+      }
+      if (!numEl && !unitEl) {
+        el.textContent = global.DCDroneStats.formatFlightHours(totalSeconds);
+      }
+    }
+
     function updateSummary() {
       var summary = global.DCDroneStats.computeSummary(records, getSelectedLineKey());
-      var set = function (id, val) {
-        var el = $(id);
-        if (el) el.textContent = String(val);
-      };
-      set("stat-records", summary.violations);
-      set("stat-airports", summary.avgDiscovered);
-      set("stat-devices", summary.flightCount);
-      set("stat-operators", summary.flightHours);
+      setStatNum("stat-records", summary.violations);
+      setStatNum("stat-airports", summary.avgDiscovered);
+      setStatNum("stat-devices", summary.flightCount);
+      setFlightTimeStat(summary.flightSeconds || 0);
     }
 
     function getFilteredList() {

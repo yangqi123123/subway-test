@@ -54,7 +54,7 @@
       badge: "审批结果与到期提醒",
       filters: [
         { id: "title", label: "标题", type: "text", placeholder: "请输入标题关键词" },
-        { id: "type", label: "通知类型", options: ["全部", "空域许可提醒", "审批消息"] },
+        { id: "type", label: "通知类型", options: ["全部", "项目巡查", "审批消息", "空域许可提醒"] },
         { id: "start", label: "发布开始", type: "date" },
         { id: "end", label: "发布结束", type: "date" }
       ],
@@ -105,6 +105,106 @@
           approvedAt: "2026-03-28 14:20",
           permitEnd: "2026-05-20 18:00",
           remark: "请负责人完成续期材料准备。",
+        },
+        {
+          id: "n5",
+          source: "人工巡查",
+          type: "项目巡查",
+          title: "2026-05-15 鲍雄澎 已完成 洪山路至小洪山商业公寓项目 的巡查",
+          time: "2026-05-15 17:30",
+          read: "未读",
+          recordId: "122820",
+          projectName: "洪山路至小洪山商业公寓项目",
+          projectType: "重点项目",
+          line: "2号线",
+          direction: "上行",
+          section: "洪山路~小洪山",
+          station: "",
+          user: "鲍雄澎",
+          patrolDate: "2026-05-15 17:30",
+          progress: "正常施工",
+          remark: "",
+          updatedAt: "2026-05-15 17:30",
+        },
+        {
+          id: "n6",
+          source: "今日巡线",
+          type: "项目巡查",
+          title: "2026-07-03 李明 已完成以下项目的巡查",
+          time: "2026-07-03 20:27",
+          read: "未读",
+          projects: [
+            {
+              recordId: "122801",
+              projectName: "东亭停车场附属配套工程",
+              projectType: "重点项目",
+              line: "7号线",
+              direction: "下行",
+              section: "洪山路~小洪山",
+              station: "小洪山",
+              user: "李明",
+              patrolDate: "2026-07-03 18:20",
+              progress: "基坑支护监测中，现场围挡完整。",
+              remark: "",
+              updatedAt: "2026-07-03 18:20",
+            },
+            {
+              recordId: "122802",
+              projectName: "新建商业文化设施项目",
+              projectType: "一般项目",
+              line: "8号线",
+              direction: "上行",
+              section: "水果湖-洪山路",
+              station: "洪山路",
+              user: "李明",
+              patrolDate: "2026-07-03 18:35",
+              progress: "负二层消防泵房施工，负一层通风安装作业同步推进，现场文明施工情况正常。",
+              remark: "",
+              updatedAt: "2026-07-03 18:35",
+            },
+            {
+              recordId: "122803",
+              projectName: "洪山路至小洪山商业公寓项目",
+              projectType: "重点项目",
+              line: "8号线",
+              direction: "下行",
+              section: "洪山路-小洪山",
+              station: "小洪山",
+              user: "李明",
+              patrolDate: "2026-07-03 19:02",
+              progress: "现场混凝土养护",
+              remark: "",
+              updatedAt: "2026-07-03 19:02",
+            },
+            {
+              recordId: "122804",
+              projectName: "中北路地下商业连通道项目",
+              projectType: "一般项目",
+              line: "8号线",
+              direction: "上行",
+              section: "水果湖-洪山路",
+              station: "洪山路",
+              user: "李明",
+              patrolDate: "2026-07-03 19:18",
+              progress: "围护结构施工准备",
+              remark: "",
+              updatedAt: "2026-07-03 19:18",
+            },
+            {
+              recordId: "122805",
+              projectName: "楚河汉街区间市政接驳改造项目",
+              projectType: "一般项目",
+              line: "8号线",
+              direction: "上行",
+              section: "水果湖-洪山路",
+              station: "洪山路",
+              user: "李明",
+              patrolDate: "2026-07-03 19:40",
+              progress: "临边围挡加固施工",
+              remark: "",
+              updatedAt: "2026-07-03 19:40",
+            },
+          ],
         },
       ],
       actions: ["查看"],
@@ -200,9 +300,10 @@
       '.wb-hero{border:1px solid rgba(34,211,238,.16);background:linear-gradient(135deg,rgba(2,8,23,.92),rgba(8,47,73,.28));box-shadow:0 22px 60px rgba(0,0,0,.28);border-radius:8px}.wb-stat{border-left:1px solid rgba(34,211,238,.18);padding-left:18px}.wb-table th,.wb-table td{height:52px;border-bottom:1px solid rgba(34,211,238,.09);border-right:1px solid rgba(34,211,238,.06);vertical-align:middle}.wb-table th:last-child,.wb-table td:last-child{border-right:0}.wb-table thead th{background:rgba(2,8,23,.72);font-size:12px;font-weight:600;white-space:nowrap}.wb-table tbody td{font-size:12px;color:rgba(226,245,255,.9)}.wb-tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;border:1px solid rgba(34,211,238,.22);background:rgba(34,211,238,.08);color:#bae6fd;font-size:11px}.wb-tag--warn{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.08);color:#fde68a}.wb-tag--danger{border-color:rgba(251,113,133,.32);background:rgba(251,113,133,.08);color:#fecdd3}.wb-tag--ok{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.08);color:#bbf7d0}.wb-action{display:inline-flex;align-items:center;gap:5px;margin-right:10px;white-space:nowrap;cursor:pointer;color:#67e8f9}.wb-action:hover{color:#fff}.wb-action--hot{color:#fbbf24}.wb-action--danger{color:#fb7185}.wb-modal-mask{position:fixed;inset:0;z-index:1250;display:none;align-items:flex-start;justify-content:center;background:rgba(2,8,23,.68);padding:72px 20px 20px}.wb-modal-mask.show{display:flex}.wb-modal{width:min(760px,94vw);max-height:calc(100dvh - 96px);overflow:auto;border:1px solid rgba(34,211,238,.2);border-radius:8px;background:#071426;box-shadow:0 30px 90px rgba(0,0,0,.5)}' +
       '.wb-approval-mask{position:fixed;inset:0;z-index:1250;display:none;align-items:flex-start;justify-content:center;background:rgba(2,8,23,.72);padding:72px 22px 22px}.wb-approval-mask.show{display:flex}.wb-approval-modal{width:min(1080px,96vw);max-height:calc(100dvh - 96px);overflow:auto;border:1px solid rgba(34,211,238,.25);border-radius:10px;background:#071b33;box-shadow:0 20px 60px rgba(0,0,0,.55)}' +
       '.wb-notify-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px}.wb-notify-detail-item--full{grid-column:1/-1}.wb-notify-detail-key{display:block;font-size:11px;color:#9cc6df;margin-bottom:6px}.wb-notify-detail-val{display:block;font-size:13px;color:#ecfeff;line-height:1.5;word-break:break-word}.wb-notify-detail-val--pass{color:#34d399;font-weight:600}.wb-notify-detail-val--reject{color:#fb7185;font-weight:600}' +
+      '.wb-notify-title-cell__main{font-size:12px;color:rgba(226,245,255,.92);line-height:1.45}.wb-notify-title-cell__sub{margin-top:4px;font-size:11px;color:#94a3b8;line-height:1.4}.wb-modal--patrol-detail{width:min(920px,96vw)}.wb-modal--patrol-split{width:min(1120px,96vw)}.wb-notify-patrol-head{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(34,211,238,.12)}.wb-notify-patrol-head__title{margin:0;font-size:16px;font-weight:600;color:#ecfeff}.wb-notify-patrol-head__sub{margin:4px 0 0;font-size:12px;color:#94a3b8}.wb-notify-patrol-split{display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:18px;min-height:420px}.wb-notify-patrol-left{padding:14px;border:1px solid rgba(34,211,238,.14);border-radius:8px;background:rgba(2,8,23,.35)}.wb-notify-patrol-right{padding:14px;border:1px solid rgba(34,211,238,.14);border-radius:8px;background:rgba(2,8,23,.22);min-height:360px}.wb-notify-patrol-meta{display:grid;gap:10px;margin-bottom:14px}.wb-notify-patrol-projects__label{font-size:11px;color:#9cc6df;margin-bottom:8px}.wb-notify-project-links{display:flex;flex-direction:column;gap:8px}.wb-notify-project-link{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:8px 10px;border:1px solid rgba(34,211,238,.14);border-radius:6px;background:rgba(15,23,42,.45);color:#67e8f9;font-size:12px;text-align:left;cursor:pointer}.wb-notify-project-link:hover,.wb-notify-project-link.is-active{border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.08);color:#ecfeff}.wb-notify-project-link__name{flex:1;min-width:0;word-break:break-word}.wb-notify-project-link__action{flex-shrink:0;font-size:11px;color:#94a3b8}.wb-notify-patrol-record-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px}.wb-notify-patrol-record-item--full{grid-column:1/-1}.wb-notify-patrol-record-key{display:block;font-size:11px;color:#9cc6df;margin-bottom:4px}.wb-notify-patrol-record-val{display:block;font-size:13px;color:#ecfeff;line-height:1.55;word-break:break-word}.wb-notify-patrol-record-empty{display:flex;align-items:center;justify-content:center;min-height:320px;color:#94a3b8;font-size:13px;text-align:center;padding:24px}@media (max-width:960px){.wb-notify-patrol-split{grid-template-columns:1fr}.wb-notify-patrol-record-grid{grid-template-columns:1fr}}' +
       '.wb-approval-modal .field-label{color:#9cc6df;font-size:12px;margin-bottom:6px;display:block}.status-dot{width:7px;height:7px;border-radius:999px;display:inline-block;margin-right:6px}' +
       '.approval-records-scroll{max-height:min(520px,58vh);overflow-y:auto;padding:2px 8px 2px 2px}.approval-item{display:flex;gap:12px;align-items:stretch;padding:0 0 18px;border:none}.approval-item--last{padding-bottom:0}.approval-item__rail{display:flex;flex-direction:column;align-items:center;width:20px;flex-shrink:0}.approval-item__dot{width:12px;height:12px;min-width:12px;min-height:12px;border-radius:50%;background:#64748b;flex-shrink:0}.approval-item__line{flex:1;width:2px;min-height:14px;margin-top:4px;background:rgba(148,163,184,.22)}.approval-item.pass .approval-item__dot{background:#22c55e}.approval-item.wait .approval-item__dot{background:#f59e0b}.approval-item.reject .approval-item__dot{background:#ef4444}.approval-item__content{flex:1;min-width:0}' +
-      '.disease-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}.disease-layout__right{position:sticky;top:72px;align-self:start;width:300px;max-height:calc(100dvh - 88px);display:flex;flex-direction:column;gap:10px}.disease-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}.disease-stat-card{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:10px;border:1px solid rgba(34,211,238,.22);background:linear-gradient(135deg,rgba(8,15,35,.92),rgba(6,12,28,.88))}.disease-stat-card__icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}.disease-stat-card--blue .disease-stat-card__icon{background:rgba(59,130,246,.18);color:#93c5fd;border:1px solid rgba(59,130,246,.35)}.disease-stat-card--cyan .disease-stat-card__icon{background:rgba(34,211,238,.12);color:#67e8f9;border:1px solid rgba(34,211,238,.35)}.disease-stat-card--green .disease-stat-card__icon{background:rgba(74,222,128,.12);color:#86efac;border:1px solid rgba(74,222,128,.35)}.disease-stat-card--amber .disease-stat-card__icon{background:rgba(251,191,36,.12);color:#fcd34d;border:1px solid rgba(251,191,36,.35)}.disease-stat-card--rose .disease-stat-card__icon{background:rgba(251,113,133,.12);color:#fda4af;border:1px solid rgba(251,113,133,.35)}.disease-stat-card__value{font-size:22px;font-weight:700;color:#f0f9ff;line-height:1.2}.disease-stat-card__label{font-size:11px;color:#94a3b8;margin-top:2px}.disease-stat-card__trend{font-size:10px;margin-top:4px;color:#94a3b8}.disease-filter-panel,.disease-quick-panel{display:flex;flex-direction:column;border-radius:10px;border:1px solid rgba(34,211,238,.2);background:rgba(8,15,35,.78)}.disease-panel-title{font-size:12px;font-weight:600;color:#e2f5ff;margin:0;padding:8px 10px 7px;border-bottom:1px solid rgba(34,211,238,.12);background:rgba(8,15,35,.92)}.disease-panel-body{padding:8px 10px 10px}.disease-filter-panel .disease-panel-body{display:flex;flex-direction:column;gap:6px}.disease-filter-panel label{display:flex;flex-direction:column;gap:3px;margin:0;font-size:10px}.disease-filter-panel label>span:first-child{color:#94a3b8}.disease-filter-panel .wh-input{height:26px!important;min-height:26px;font-size:11px;padding:0 6px}.disease-filter-actions{display:flex;gap:6px;margin-top:4px;padding-top:6px;border-top:1px solid rgba(34,211,238,.1)}.disease-filter-actions button{flex:1;padding-top:4px;padding-bottom:4px;font-size:11px}.disease-list-toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}.disease-quick-panel .disease-panel-body{padding:6px 10px 8px}.disease-quick-link{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;margin-bottom:5px;border-radius:6px;border:1px solid rgba(34,211,238,.14);background:rgba(15,23,42,.45);color:#e2f5ff;font-size:11px;text-decoration:none}.disease-quick-link:last-child{margin-bottom:0}.disease-quick-link:hover{border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.08);color:#fff}.disease-quick-link.is-active{border-color:rgba(34,211,238,.55);background:rgba(34,211,238,.12);color:#a5f3fc}.disease-quick-link i{width:16px;text-align:center;color:#67e8f9;font-size:12px}@media (max-width:1400px){.disease-layout{grid-template-columns:1fr}.disease-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.disease-layout__right{position:static;width:100%;max-height:none;display:grid;grid-template-columns:1fr 1fr;gap:10px}}@media (max-width:768px){.disease-stats{grid-template-columns:1fr}.disease-layout__right{grid-template-columns:1fr}}' +
+      '.disease-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}.disease-layout__right{position:sticky;top:72px;align-self:start;width:300px;max-height:calc(100dvh - 88px);display:flex;flex-direction:column;gap:10px}.disease-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}.disease-stat-card{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:10px;border:1px solid rgba(34,211,238,.22);background:linear-gradient(135deg,rgba(8,15,35,.92),rgba(6,12,28,.88))}.disease-stat-card__icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}.disease-stat-card--blue .disease-stat-card__icon{background:rgba(59,130,246,.18);color:#93c5fd;border:1px solid rgba(59,130,246,.35)}.disease-stat-card--cyan .disease-stat-card__icon{background:rgba(34,211,238,.12);color:#67e8f9;border:1px solid rgba(34,211,238,.35)}.disease-stat-card--green .disease-stat-card__icon{background:rgba(74,222,128,.12);color:#86efac;border:1px solid rgba(74,222,128,.35)}.disease-stat-card--amber .disease-stat-card__icon{background:rgba(251,191,36,.12);color:#fcd34d;border:1px solid rgba(251,191,36,.35)}.disease-stat-card--rose .disease-stat-card__icon{background:rgba(251,113,133,.12);color:#fda4af;border:1px solid rgba(251,113,133,.35)}.disease-stat-card__value{font-size:22px;font-weight:700;color:#f0f9ff;line-height:1.2}.disease-stat-card__unit{font-size:12px;font-weight:400;margin-left:2px;color:#94a3b8}.disease-stat-card__label{font-size:11px;color:#94a3b8;margin-top:2px}.disease-stat-card__trend{font-size:10px;margin-top:4px;color:#94a3b8}.disease-filter-panel,.disease-quick-panel{display:flex;flex-direction:column;border-radius:10px;border:1px solid rgba(34,211,238,.2);background:rgba(8,15,35,.78)}.disease-panel-title{font-size:12px;font-weight:600;color:#e2f5ff;margin:0;padding:8px 10px 7px;border-bottom:1px solid rgba(34,211,238,.12);background:rgba(8,15,35,.92)}.disease-panel-body{padding:8px 10px 10px}.disease-filter-panel .disease-panel-body{display:flex;flex-direction:column;gap:6px}.disease-filter-panel label{display:flex;flex-direction:column;gap:3px;margin:0;font-size:10px}.disease-filter-panel label>span:first-child{color:#94a3b8}.disease-filter-panel .wh-input{height:26px!important;min-height:26px;font-size:11px;padding:0 6px}.disease-filter-actions{display:flex;gap:6px;margin-top:4px;padding-top:6px;border-top:1px solid rgba(34,211,238,.1)}.disease-filter-actions button{flex:1;padding-top:4px;padding-bottom:4px;font-size:11px}.disease-list-toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}.disease-quick-panel .disease-panel-body{padding:6px 10px 8px}.disease-quick-link{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;margin-bottom:5px;border-radius:6px;border:1px solid rgba(34,211,238,.14);background:rgba(15,23,42,.45);color:#e2f5ff;font-size:11px;text-decoration:none}.disease-quick-link:last-child{margin-bottom:0}.disease-quick-link:hover{border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.08);color:#fff}.disease-quick-link.is-active{border-color:rgba(34,211,238,.55);background:rgba(34,211,238,.12);color:#a5f3fc}.disease-quick-link i{width:16px;text-align:center;color:#67e8f9;font-size:12px}@media (max-width:1400px){.disease-layout{grid-template-columns:1fr}.disease-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.disease-layout__right{position:static;width:100%;max-height:none;display:grid;grid-template-columns:1fr 1fr;gap:10px}}@media (max-width:768px){.disease-stats{grid-template-columns:1fr}.disease-layout__right{grid-template-columns:1fr}}' +
     '</style>');
   }
 
@@ -213,7 +314,10 @@
     return "工作台面板";
   }
 
-  function diseaseStatCard(color, icon, id, label, trend) {
+  function diseaseStatCard(color, icon, id, label, trend, unit) {
+    var valueHtml = unit
+      ? '<span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">' + esc(unit) + "</span>"
+      : "0";
     return (
       '<div class="disease-stat-card disease-stat-card--' +
       color +
@@ -221,7 +325,9 @@
       icon +
       '"></i></div><div><div id="' +
       id +
-      '" class="disease-stat-card__value">0</div><div class="disease-stat-card__label">' +
+      '" class="disease-stat-card__value">' +
+      valueHtml +
+      '</div><div class="disease-stat-card__label">' +
       label +
       '</div><div class="disease-stat-card__trend">' +
       trend +
@@ -232,26 +338,26 @@
   function statsHtmlForKey(key) {
     if (key === "wb-todo") {
       return (
-        diseaseStatCard("blue", "fa-list-check", "wb-stat-total", "当前列表", "筛选结果") +
-        diseaseStatCard("cyan", "fa-file-signature", "wb-stat-approval", "审批", "待办分类") +
-        diseaseStatCard("amber", "fa-bell", "wb-stat-alert", "告警", "待办分类") +
-        diseaseStatCard("rose", "fa-hourglass-half", "wb-stat-pending", "本月待处理", "待审批/未复核")
+        diseaseStatCard("blue", "fa-list-check", "wb-stat-total", "当前列表", "筛选结果", "条") +
+        diseaseStatCard("cyan", "fa-file-signature", "wb-stat-approval", "审批", "待办分类", "条") +
+        diseaseStatCard("amber", "fa-bell", "wb-stat-alert", "告警", "待办分类", "条") +
+        diseaseStatCard("rose", "fa-hourglass-half", "wb-stat-pending", "本月待处理", "待审批/未复核", "条")
       );
     }
     if (key === "wb-sys-notify") {
       return (
-        diseaseStatCard("blue", "fa-envelope", "wb-stat-total", "当前列表", "筛选结果") +
-        diseaseStatCard("amber", "fa-envelope-open-text", "wb-stat-unread", "未读", "需关注") +
-        diseaseStatCard("cyan", "fa-file-signature", "wb-stat-approval-msg", "审批消息", "通知类型") +
-        diseaseStatCard("green", "fa-route", "wb-stat-airspace", "空域许可", "到期提醒")
+        diseaseStatCard("blue", "fa-bell", "wb-stat-unread", "未读", "需关注", "条") +
+        diseaseStatCard("amber", "fa-clipboard-list", "wb-stat-patrol", "项目巡查", "通知类型", "条") +
+        diseaseStatCard("cyan", "fa-file-signature", "wb-stat-approval-msg", "审批消息", "通知类型", "条") +
+        diseaseStatCard("green", "fa-route", "wb-stat-airspace", "空域许可", "到期提醒", "条")
       );
     }
     if (key === "wb-done") {
       return (
-        diseaseStatCard("blue", "fa-clipboard-check", "wb-stat-total", "当前列表", "筛选结果") +
-        diseaseStatCard("cyan", "fa-file-signature", "wb-stat-approval", "审批", "事项类型") +
-        diseaseStatCard("amber", "fa-bell", "wb-stat-alarm", "告警", "事项类型") +
-        diseaseStatCard("green", "fa-circle-check", "wb-stat-closed", "已通过/已复核", "通过/已复核")
+        diseaseStatCard("blue", "fa-clipboard-check", "wb-stat-total", "当前列表", "筛选结果", "条") +
+        diseaseStatCard("cyan", "fa-file-signature", "wb-stat-approval", "审批", "事项类型", "条") +
+        diseaseStatCard("amber", "fa-bell", "wb-stat-alarm", "告警", "事项类型", "条") +
+        diseaseStatCard("green", "fa-circle-check", "wb-stat-closed", "已通过/已复核", "通过/已复核", "条")
       );
     }
     return "";
@@ -334,15 +440,48 @@
   }
 
   function updateWorkbenchStats(rows, key) {
-    function set(id, val) {
+    function setStatNum(id, val) {
       var el = document.getElementById(id);
-      if (el) el.textContent = String(val);
+      if (!el) return;
+      var numEl = el.querySelector(".disease-stat-card__num");
+      if (numEl) {
+        numEl.textContent = String(val);
+        return;
+      }
+      el.textContent = String(val);
     }
-    set("wb-stat-total", rows.length);
+    if (key === "wb-sys-notify") {
+      setStatNum(
+        "wb-stat-unread",
+        rows.filter(function (r) {
+          return r.read === "未读";
+        }).length
+      );
+      setStatNum(
+        "wb-stat-patrol",
+        rows.filter(function (r) {
+          return isPatrolNotify(r);
+        }).length
+      );
+      setStatNum(
+        "wb-stat-approval-msg",
+        rows.filter(function (r) {
+          return r.type === "审批消息";
+        }).length
+      );
+      setStatNum(
+        "wb-stat-airspace",
+        rows.filter(function (r) {
+          return isAirspaceNotify(r);
+        }).length
+      );
+      return;
+    }
+    setStatNum("wb-stat-total", rows.length);
     if (key === "wb-todo") {
       var all = current.rows;
       var month = currentMonthPrefix();
-      set(
+      setStatNum(
         "wb-stat-pending",
         all.filter(function (r) {
           return (
@@ -352,13 +491,13 @@
           );
         }).length
       );
-      set(
+      setStatNum(
         "wb-stat-approval",
         all.filter(function (r) {
           return r.tab === "approval";
         }).length
       );
-      set(
+      setStatNum(
         "wb-stat-alert",
         all.filter(function (r) {
           return r.tab === "alert";
@@ -366,41 +505,20 @@
       );
       return;
     }
-    if (key === "wb-sys-notify") {
-      set(
-        "wb-stat-unread",
-        rows.filter(function (r) {
-          return r.read === "未读";
-        }).length
-      );
-      set(
-        "wb-stat-approval-msg",
-        rows.filter(function (r) {
-          return r.type === "审批消息";
-        }).length
-      );
-      set(
-        "wb-stat-airspace",
-        rows.filter(function (r) {
-          return isAirspaceNotify(r);
-        }).length
-      );
-      return;
-    }
     if (key === "wb-done") {
-      set(
+      setStatNum(
         "wb-stat-approval",
         rows.filter(function (r) {
           return r.type === "审批";
         }).length
       );
-      set(
+      setStatNum(
         "wb-stat-alarm",
         rows.filter(function (r) {
           return r.type === "告警";
         }).length
       );
-      set(
+      setStatNum(
         "wb-stat-closed",
         rows.filter(function (r) {
           return r.result === "通过" || r.result === "已复核";
@@ -721,7 +839,7 @@
       if (todoBatchUiVisible()) cells.unshift(todoCheckboxCell(row));
       return cells;
     }
-    if (key === "wb-sys-notify") return [row.title, tag(row.type), row.time, tag(row.read), actions(row, index)];
+    if (key === "wb-sys-notify") return [renderNotifyTitleCell(row), tag(row.type), row.time, tag(row.read), actions(row, index)];
     if (key === "wb-done") {
       return [row.title, tag(row.type), row.source, row.user, row.time, tag(row.result), actions(row, index)];
     }
@@ -1127,6 +1245,217 @@
     return row.type === "空域许可提醒" || row.type === "提醒";
   }
 
+  function isPatrolNotify(row) {
+    return row && (row.type === "项目巡查" || row.type === "项目巡线");
+  }
+
+  function isPatrolBatch(row) {
+    return isPatrolNotify(row) && Array.isArray(row.projects) && row.projects.length > 0;
+  }
+
+  function buildPatrolSingleTitle(row) {
+    var date = String(row.patrolDate || row.time || "").slice(0, 10);
+    var user = row.user || "—";
+    var project = row.projectName || "项目";
+    return date + " " + user + " 已完成 " + project + " 的巡查";
+  }
+
+  function buildPatrolBatchTitle(row) {
+    if (row.title) return row.title;
+    var date = String(row.time || "").slice(0, 10);
+    var users = [];
+    (row.projects || []).forEach(function (proj) {
+      var name = proj.user || "李明";
+      if (users.indexOf(name) < 0) users.push(name);
+    });
+    if (!users.length) users = ["李明"];
+    return date + " " + users.join("、") + " 已完成以下项目的巡查";
+  }
+
+  function patrolNotifyTitle(row) {
+    if (!isPatrolNotify(row)) return row.title || "—";
+    if (isPatrolBatch(row)) return buildPatrolBatchTitle(row);
+    return buildPatrolSingleTitle(row);
+  }
+
+  function patrolBatchSubtitle(row) {
+    var names = (row.projects || [])
+      .map(function (proj) {
+        return proj.projectName || proj.title || "";
+      })
+      .filter(Boolean);
+    if (!names.length) return "";
+    if (names.length <= 2) return "已完成项目：" + names.join("、");
+    return "已完成项目：" + names.slice(0, 2).join("、") + " 等 " + names.length + " 项";
+  }
+
+  function normalizePatrolNotifyRow(row) {
+    if (!isPatrolNotify(row)) return row;
+    row.title = patrolNotifyTitle(row);
+    return row;
+  }
+
+  function renderNotifyTitleCell(row) {
+    if (!isPatrolNotify(row)) return esc(row.title);
+    var html =
+      '<div class="wb-notify-title-cell"><div class="wb-notify-title-cell__main">' +
+      esc(patrolNotifyTitle(row)) +
+      "</div>";
+    if (isPatrolBatch(row)) {
+      html += '<div class="wb-notify-title-cell__sub">' + esc(patrolBatchSubtitle(row)) + "</div>";
+    }
+    html += "</div>";
+    return html;
+  }
+
+  function patrolRecordField(label, value, full) {
+    return (
+      '<div class="wb-notify-patrol-record-item' +
+      (full ? " wb-notify-patrol-record-item--full" : "") +
+      '"><span class="wb-notify-patrol-record-key">' +
+      esc(label) +
+      '</span><span class="wb-notify-patrol-record-val">' +
+      esc(value == null || value === "" ? "—" : value) +
+      "</span></div>"
+    );
+  }
+
+  function buildPatrolRecordDetailHtml(row, opts) {
+    opts = opts || {};
+    if (!row) return '<div class="wb-notify-patrol-record-empty">请选择左侧项目查看巡查详情</div>';
+    var recordId = String(row.recordId || row.id || "").replace(/^(M-|n)/, "");
+    var projectLabel = row.projectName || "—";
+    if (row.projectType) projectLabel += " / " + row.projectType;
+    var headHtml = opts.hideTitle
+      ? '<div class="wb-notify-patrol-head"><p class="wb-notify-patrol-head__sub">人工巡查记录详情</p></div>'
+      : '<div class="wb-notify-patrol-head">' +
+        '<h4 class="wb-notify-patrol-head__title">查看详情</h4>' +
+        '<p class="wb-notify-patrol-head__sub">人工巡查记录详情</p></div>';
+    var html =
+      headHtml +
+      '<div class="wb-notify-patrol-record-grid">' +
+      patrolRecordField("编号", recordId) +
+      patrolRecordField("所属线路", row.line) +
+      patrolRecordField("上下行", row.direction) +
+      patrolRecordField("所在区间", row.section) +
+      patrolRecordField("站点", row.station) +
+      patrolRecordField("所在项目", projectLabel, true) +
+      patrolRecordField("巡查日期", row.patrolDate || row.time);
+    if (global.WHPatrolMediaGallery && global.WHPatrolMediaGallery.renderDetailGrid) {
+      html +=
+        '<div class="wb-notify-patrol-record-item wb-notify-patrol-record-item--full"><span class="wb-notify-patrol-record-key">巡查照片</span><span class="wb-notify-patrol-record-val">' +
+        global.WHPatrolMediaGallery.renderDetailGrid({ kind: "photo", projectName: row.projectName, previewCount: 3 }) +
+        "</span></div>";
+      html +=
+        '<div class="wb-notify-patrol-record-item wb-notify-patrol-record-item--full"><span class="wb-notify-patrol-record-key">巡查视频</span><span class="wb-notify-patrol-record-val">' +
+        global.WHPatrolMediaGallery.renderDetailGrid({ kind: "video", projectName: row.projectName, previewCount: 2 }) +
+        "</span></div>";
+    }
+    html +=
+      patrolRecordField("项目进展", row.progress || row.result, true) +
+      patrolRecordField("协调情况及备注", row.remark, true) +
+      patrolRecordField("巡查人", row.user) +
+      patrolRecordField("更新时间", row.updatedAt || row.time);
+    html += "</div>";
+    return html;
+  }
+
+  function sortNotifyRows(rows) {
+    return rows.slice().sort(function (a, b) {
+      var aUnread = a.read === "未读" ? 0 : 1;
+      var bUnread = b.read === "未读" ? 0 : 1;
+      if (aUnread !== bUnread) return aUnread - bUnread;
+      return String(b.time || "").localeCompare(String(a.time || ""));
+    });
+  }
+
+  function renderPatrolBatchNotifyDetail(row, selectedIndex) {
+    var body = document.getElementById("wb-modal-body");
+    if (!body) return;
+    var projects = row.projects || [];
+    var activeIndex =
+      typeof selectedIndex === "number" && selectedIndex >= 0
+        ? selectedIndex
+        : projects.length
+          ? 0
+          : -1;
+    var leftHtml =
+      '<div class="wb-notify-patrol-meta">' +
+      notifyDetailField("标题", patrolNotifyTitle(row), { full: true }) +
+      notifyDetailField("通知类型", "项目巡查", { full: true }) +
+      notifyDetailField("发布时间", row.time, { full: true }) +
+      "</div>" +
+      '<div class="wb-notify-patrol-projects"><div class="wb-notify-patrol-projects__label">已完成项目</div><div class="wb-notify-project-links">' +
+      projects
+        .map(function (proj, index) {
+          return (
+            '<button type="button" class="wb-notify-project-link' +
+            (index === activeIndex ? " is-active" : "") +
+            '" data-action="patrol-view-project" data-project-index="' +
+            index +
+            '"><span class="wb-notify-project-link__name">' +
+            esc(proj.projectName || proj.title || "项目") +
+            '</span><span class="wb-notify-project-link__action">查看详情</span></button>'
+          );
+        })
+        .join("") +
+      "</div></div>";
+    var rightHtml =
+      activeIndex >= 0 && projects[activeIndex]
+        ? buildPatrolRecordDetailHtml(projects[activeIndex])
+        : '<div class="wb-notify-patrol-record-empty">点击左侧项目名称查看巡查详情</div>';
+    body.innerHTML =
+      '<div class="wb-notify-patrol-split"><div class="wb-notify-patrol-left">' +
+      leftHtml +
+      '</div><div class="wb-notify-patrol-right" id="wb-patrol-detail-pane">' +
+      rightHtml +
+      "</div></div>";
+  }
+
+  function setPatrolNotifyModalMode(mode) {
+    var mask = document.getElementById("wb-modal-mask");
+    if (!mask) return;
+    var modal = mask.querySelector(".wb-modal");
+    if (!modal) return;
+    modal.classList.remove("wb-modal--patrol-detail", "wb-modal--patrol-split");
+    if (mode) modal.classList.add(mode);
+  }
+
+  function resetPatrolNotifyModal() {
+    setPatrolNotifyModalMode("");
+    patrolNotifyContext = null;
+    var mask = document.getElementById("wb-modal-mask");
+    if (!mask) return;
+    var titleEl = mask.querySelector("h3");
+    if (titleEl) titleEl.textContent = "详情";
+  }
+
+  var patrolNotifyContext = null;
+
+  function openPatrolNotifyView(row) {
+    markNotifyRead(row);
+    patrolNotifyContext = row;
+    var mask = document.getElementById("wb-modal-mask");
+    var titleEl = mask && mask.querySelector("h3");
+    if (titleEl) titleEl.textContent = "查看详情";
+    if (isPatrolBatch(row)) {
+      setPatrolNotifyModalMode("wb-modal--patrol-split");
+      renderPatrolBatchNotifyDetail(row, 0);
+    } else {
+      setPatrolNotifyModalMode("wb-modal--patrol-detail");
+      document.getElementById("wb-modal-body").innerHTML = buildPatrolRecordDetailHtml(row, { hideTitle: true });
+    }
+    mask.classList.add("show");
+    applyFilter();
+  }
+
+  function notifyTypeMatchesFilter(row, filterType) {
+    if (!filterType || filterType === "全部") return true;
+    if (filterType === "空域许可提醒") return isAirspaceNotify(row);
+    if (filterType === "项目巡查") return isPatrolNotify(row);
+    return row.type === filterType;
+  }
+
   function notifyDetailField(label, value, opts) {
     opts = opts || {};
     var valClass = "wb-notify-detail-val";
@@ -1184,7 +1513,12 @@
   }
 
   function openNotifyView(row) {
+    if (isPatrolNotify(row)) {
+      openPatrolNotifyView(row);
+      return;
+    }
     markNotifyRead(row);
+    resetPatrolNotifyModal();
     notifyDetail(row);
     applyFilter();
   }
@@ -1220,7 +1554,11 @@
   function detail(row) {
     var key = document.body.dataset.sidebarKey;
     if (key === "wb-sys-notify") {
-      notifyDetail(row);
+      if (isPatrolNotify(row)) {
+        openPatrolNotifyView(row);
+      } else {
+        notifyDetail(row);
+      }
       return;
     }
     var body = Object.keys(row).filter(function (k) { return k !== "note"; }).map(function (k) {
@@ -1247,16 +1585,32 @@
     var rows = base.filter(function (row) {
       if (values.title) {
         var q = String(values.title).trim().toLowerCase();
-        if (q && (!row.title || row.title.toLowerCase().indexOf(q) < 0)) return false;
+        if (q) {
+          normalizePatrolNotifyRow(row);
+          var searchable = [row.title, row.projectName, row.user, row.progress].join(" ").toLowerCase();
+          if (isPatrolBatch(row)) {
+            searchable +=
+              " " +
+              (row.projects || [])
+                .map(function (proj) {
+                  return [proj.projectName, proj.title, proj.user, proj.progress].join(" ");
+                })
+                .join(" ");
+          }
+          if (searchable.indexOf(q) < 0) return false;
+        }
       }
       if (values.status && values.status !== "全部" && row.status !== values.status) return false;
       if (values.result && values.result !== "全部" && row.result !== values.result) return false;
-      if (values.type && values.type !== "全部" && row.type !== values.type) return false;
+      if (values.type && values.type !== "全部" && !notifyTypeMatchesFilter(row, values.type)) return false;
       var rowTime = row.time ? row.time.slice(0, 10) : "";
       if (values.start && rowTime < values.start) return false;
       if (values.end && rowTime > values.end) return false;
       return true;
     });
+    if (document.body.dataset.sidebarKey === "wb-sys-notify") {
+      rows = sortNotifyRows(rows);
+    }
     renderRows(rows);
   }
 
@@ -1294,8 +1648,12 @@
     document.title = current.title;
     document.getElementById("wb-app").innerHTML = buildDiseasePageHtml(key);
     initQuickLinks();
-    if (key === "wb-sys-notify" && global.WHHeaderBadges) {
-      WHHeaderBadges.applyNotifyReadToRows(current.rows);
+    if (key === "wb-sys-notify") {
+      current.rows.forEach(normalizePatrolNotifyRow);
+      if (global.WHHeaderBadges) WHHeaderBadges.applyNotifyReadToRows(current.rows);
+      if (global.WHPatrolMediaGallery && global.WHPatrolMediaGallery.bind) {
+        global.WHPatrolMediaGallery.bind(document);
+      }
     }
     if (key === "wb-todo") {
       if (global.TodoModalBridge) global.TodoModalBridge.mountModals();
@@ -1308,6 +1666,8 @@
     } else if (key === "wb-done") {
       if (global.TodoModalBridge) global.TodoModalBridge.mountModals();
       renderRows(current.rows);
+    } else if (key === "wb-sys-notify") {
+      renderRows(sortNotifyRows(current.rows));
     } else {
       renderRows(current.rows);
     }
@@ -1388,9 +1748,18 @@
           el.value = "";
         });
         if (key === "wb-todo") renderRows(visibleTodoRows());
+        else if (key === "wb-sys-notify") renderRows(sortNotifyRows(current.rows));
         else renderRows(current.rows);
       }
-      if (action === "close-modal") document.getElementById("wb-modal-mask").classList.remove("show");
+      if (action === "close-modal") {
+        resetPatrolNotifyModal();
+        document.getElementById("wb-modal-mask").classList.remove("show");
+      }
+      if (action === "patrol-view-project" && patrolNotifyContext) {
+        var projectIndex = Number(node.dataset.projectIndex);
+        renderPatrolBatchNotifyDetail(patrolNotifyContext, projectIndex);
+        return;
+      }
       if (action === "close-approval") document.getElementById("wb-approval-mask").classList.remove("show");
 
       var rowFromClick = rowByTitle(node.dataset.rowTitle);
@@ -1505,6 +1874,11 @@
   global.WHWorkbenchNotify = {
     notifyDetailPairs: notifyDetailPairs,
     isAirspaceNotify: isAirspaceNotify,
+    isPatrolNotify: isPatrolNotify,
+    isPatrolBatch: isPatrolBatch,
+    patrolNotifyTitle: patrolNotifyTitle,
+    patrolBatchSubtitle: patrolBatchSubtitle,
+    buildPatrolRecordDetailHtml: buildPatrolRecordDetailHtml,
   };
 
   function doneDetailPairs(row) {

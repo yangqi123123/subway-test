@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
@@ -78,6 +78,7 @@
     .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
     .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
     .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__unit { font-size: 12px; font-weight: 400; margin-left: 2px; color: #94a3b8; }
     .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
     .disease-filter-panel, .disease-quick-panel { display: flex; flex-direction: column; border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.2); background: rgba(8, 15, 35, 0.78); }
@@ -131,7 +132,7 @@
             <div class="disease-stat-card disease-stat-card--blue">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-list"></i></div>
               <div>
-                <div id="stat-records" class="disease-stat-card__value">12</div>
+                <div id="stat-records" class="disease-stat-card__value"><span class="disease-stat-card__num">12</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">本月新增违规项目</div>
                 <div class="disease-stat-card__trend">当月累计</div>
               </div>
@@ -139,7 +140,7 @@
             <div class="disease-stat-card disease-stat-card--cyan">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-hard-hat"></i></div>
               <div>
-                <div id="stat-airports" class="disease-stat-card__value">2</div>
+                <div id="stat-airports" class="disease-stat-card__value"><span class="disease-stat-card__num">2</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">本月平均每次飞行无人机发现的施工数量</div>
                 <div class="disease-stat-card__trend">次均发现</div>
               </div>
@@ -147,7 +148,7 @@
             <div class="disease-stat-card disease-stat-card--green">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-plane"></i></div>
               <div>
-                <div id="stat-devices" class="disease-stat-card__value">3</div>
+                <div id="stat-devices" class="disease-stat-card__value"><span class="disease-stat-card__num">3</span><span class="disease-stat-card__unit">次</span></div>
                 <div class="disease-stat-card__label">本月无人机飞行趟次</div>
                 <div class="disease-stat-card__trend">当月累计</div>
               </div>
@@ -155,7 +156,7 @@
             <div class="disease-stat-card disease-stat-card--amber">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-clock"></i></div>
               <div>
-                <div id="stat-operators" class="disease-stat-card__value">18.5h</div>
+                <div id="stat-operators" class="disease-stat-card__value"><span class="disease-stat-card__num">18.5</span><span class="disease-stat-card__unit">小时</span></div>
                 <div class="disease-stat-card__label">本月无人机飞行总时间</div>
                 <div class="disease-stat-card__trend">累计时长</div>
               </div>

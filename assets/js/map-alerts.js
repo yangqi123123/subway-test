@@ -447,34 +447,7 @@
         */
       ],
     },
-    {
-      id: "interval-yuehuatan",
-      area: "岳家嘴-梨园",
-      startTime: "2026-03-05 05:55:29",
-      count: 1,
-      expanded: false,
-      projects: [
-        createProject({
-          id: 301,
-          projectName: "梨园站附属施工",
-          alarmPosition: "里程 Y16+581",
-          alarmArea: "岳家嘴-梨园",
-          startTime: "2026-03-05 05:55:29",
-          latestTime: "2026-03-05 05:55:29",
-          lastTime: "2026-03-05 05:55:29",
-          section: "岳家嘴-梨园",
-          location: "里程 Y16+581",
-          source: ALERT_SOURCE_TRADITIONAL,
-          handleMode: ALERT_SOURCE_TRADITIONAL,
-          workflowStatus: "未复核",
-          latlng: [30.5677, 114.3651],
-          mapCenter: [30.5677, 114.3651],
-          disposalRecord: [
-            { time: "2026-03-05 05:55:29", type: "alarm", text: "告警产生，系统发送告警信息" },
-          ],
-        }),
-      ],
-    },
+
   ];
 
   var currentAlert = null;

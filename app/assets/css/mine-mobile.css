@@ -657,6 +657,70 @@ body.mp-todo-page .mp-wb-card--todo .mp-wb-card__title {
   min-width: 0;
 }
 
+body.mp-notify-page .mp-wb-card--todo .mp-wb-card__title {
+  display: block;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.45;
+  min-width: 0;
+}
+
+body.mp-notify-page .mp-wb-card__projects {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 4px;
+  padding-left: 0;
+}
+
+body.mp-notify-page .mp-wb-card__project {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 13px;
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+body.mp-notify-page .mp-wb-detail-lead {
+  font-size: 14px;
+  color: #0f172a;
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+body.mp-notify-page .mp-wb-detail-projects {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+body.mp-notify-page .mp-wb-detail-project {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 14px;
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+body.mp-notify-page .mp-wb-detail-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0;
+}
+
 body.mp-todo-page .mp-wb-card__rows {
   display: grid;
   gap: 6px;
@@ -1216,4 +1280,16 @@ body.mp-todo-page .mp-todo-uav-shot {
 
 body.mp-todo-page .mp-todo-approval-body .mp-field--textarea {
   min-height: 120px;
+}
+
+/* 系统通知统计数字单位 */
+body.mp-notify-page .mp-stat-card__num {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+body.mp-notify-page .mp-stat-card__unit {
+  font-size: 12px;
+  font-weight: 400;
+  margin-left: 1px;
 }

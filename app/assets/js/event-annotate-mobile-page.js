@@ -4,15 +4,15 @@
   var SPECTRUM_SRC = "../../../assets/images/annotate-spectrum.png";
   var SITE_PHOTO = "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=480&q=80";
   var FEATURE_IMAGES = [
-    { title: "波形特征", src: "file:///C:/Users/10208/AppData/Local/Temp/codex-clipboard-2fe9c1ca-d77d-44be-ad17-53a9ef0cc77f.png" },
-    { title: "频谱特征", src: "file:///C:/Users/10208/AppData/Local/Temp/codex-clipboard-8c6d2520-660a-420b-a774-5450173f8b8e.png" }
+    { title: "波形特征", src: "../../../assets/images/annotate-waveform-feature.png" },
+    { title: "频谱特征", src: "../../../assets/images/annotate-spectrum-feature.png" }
   ];
 
   var CATEGORIES = [
-    { id: "drill", label: "钻探", sort: 10 },
-    { id: "demolish", label: "破拆", sort: 20 },
-    { id: "machine", label: "机械施工", sort: 30 },
-    { id: "dewater", label: "降水", sort: 40 }
+    { id: "drill", label: "钻探" },
+    { id: "demolish", label: "破拆" },
+    { id: "machine", label: "机械施工" },
+    { id: "dewater", label: "降水" }
   ];
 
   var TYPICAL_EVENTS = [
@@ -101,8 +101,8 @@
     selectedTypicalId: "typ-23",
     mode: "period",
     activeHistoryId: "",
-    currentSpectrumLabel: "当前点位最新频谱图",
-    historySpectrumLabel: "",
+    compareLoaded: false,
+    compareSpectrumLabel: "",
     summary: null,
     categoryModalOpen: false
   };
@@ -135,16 +135,16 @@
       var params = new URLSearchParams(global.location.search || "");
       return {
         alertId: params.get("alertId") || "201",
-        location: params.get("location") || "中南医院站 - 湖北日报站 Z25+610",
+        location: params.get("location") || "马房山->街道口 Z25+610",
         project: params.get("project") || "金融街六中北项目",
-        time: params.get("time") || "2026-03-05 18:30:46"
+        time: params.get("time") || "2024-6-23 08:14:49"
       };
     } catch (error) {
       return {
         alertId: "201",
-        location: "中南医院站 - 湖北日报站 Z25+610",
+        location: "马房山->街道口 Z25+610",
         project: "金融街六中北项目",
-        time: "2026-03-05 18:30:46"
+        time: "2024-6-23 08:14:49"
       };
     }
   }
@@ -161,10 +161,38 @@
     return {
       alertId: query.alertId,
       time: query.time,
-      section: section || "中南医院站 - 湖北日报站",
+      section: section || "马房山->街道口",
       project: query.project || "金融街六中北项目",
-      position: position || raw || "Z25+610"
+      position: position || "Z25+610"
     };
+  }
+
+  function formatAlertDate(timeText) {
+    var match = String(timeText || "").match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (!match) return "";
+    return match[1] + "-" + Number(match[2]) + "-" + Number(match[3]);
+  }
+
+  function formatRouteLabel(section) {
+    return String(section || "")
+      .replace(/\s*[-–—]\s*/g, "->")
+      .replace(/\s+/g, "");
+  }
+
+  function formatAlertPointTitle(summary) {
+    if (!summary) return "当前点位频谱图";
+    var parts = [
+      formatAlertDate(summary.time),
+      formatRouteLabel(summary.section),
+      summary.position || ""
+    ].filter(Boolean);
+    return parts.join(" ") || "当前点位频谱图";
+  }
+
+  function renderCurrentPointTitle() {
+    var title = $("event-current-point-title");
+    if (!title) return;
+    title.textContent = formatAlertPointTitle(state.summary);
   }
 
   function filteredTypicals() {
@@ -173,12 +201,8 @@
     });
   }
 
-  function sortedCategories() {
-    return CATEGORIES.slice().sort(function (left, right) {
-      var sortGap = Number(left.sort || 0) - Number(right.sort || 0);
-      if (sortGap !== 0) return sortGap;
-      return String(left.label || "").localeCompare(String(right.label || ""), "zh-CN");
-    });
+  function categoryList() {
+    return CATEGORIES.slice();
   }
 
   function currentTypical() {
@@ -205,7 +229,7 @@
   function renderCategoryTabs() {
     var host = $("event-category-tabs");
     if (!host) return;
-    host.innerHTML = sortedCategories().map(function (item) {
+    host.innerHTML = categoryList().map(function (item) {
       return '<button type="button" class="mp-event-category-btn' + (item.id === state.category ? ' is-active' : '') + '" data-category="' + esc(item.id) + '">' + esc(item.label) + '</button>';
     }).join("");
   }
@@ -256,56 +280,75 @@
     var host = $("event-feature-list");
     if (!host) return;
     host.innerHTML = FEATURE_IMAGES.map(function (feature) {
-      return '<div class="mp-event-feature-shot"><img src="' + esc(feature.src) + '" alt="' + esc(feature.title) + '" /></div>';
+      return '' +
+        '<div class="mp-event-feature-shot">' +
+          '<div class="mp-event-feature-shot__title">' + esc(feature.title) + '</div>' +
+          '<img src="' + esc(feature.src) + '" alt="' + esc(feature.title) + '" />' +
+        '</div>';
     }).join('');
+  }
+
+  function formatPeriodOptionLabel(item) {
+    return item.date + " " + item.time;
   }
 
   function syncModeUi() {
     var bar = $("event-generate-bar");
-    var title = $("event-history-title");
+    var periodPanel = $("event-period-history-panel");
+    var alarmPanel = $("event-alarm-history-panel");
     if (bar) bar.style.display = state.mode === "period" ? "grid" : "none";
-    if (title) {
-      title.textContent = state.mode === "period" ? "历史时段记录" : "历史报警记录";
-    }
+    if (periodPanel) periodPanel.hidden = state.mode !== "period";
+    if (alarmPanel) alarmPanel.hidden = state.mode !== "alarm";
     global.document.querySelectorAll('.mp-event-tool-btn').forEach(function (button) {
       button.classList.toggle('is-active', button.getAttribute('data-mode') === state.mode);
     });
   }
 
-  function renderCurrentSpectrum() {
-    var img = $("event-current-spectrum");
-    var meta = $("event-current-meta");
+  function renderBaselineSpectrum() {
+    var img = $("event-baseline-spectrum");
     if (img) img.src = SPECTRUM_SRC;
-    if (meta) meta.textContent = state.currentSpectrumLabel;
   }
 
-  function renderHistorySpectrum() {
-    var section = $("event-history-spectrum-section");
-    var img = $("event-history-spectrum");
-    var meta = $("event-history-spectrum-meta");
-    var active = currentHistoryItem();
-    if (!section || !img || !meta) return;
-    if (!active) {
-      section.hidden = true;
-      meta.textContent = "";
+  function renderCompareSpectrum() {
+    var wrap = $("event-compare-wrap");
+    var img = $("event-compare-spectrum");
+    if (!wrap || !img) return;
+    if (!state.compareLoaded) {
+      wrap.classList.remove("is-loaded");
+      img.removeAttribute("src");
       return;
     }
+    wrap.classList.add("is-loaded");
     img.src = SPECTRUM_SRC;
-    meta.textContent = state.historySpectrumLabel;
-    section.hidden = false;
+    img.alt = state.compareSpectrumLabel || "历史时段频谱图";
   }
 
-  function renderHistoryList() {
-    var host = $("event-history-list");
-    if (!host) return;
-    host.classList.toggle('is-gallery', state.mode === 'alarm');
-    if (state.mode === 'period') {
-      host.innerHTML = PERIOD_HISTORY.map(function (item) {
-        return '<button type="button" class="mp-event-history-item' + (item.id === state.activeHistoryId ? ' is-active' : '') + '" data-history-id="' + esc(item.id) + '"><div class="mp-event-history-time">' + esc(item.time) + '</div></button>';
-      }).join('');
+  function clearCompareSpectrum() {
+    state.compareLoaded = false;
+    state.compareSpectrumLabel = "";
+    state.activeHistoryId = "";
+    renderCompareSpectrum();
+    renderHistorySelector();
+  }
+
+  function loadCompareSpectrum(label) {
+    state.compareLoaded = true;
+    state.compareSpectrumLabel = label || "历史时段频谱图";
+    renderCompareSpectrum();
+  }
+
+  function renderHistorySelector() {
+    var select = $("event-history-select");
+    var list = $("event-history-list");
+    if (state.mode === "period") {
+      if (!select) return;
+      select.innerHTML = '<option value="">请选择历史时段</option>' + PERIOD_HISTORY.map(function (item) {
+        return '<option value="' + esc(item.id) + '"' + (item.id === state.activeHistoryId ? ' selected' : '') + '>' + esc(formatPeriodOptionLabel(item)) + '</option>';
+      }).join("");
       return;
     }
-    host.innerHTML = ALARM_HISTORY.map(function (item) {
+    if (!list) return;
+    list.innerHTML = ALARM_HISTORY.map(function (item) {
       return '' +
         '<button type="button" class="mp-event-history-card-item' + (item.id === state.activeHistoryId ? ' is-active' : '') + '" data-history-id="' + esc(item.id) + '">' +
           '<div class="mp-event-history-card-thumb"><img src="' + esc(SPECTRUM_SRC) + '" alt="' + esc(item.code) + '" /></div>' +
@@ -313,22 +356,16 @@
             '<div class="mp-event-history-card-title">' + esc(formatAlarmDate(item.date)) + '</div>' +
           '</div>' +
         '</button>';
-    }).join('');
+    }).join("");
   }
 
   function renderClassifyOptions() {
     var host = $("event-classify");
     if (!host) return;
-    host.innerHTML = sortedCategories().map(function (item) {
+    host.innerHTML = categoryList().map(function (item) {
       return '<option value="' + esc(item.id) + '">' + esc(item.label) + '</option>';
     }).join('');
     host.value = state.category;
-  }
-
-  function nextCategorySort() {
-    return sortedCategories().reduce(function (maxValue, item) {
-      return Math.max(maxValue, Number(item.sort || 0));
-    }, 0) + 10;
   }
 
   function slugifyCategory(name) {
@@ -347,13 +384,13 @@
   function openCategoryModal() {
     var modal = $("event-category-modal");
     var nameInput = $("event-category-name");
-    var sortInput = $("event-category-sort");
     if (!modal) return;
     state.categoryModalOpen = true;
     modal.hidden = false;
-    if (nameInput) nameInput.value = "";
-    if (sortInput) sortInput.value = String(nextCategorySort());
-    if (nameInput) nameInput.focus();
+    if (nameInput) {
+      nameInput.value = "";
+      nameInput.focus();
+    }
   }
 
   function closeCategoryModal() {
@@ -365,17 +402,10 @@
 
   function saveCategory() {
     var nameInput = $("event-category-name");
-    var sortInput = $("event-category-sort");
     var name = nameInput ? String(nameInput.value || "").trim() : "";
-    var sortValue = sortInput ? Number(sortInput.value) : NaN;
     if (!name) {
       showToast("请输入分类标签名称");
       if (nameInput) nameInput.focus();
-      return;
-    }
-    if (!Number.isFinite(sortValue) || sortValue < 1) {
-      showToast("请输入有效排序值");
-      if (sortInput) sortInput.focus();
       return;
     }
     if (CATEGORIES.some(function (item) { return item.label === name; })) {
@@ -384,35 +414,41 @@
       return;
     }
 
-    CATEGORIES.push({
+    var newCategory = {
       id: slugifyCategory(name),
-      label: name,
-      sort: sortValue
-    });
+      label: name
+    };
+    CATEGORIES.push(newCategory);
+    state.category = newCategory.id;
+    ensureSelection();
 
     renderCategoryTabs();
+    renderTypicalGallery();
+    renderReferenceSpectrum();
     renderClassifyOptions();
     closeCategoryModal();
     showToast("分类标签已新增");
+
+    var tabsHost = $("event-category-tabs");
+    if (tabsHost) {
+      tabsHost.scrollLeft = tabsHost.scrollWidth;
+    }
   }
 
   function setHistorySelection(id) {
-    state.activeHistoryId = id || '';
+    state.activeHistoryId = id || "";
     var item = currentHistoryItem();
     if (!item) {
-      state.historySpectrumLabel = '';
-      renderHistorySpectrum();
-      renderHistoryList();
+      clearCompareSpectrum();
       return;
     }
-    if (state.mode === 'period') {
-      state.historySpectrumLabel = item.date + ' ' + item.time + ' / ' + item.duration;
+    if (state.mode === "period") {
+      loadCompareSpectrum(formatPeriodOptionLabel(item));
     } else {
-      state.historySpectrumLabel = item.date + ' ' + item.time + ' / ' + item.code + ' / ' + item.level;
+      loadCompareSpectrum(item.date + " " + item.time + " / " + item.code + " / " + item.level);
     }
-    renderHistoryList();
-    renderHistorySpectrum();
-    showToast('已加载历史频谱图');
+    renderHistorySelector();
+    showToast("已加载历史时段频谱图");
   }
 
   function goBack() {
@@ -479,11 +515,9 @@
       var modeBtn = event.target.closest('[data-mode]');
       if (modeBtn) {
         state.mode = modeBtn.getAttribute('data-mode') || 'period';
-        state.activeHistoryId = '';
-        state.historySpectrumLabel = '';
+        clearCompareSpectrum();
         syncModeUi();
-        renderHistoryList();
-        renderHistorySpectrum();
+        renderHistorySelector();
         return;
       }
 
@@ -499,9 +533,10 @@
         var timeVal = $('event-generate-time') ? $('event-generate-time').value : '';
         var durationVal = $('event-generate-duration') ? $('event-generate-duration').value : '30';
         var defaultDate = state.summary && state.summary.time ? state.summary.time.split(' ')[0] : '2026-03-05';
-        state.currentSpectrumLabel = (dateVal || defaultDate) + ' ' + (timeVal || '03:00') + ' / ' + durationVal + '分钟';
-        renderCurrentSpectrum();
-        showToast('当前点位频谱图已生成');
+        state.activeHistoryId = "";
+        renderHistorySelector();
+        loadCompareSpectrum((dateVal || defaultDate) + ' ' + (timeVal || '03:00') + ' / ' + durationVal + '分钟');
+        showToast('历史时段频谱图已生成');
         return;
       }
 
@@ -509,6 +544,12 @@
       if (submitBtn) {
         var classify = $('event-classify') ? $('event-classify').selectedOptions[0].textContent : '钻探';
         showToast('已提交“' + classify + '”标注');
+      }
+    });
+
+    global.document.addEventListener('change', function (event) {
+      if (event.target && event.target.id === 'event-history-select') {
+        setHistorySelection(event.target.value || '');
       }
     });
 
@@ -522,15 +563,16 @@
   function start() {
     state.summary = parseSummary(readQuery());
     ensureSelection();
+    renderCurrentPointTitle();
     renderCategoryTabs();
     renderTypicalGallery();
     renderReferenceSpectrum();
     renderFeatures();
     renderClassifyOptions();
-    renderCurrentSpectrum();
+    renderBaselineSpectrum();
+    renderCompareSpectrum();
     syncModeUi();
-    renderHistoryList();
-    renderHistorySpectrum();
+    renderHistorySelector();
     var dateInput = $('event-generate-date');
     if (dateInput) {
       dateInput.value = (state.summary && state.summary.time ? state.summary.time.split(' ')[0] : '2026-03-05');

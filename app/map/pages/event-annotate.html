@@ -60,8 +60,7 @@
 
           <section class="mp-drone-chart-card mp-event-spectrum-card">
             <div class="mp-drone-chart-card__head mp-event-current-head">
-              <div class="mp-drone-chart-card__title">当前点位频谱图</div>
-              <div id="event-current-meta" class="mp-drone-chart-card__note"></div>
+              <div id="event-current-point-title" class="mp-drone-chart-card__title mp-event-current-point-title">当前点位频谱图</div>
             </div>
             <div id="event-current-tools" class="mp-event-current-tools" role="tablist" aria-label="当前点位频谱图工具栏">
               <button type="button" class="mp-event-tool-btn is-active" data-mode="period">历史时段</button>
@@ -77,24 +76,32 @@
               </select>
               <button type="button" id="event-generate-btn" class="mp-event-generate-btn">生成</button>
             </div>
-            <div class="mp-event-history-panel">
-              <div class="mp-event-history-panel__head">
-                <div id="event-history-title" class="mp-drone-chart-card__title mp-event-history-panel__title">历史时段记录</div>
-              </div>
-              <div id="event-history-list" class="mp-event-history-list"></div>
+            <div class="mp-event-history-panel" id="event-period-history-panel">
+              <label class="mp-event-form-field">
+                <span id="event-history-title" class="mp-event-history-panel__title">历史时段记录</span>
+                <select id="event-history-select" class="mp-event-input">
+                  <option value="">请选择历史时段</option>
+                </select>
+              </label>
             </div>
-            <div class="mp-event-spectrum-wrap mp-event-spectrum-wrap--dark">
-              <img id="event-current-spectrum" class="mp-event-spectrum-img" alt="当前点位频谱图" />
+            <div class="mp-event-history-panel" id="event-alarm-history-panel" hidden>
+              <div id="event-history-list" class="mp-event-history-list is-gallery"></div>
             </div>
-            <section id="event-history-spectrum-section" class="mp-event-history-spectrum" hidden>
-              <div class="mp-drone-chart-card__head mp-event-history-spectrum__head">
-                <div class="mp-drone-chart-card__title">历史时段频谱图</div>
-                <div id="event-history-spectrum-meta" class="mp-drone-chart-card__note"></div>
-              </div>
-              <div class="mp-event-spectrum-wrap mp-event-spectrum-wrap--dark">
-                <img id="event-history-spectrum" class="mp-event-spectrum-img mp-event-spectrum-img--compact" alt="历史时段频谱图" />
-              </div>
-            </section>
+            <div class="mp-event-dual-spectrum">
+              <article class="mp-event-dual-spectrum__item">
+                <div class="mp-event-dual-spectrum__title">当前告警点频谱图</div>
+                <div class="mp-event-spectrum-wrap mp-event-spectrum-wrap--dark mp-event-dual-spectrum__canvas">
+                  <img id="event-baseline-spectrum" class="mp-event-spectrum-img mp-event-spectrum-img--dual" src="../../../assets/images/annotate-spectrum.png" alt="当前告警点频谱图" />
+                </div>
+              </article>
+              <article class="mp-event-dual-spectrum__item">
+                <div class="mp-event-dual-spectrum__title">历史时段频谱图</div>
+                <div id="event-compare-wrap" class="mp-event-spectrum-wrap mp-event-compare-wrap mp-event-dual-spectrum__canvas">
+                  <div id="event-compare-empty" class="mp-event-compare-empty">点击「生成」或选择历史记录加载右侧频谱图</div>
+                  <img id="event-compare-spectrum" class="mp-event-spectrum-img mp-event-spectrum-img--dual" alt="历史时段频谱图" />
+                </div>
+              </article>
+            </div>
           </section>
 
           <section class="mp-drone-chart-card mp-event-form-card">
@@ -138,10 +145,6 @@
         <label class="mp-event-form-field">
           <span>分类标签名称</span>
           <input id="event-category-name" type="text" class="mp-event-input" maxlength="12" placeholder="请输入分类标签名称" />
-        </label>
-        <label class="mp-event-form-field">
-          <span>排序</span>
-          <input id="event-category-sort" type="number" class="mp-event-input" min="1" step="1" placeholder="请输入排序值" />
         </label>
       </div>
       <div class="mp-event-modal__foot">

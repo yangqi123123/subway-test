@@ -1,9 +1,10 @@
 {
-  "name": "wh-metro-protection-zone-prototype",
+  "name": "wuhan-metro-prototype",
   "private": true,
-  "description": "武汉地铁保护区原型 — 本地静态服务",
+  "description": "武汉地铁保护区原型本地静态服务",
   "scripts": {
-    "start": "node scripts/dev-server.js",
-    "dev": "node scripts/dev-server.js 8080"
+    "start": "python -m http.server 8080",
+    "start:py": "py -m http.server 8080",
+    "serve": "npx serve -l 8080 ."
   }
 }

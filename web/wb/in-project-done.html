@@ -509,6 +509,7 @@
     .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
     .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
     .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__unit { font-size: 12px; font-weight: 400; margin-left: 2px; color: #94a3b8; }
     .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
     .disease-filter-panel,
@@ -656,7 +657,7 @@
             <div class="disease-stat-card disease-stat-card--blue">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-circle-check"></i></div>
               <div>
-                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div id="stat-total" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">完工总数</div>
                 <div class="disease-stat-card__trend">已归档项目</div>
               </div>
@@ -664,7 +665,7 @@
             <div class="disease-stat-card disease-stat-card--amber">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-star"></i></div>
               <div>
-                <div id="stat-key" class="disease-stat-card__value">0</div>
+                <div id="stat-key" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">重点项目</div>
                 <div class="disease-stat-card__trend">重点完工</div>
               </div>
@@ -672,7 +673,7 @@
             <div class="disease-stat-card disease-stat-card--cyan">
               <div class="disease-stat-card__icon"><i class="fa-regular fa-folder-open"></i></div>
               <div>
-                <div id="stat-general" class="disease-stat-card__value">0</div>
+                <div id="stat-general" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">一般项目</div>
                 <div class="disease-stat-card__trend">常规完工</div>
               </div>
@@ -680,7 +681,7 @@
             <div class="disease-stat-card disease-stat-card--green">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-calendar-check"></i></div>
               <div>
-                <div id="stat-month" class="disease-stat-card__value">0</div>
+                <div id="stat-month" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">本月完工</div>
                 <div class="disease-stat-card__trend">按结束时间统计</div>
               </div>
@@ -836,8 +837,8 @@
               <select class="wh-input h-8 flex-1 px-2"><option>请选择站点</option></select>
             </div>
             <div class="flex items-start gap-3 project-form-row--select xl:col-span-2">
-              <label class="project-form-label project-required">地址类型：</label>
-              <div id="proj-addr-type-select" class="wh-search-select flex-1 min-w-0" data-input-id="proj-addr-type"></div>
+              <!-- <label class="project-form-label project-required">地址类型：</label>
+              <div id="proj-addr-type-select" class="wh-search-select flex-1 min-w-0" data-input-id="proj-addr-type"></div> -->
             </div>
             <div class="flex items-center gap-3">
               <label class="project-form-label project-required">项目类型：</label>
@@ -1252,7 +1253,13 @@
 
       function setStatText(id, val) {
         var el = document.getElementById(id);
-        if (el) el.textContent = String(val);
+        if (!el) return;
+        var numEl = el.querySelector(".disease-stat-card__num");
+        if (numEl) {
+          numEl.textContent = String(val);
+          return;
+        }
+        el.textContent = String(val);
       }
 
       function updateDoneStats() {

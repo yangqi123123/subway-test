@@ -59,12 +59,33 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative;
         background: linear-gradient(180deg, #0f87d9 0%, #0967b8 100%);
         color: #eaf6ff;
         font-size: 12px;
         font-weight: 700;
         letter-spacing: 0.03em;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .panel-title-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 20px;
+        padding: 0 8px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        background: rgba(255, 255, 255, 0.15);
+        color: #eaf6ff;
+        font-size: 11px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        transition: background 0.2s;
+      }
+      .panel-title-btn:hover {
+        background: rgba(255, 255, 255, 0.28);
       }
 
       .card-title {
@@ -666,7 +687,7 @@
             </div>
 
             <div class="expert-panel min-h-0">
-              <div class="panel-title">频谱图</div>
+              <div class="panel-title">频谱图<button type="button" class="panel-title-btn" onclick="location.href='map-event-annotate.html'">典型事件标注</button></div>
               <div class="spec-view relative h-[calc(100%-28px)] overflow-hidden">
                 <div class="expert-chart-img-wrap">
                   <img

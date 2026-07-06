@@ -423,7 +423,7 @@
     if (!wrap) return;
     wrap.className = "annotate-target-spec-wrap annotate-target-spec-wrap--dual";
     wrap.innerHTML =
-      specBlockHtml("当前点位基准频谱图", false) +
+      specBlockHtml("当前告警点频谱图", false) +
       '<div class="annotate-spec-block"><div class="annotate-spec-title">对比频谱图</div><div class="annotate-spec-img-wrap"><div class="annotate-empty-compare" id="annotate-target-placeholder">点击「生成」或选择历史记录加载右侧频谱图</div></div></div>';
     state.generatedLabel = null;
   }
@@ -433,7 +433,7 @@
     if (!wrap) return;
     wrap.className = "annotate-target-spec-wrap annotate-target-spec-wrap--dual";
     wrap.innerHTML =
-      specBlockHtml("当前点位基准频谱图", false) +
+      specBlockHtml("当前告警点频谱图", false) +
       specBlockHtml(label || state.targetCase.fbg, false);
     state.generatedLabel = label || state.targetCase.fbg;
   }
@@ -442,7 +442,7 @@
     var wrap = $("annotate-target-spec-wrap");
     if (!wrap) return;
     wrap.className = "annotate-target-spec-wrap annotate-target-spec-wrap--dual";
-    wrap.innerHTML = specBlockHtml("当前点位基准频谱图", false) + specBlockHtml(historyTitle || currentTitle, false);
+    wrap.innerHTML = specBlockHtml("当前告警点频谱图", false) + specBlockHtml(historyTitle || currentTitle, false);
     state.generatedLabel = currentTitle;
   }
 

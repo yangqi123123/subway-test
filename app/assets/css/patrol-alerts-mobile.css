@@ -334,3 +334,15 @@ body.mp-patrol-alerts-page .mp-spectrum-preview-sheet__img {
   max-height: calc(min(86vh, 760px) - 86px);
   border: 1px solid var(--mp-border-light);
 }
+
+/* 告警信息统计数字单位 */
+body.mp-patrol-alerts-page .mp-stat-card__num {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+body.mp-patrol-alerts-page .mp-stat-card__unit {
+  font-size: 12px;
+  font-weight: 400;
+  margin-left: 1px;
+}

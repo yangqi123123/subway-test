@@ -278,11 +278,14 @@
     ensureStyles();
     options = options || {};
     var kind = options.kind === "video" ? "video" : "photo";
-    var projectName = options.projectName || "";
-    return (
-      '<div class="patrol-media-cell patrol-media-cell--direct patrol-media-cell--detail-grid">' +
-      renderPopoverGrid(kind, projectName, options.projectNames) +
-      "</div>"
+    return renderCell(
+      Object.assign({}, options, {
+        kind: kind,
+        rowKey: options.rowKey || options.projectName || "",
+        previewCount: options.previewCount || (kind === "video" ? 2 : 3),
+        clickablePreview: true,
+        detailStrip: true,
+      })
     );
   }
 
@@ -294,7 +297,9 @@
     var rowKey = options.rowKey || projectName;
     var nameList = resolveProjectNameList(projectName, options.projectNames);
     var directPreview = !!options.directPreview;
-    var stripHtml = renderStripHtml(kind, projectName, options.previewCount, directPreview, nameList);
+    var clickablePreview = !!options.clickablePreview;
+    var stripClickable = directPreview || clickablePreview;
+    var stripHtml = renderStripHtml(kind, projectName, options.previewCount, stripClickable, nameList);
     var icon = kind === "video" ? "fa-clapperboard" : "fa-images";
     var label = kind === "video" ? "视频" : "照片";
     var namesAttr =
@@ -318,6 +323,7 @@
         icon +
         '"></i></button>';
     var cellClass = directPreview ? " patrol-media-cell--direct" : "";
+    if (options.detailStrip) cellClass += " patrol-media-cell--detail-strip";
 
     return (
       '<div class="patrol-media-cell' +

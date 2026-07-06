@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
@@ -26,28 +26,28 @@
           <div class="mp-stat-card mp-stat-card--total">
             <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></div>
             <div class="mp-stat-card__body">
-              <div class="mp-stat-card__value" id="stat-total">0</div>
+              <div class="mp-stat-card__value" id="stat-total"><span class="mp-stat-card__num">0</span><span class="mp-stat-card__unit">项</span></div>
               <div class="mp-stat-card__label">病害总数</div>
             </div>
           </div>
           <div class="mp-stat-card mp-stat-card--key">
             <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-calendar-plus"></i></div>
             <div class="mp-stat-card__body">
-              <div class="mp-stat-card__value" id="stat-month">0</div>
+              <div class="mp-stat-card__value" id="stat-month"><span class="mp-stat-card__num">0</span><span class="mp-stat-card__unit">项</span></div>
               <div class="mp-stat-card__label">本月新增</div>
             </div>
           </div>
           <div class="mp-stat-card mp-stat-card--general">
             <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-hourglass-half"></i></div>
             <div class="mp-stat-card__body">
-              <div class="mp-stat-card__value" id="stat-pending">0</div>
+              <div class="mp-stat-card__value" id="stat-pending"><span class="mp-stat-card__num">0</span><span class="mp-stat-card__unit">项</span></div>
               <div class="mp-stat-card__label">待处理</div>
             </div>
           </div>
           <div class="mp-stat-card mp-stat-card--month">
             <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div>
             <div class="mp-stat-card__body">
-              <div class="mp-stat-card__value" id="stat-completed">0</div>
+              <div class="mp-stat-card__value" id="stat-completed"><span class="mp-stat-card__num">0</span><span class="mp-stat-card__unit">项</span></div>
               <div class="mp-stat-card__label">已完成病害</div>
             </div>
           </div>
@@ -166,7 +166,7 @@
                 <input id="f-photo-input" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif" />
               </label>
               <div id="f-photo-list" class="mp-disease-upload-list"></div>
-              <p id="f-photo-hint" class="mp-disease-upload-hint">支持 JPG、PNG、WEBP、GIF，最多上传 9 张，单张不超过 20MB</p>
+              <!-- <p id="f-photo-hint" class="mp-disease-upload-hint">支持 JPG、PNG、WEBP、GIF，最多上传 9 张，单张不超过 20MB</p> -->
             </div>
           </div>
           <div class="mp-form-row mp-form-row--full mp-disease-upload-row">
@@ -177,7 +177,7 @@
                 <input id="f-video-input" type="file" multiple accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" />
               </label>
               <div id="f-video-list" class="mp-disease-upload-list"></div>
-              <p id="f-video-hint" class="mp-disease-upload-hint">支持 MP4、WEBM、MOV，最多上传 9 个，单个不超过 200MB</p>
+              <!-- <p id="f-video-hint" class="mp-disease-upload-hint">支持 MP4、WEBM、MOV，最多上传 9 个，单个不超过 200MB</p> -->
             </div>
           </div>
           <div class="mp-form-row mp-form-row--full">

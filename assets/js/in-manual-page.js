@@ -55,7 +55,7 @@
         rejectMsg: "确定拒绝该人工巡检记录？"
       },
       formTitle: function (mode) {
-        return mode === "edit" ? "编辑人工巡检记录" : "新建人工巡检记录";
+        return mode === "edit" ? "编辑人工巡查记录" : "新建人工巡查记录";
       },
       detailTitle: function (row) {
         return row.id + " 人工巡检详情";
@@ -243,12 +243,12 @@
           projectType: resolveProjectType(data.projectName, editingRow ? editingRow.projectType : "一般项目"),
           progress: data.progress,
           remark: data.remark,
-          user: editingRow ? editingRow.user : "当前用户",
+          user: editingRow ? editingRow.user : "李明",
           patrolDate: data.patrolDate,
           updatedAt: now,
           logs: editingRow
             ? editingRow.logs.slice()
-            : [{ action: "新增人工巡检", user: "当前用户", time: now }]
+            : [{ action: "新增人工巡检", user: "李明", time: now }]
         };
       }
     });

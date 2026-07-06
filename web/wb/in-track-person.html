@@ -334,7 +334,7 @@
             <div class="disease-stat-card disease-stat-card--blue">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-users"></i></div>
               <div>
-                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div id="stat-total" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">人员总数</div>
                 <div class="disease-stat-card__trend">轨迹台账</div>
               </div>
@@ -342,7 +342,7 @@
             <div class="disease-stat-card disease-stat-card--green">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-signal"></i></div>
               <div>
-                <div id="stat-online" class="disease-stat-card__value">0</div>
+                <div id="stat-online" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">在线</div>
                 <div class="disease-stat-card__trend">实时在线</div>
               </div>
@@ -350,7 +350,7 @@
             <div class="disease-stat-card disease-stat-card--amber">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-power-off"></i></div>
               <div>
-                <div id="stat-offline" class="disease-stat-card__value">0</div>
+                <div id="stat-offline" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">离线</div>
                 <div class="disease-stat-card__trend">暂无定位</div>
               </div>
@@ -358,7 +358,7 @@
             <div class="disease-stat-card disease-stat-card--cyan">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-route"></i></div>
               <div>
-                <div id="stat-points" class="disease-stat-card__value">0</div>
+                <div id="stat-points" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">轨迹点位</div>
                 <div class="disease-stat-card__trend">累计定位点</div>
               </div>
@@ -558,7 +558,13 @@
       const points = list.reduce((sum, r) => sum + (r.points ? r.points.length : 0), 0);
       const set = (id, val) => {
         const el = document.getElementById(id);
-        if (el) el.textContent = String(val);
+        if (!el) return;
+        const numEl = el.querySelector(".disease-stat-card__num");
+        if (numEl) {
+          numEl.textContent = String(val);
+          return;
+        }
+        el.textContent = String(val) + "个";
       };
       set("stat-total", list.length);
       set("stat-online", online);

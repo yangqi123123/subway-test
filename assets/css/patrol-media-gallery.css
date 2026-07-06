@@ -62,7 +62,7 @@
 .patrol-media-popover {
   position: fixed;
   inset: 0;
-  z-index: 125;
+  z-index: 1300;
   display: none;
   align-items: center;
   justify-content: center;
@@ -271,4 +271,21 @@
 .patrol-media-strip__item:focus-visible {
   outline: 2px solid rgba(37, 99, 235, 0.55);
   outline-offset: 2px;
+}
+
+/* 详情弹窗：横向缩略图条 + 查看全部 */
+.patrol-media-cell.patrol-media-cell--detail-strip {
+  max-width: none;
+  min-width: 0;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.patrol-media-cell.patrol-media-cell--detail-strip .patrol-media-strip {
+  max-width: none;
+  flex-wrap: nowrap;
+}
+
+.wb-notify-patrol-record-val .patrol-media-cell {
+  margin-top: 2px;
 }

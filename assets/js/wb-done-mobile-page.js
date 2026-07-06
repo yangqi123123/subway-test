@@ -99,7 +99,10 @@
       var rows = allRows();
       var set = function (id, val) {
         var el = $(id);
-        if (el) el.textContent = String(val);
+        if (!el) return;
+        var numEl = el.querySelector(".mp-stat-card__num");
+        if (numEl) numEl.textContent = String(val);
+        else el.textContent = String(val);
       };
       set("stat-total", rows.length);
       set(

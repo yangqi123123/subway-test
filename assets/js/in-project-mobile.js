@@ -1063,8 +1063,11 @@
     var footer = document.getElementById("mp-detail-footer");
     var detail = document.getElementById("project-detail-view");
     if (!footer || !detail) return;
-    var readonly = mode === "detail";
-    footer.classList.toggle("hidden", readonly);
+    var isDonePage = document.body && document.body.classList.contains("mp-project-done-page");
+    var readonly = mode === "detail" || mode === "list";
+    var showFooter = mode === "edit" || (!isDonePage && mode === "new");
+    footer.classList.toggle("hidden", !showFooter);
+    footer.hidden = !showFooter;
     detail.classList.toggle("mp-detail-view--readonly", readonly);
   }
 

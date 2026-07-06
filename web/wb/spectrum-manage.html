@@ -3,10 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>频谱图管理</title>
+  <title>知识库</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/todo-modals.css" />
+  <link rel="stylesheet" href="../../assets/css/map-alerts.css" />
+  <link rel="stylesheet" href="../../assets/css/alert-disposal-timeline.css" />
   <style>
     .spectrum-layout{display:grid;grid-template-columns:minmax(0,1fr)300px;gap:16px;align-items:start}
     .spectrum-right{position:sticky;top:72px;width:300px}
@@ -49,13 +53,31 @@
     .spectrum-preview-img{max-width:100%;max-height:70vh;object-fit:contain;display:block;margin:auto;border-radius:8px;border:1px solid rgba(34,211,238,.2);background:#020617}
     .spectrum-toast{position:fixed;right:24px;top:84px;z-index:180;display:none;padding:9px 14px;border-radius:6px;border:1px solid rgba(34,211,238,.28);background:rgba(6,18,34,.96);color:#e2f5ff;font-size:12px;box-shadow:0 14px 40px rgba(0,0,0,.42)}
     .spectrum-toast.show{display:block}
-    @media(max-width:1200px){.spectrum-layout{grid-template-columns:1fr}.spectrum-right{position:static;width:100%}.spectrum-form-grid{grid-template-columns:1fr}}
+    .spectrum-remark-textarea{width:100%;min-height:140px;padding:10px 12px;border:1px solid rgba(34,211,238,.18);border-radius:8px;background:rgba(2,6,23,.72);color:#e2f5ff;font-size:12px;line-height:1.7;resize:vertical;outline:none}
+    .spectrum-remark-textarea:focus{border-color:rgba(34,211,238,.45);box-shadow:0 0 0 1px rgba(34,211,238,.12)}
+    .spectrum-form-item .wh-btn-ghost{height:28px;padding:0 12px;font-size:11px}
+    .spectrum-form-item .wh-input[readonly]{background:rgba(8,15,35,.65);color:#94a3b8;border-color:rgba(34,211,238,.1)}
+    .spectrum-form-item .wh-input[readonly]::placeholder{color:#475569}
+    .alert-picker-filter{border-radius:8px;border:1px solid rgba(34,211,238,.12);background:rgba(8,15,35,.55);padding:14px 16px}
+    .alert-picker-filter-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 16px;align-items:end}
+    .alert-picker-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+    .alert-picker-label{font-size:11px;color:#94a3b8}
+    .alert-picker-field .wh-input{height:30px!important;min-height:30px;font-size:11px;padding:0 8px}
+    .alert-picker-range{display:flex;align-items:center;gap:6px}
+    .alert-picker-range-sep{flex-shrink:0;font-size:11px;color:#94a3b8}
+    .alert-picker-actions{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(34,211,238,.1)}
+    .alert-picker-table th{background:rgba(8,15,35,.92)!important}
+    .alert-picker-table td,.alert-picker-table th{padding-left:10px!important;padding-right:10px!important;font-size:11px!important}
+    .alert-picker-table tbody td{height:44px!important}
+    .alert-picker-radio{width:16px;height:16px;accent-color:#22d3ee;cursor:pointer}
+    .alert-picker-thumb{width:46px;height:32px;object-fit:cover;border-radius:4px;border:1px solid rgba(34,211,238,.22);background:#020617;display:block}
+    @media(max-width:1200px){.spectrum-layout{grid-template-columns:1fr}.spectrum-right{position:static;width:100%}.spectrum-form-grid{grid-template-columns:1fr}.alert-picker-filter-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
 </head>
 <body data-shell="default" data-top="wb" data-sidebar-key="spectrum-manage" data-wb-view="page">
   <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
-      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">频谱图管理</h1>
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">知识库</h1>
       <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">全时全域感知</span>
     </div>
 
@@ -67,7 +89,7 @@
         </div>
         <div class="wh-table-shell bg-slate-950/35">
           <div class="overflow-x-auto">
-            <table class="spectrum-table min-w-[1180px] w-full text-left">
+            <table class="spectrum-table min-w-[1260px] w-full text-left">
               <thead id="table-head"></thead>
               <tbody id="table-body"></tbody>
             </table>
@@ -90,7 +112,7 @@
         <div class="spectrum-quick-panel">
           <div class="spectrum-filter-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
           <a class="spectrum-quick-link" data-quick-href="map/map-situation.html" href="../map/map-situation.html"><i class="fa-solid fa-chart-area"></i><span>态势感知</span></a>
-          <a class="spectrum-quick-link is-active" data-quick-href="wb/spectrum-manage.html" href="spectrum-manage.html"><i class="fa-solid fa-wave-square"></i><span>频谱图管理</span></a>
+          <a class="spectrum-quick-link is-active" data-quick-href="wb/spectrum-manage.html" href="spectrum-manage.html"><i class="fa-solid fa-wave-square"></i><span>知识库</span></a>
           <a class="spectrum-quick-link" data-quick-href="map/map-alerts.html" href="../map/map-alerts.html"><i class="fa-solid fa-triangle-exclamation"></i><span>告警信息</span></a>
         </div>
       </aside>
@@ -120,6 +142,21 @@
       <div class="spectrum-modal-body"><img id="preview-img" class="spectrum-preview-img" src="../../assets/images/annotate-spectrum.png" alt="频谱图预览" /></div>
     </div>
   </div>
+  <div id="remark-mask" class="spectrum-modal-mask">
+    <div class="spectrum-modal" style="width:min(620px,92vw)">
+      <div class="spectrum-modal-head">
+        <h3 class="text-white text-[16px] font-semibold">备注</h3>
+        <button type="button" class="wh-modal-close" data-action="close-remark" aria-label="关闭">×</button>
+      </div>
+      <div class="spectrum-modal-body">
+        <textarea id="remark-input" class="spectrum-remark-textarea" placeholder="请输入备注信息"></textarea>
+      </div>
+      <div class="spectrum-modal-foot">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-remark">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="save-remark">确定</button>
+      </div>
+    </div>
+  </div>
 
   <div id="confirm-mask" class="spectrum-modal-mask">
     <div class="spectrum-modal" style="width:340px">
@@ -131,35 +168,131 @@
       </div>
     </div>
   </div>
+
+  <div id="alert-picker-mask" class="spectrum-modal-mask">
+    <div class="spectrum-modal" style="width:min(1400px,96vw);max-height:88vh">
+      <div class="spectrum-modal-head">
+        <h3 class="text-white text-[16px] font-semibold">关联报警事件</h3>
+        <button type="button" class="wh-modal-close" data-action="close-alert-picker" aria-label="关闭">×</button>
+      </div>
+      <div class="spectrum-modal-body">
+        <div class="alert-picker-filter">
+          <div class="alert-picker-filter-row">
+            <div class="alert-picker-field">
+              <span class="alert-picker-label">告警处理状态</span>
+              <select class="wh-input" data-alert-filter="workflowStatus">
+                <option value="">全部</option>
+                <option value="未复核">未复核</option>
+                <option value="已复核">已复核</option>
+              </select>
+            </div>
+            <div class="alert-picker-field">
+              <span class="alert-picker-label">时间范围</span>
+              <div class="alert-picker-range">
+                <input class="wh-input" type="datetime-local" data-alert-filter="timeStart" placeholder="年/月/日 --:--" />
+                <span class="alert-picker-range-sep">至</span>
+                <input class="wh-input" type="datetime-local" data-alert-filter="timeEnd" placeholder="年/月/日 --:--" />
+              </div>
+            </div>
+            <div class="alert-picker-field">
+              <span class="alert-picker-label">区间</span>
+              <div class="alert-picker-range">
+                <select class="wh-input" data-alert-filter="intervalStart"><option value="">起始区间</option></select>
+                <span class="alert-picker-range-sep">至</span>
+                <select class="wh-input" data-alert-filter="intervalEnd"><option value="">终止区间</option></select>
+              </div>
+            </div>
+          </div>
+          <div class="alert-picker-actions">
+            <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary" data-action="search-alert-picker"><i class="fa-solid fa-magnifying-glass mr-1"></i>查询</button>
+            <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost" data-action="reset-alert-picker">重置</button>
+          </div>
+        </div>
+        <div class="wh-table-shell bg-slate-950/35 mt-3">
+          <div class="overflow-x-auto">
+            <table class="spectrum-table alert-picker-table min-w-[1360px] w-full text-left">
+              <thead id="alert-picker-head"></thead>
+              <tbody id="alert-picker-body"></tbody>
+            </table>
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+            <span>共 <b id="alert-picker-total" class="text-cyan-200">0</b> 条</span>
+          </div>
+        </div>
+      </div>
+      <div class="spectrum-modal-foot">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-alert-picker">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="confirm-alert-picker">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="wh-alert-detail-modal-mask" class="wh-alert-detail-modal-mask" aria-hidden="true">
+    <div class="wh-alert-detail-modal" role="dialog" aria-labelledby="wh-alert-detail-title">
+      <div class="wh-alert-detail-modal__head">
+        <h3 id="wh-alert-detail-title" class="text-white font-semibold text-sm m-0">告警详情</h3>
+        <button type="button" class="wh-modal-close" data-action="close-alert-detail-modal" aria-label="关闭"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <div class="wh-alert-detail-modal__body">
+        <div class="alert-detail-shell">
+          <div class="min-w-0">
+            <div class="alert-detail-map-wrap">
+              <div class="alert-flag" id="patrol-alert-flag"><i class="fa-solid fa-trophy block mb-2 text-[18px]"></i>疑似施工</div>
+              <div id="alert-detail-map" class="alert-detail-map"></div>
+            </div>
+            <div class="alert-detail-block mt-4">
+              <div class="alert-side-title">告警详情</div>
+              <div class="alert-detail-grid" id="alert-detail-grid"></div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-4" id="alert-detail-side">
+            <div class="alert-side-card todo-alarm-side-card--record" id="record-alarm-card">
+              <div class="alert-side-title">告警记录</div>
+              <div class="alert-side-body" id="record-alarm"></div>
+            </div>
+            <div class="alert-side-card" id="record-uav-card">
+              <div class="alert-side-title">无人机实拍记录</div>
+              <div class="alert-side-body" id="record-uav"></div>
+            </div>
+            <div class="alert-side-card todo-alarm-side-card--disposal" id="record-disposal-card">
+              <div class="alert-side-title" id="record-disposal-title">处警记录</div>
+              <div class="alert-side-body" id="record-disposal"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="spectrum-toast"></div>
 
   <script>
     (function(){
       var spectrumSrc = "../../assets/images/annotate-spectrum.png";
       var tabs = [
-        {key:"spectrums",name:"频谱图管理",desc:"按项目分组查看告警点频谱图。"},
-        {key:"labels",name:"分类标签管理",desc:"维护典型事件分类标签。"},
-        {key:"events",name:"典型事件管理",desc:"维护典型事件与报警位置频谱图。"},
-        {key:"features",name:"特征信息管理",desc:"维护典型事件特征信息。"}
+        {key:"spectrums",name:"频谱图管理"},
+        {key:"labels",name:"分类标签管理"},
+        {key:"events",name:"典型事件管理"},
+        {key:"features",name:"特征信息管理"}
       ];
       var columns = {
-        spectrums:["报警区间","报警位置","报警类型","报警时间","频谱图","操作"],
+        spectrums:["报警区间","报警位置","施工类型","最新报警时间","频谱图","备注","操作"],
         labels:["分类标签名称","排序","创建人","创建时间","操作"],
-        events:["分类标签名称","报警位置","频谱图","创建人","创建时间","操作"],
+        events:["分类标签名称","报警区间","报警位置","最新报警时间","操作"],
         features:["分类标签名称","特征名称","频谱图","创建人","创建时间","操作"]
       };
       var filters = {
-        spectrums:[["project","项目名称","input"],["section","报警区间","input"],["position","报警位置","input"],["type","报警类型","select",["","光纤扰动","施工扰动","结构异常"]],["start","报警开始时间","date"],["end","报警结束时间","date"]],
+        spectrums:[["project","项目名称","input"],["section","报警区间","input"],["position","报警位置","input"],["type","施工类型","select",["","光纤扰动","施工扰动","结构异常"]],["start","最新报警时间","date"],["end","报警结束时间","date"]],
         labels:[["name","标签名称","input"],["creator","创建人","input"],["created","创建时间","date"]],
-        events:[["label","分类标签名称","select",["","施工扰动","人员侵限","设备异常","结构风险"]],["position","报警位置","input"],["creator","创建人","input"]],
-        features:[["label","分类标签名称","select",["","施工扰动","人员侵限","设备异常","结构风险"]],["feature","特征名称","input"],["creator","创建人","input"]]
+        events:[["label","分类标签名称","select",["","钻探","破拆","挖掘"]],["project","项目名称","input"],["section","报警区间","input"],["position","报警位置","input"],["latestTime","最新报警时间","date"],["endTime","报警结束时间","date"]],
+        features:[["label","分类标签名称","select",["","施工扰动","人员侵限","设备异常","结构风险"]],["feature","特征名称","input"],["creator","创建人","input"],["startTime","开始时间","date"],["endTime","结束时间","date"]]
       };
       var data = {
         spectrums:[
-          {id:1,project:"金融街六中北项目",section:"中南医院站-湖北日报站",position:"Z25+610",type:"施工扰动",time:"2026-03-05 18:30:46",status:"已标注"},
-          {id:2,project:"金融街六中北项目",section:"中南医院站-湖北日报站",position:"Z25+645",type:"光纤扰动",time:"2026-03-05 19:12:20",status:"待复核"},
-          {id:3,project:"武昌滨江地下空间",section:"徐家棚站-三角路站",position:"Y12+180",type:"结构异常",time:"2026-03-06 09:22:13",status:"已归档"},
-          {id:4,project:"汉口商务区综合体",section:"王家墩东站-范湖站",position:"Z08+330",type:"施工扰动",time:"2026-03-07 11:08:55",status:"待标注"}
+          {id:1,project:"金融街六中北项目",section:"中南医院站-湖北日报站",position:"Z25+610",type:"钻探",time:"2026-03-05 18:30:46",status:"已标注",remark:"人工复核后判定为持续钻探作业，建议纳入典型事件。"},
+          {id:2,project:"金融街六中北项目",section:"中南医院站-湖北日报站",position:"Z25+645",type:"破拆",time:"2026-03-05 19:12:20",status:"待复核",remark:"频谱峰值波动明显，等待现场复核结论。"},
+          {id:3,project:"武昌滨江地下空间",section:"徐家棚站-三角路站",position:"Y12+180",type:"挖掘",time:"2026-03-06 09:22:13",status:"已归档",remark:"已纳入结构异常特征库。"},
+          {id:4,project:"汉口商务区综合体",section:"王家墩东站-范湖站",position:"Z08+330",type:"挖掘",time:"2026-03-07 11:08:55",status:"待标注",remark:""}
         ],
         labels:[
           {id:11,name:"钻探",sort:1,creator:"管理员",created:"2026-03-01 09:30"},
@@ -167,15 +300,16 @@
           {id:13,name:"挖掘",sort:3,creator:"李工",created:"2026-03-03 14:20"}
         ],
         events:[
-          {id:21,label:"钻探",position:"中南医院站-湖北日报站 Z25+610",creator:"管理员",created:"2026-03-05 19:00"},
-          {id:22,label:"破拆",position:"徐家棚站-三角路站 Y12+180",creator:"张工",created:"2026-03-06 10:10"}
+          {id:21,label:"钻探",project:"金融街六中北项目",section:"中南医院站-湖北日报站",position:"Z25+610",latestTime:"2026-03-05 18:30:46",endTime:"2026-03-05 19:30:46"},
+          {id:22,label:"破拆",project:"武昌滨江地下空间",section:"徐家棚站-三角路站",position:"Y12+180",latestTime:"2026-03-06 10:10",endTime:"2026-03-06 12:10"},
+          {id:23,label:"挖掘",project:"武昌滨江地下空间",section:"徐家棚站-三角路站",position:"Y12+220",latestTime:"2026-03-06 11:25:00",endTime:"2026-03-06 13:25:00"}
         ],
         features:[
-          {id:31,label:"钻探",feature:"低频能量持续增强",creator:"管理员",created:"2026-03-05 19:20"},
-          {id:32,label:"破拆",feature:"高频尖峰连续抖动",creator:"李工",created:"2026-03-07 15:36"}
+          {id:31,label:"钻探",feature:"低频能量持续增强",creator:"管理员",created:"2026-03-05 19:20",startTime:"2026-03-05 18:00",endTime:"2026-03-05 20:00"},
+          {id:32,label:"破拆",feature:"高频尖峰连续抖动",creator:"李工",created:"2026-03-07 15:36",startTime:"2026-03-07 14:00",endTime:"2026-03-07 16:36"}
         ]
       };
-      var state = {tab:"spectrums",editing:null,deleteId:null,filter:{},collapsed:{}};
+      var state = {tab:"spectrums",editing:null,remarking:null,deleteId:null,filter:{},collapsed:{},selectedAlert:null};
       var $ = function(id){return document.getElementById(id)};
       function esc(v){return String(v == null ? "" : v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]})}
       function toast(text){var el=$("toast");el.textContent=text;el.classList.add("show");clearTimeout(window.__spectrumToast);window.__spectrumToast=setTimeout(function(){el.classList.remove("show")},1600)}
@@ -191,33 +325,194 @@
           return html+'</label>';
         }).join("")+'<div class="spectrum-filter-actions"><button class="wh-btn-primary" data-action="search">搜索</button><button class="wh-btn-ghost" data-action="reset">重置</button></div>';
       }
-      function statusHtml(s){
-        var cls=s==="已标注"||s==="已归档"?"wh-status--done":s==="待复核"?"wh-status--progress":"wh-status--pending";
-        return '<span class="wh-status '+cls+'">'+esc(s)+'</span>';
-      }
       function rowCells(row){
-        if(state.tab==="spectrums") return [row.section,row.position,row.type,row.time,'<img class="spectrum-thumb" src="'+spectrumSrc+'" alt="频谱图" />',actions(row.id,true)];
+        if(state.tab==="spectrums") return [row.section,row.position,row.type,row.time,'<img class="spectrum-thumb" src="'+spectrumSrc+'" alt="频谱图" />',esc(row.remark||"-"),actions(row.id,true)];
         if(state.tab==="labels") return [row.name,row.sort,row.creator,row.created,actions(row.id,false)];
-        if(state.tab==="events") return [row.label,row.position,'<img class="spectrum-thumb" src="'+spectrumSrc+'" alt="频谱图" />',row.creator,row.created,actions(row.id,true)];
+        if(state.tab==="events") return [row.label,row.section||"—",row.position||"—",row.latestTime||row.startTime||"—",actions(row.id,true)];
         return [row.label,row.feature,'<img class="spectrum-thumb" src="'+spectrumSrc+'" alt="频谱图" />',row.creator,row.created,actions(row.id,true)];
       }
       function actions(id,preview){
         return (preview?'<span class="spectrum-action" data-action="preview" data-id="'+id+'"><i class="fa-regular fa-eye"></i>预览</span>':'')+
-          '<span class="spectrum-action" data-action="edit" data-id="'+id+'"><i class="fa-regular fa-pen-to-square"></i>编辑</span>'+
+          ((state.tab==="spectrums"||state.tab==="events")?'<span class="spectrum-action" data-action="related-alert" data-id="'+id+'"><i class="fa-solid fa-link"></i>查看关联报警</span>':'')+
+          (state.tab==="spectrums"?'<span class="spectrum-action" data-action="remark" data-id="'+id+'"><i class="fa-regular fa-note-sticky"></i>备注</span>':'<span class="spectrum-action" data-action="edit" data-id="'+id+'"><i class="fa-regular fa-pen-to-square"></i>编辑</span>')+
           '<span class="spectrum-action danger" data-action="delete" data-id="'+id+'"><i class="fa-regular fa-trash-can"></i>删除</span>';
+      }
+      function resolveRelatedAlert(row){
+        if(!row || !window.WHMapAlerts || !window.WHMapAlerts.allProjects) return null;
+        var all = window.WHMapAlerts.allProjects() || [];
+        var projectName = row.project || "";
+        var section = row.section || "";
+        var location = row.position || "";
+        if(state.tab === "events" && row.position && !row.section){
+          var raw = String(row.position).trim();
+          var splitIndex = raw.lastIndexOf(" ");
+          if(splitIndex > 0){
+            section = raw.slice(0, splitIndex);
+            location = raw.slice(splitIndex + 1);
+          } else {
+            section = raw;
+          }
+        }
+        var matched = all.find(function(item){
+          if(!item) return false;
+          if(projectName && item.projectName === projectName && (!section || item.section === section)) return true;
+          if(!projectName && section && item.section === section) return true;
+          return false;
+        }) || null;
+        if(matched) return matched;
+        if(window.WHMapAlerts.createProject){
+          return window.WHMapAlerts.createProject({
+            id: "spectrum-" + row.id,
+            projectName: projectName || ((row.label || "典型事件") + "关联报警"),
+            alarmArea: section,
+            section: section,
+            location: location,
+            alarmPosition: location,
+            startTime: row.startTime || row.time || row.created || "",
+            latestTime: row.startTime || row.time || row.created || "",
+            lastTime: row.startTime || row.time || row.created || "",
+            source: window.WHMapAlerts.ALERT_SOURCE_FULLTIME || "全时全域",
+            handleMode: window.WHMapAlerts.ALERT_SOURCE_AI || "全时全域·AI",
+            workflowStatus: row.status || "待复核",
+            type: row.type || row.label || "频谱异常",
+            detail: row.remark || row.feature || "关联告警信息由知识库页面生成。",
+            locationNote: row.remark || row.feature || "",
+            latlng: [30.5859,114.3122],
+            mapCenter: [30.5859,114.3122],
+            zoom: 14
+          });
+        }
+        return null;
+      }
+      function openRelatedAlert(id){
+        var row = null;
+        if(state.tab === "spectrums") row = data.spectrums.find(function(item){ return item.id === id; });
+        if(state.tab === "events") row = data.events.find(function(item){ return item.id === id; });
+        var alertItem = resolveRelatedAlert(row);
+        if(alertItem && window.WHMapAlerts && typeof window.WHMapAlerts.openDetail === "function"){
+          window.WHMapAlerts.openDetail(alertItem);
+          return;
+        }
+        toast("关联报警详情组件未加载");
+      }
+      function getAlertPickerData(){
+        if(window.WHMapAlerts && typeof window.WHMapAlerts.allProjects === "function") return window.WHMapAlerts.allProjects() || [];
+        return [];
+      }
+      function getAlertPickerListRows(){
+        return getAlertPickerData().slice(1);
+      }
+      function getAlertPickerIntervals(){
+        var list=[];
+        getAlertPickerData().forEach(function(p){if(p.section && list.indexOf(p.section)<0)list.push(p.section);if(p.alarmArea && p.alarmArea!==p.section && list.indexOf(p.alarmArea)<0)list.push(p.alarmArea);});
+        return list.sort();
+      }
+      function populateAlertPickerIntervals(){
+        var opts='<option value="">起始区间</option>'+getAlertPickerIntervals().map(function(s){return '<option value="'+esc(s)+'">'+esc(s)+'</option>'}).join("");
+        var elStart=$("alert-picker-mask").querySelector('[data-alert-filter="intervalStart"]');
+        var elEnd=$("alert-picker-mask").querySelector('[data-alert-filter="intervalEnd"]');
+        var sv=elStart?elStart.value:"", ev=elEnd?elEnd.value:"";
+        if(elStart) elStart.innerHTML=opts;
+        if(elEnd) elEnd.innerHTML=opts.replace(">起始区间<",">终止区间<");
+        if(elStart && sv) elStart.value=sv;
+        if(elEnd && ev) elEnd.value=ev;
+      }
+      function parseAlertTimeValue(v){
+        if(!v)return null;var d=new Date(v.replace(" ","T"));return isNaN(d.getTime())?null:d;
+      }
+      function filterAlertPickerRows(){
+        var rows=getAlertPickerListRows();
+        var f={};document.querySelectorAll("[data-alert-filter]").forEach(function(el){f[el.dataset.alertFilter]=el.value.trim()});
+        var order=getAlertPickerIntervals();
+        return rows.filter(function(p){
+          if(f.workflowStatus && p.workflowStatus!==f.workflowStatus)return false;
+          if(f.timeStart){var st=parseAlertTimeValue(p.startTime);if(!st||st<new Date(f.timeStart))return false;}
+          if(f.timeEnd){var et=parseAlertTimeValue(p.startTime);if(!et||et>new Date(f.timeEnd))return false;}
+          if(f.intervalStart || f.intervalEnd){
+            var sec=p.section||p.alarmArea||"";
+            var idx=order.indexOf(sec);
+            if(f.intervalStart && f.intervalEnd){
+              var sIdx=order.indexOf(f.intervalStart), eIdx=order.indexOf(f.intervalEnd);
+              if(sIdx>eIdx){var tmp=sIdx;sIdx=eIdx;eIdx=tmp;}
+              if(idx<sIdx || idx>eIdx)return false;
+            } else if(f.intervalStart && idx<order.indexOf(f.intervalStart))return false;
+            else if(f.intervalEnd && idx>order.indexOf(f.intervalEnd))return false;
+          }
+          return true;
+        });
+      }
+      function renderAlertPickerList(){
+        var rows=filterAlertPickerRows();
+        var headCols=["","项目名称","报警位置","报警区间","开始时间","最新时间","告警来源","处理状态","是否误报","复核情况","照片"];
+        $("alert-picker-head").innerHTML='<tr>'+headCols.map(function(c){return '<th class="px-3">'+c+'</th>'}).join("")+'</tr>';
+        $("alert-picker-body").innerHTML=rows.map(function(p){
+          var checked=state.selectedAlert && String(state.selectedAlert.id)===String(p.id)?'checked':'';
+          var source=window.WHMapAlerts && window.WHMapAlerts.formatAlertSourceDisplay?window.WHMapAlerts.formatAlertSourceDisplay(p.source):String(p.source||"—");
+          var status=esc(p.workflowStatus||"—");
+          var statusClass="";
+          if(status==="未复核")statusClass="alert-wf-status--pending";
+          else if(status==="已复核")statusClass="alert-wf-status--reviewed";
+          var mistaken=esc(p.mistaken||"—");
+          var review=esc(p.detail||p.locationNote||(p.review&&p.review.scene)||"—");
+          var img=p.image?'<img class="alert-picker-thumb" src="'+esc(p.image)+'" alt="照片" />':'—';
+          return '<tr>'+
+            '<td class="px-3"><input type="radio" name="alert-picker-radio" class="alert-picker-radio" data-action="select-alert" data-id="'+esc(p.id)+'" '+checked+' /></td>'+
+            '<td class="px-3">'+esc(p.projectName||"—")+'</td>'+
+            '<td class="px-3">'+esc(p.alarmPosition||p.location||"—")+'</td>'+
+            '<td class="px-3">'+esc(p.section||p.alarmArea||"—")+'</td>'+
+            '<td class="px-3">'+esc(p.startTime||"—")+'</td>'+
+            '<td class="px-3">'+esc(p.latestTime||"—")+'</td>'+
+            '<td class="px-3">'+esc(source)+'</td>'+
+            '<td class="px-3"><span class="alert-wf-status '+statusClass+'">'+status+'</span></td>'+
+            '<td class="px-3">'+mistaken+'</td>'+
+            '<td class="px-3">'+review+'</td>'+
+            '<td class="px-3">'+img+'</td>'+
+          '</tr>';
+        }).join("")||'<tr><td colspan="11" class="px-4 text-center text-slate-500">暂无数据</td></tr>';
+        $("alert-picker-total").textContent=rows.length;
+      }
+      function openAlertPicker(){
+        state.selectedAlert=null;
+        populateAlertPickerIntervals();
+        renderAlertPickerList();
+        $("alert-picker-mask").classList.add("show");
+      }
+      function closeAlertPicker(){
+        $("alert-picker-mask").classList.remove("show");state.selectedAlert=null;
+      }
+      function confirmAlertPicker(){
+        if(!state.selectedAlert){toast("请选择一条报警事件");return}
+        var p=state.selectedAlert;
+        var form=$("edit-form");
+        var relatedEl=form.querySelector('[data-field="relatedAlarm"]');
+        var projectEl=form.querySelector('[data-field="project"]');
+        var sectionEl=form.querySelector('[data-field="section"]');
+        var positionEl=form.querySelector('[data-field="position"]');
+        var latestTimeEl=form.querySelector('[data-field="latestTime"]');
+        if(relatedEl)relatedEl.value=p.id||"";
+        if(projectEl)projectEl.value=p.projectName||"";
+        if(sectionEl)sectionEl.value=p.section||p.alarmArea||"";
+        if(positionEl)positionEl.value=p.alarmPosition||p.location||"";
+        if(latestTimeEl)latestTimeEl.value=p.latestTime||p.startTime||"";
+        closeAlertPicker();
       }
       function filteredRows(){
         var rows=data[state.tab].slice(), f=state.filter;
         Object.keys(f).forEach(function(k){if(!f[k])return;rows=rows.filter(function(r){return Object.keys(r).some(function(rk){return String(r[rk]).indexOf(f[k])>-1})})});
+        if(isGroupable()) rows.sort(function(a,b){var pa=groupKey(a),pb=groupKey(b);return pa===pb?0:(pa>pb?1:-1)});
         return rows;
       }
+      function groupKey(row){return row.project||"未关联项目"}
+      function groupCount(key){return data[state.tab].filter(function(x){return groupKey(x)===key}).length}
+      function isGroupable(){return state.tab==="spectrums"||state.tab==="events"}
       function renderTable(){
-        $("tab-actions").innerHTML='<button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new"><i class="fa-solid fa-plus mr-1"></i>新增</button><button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost" data-action="export"><i class="fa-solid fa-file-export mr-1"></i>导出</button>';
+        $("tab-actions").innerHTML=(state.tab==="spectrums"?"":'<button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new"><i class="fa-solid fa-plus mr-1"></i>新增</button>')+'<button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost" data-action="export"><i class="fa-solid fa-file-export mr-1"></i>导出</button>';
         $("table-head").innerHTML='<tr>'+columns[state.tab].map(function(c){return '<th class="px-4">'+c+'</th>'}).join("")+'</tr>';
-        var rows=filteredRows(), html="", lastProject="";
+        var rows=filteredRows(), html="", lastGroup="";
         rows.forEach(function(r){
-          if(state.tab==="spectrums"&&r.project!==lastProject){lastProject=r.project;var closed=!!state.collapsed[lastProject];html+='<tr class="spectrum-group-row" data-action="toggle-group" data-project="'+esc(lastProject)+'"><td colspan="6"><i class="fa-solid '+(closed?'fa-folder':'fa-folder-open')+' mr-2"></i>'+esc(lastProject)+'（'+data.spectrums.filter(function(x){return x.project===lastProject}).length+'张）<span class="ml-3 text-slate-400">'+(closed?'点击展开':'点击收起')+'</span></td></tr>'}
-          if(state.tab==="spectrums"&&state.collapsed[r.project]) return;
+          var gk=groupKey(r);
+          if(isGroupable()&&gk!==lastGroup){lastGroup=gk;var closed=!!state.collapsed[lastGroup];html+='<tr class="spectrum-group-row" data-action="toggle-group" data-project="'+esc(lastGroup)+'"><td colspan="'+columns[state.tab].length+'"><i class="fa-solid '+(closed?'fa-folder':'fa-folder-open')+' mr-2"></i>'+esc(lastGroup)+'（'+groupCount(lastGroup)+'条）<span class="ml-3 text-slate-400">'+(closed?'点击展开':'点击收起')+'</span></td></tr>'}
+          if(isGroupable()&&state.collapsed[gk]) return;
           html+='<tr>'+rowCells(r).map(function(c){return '<td class="px-4">'+c+'</td>'}).join("")+'</tr>';
         });
         $("table-body").innerHTML=html||'<tr><td colspan="'+columns[state.tab].length+'" class="px-4 text-center text-slate-500">暂无数据</td></tr>';
@@ -225,10 +520,10 @@
       }
       function renderAll(){renderTabs();renderFilters();state.filter={};renderTable()}
       function formFields(){
-        if(state.tab==="spectrums") return [["project","项目名称","input",true],["section","报警区间","input",true],["position","报警位置","input",true],["type","报警类型","select",true,["施工扰动","光纤扰动","结构异常"]],["time","报警时间","datetime-local",true]];
+        if(state.tab==="spectrums") return [["project","项目名称","input",true],["section","报警区间","input",true],["position","报警位置","input",true],["type","报警类型","select",true,["施工扰动","光纤扰动","结构异常"]],["time","最新报警时间","datetime-local",true],["remark","备注","textarea",false]];
         if(state.tab==="labels") return [["name","分类标签名称","input",true],["sort","排序","number",false]];
-        if(state.tab==="events") return [["label","分类标签名称","select",true,data.labels.map(function(x){return x.name})],["position","报警位置","search",true,["中南医院站-湖北日报站 Z25+610","徐家棚站-三角路站 Y12+180","王家墩东站-范湖站 Z08+330","金融港北站-秀湖站 Z16+420"]],["file","上传频谱图","file",false]];
-        return [["label","分类标签名称","select",true,data.labels.map(function(x){return x.name})],["feature","特征名称","input",true],["file","上传频谱图","file",false]];
+        if(state.tab==="events") return [["label","分类标签名称","select",true,data.labels.map(function(x){return x.name})],["relatedAlarm","关联报警事件","button",false],["project","项目名称","readonly",false],["section","报警区间","readonly",false],["position","报警位置","readonly",false],["latestTime","最新报警时间","readonly",false]];
+        return [["label","分类标签名称","select",true,data.labels.map(function(x){return x.name})],["feature","特征名称","input",true],["file","选择频谱图","file",false]];
       }
       function openEdit(id){
         state.editing=id||null; var row=id?data[state.tab].find(function(x){return x.id===id}):{};
@@ -237,15 +532,21 @@
           var v=row&&row[f[0]]?row[f[0]]:"";
           var label='<span class="spectrum-form-label '+(f[3]?'required':'')+'">'+f[1]+'：</span>';
           if(f[2]==="select") return '<label class="spectrum-form-item">'+label+'<select class="wh-input h-8 flex-1 px-2" data-field="'+f[0]+'">'+f[4].map(function(o){return '<option '+(o===v?'selected':'')+' value="'+esc(o)+'">'+esc(o)+'</option>'}).join("")+'</select></label>';
+          if(f[2]==="button") return '<label class="spectrum-form-item">'+label+'<input type="hidden" data-field="'+f[0]+'" value="'+esc(v)+'" /><button type="button" class="wh-btn-ghost" data-action="open-alert-picker"><i class="fa-solid fa-link mr-1"></i>关联报警事件</button></label>';
+          if(f[2]==="readonly") return '<label class="spectrum-form-item">'+label+'<input class="wh-input h-8 flex-1 px-3" type="text" data-field="'+f[0]+'" value="'+esc(v)+'" placeholder="请选择关联报警事件" readonly /></label>';
           if(f[2]==="search") return '<label class="spectrum-form-item">'+label+'<input class="wh-input h-8 flex-1 px-3" data-field="'+f[0]+'" list="position-options" value="'+esc(v)+'" placeholder="搜索或选择报警位置" /><datalist id="position-options">'+f[4].map(function(o){return '<option value="'+esc(o)+'"></option>'}).join("")+'</datalist></label>';
           if(f[2]==="file") return '<label class="spectrum-form-item wide">'+label+'<div class="spectrum-upload"><button type="button" class="px-4 h-8 rounded text-xs wh-btn-ghost" data-action="pick-file"><i class="fa-solid fa-upload mr-1"></i>上传频谱图</button><input type="file" data-field="file" accept="image/*" /><img class="spectrum-thumb" src="'+spectrumSrc+'" alt="频谱图" /><span class="text-[11px] text-slate-400">支持 png/jpg，原型默认展示示例频谱图</span></div></label>';
+          if(f[2]==="textarea") return '<label class="spectrum-form-item wide">'+label+'<textarea class="spectrum-remark-textarea" data-field="'+f[0]+'" placeholder="请输入备注信息">'+esc(v)+'</textarea></label>';
           return '<label class="spectrum-form-item">'+label+'<input class="wh-input h-8 flex-1 px-3" type="'+f[2]+'" data-field="'+f[0]+'" value="'+esc(v)+'" /></label>';
         }).join("");
         $("edit-mask").classList.add("show");
       }
       function closeEdit(){$("edit-mask").classList.remove("show");state.editing=null}
+      function openRemark(id){var row=data.spectrums.find(function(x){return x.id===id});if(!row)return;state.remarking=id;$("remark-input").value=row.remark||"";$("remark-mask").classList.add("show")}
+      function closeRemark(){$("remark-mask").classList.remove("show");state.remarking=null}
+      function saveRemark(){var row=data.spectrums.find(function(x){return x.id===state.remarking});if(!row)return;row.remark=$("remark-input").value.trim();closeRemark();renderTable();toast("备注已保存")}
       function saveEdit(){
-        var values={}; var missing="";
+        var values={}, missing="";
         formFields().forEach(function(f){var el=$("edit-form").querySelector('[data-field="'+f[0]+'"]');values[f[0]]=el&&el.type==="file"?"":(el?el.value.trim():"");if(f[3]&&!values[f[0]])missing=f[1]});
         if(missing){toast("请填写必填项："+missing);return}
         if(state.tab==="labels"){
@@ -265,10 +566,20 @@
         if(a==="toggle-group"){var p=act.dataset.project;state.collapsed[p]=!state.collapsed[p];renderTable();return}
         if(a==="new")openEdit(); if(a==="edit")openEdit(id); if(a==="delete"){state.deleteId=id;$("confirm-mask").classList.add("show")}
         if(a==="confirm-delete"){data[state.tab]=data[state.tab].filter(function(x){return x.id!==state.deleteId});$("confirm-mask").classList.remove("show");renderTable();toast("删除成功")}
-        if(a==="cancel-delete")$("confirm-mask").classList.remove("show"); if(a==="preview")openPreview(id);
-        if(a==="close-preview")$("preview-mask").classList.remove("show"); if(a==="close-edit")closeEdit(); if(a==="save-edit")saveEdit();
+        if(a==="cancel-delete")$("confirm-mask").classList.remove("show"); if(a==="preview")openPreview(id); if(a==="related-alert")openRelatedAlert(id); if(a==="remark")openRemark(id);
+        if(a==="close-preview")$("preview-mask").classList.remove("show"); if(a==="close-edit")closeEdit(); if(a==="save-edit")saveEdit(); if(a==="close-remark")closeRemark(); if(a==="save-remark")saveRemark();
         if(a==="search")readFilter(); if(a==="reset"){document.querySelectorAll("[data-filter]").forEach(function(el){el.value=""});state.filter={};renderTable()}
         if(a==="export")toast("已导出当前列表"); if(a==="pick-file"){var input=act.parentElement.querySelector('input[type="file"]');if(input)input.click()}
+        if(a==="open-alert-picker")openAlertPicker();
+        if(a==="close-alert-picker")closeAlertPicker();
+        if(a==="confirm-alert-picker")confirmAlertPicker();
+        if(a==="select-alert"){
+          var all=getAlertPickerListRows();
+          state.selectedAlert=all.find(function(p){return String(p.id)===String(act.dataset.id)})||null;
+          renderAlertPickerList();
+        }
+        if(a==="search-alert-picker")renderAlertPickerList();
+        if(a==="reset-alert-picker"){document.querySelectorAll("[data-alert-filter]").forEach(function(el){el.value=""});renderAlertPickerList()}
       });
       document.querySelectorAll("[data-quick-href]").forEach(function(a){
         if(typeof whPageHref==="function") a.setAttribute("href", whPageHref(a.getAttribute("data-quick-href")));
@@ -276,8 +587,22 @@
       renderAll();
     })();
   </script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="../../assets/js/menu-config.js"></script>
   <script src="../../assets/js/workbench-mega.js"></script>
   <script src="../../assets/js/shell.js"></script>
+  <script src="../../assets/js/map-gis.js"></script>
+  <script src="../../assets/js/map-situation-gis.js"></script>
+  <script src="../../assets/js/patrol-preview-assets.js"></script>
+  <script src="../../assets/js/project-operation-log.js"></script>
+  <script src="../../assets/js/alert-disposal-timeline.js"></script>
+  <script src="../../assets/js/map-alerts.js"></script>
+  <script>
+    window.addEventListener("load", function(){
+      if (window.WHMapAlerts && typeof window.WHMapAlerts.initPortalDetailModal === "function") {
+        window.WHMapAlerts.initPortalDetailModal();
+      }
+    });
+  </script>
 </body>
 </html>

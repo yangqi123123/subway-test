@@ -10,7 +10,7 @@
     },
     patrol: {
       id: "patrol",
-      label: "巡检",
+      label: "巡查",
       hero: {
         title: "智慧巡检",
         desc: "项目、质量、巡查记录",
@@ -33,12 +33,12 @@
           ],
         },
         {
-          title: "巡检记录",
+          title: "巡查记录",
           items: [
             { label: "病害巡查", icon: "fa-stethoscope", tone: "blue", href: "pages/disease.html" },
             { label: "夜班作业", icon: "fa-moon", tone: "cyan", href: "pages/night.html" },
-            { label: "人工巡检记录", icon: "fa-person-walking", tone: "green", href: "pages/manual.html" },
-            { label: "无人机巡检记录", icon: "fa-helicopter", tone: "blue", href: "pages/uav.html" },
+            { label: "人工巡查记录", icon: "fa-person-walking", tone: "green", href: "pages/manual.html" },
+            { label: "无人机巡查记录", icon: "fa-helicopter", tone: "blue", href: "pages/uav.html" },
           ],
         },
         {
@@ -127,7 +127,7 @@
 
   var TAB_ITEMS = [
     { id: "map", label: "全景地图", icon: "fa-map", home: "map/pages/gis.html" },
-    { id: "patrol", label: "巡检", icon: "fa-clipboard-check", home: "patrol/home.html" },
+    { id: "patrol", label: "巡查", icon: "fa-clipboard-check", home: "patrol/home.html" },
     { id: "asset", label: "资产", icon: "fa-cubes", home: "asset/home.html" },
     { id: "stats", label: "数据统计", icon: "fa-chart-simple", home: "stats/home.html" },
     { id: "mine", label: "我的", icon: "fa-user", home: "mine/home.html" },

@@ -238,13 +238,13 @@
           ],
         },
         {
-          subtitle: "巡检记录",
+          subtitle: "巡查记录",
           items: [
             { key: "in-disease", label: "病害巡查", href: "patrol/in-disease.html" },
             { key: "in-night", label: "夜班作业", href: "patrol/in-night.html" },
-            { key: "in-manual", label: "人工巡检记录", href: "patrol/in-manual.html" },
-            { key: "in-uav-report", label: "无人机巡检记录", href: "patrol/in-uav-report.html" },
-            { key: "in-patrol-results", label: "巡检成果", href: "patrol/in-patrol-results.html" },
+            { key: "in-manual", label: "人工巡查记录", href: "patrol/in-manual.html" },
+            { key: "in-uav-report", label: "无人机巡查记录", href: "patrol/in-uav-report.html" },
+            { key: "in-patrol-results", label: "巡查成果", href: "patrol/in-patrol-results.html" },
           ],
         },
         {

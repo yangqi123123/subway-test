@@ -58,90 +58,151 @@
     }
     /* —— 网管监控 —— */
     .ops-nms-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      align-items: start;
-    }
-    @media (max-width: 900px) {
-      .ops-nms-grid { grid-template-columns: 1fr; }
-    }
-    .ops-metrics-mini {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      display: flex;
+      flex-direction: column;
       gap: 10px;
     }
-    .ops-mini-card {
+    /* 上排：三大趋势卡 */
+    .ops-nms-trends {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .ops-trend-card {
       border: 1px solid rgba(34, 211, 238, 0.12);
-      border-radius: 4px;
+      border-radius: 8px;
       background: rgba(2, 8, 23, 0.45);
-      padding: 12px 12px 10px;
-      min-height: 72px;
-    }
-    .ops-mini-card__label {
-      font-size: 11px;
-      color: #8fa8be;
-      margin-bottom: 8px;
-    }
-    .ops-mini-card__val {
-      font-size: 16px;
-      font-weight: 600;
-      color: #f8fafc;
-    }
-    .ops-mini-card__val--green {
-      color: #84cc16;
-      font-size: 15px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .ops-metrics-extra {
-      margin-top: 10px;
+      padding: 12px 12px 8px;
+      min-height: 200px;
       display: flex;
       flex-direction: column;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .ops-trend-card:hover {
+      border-color: rgba(34, 211, 238, 0.28);
+      box-shadow: 0 0 18px rgba(34, 211, 238, 0.1);
+      transform: translateY(-1px);
+    }
+    .ops-trend-card__top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
       gap: 8px;
     }
-    .ops-metrics-extra__row {
-      border: 1px solid rgba(34, 211, 238, 0.1);
-      border-radius: 4px;
-      background: rgba(2, 8, 23, 0.35);
-      padding: 10px 12px;
-    }
-    .ops-metrics-extra__label {
-      font-size: 11px;
+    .ops-trend-card__label {
+      font-size: 12px;
       color: #8fa8be;
-      margin-bottom: 4px;
+      line-height: 1.4;
+      flex-shrink: 0;
+      letter-spacing: 0.2px;
     }
-    .ops-metrics-extra__val {
-      font-size: 14px;
-      font-weight: 600;
+    .ops-trend-card__val {
+      font-size: 20px;
+      font-weight: 700;
       color: #f8fafc;
+      text-align: right;
     }
-    .ops-store-list {
+    .ops-trend-card__val--green {
+      color: #84cc16;
+    }
+    .ops-trend-card__val--orange {
+      color: #f59e0b;
+    }
+    .ops-trend-chart-wrap {
+      flex: 1;
+      width: 100%;
+      min-height: 130px;
+      border-radius: 4px;
+      background: rgba(15, 23, 42, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+    .ops-trend-chart {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .ops-trend-card__axis {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 6px;
+      font-size: 10px;
+      color: #5d7285;
+      line-height: 1;
+    }
+    /* 中排：三小信息卡 */
+    .ops-nms-info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .ops-info-card {
+      border: 1px solid rgba(34, 211, 238, 0.1);
+      border-radius: 6px;
+      background: rgba(2, 8, 23, 0.4);
+      padding: 10px 12px;
+      min-height: 72px;
       display: flex;
       flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .ops-info-card:hover {
+      border-color: rgba(34, 211, 238, 0.22);
+      box-shadow: 0 0 14px rgba(34, 211, 238, 0.08);
+      transform: translateY(-1px);
+    }
+    .ops-info-card__label {
+      font-size: 11px;
+      color: #8fa8be;
+      margin-bottom: 6px;
+    }
+    .ops-info-card__val {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f8fafc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .ops-info-card__val--cyan {
+      color: #22d3ee;
+    }
+    /* 下排：存储信息一行排 */
+    .ops-nms-bottom {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
     }
     .ops-store-item {
       border: 1px solid rgba(34, 211, 238, 0.12);
-      border-radius: 4px;
+      border-radius: 6px;
       background: rgba(2, 8, 23, 0.4);
-      padding: 10px 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 96px;
     }
     .ops-store-item__title {
-      font-size: 11px;
+      font-size: 12px;
       color: #8fa8be;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      text-align: center;
     }
     .ops-store-item__nums {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 10px;
       text-align: center;
     }
     .ops-store-item__num {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 700;
       color: #f8fafc;
       line-height: 1.2;
@@ -149,7 +210,12 @@
     .ops-store-item__sub {
       font-size: 10px;
       color: #7d94a8;
-      margin-top: 3px;
+      margin-top: 4px;
+    }
+    @media (max-width: 900px) {
+      .ops-nms-trends,
+      .ops-nms-info,
+      .ops-nms-bottom { grid-template-columns: 1fr; }
     }
     /* —— 存储占用 —— */
     .ops-cap-summary {
@@ -393,37 +459,65 @@
         <section class="ops-block">
           <h2 class="ops-sec-title">网管监控</h2>
           <div class="ops-nms-grid">
-            <div class="ops-nms-metrics">
-              <div class="ops-metrics-mini">
-                <div class="ops-mini-card">
-                  <div class="ops-mini-card__label">CPU使用率</div>
-                  <div class="ops-mini-card__val ops-mini-card__val--green" data-metric="cpu"><i class="fa-solid fa-arrow-down text-[11px]"></i> 3%</div>
+            <!-- 上排：三大趋势卡 -->
+            <div class="ops-nms-trends">
+              <div class="ops-trend-card">
+                <div class="ops-trend-card__top">
+                  <div class="ops-trend-card__label">CPU使用率</div>
+                  <div class="ops-trend-card__val ops-trend-card__val--green" data-metric="cpu">3%</div>
                 </div>
-                <div class="ops-mini-card">
-                  <div class="ops-mini-card__label">CPU核心数</div>
-                  <div class="ops-mini-card__val" data-metric="cores">8</div>
+                <div class="ops-trend-chart-wrap">
+                  <canvas class="ops-trend-chart" data-chart="cpu"></canvas>
                 </div>
-                <div class="ops-mini-card">
-                  <div class="ops-mini-card__label">内存使用率</div>
-                  <div class="ops-mini-card__val ops-mini-card__val--green" data-metric="mem"><i class="fa-solid fa-arrow-down text-[11px]"></i> 16.88%</div>
-                </div>
-                <div class="ops-mini-card">
-                  <div class="ops-mini-card__label">磁盘使用率</div>
-                  <div class="ops-mini-card__val ops-mini-card__val--green" data-metric="disk"><i class="fa-solid fa-arrow-down text-[11px]"></i> 9%</div>
+                <div class="ops-trend-card__axis">
+                  <span>60秒</span>
+                  <span>0</span>
                 </div>
               </div>
-              <div class="ops-metrics-extra">
-                <div class="ops-metrics-extra__row">
-                  <div class="ops-metrics-extra__label">剩余内存情况</div>
-                  <div class="ops-metrics-extra__val" data-metric="memFree">26.1 GiB / 31.4 GiB</div>
+              <div class="ops-trend-card">
+                <div class="ops-trend-card__top">
+                  <div class="ops-trend-card__label">内存使用率</div>
+                  <div class="ops-trend-card__val ops-trend-card__val--green" data-metric="mem">16.88%</div>
                 </div>
-                <div class="ops-metrics-extra__row">
-                  <div class="ops-metrics-extra__label">剩余磁盘情况</div>
-                  <div class="ops-metrics-extra__val" data-metric="diskFree">1.0T / 45.0T</div>
+                <div class="ops-trend-chart-wrap">
+                  <canvas class="ops-trend-chart" data-chart="mem"></canvas>
+                </div>
+                <div class="ops-trend-card__axis">
+                  <span>60秒</span>
+                  <span>0</span>
+                </div>
+              </div>
+              <div class="ops-trend-card">
+                <div class="ops-trend-card__top">
+                  <div class="ops-trend-card__label">磁盘使用率</div>
+                  <div class="ops-trend-card__val ops-trend-card__val--orange" data-metric="disk">9%</div>
+                </div>
+                <div class="ops-trend-chart-wrap">
+                  <canvas class="ops-trend-chart" data-chart="disk"></canvas>
+                </div>
+                <div class="ops-trend-card__axis">
+                  <span>60秒</span>
+                  <span>0</span>
                 </div>
               </div>
             </div>
-            <div class="ops-store-list">
+            <!-- 中排：三小信息卡 -->
+            <div class="ops-nms-info">
+              <div class="ops-info-card">
+                <div class="ops-info-card__label">CPU核心数</div>
+                <div class="ops-info-card__val ops-info-card__val--cyan" data-metric="cores">8</div>
+              </div>
+              <div class="ops-info-card">
+                <div class="ops-info-card__label">剩余内存情况</div>
+                <div class="ops-info-card__val" data-metric="memFree">26.1 GiB / 31.4 GiB</div>
+              </div>
+              <div class="ops-info-card">
+                <div class="ops-info-card__label">剩余磁盘情况</div>
+                <div class="ops-info-card__val" data-metric="diskFree">1.0T / 45.0T</div>
+              </div>
+            </div>
+            <!-- 下排：存储信息一行排 -->
+            <div class="ops-nms-bottom">
               <div class="ops-store-item">
                 <div class="ops-store-item__title">照片视频存储信息</div>
                 <div class="ops-store-item__nums">
@@ -533,11 +627,16 @@
   <script src="../../assets/js/system-mgmt-quick-links.js"></script>
   <script>
     (function () {
-      document.addEventListener("DOMContentLoaded", function () {
+      function boot() {
         if (window.WHOpsMetroPage) {
           WHOpsMetroPage.boot({ mobile: false, serverId: "metro" });
         }
-      });
+      }
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", boot);
+      } else {
+        boot();
+      }
     })();
   </script>
   <script src="../../assets/js/menu-config.js"></script>

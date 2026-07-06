@@ -54,26 +54,40 @@
       return el ? String(el.value || "").trim() : "";
     }
 
+    function setStatText(id, val) {
+      var el = $(id);
+      if (!el) return;
+      var numEl = el.querySelector(".mp-stat-card__num") || el.querySelector(".disease-stat-card__num");
+      if (numEl) {
+        numEl.textContent = String(val);
+        return;
+      }
+      el.textContent = String(val);
+    }
+
     function updateStats(list) {
       var monthKey = "2025-12";
-      $("stat-total").textContent = String(rows.length);
-      $("stat-month").textContent = String(
-        rows.filter(function (r) {
+      var data = list || getListSource();
+      setStatText("stat-total", data.length);
+      setStatText(
+        "stat-month",
+        data.filter(function (r) {
           return r.takeoff && String(r.takeoff).indexOf(monthKey) === 0;
         }).length
       );
-      $("stat-alarm").textContent = String(
-        rows.filter(function (r) {
+      setStatText(
+        "stat-alarm",
+        data.filter(function (r) {
           return (r.alarmCount || 0) > 0;
         }).length
       );
-      $("stat-normal").textContent = String(
-        rows.filter(function (r) {
+      setStatText(
+        "stat-normal",
+        data.filter(function (r) {
           return (r.alarmCount || 0) === 0;
         }).length
       );
-      var totalEl = $("table-total");
-      if (totalEl) totalEl.textContent = String((list || getListSource()).length);
+      setStatText("table-total", data.length);
     }
 
     function rowMatchesSearch(row, q) {

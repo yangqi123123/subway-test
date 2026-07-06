@@ -88,14 +88,20 @@
         lines[row.line] = true;
         if (row.dept === "应急中心") emergency += 1;
       });
-      var set = function (id, val) {
+      var setStatNum = function (id, val) {
         var el = $(id);
-        if (el) el.textContent = String(val);
+        if (!el) return;
+        var numEl = el.querySelector(".mp-stat-card__num") || el.querySelector(".disease-stat-card__num");
+        if (numEl) {
+          numEl.textContent = String(val);
+          return;
+        }
+        el.textContent = String(val);
       };
-      set("stat-total", rows.length);
-      set("stat-dept", Object.keys(depts).length);
-      set("stat-lines", Object.keys(lines).length);
-      set("stat-emergency", emergency);
+      setStatNum("stat-total", rows.length);
+      setStatNum("stat-dept", Object.keys(depts).length);
+      setStatNum("stat-lines", Object.keys(lines).length);
+      setStatNum("stat-emergency", emergency);
       var totalEl = $("table-total");
       if (totalEl) totalEl.textContent = String(data.length);
     }

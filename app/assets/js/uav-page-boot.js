@@ -10,7 +10,7 @@
 
   function updateNavTitle(text) {
     var el = global.document.getElementById("uav-nav-title");
-    if (el) el.textContent = text || "无人机巡检记录";
+    if (el) el.textContent = text || "无人机巡查记录";
   }
 
   function bindNavBack() {
@@ -46,7 +46,7 @@
         updateNavTitle(nameEl && nameEl.textContent ? nameEl.textContent : "无人机巡查详情");
         return;
       }
-      updateNavTitle("无人机巡检记录");
+      updateNavTitle("无人机巡查记录");
     }
 
     [listEl, detailEl].forEach(function (node) {

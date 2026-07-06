@@ -43,16 +43,22 @@
       return filteredRows !== null ? filteredRows : allRows;
     }
 
-    function setStatText(id, val) {
+    function setStatNum(id, val) {
       var el = document.getElementById(id);
-      if (el) el.textContent = String(val);
+      if (!el) return;
+      var numEl = el.querySelector(".mp-stat-card__num") || el.querySelector(".disease-stat-card__num");
+      if (numEl) {
+        numEl.textContent = String(val);
+        return;
+      }
+      el.textContent = String(val);
     }
 
     function initSummaryStats() {
-      setStatText("stat-key-today", summary.keyToday || "0");
-      setStatText("stat-normal-today", summary.normalToday || "0");
-      setStatText("stat-key-week", summary.keyWeek || "0");
-      setStatText("stat-key-month", summary.keyMonth || "0");
+      setStatNum("stat-key-today", summary.keyToday || "0");
+      setStatNum("stat-normal-today", summary.normalToday || "0");
+      setStatNum("stat-key-week", summary.keyWeek || "0");
+      setStatNum("stat-key-month", summary.keyMonth || "0");
     }
 
     function typeBadgeClass(type) {

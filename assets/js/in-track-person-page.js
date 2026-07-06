@@ -50,7 +50,13 @@
 
     function setStatText(id, val) {
       var el = document.getElementById(id);
-      if (el) el.textContent = String(val);
+      if (!el) return;
+      var numEl = el.querySelector(".mp-stat-card__num");
+      if (numEl) {
+        numEl.textContent = String(val);
+        return;
+      }
+      el.textContent = String(val) + "个";
     }
 
     function updateTrackStats(rows) {

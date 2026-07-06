@@ -87,6 +87,7 @@
     .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
     .disease-stat-card--green .disease-stat-card__trend--up { color: #4ade80; }
     .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__unit { font-size: 12px; font-weight: 400; margin-left: 2px; color: #94a3b8; }
     .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     .disease-stat-card__trend { font-size: 10px; margin-top: 4px; }
     .disease-stat-card__trend--up { color: #4ade80; }
@@ -301,7 +302,7 @@
             <div class="disease-stat-card disease-stat-card--blue">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-list-check"></i></div>
               <div>
-                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div id="stat-total" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">病害总数</div>
                 <div class="disease-stat-card__trend disease-stat-card__trend--up">较昨日 +2 ↑</div>
               </div>
@@ -309,7 +310,7 @@
             <div class="disease-stat-card disease-stat-card--cyan">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-calendar-plus"></i></div>
               <div>
-                <div id="stat-month" class="disease-stat-card__value">0</div>
+                <div id="stat-month" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">本月新增</div>
                 <div class="disease-stat-card__trend disease-stat-card__trend--up">较上月 +5 ↑</div>
               </div>
@@ -317,7 +318,7 @@
             <div class="disease-stat-card disease-stat-card--amber">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-hourglass-half"></i></div>
               <div>
-                <div id="stat-pending" class="disease-stat-card__value">0</div>
+                <div id="stat-pending" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">待处理</div>
                 <div class="disease-stat-card__trend disease-stat-card__trend--down">较昨日 -1 ↓</div>
               </div>
@@ -325,7 +326,7 @@
             <div class="disease-stat-card disease-stat-card--green">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-circle-check"></i></div>
               <div>
-                <div id="stat-completed" class="disease-stat-card__value">0</div>
+                <div id="stat-completed" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">项</span></div>
                 <div class="disease-stat-card__label">已完成病害</div>
                 <div class="disease-stat-card__trend disease-stat-card__trend--up">较昨日 +1 ↑</div>
               </div>
@@ -394,16 +395,7 @@
             </div>
           </div>
 
-          <div class="disease-quick-panel">
-            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
-            <div class="disease-panel-body">
-              <a class="disease-quick-link is-active" data-quick-href="patrol/in-disease.html" href="in-disease.html"><i class="fa-solid fa-stethoscope"></i><span>病害巡查</span></a>
-              <a class="disease-quick-link" data-quick-href="patrol/in-night.html" href="in-night.html"><i class="fa-solid fa-moon"></i><span>夜班作业</span></a>
-              <a class="disease-quick-link" data-quick-href="patrol/in-uav-report.html" href="in-uav-report.html"><i class="fa-solid fa-helicopter"></i><span>无人机巡检记录</span></a>
-              <a class="disease-quick-link" data-quick-href="patrol/in-manual.html" href="in-manual.html"><i class="fa-solid fa-person-walking"></i><span>人工巡查记录</span></a>
-              <a class="disease-quick-link" data-quick-href="patrol/in-patrol-results.html" href="in-patrol-results.html"><i class="fa-solid fa-images"></i><span>巡检成果</span></a>
-            </div>
-          </div>
+          <div id="patrol-quick-links"></div>
         </aside>
       </div>
     </section>
@@ -737,7 +729,13 @@
         var list = filteredList || rows;
         var setText = function (id, val) {
           var el = $(id);
-          if (el) el.textContent = String(val);
+          if (!el) return;
+          var numEl = el.querySelector(".disease-stat-card__num");
+          if (numEl) {
+            numEl.textContent = String(val);
+            return;
+          }
+          el.textContent = String(val);
         };
         setText("stat-total", rows.length);
         setText(
@@ -1023,6 +1021,8 @@
       });
     })();
   </script>
+  <script src="../../assets/js/patrol-quick-links.js"></script>
+  <script>renderPatrolQuickLinks('patrol-quick-links', 'in-disease');</script>
   <script src="../../assets/js/shell.js"></script>
 </body>
 </html>

@@ -249,7 +249,10 @@
 
       function setStatText(id, val) {
         var el = document.getElementById(id);
-        if (el) el.textContent = String(val);
+        if (!el) return;
+        var numEl = el.querySelector(".mp-stat-card__num") || el.querySelector(".disease-stat-card__num");
+        if (numEl) numEl.textContent = String(val);
+        else el.textContent = String(val);
       }
 
       function updateProjectStats() {
@@ -508,6 +511,26 @@
         return el ? String(el.value || "").trim() : "";
       }
 
+      function ensureSelectOption(id, value) {
+        var el = document.getElementById(id);
+        if (!el || el.tagName !== "SELECT") return;
+        var text = String(value || "").trim();
+        if (!text) {
+          el.value = "";
+          return;
+        }
+        var matched = Array.prototype.some.call(el.options, function (opt) {
+          return opt.value === text || opt.text === text;
+        });
+        if (!matched) {
+          var option = document.createElement("option");
+          option.value = text;
+          option.textContent = text;
+          el.appendChild(option);
+        }
+        el.value = text;
+      }
+
       function loadProjectToForm(row) {
         var map = row
           ? {
@@ -538,7 +561,12 @@
             };
         Object.keys(map).forEach(function (id) {
           var el = document.getElementById(id);
-          if (el) el.value = map[id];
+          if (!el) return;
+          if (id === "proj-section" && el.tagName === "SELECT") {
+            ensureSelectOption(id, map[id]);
+            return;
+          }
+          el.value = map[id];
         });
         var pickers = {
           "addr-type": row ? "区间" : "",
@@ -928,6 +956,12 @@
         document.getElementById("project-detail-view").classList.add("hidden");
         document.getElementById("project-list-view").classList.remove("hidden");
         if (isMobile) {
+          if (global.WHProjectMobile && global.WHProjectMobile.updateDetailFooter) {
+            global.WHProjectMobile.updateDetailFooter("list");
+          } else {
+            var detailFooter = document.getElementById("mp-detail-footer");
+            if (detailFooter) detailFooter.classList.add("hidden");
+          }
           global.dispatchEvent(new Event("wh-project-view-change"));
         }
       }
@@ -1033,6 +1067,22 @@
 
       function unitRows() {
         document.getElementById("unit-list").innerHTML = projectUnits.map(function (name) {
+          if (isMobile) {
+            return (
+              '<div class="unit-row">' +
+                '<div class="unit-row__head">' +
+                  '<label class="project-form-label">' + name + '</label>' +
+                  '<select class="wh-input mp-field" data-unit-select="company" data-unit="' + name + '">' +
+                    (unitCompanies[name] || []).map(function (company) {
+                      return '<option value="' + company + '"' + (unitSelections[name] === company ? ' selected' : '') + '>' + company + '</option>';
+                    }).join('') +
+                  '</select>' +
+                  '<button type="button" class="mp-btn mp-btn--ghost mp-unit-add-contact" data-action="open-contact-modal" data-unit="' + name + '"><i class="fa-solid fa-plus mr-1"></i>添加联系人</button>' +
+                '</div>' +
+                renderUnitContactTable(name) +
+              '</div>'
+            );
+          }
           return '<div class="unit-row">' +
             '<div class="unit-row__head">' +
               '<label class="w-32 text-right text-cyan-100/80 text-sm">' + name + '：</label>' +
@@ -1232,7 +1282,13 @@
         var listFooter = document.getElementById("mp-list-footer");
         if (listFooter) {
           listFooter.hidden = true;
+          listFooter.classList.add("hidden");
           listFooter.setAttribute("aria-hidden", "true");
+        }
+        var detailFooter = document.getElementById("mp-detail-footer");
+        if (detailFooter) detailFooter.classList.add("hidden");
+        if (global.WHProjectMobile && global.WHProjectMobile.updateDetailFooter) {
+          global.WHProjectMobile.updateDetailFooter("list");
         }
       }
       (function () {

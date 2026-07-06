@@ -99,6 +99,7 @@
     .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
     .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
     .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__unit { font-size: 12px; font-weight: 400; margin-left: 2px; color: #94a3b8; }
     .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
     .disease-filter-panel, .disease-quick-panel { display: flex; flex-direction: column; border-radius: 10px; border: 1px solid rgba(34, 211, 238, 0.2); background: rgba(8, 15, 35, 0.78); }
@@ -138,7 +139,7 @@
             <div class="disease-stat-card disease-stat-card--blue">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-folder-open"></i></div>
               <div>
-                <div id="stat-total" class="disease-stat-card__value">0</div>
+                <div id="stat-total" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">资料总数</div>
                 <div class="disease-stat-card__trend">全库</div>
               </div>
@@ -146,7 +147,7 @@
             <div class="disease-stat-card disease-stat-card--cyan">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-list"></i></div>
               <div>
-                <div id="stat-filtered" class="disease-stat-card__value">0</div>
+                <div id="stat-filtered" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">当前列表</div>
                 <div class="disease-stat-card__trend">筛选结果</div>
               </div>
@@ -154,7 +155,7 @@
             <div class="disease-stat-card disease-stat-card--green">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-sitemap"></i></div>
               <div>
-                <div id="stat-categories" class="disease-stat-card__value">0</div>
+                <div id="stat-categories" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">分类数量</div>
                 <div class="disease-stat-card__trend">资料分类树</div>
               </div>
@@ -162,7 +163,7 @@
             <div class="disease-stat-card disease-stat-card--amber">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-paperclip"></i></div>
               <div>
-                <div id="stat-files" class="disease-stat-card__value">0</div>
+                <div id="stat-files" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
                 <div class="disease-stat-card__label">附件文件</div>
                 <div class="disease-stat-card__trend">当前列表</div>
               </div>

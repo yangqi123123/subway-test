@@ -45,6 +45,23 @@
     .mp-library-filter-field--full { grid-column:1 / -1; }
     .mp-library-filter-field span { font-size:11px; color:#64748b; }
     .mp-library-filter-field .wh-input { height:34px; min-height:34px; font-size:12px; }
+    .mp-library-select-trigger { width:100%; text-align:left; position:relative; padding-right:28px; background:#fff; color:#0f172a; cursor:pointer; }
+    .mp-library-select-trigger::after { content:""; position:absolute; right:10px; top:50%; transform:translateY(-50%); width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid #94a3b8; }
+    .mp-library-select-trigger.is-placeholder { color:#94a3b8; }
+    .mp-library-picker-head { padding:12px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(226,232,240,.8); }
+    .mp-library-picker-head h2 { margin:0; font-size:16px; color:#0f172a; font-weight:700; }
+    .mp-library-picker-head__side { border:none; background:transparent; font-size:14px; color:#64748b; padding:4px 0; }
+    .mp-library-picker-head__side--primary { color:#2563eb; font-weight:600; }
+    .mp-library-picker-search { padding:10px 16px 8px; border-bottom:1px solid rgba(226,232,240,.8); background:#fff; }
+    .mp-library-picker-search .mp-search-input-wrap { width:100%; }
+    .mp-library-picker-body { display:block; max-height:320px; overflow-y:auto; padding:6px 16px 16px; }
+    .mp-library-picker-option { width:100%; display:flex; align-items:center; gap:10px; padding:12px 0; border:none; border-bottom:1px solid rgba(226,232,240,.8); background:#fff; text-align:left; font-size:14px; color:#0f172a; }
+    .mp-library-picker-option:last-child { border-bottom:0; }
+    .mp-library-picker-option__radio { width:18px; height:18px; border-radius:999px; border:2px solid #cbd5e1; flex-shrink:0; position:relative; }
+    .mp-library-picker-option.is-selected .mp-library-picker-option__radio { border-color:#2563eb; }
+    .mp-library-picker-option.is-selected .mp-library-picker-option__radio::after { content:""; position:absolute; inset:3px; border-radius:999px; background:#2563eb; }
+    .mp-library-picker-option.is-selected { color:#2563eb; }
+    .mp-library-picker-empty { padding:28px 12px; text-align:center; color:#94a3b8; font-size:13px; }
     .mp-library-filter-sheet__foot { padding:12px 16px calc(12px + env(safe-area-inset-bottom)); display:flex; gap:10px; border-top:1px solid rgba(226,232,240,.8); }
     .mp-library-filter-sheet__foot button { flex:1; }
     .mp-library-filter-btn { height:36px; padding:0 14px; border-radius:12px; border:1px solid rgba(37,99,235,.18); background:#fff; color:#2563eb; font-size:12px; font-weight:600; white-space:nowrap; }
@@ -80,8 +97,16 @@
         <button type="button" class="mp-icon-btn" data-action="close-library-filter" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="mp-library-filter-sheet__body">
-        <label class="mp-library-filter-field"><span>报警区间</span><input id="library-filter-section" class="wh-input w-full px-2" placeholder="请输入报警区间" /></label>
-        <label class="mp-library-filter-field"><span>报警位置</span><input id="library-filter-position" class="wh-input w-full px-2" placeholder="请输入报警位置" /></label>
+        <label class="mp-library-filter-field">
+          <span>报警区间</span>
+          <button type="button" class="wh-input mp-library-select-trigger" id="library-filter-section-trigger" data-picker="section">请选择报警区间</button>
+          <input type="hidden" id="library-filter-section" />
+        </label>
+        <label class="mp-library-filter-field">
+          <span>项目名称</span>
+          <button type="button" class="wh-input mp-library-select-trigger" id="library-filter-project-trigger" data-picker="project">请选择项目名称</button>
+          <input type="hidden" id="library-filter-project" />
+        </label>
         <label class="mp-library-filter-field"><span>开始时间</span><input id="library-filter-start" type="datetime-local" class="wh-input w-full px-2" /></label>
         <label class="mp-library-filter-field"><span>结束时间</span><input id="library-filter-end" type="datetime-local" class="wh-input w-full px-2" /></label>
       </div>
@@ -91,7 +116,24 @@
       </div>
     </div>
   </div>
-  
+
+  <div id="library-picker-sheet" class="mp-library-filter-sheet" aria-hidden="true">
+    <div class="mp-library-filter-sheet__mask" data-action="close-library-picker"></div>
+    <div class="mp-library-filter-sheet__panel" role="dialog" aria-label="选择">
+      <div class="mp-library-picker-head">
+        <button type="button" class="mp-library-picker-head__side" data-action="close-library-picker" aria-label="取消">取消</button>
+        <h2 id="library-picker-title">选择</h2>
+        <button type="button" class="mp-library-picker-head__side mp-library-picker-head__side--primary" id="library-picker-confirm" aria-label="确定">确定</button>
+      </div>
+      <div class="mp-library-picker-search">
+        <div class="mp-search-input-wrap">
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <input type="text" id="library-picker-search" class="mp-search-input" placeholder="搜索" autocomplete="off" />
+        </div>
+      </div>
+      <div class="mp-library-picker-body" id="library-picker-body"></div>
+    </div>
+  </div>
 
   <script src="../../assets/js/miniapp-frame.js"></script>
   <script>
@@ -108,10 +150,21 @@
       var filterSheet = document.getElementById("library-filter-sheet");
       var filterToggle = document.getElementById("library-filter-toggle");
       var filterSection = document.getElementById("library-filter-section");
-      var filterPosition = document.getElementById("library-filter-position");
+      var filterProject = document.getElementById("library-filter-project");
+      var filterSectionTrigger = document.getElementById("library-filter-section-trigger");
+      var filterProjectTrigger = document.getElementById("library-filter-project-trigger");
       var filterStart = document.getElementById("library-filter-start");
       var filterEnd = document.getElementById("library-filter-end");
-      var currentFilter = { section: "", position: "", start: "", end: "" };
+      var pickerSheet = document.getElementById("library-picker-sheet");
+      var pickerTitle = document.getElementById("library-picker-title");
+      var pickerBody = document.getElementById("library-picker-body");
+      var pickerSearchEl = document.getElementById("library-picker-search");
+      var currentFilter = { section: "", project: "", start: "", end: "" };
+      var activePicker = null;
+      var pickerTempValue = "";
+      var pickerAllOptions = [];
+      var sectionOptions = Array.from(new Set(rows.map(function(r){ return r.section; })));
+      var projectOptions = Array.from(new Set(rows.map(function(r){ return r.project; })));
       function esc(v){return String(v||"").replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]})}
       function group(list){
         var map = {};
@@ -122,7 +175,7 @@
         return '<article class="mp-library-card">'+
           '<dl class="mp-library-meta">'+
             '<div><dt>报警区间</dt><dd>'+esc(row.section)+'</dd></div>'+
-            '<div><dt>报警位置</dt><dd>'+esc(row.position)+'</dd></div>'+
+            '<div><dt>项目名称</dt><dd>'+esc(row.project)+'</dd></div>'+
             '<div><dt>报警类型</dt><dd>'+esc(row.type)+'</dd></div>'+
             '<div><dt>报警时间</dt><dd>'+esc(row.time)+'</dd></div>'+
           '</dl>'+
@@ -138,8 +191,8 @@
         var q = (searchEl.value||"").trim();
         var data = rows.filter(function(row){
           if (q && row.project.indexOf(q) === -1) return false;
-          if (currentFilter.section && row.section.indexOf(currentFilter.section) === -1) return false;
-          if (currentFilter.position && row.position.indexOf(currentFilter.position) === -1) return false;
+          if (currentFilter.section && row.section !== currentFilter.section) return false;
+          if (currentFilter.project && row.project !== currentFilter.project) return false;
           if (!inRange(row.time, currentFilter.start, currentFilter.end)) return false;
           return true;
         });
@@ -148,13 +201,81 @@
           return '<section class="mp-library-project"><div class="mp-library-project__head"><h2 class="mp-library-project__name">'+esc(g.name)+'</h2><span class="mp-library-project__count">'+g.items.length+' 张</span></div>'+g.items.map(card).join('')+'</section>';
         }).join('') : '<div class="mp-library-empty"><i class="fa-regular fa-folder-open text-2xl mb-2"></i><br/>暂无匹配频谱图</div>';
       }
+      function updateTriggerText(trigger, value, placeholder){
+        if (!trigger) return;
+        trigger.textContent = value || placeholder;
+        trigger.classList.toggle("is-placeholder", !value);
+      }
       function openFilter(){
         filterSheet.classList.add("show");
         filterSheet.setAttribute("aria-hidden","false");
         filterSection.value = currentFilter.section;
-        filterPosition.value = currentFilter.position;
+        filterProject.value = currentFilter.project;
+        updateTriggerText(filterSectionTrigger, currentFilter.section, "请选择报警区间");
+        updateTriggerText(filterProjectTrigger, currentFilter.project, "请选择项目名称");
         filterStart.value = currentFilter.start;
         filterEnd.value = currentFilter.end;
+      }
+      function filterPickerOptions(options, query) {
+        var q = (query || "").trim();
+        if (!q) return options.slice();
+        return options.filter(function (opt) { return opt.indexOf(q) >= 0; });
+      }
+      function renderPickerOptions(options, currentValue) {
+        var listHtml = '<button type="button" class="mp-library-picker-option' + (!currentValue ? " is-selected" : "") + '" data-value=""><span class="mp-library-picker-option__radio"></span><span>全部</span></button>';
+        if (!options.length) {
+          pickerBody.innerHTML = listHtml + '<div class="mp-library-picker-empty">暂无匹配项</div>';
+          return;
+        }
+        pickerBody.innerHTML = listHtml + options.map(function (opt) {
+          return '<button type="button" class="mp-library-picker-option' + (opt === currentValue ? " is-selected" : "") + '" data-value="' + esc(opt) + '"><span class="mp-library-picker-option__radio"></span><span>' + esc(opt) + '</span></button>';
+        }).join("");
+      }
+      function refreshPickerList() {
+        if (!activePicker) return;
+        var query = pickerSearchEl ? pickerSearchEl.value : "";
+        renderPickerOptions(filterPickerOptions(pickerAllOptions, query), pickerTempValue);
+      }
+      function openPicker(type) {
+        activePicker = type;
+        var options = type === "section" ? sectionOptions : projectOptions;
+        var title = type === "section" ? "选择报警区间" : "选择项目名称";
+        var currentValue = type === "section" ? filterSection.value : filterProject.value;
+        pickerTempValue = currentValue;
+        pickerAllOptions = options.slice();
+        pickerTitle.textContent = title;
+        if (pickerSearchEl) {
+          pickerSearchEl.value = "";
+          pickerSearchEl.placeholder = type === "section" ? "搜索报警区间" : "搜索项目名称";
+        }
+        renderPickerOptions(pickerAllOptions, currentValue);
+        pickerSheet.classList.add("show");
+        pickerSheet.setAttribute("aria-hidden", "false");
+      }
+      function closePicker() {
+        pickerSheet.classList.remove("show");
+        pickerSheet.setAttribute("aria-hidden", "true");
+        activePicker = null;
+        pickerTempValue = "";
+        pickerAllOptions = [];
+        if (pickerSearchEl) pickerSearchEl.value = "";
+      }
+      function onPickerOptionClick(value){
+        pickerTempValue = value;
+        var options = pickerBody.querySelectorAll(".mp-library-picker-option");
+        options.forEach(function(btn){
+          btn.classList.toggle("is-selected", btn.getAttribute("data-value") === value);
+        });
+      }
+      function onPickerConfirm(){
+        if (activePicker === "section") {
+          filterSection.value = pickerTempValue;
+          updateTriggerText(filterSectionTrigger, pickerTempValue, "请选择报警区间");
+        } else if (activePicker === "project") {
+          filterProject.value = pickerTempValue;
+          updateTriggerText(filterProjectTrigger, pickerTempValue, "请选择项目名称");
+        }
+        closePicker();
       }
       function closeFilter(){
         filterSheet.classList.remove("show");
@@ -162,25 +283,37 @@
       }
       function applyFilter(){
         currentFilter.section = filterSection.value.trim();
-        currentFilter.position = filterPosition.value.trim();
+        currentFilter.project = filterProject.value.trim();
         currentFilter.start = filterStart.value.trim();
         currentFilter.end = filterEnd.value.trim();
         closeFilter();
         render();
       }
       function resetFilter(){
-        currentFilter = { section: "", position: "", start: "", end: "" };
+        currentFilter = { section: "", project: "", start: "", end: "" };
         filterSection.value = "";
-        filterPosition.value = "";
+        filterProject.value = "";
+        updateTriggerText(filterSectionTrigger, "", "请选择报警区间");
+        updateTriggerText(filterProjectTrigger, "", "请选择项目名称");
         filterStart.value = "";
         filterEnd.value = "";
         render();
       }
       searchEl.addEventListener("input", render);
       filterToggle.addEventListener("click", openFilter);
+      filterSectionTrigger.addEventListener("click", function(){ openPicker("section"); });
+      filterProjectTrigger.addEventListener("click", function(){ openPicker("project"); });
       document.getElementById("library-filter-reset").addEventListener("click", resetFilter);
       document.getElementById("library-filter-apply").addEventListener("click", applyFilter);
       document.querySelectorAll("[data-action='close-library-filter']").forEach(function(btn){ btn.addEventListener("click", closeFilter); });
+      document.querySelectorAll("[data-action='close-library-picker']").forEach(function(btn){ btn.addEventListener("click", closePicker); });
+      pickerBody.addEventListener("click", function(e){
+        var btn = e.target.closest(".mp-library-picker-option");
+        if (!btn) return;
+        onPickerOptionClick(btn.getAttribute("data-value") || "");
+      });
+      document.getElementById("library-picker-confirm").addEventListener("click", onPickerConfirm);
+      if (pickerSearchEl) pickerSearchEl.addEventListener("input", refreshPickerList);
       render();
       function goBackToPatrol() {
         window.location.href = "../../patrol/home.html";

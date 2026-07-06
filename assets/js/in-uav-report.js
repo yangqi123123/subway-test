@@ -116,7 +116,13 @@
   function updateDashboardStats() {
     var setText = function (id, val) {
       var el = document.getElementById(id);
-      if (el) el.textContent = String(val);
+      if (!el) return;
+      var numEl = el.querySelector(".disease-stat-card__num");
+      if (numEl) {
+        numEl.textContent = String(val);
+        return;
+      }
+      el.textContent = String(val);
     };
     var now = new Date();
     var monthKey =

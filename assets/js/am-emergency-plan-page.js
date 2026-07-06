@@ -92,14 +92,20 @@
       });
       var warehouseRows = global.WH_EMERGENCY_WAREHOUSE_ROWS || [];
       var materialRows = global.WH_EMERGENCY_MATERIAL_ROWS || [];
-      var set = function (id, val) {
+      var setStatNum = function (id, val) {
         var el = $(id);
-        if (el) el.textContent = String(val);
+        if (!el) return;
+        var numEl = el.querySelector(".mp-stat-card__num") || el.querySelector(".disease-stat-card__num");
+        if (numEl) {
+          numEl.textContent = String(val);
+          return;
+        }
+        el.textContent = String(val);
       };
-      set("stat-total", data.length);
-      set("stat-dept", Object.keys(depts).length);
-      set("stat-warehouse", warehouseRows.length);
-      set("stat-material", materialRows.length);
+      setStatNum("stat-total", data.length);
+      setStatNum("stat-dept", Object.keys(depts).length);
+      setStatNum("stat-warehouse", warehouseRows.length);
+      setStatNum("stat-material", materialRows.length);
       var totalEl = $("table-total");
       if (totalEl) totalEl.textContent = String(data.length);
     }

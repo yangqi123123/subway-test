@@ -137,14 +137,20 @@
         if (item.status === "进行中") progress += 1;
         if (item.type === "故障处理") fault += 1;
       });
-      var set = function (id, val) {
+      var setStatNum = function (id, val) {
         var el = $(id);
-        if (el) el.textContent = String(val);
+        if (!el) return;
+        var numEl = el.querySelector(".mp-stat-card__num") || el.querySelector(".disease-stat-card__num");
+        if (numEl) {
+          numEl.textContent = String(val);
+          return;
+        }
+        el.textContent = String(val);
       };
-      set("stat-total", data.length);
-      set("stat-done", done);
-      set("stat-progress", progress);
-      set("stat-fault", fault);
+      setStatNum("stat-total", data.length);
+      setStatNum("stat-done", done);
+      setStatNum("stat-progress", progress);
+      setStatNum("stat-fault", fault);
       var totalEl = $("table-total");
       if (totalEl) totalEl.textContent = String(data.length);
     }

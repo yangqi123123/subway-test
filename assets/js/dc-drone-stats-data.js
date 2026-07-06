@@ -210,6 +210,7 @@
       violations: totalDiscovered,
       avgDiscovered: flightCount ? Math.round(avgPerFlight) : 0,
       flightCount: flightCount,
+      flightSeconds: totalSeconds,
       flightHours: formatFlightHours(totalSeconds),
     };
   }

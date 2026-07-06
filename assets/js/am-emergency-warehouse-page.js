@@ -95,14 +95,20 @@
         depts[row.dept] = true;
         owners[row.owner] = true;
       });
-      var set = function (id, val) {
+      var setStatNum = function (id, val) {
         var el = $(id);
-        if (el) el.textContent = String(val);
+        if (!el) return;
+        var numEl = el.querySelector(".mp-stat-card__num") || el.querySelector(".disease-stat-card__num");
+        if (numEl) {
+          numEl.textContent = String(val);
+          return;
+        }
+        el.textContent = String(val);
       };
-      set("stat-total", data.length);
-      set("stat-lines", Object.keys(lines).length);
-      set("stat-dept", Object.keys(depts).length);
-      set("stat-owners", Object.keys(owners).length);
+      setStatNum("stat-total", data.length);
+      setStatNum("stat-lines", Object.keys(lines).length);
+      setStatNum("stat-dept", Object.keys(depts).length);
+      setStatNum("stat-owners", Object.keys(owners).length);
       var totalEl = $("table-total");
       if (totalEl) totalEl.textContent = String(data.length);
     }

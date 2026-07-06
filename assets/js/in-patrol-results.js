@@ -324,15 +324,22 @@
     );
   }
 
+  function setStatNum(id, val) {
+    var el = $(id);
+    if (!el) return;
+    var numEl = el.querySelector(".disease-stat-card__num");
+    if (numEl) {
+      numEl.textContent = String(val);
+      return;
+    }
+    el.textContent = String(val);
+  }
+
   function updateStats(filtered) {
-    var totalEl = $("stat-total");
-    var filteredEl = $("stat-filtered");
-    var plansEl = $("stat-plans");
-    var projectsEl = $("stat-projects");
-    if (totalEl) totalEl.textContent = String(ITEMS.length);
-    if (filteredEl) filteredEl.textContent = String(filtered.length);
-    if (plansEl) plansEl.textContent = String(uniqueValues(ITEMS, "planName").length);
-    if (projectsEl) projectsEl.textContent = String(uniqueValues(ITEMS, "projectName").length);
+    setStatNum("stat-total", ITEMS.length);
+    setStatNum("stat-filtered", filtered.length);
+    setStatNum("stat-plans", uniqueValues(ITEMS, "planName").length);
+    setStatNum("stat-projects", uniqueValues(ITEMS, "projectName").length);
   }
 
   function updateSelectAllState(visibleIds) {
