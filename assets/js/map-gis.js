@@ -926,8 +926,8 @@
   }
 
   var defaultAlarmDetails = [
-    {
-      ll: [30.598, 114.318],
+      {
+        ll: [30.598, 114.318],
       alertId: 201,
       projectName: "光谷广场综合体基坑项目",
       alarmSection: "省博湖北日报-中南医院",
@@ -938,10 +938,10 @@
       airports: [
         { airportName: "机场1", flightPlan: "8号线车辆段常规巡检", airportStatus: "在线", droneName: "001", droneStatus: "在线", battery: "100%", ready: true, readyText: "满足", distance: "1.3km" },
         { airportName: "机场2", flightPlan: "长江新区临时巡检", airportStatus: "在线", droneName: "002", droneStatus: "在线", battery: "30%", ready: false, readyText: "不满足", distance: "5.3km" },
-      ],
-    },
-    {
-      ll: [30.572, 114.292],
+        ],
+      },
+      {
+        ll: [30.572, 114.292],
       alertId: 202,
       projectName: "武昌滨江总部基地项目",
       alarmSection: "武昌火车站-梅苑小区",
@@ -951,10 +951,10 @@
       status: "已复核",
       airports: [
         { airportName: "机场1", flightPlan: "8号线车辆段常规巡检", airportStatus: "在线", droneName: "001", droneStatus: "在线", battery: "92%", ready: true, readyText: "满足", distance: "2.1km" },
-      ],
-    },
-    {
-      ll: [30.618, 114.328],
+        ],
+      },
+      {
+        ll: [30.618, 114.328],
       alertId: 203,
       projectName: "后湖大道市政管廊项目",
       alarmSection: "宏图大道-市民之家",
@@ -964,9 +964,9 @@
       status: "已复核",
       airports: [
         { airportName: "机场2", flightPlan: "青山站周期巡检", airportStatus: "在线", droneName: "002", droneStatus: "在线", battery: "64%", ready: true, readyText: "满足", distance: "2.8km" },
-      ],
-    },
-  ];
+        ],
+      },
+    ];
 
   window.WuhanGIS.renderAirportDronePanelHtml = buildAirportDronePanelHtml;
   window.WuhanGIS.buildDetailNavHtml = buildDetailNavHtml;
@@ -1055,16 +1055,16 @@
           "机场及关联无人机详情",
           buildAirportDronePanelHtml(
             [
-              {
-                airportName: item.airportName,
-                airportStatus: item.airportStatus || "在线",
-                droneName: item.droneName,
-                droneStatus: item.droneStatus || "在线",
-                battery: item.battery,
-                ready: item.ready,
-                readyText: item.readyText,
+            {
+              airportName: item.airportName,
+              airportStatus: item.airportStatus || "在线",
+              droneName: item.droneName,
+              droneStatus: item.droneStatus || "在线",
+              battery: item.battery,
+              ready: item.ready,
+              readyText: item.readyText,
                 flightPlan: item.flightPlan,
-              },
+            },
             ],
             { hideCockpitNav: config.hideCockpitNav !== false }
           )
@@ -2337,41 +2337,41 @@
           });
         });
       } else {
-        for (var k = 0; k < 2; k++) {
-          (function (markerIndex) {
-            var person = {
-              name: ["张鹏", "李威", "周敏", "徐强", "刘畅", "何俊", "陈洁", "彭凯"][(idx + markerIndex) % 8],
-              phone: "138 0000 " + String(1200 + idx * 10 + markerIndex).padStart(4, "0"),
-              code: "EMP" + String(8600 + idx * 10 + markerIndex),
-              line: ["武汉地铁 2 号线", "武汉地铁 4 号线", "武汉地铁 5 号线", "武汉地铁 8 号线"][idx % 4],
-              dept: ["抢险队", "轨道车间", "应急中心", "机电班组"][markerIndex % 4],
-              post: ["应急抢修员", "值班员", "现场协调员", "巡查员"][idx % 4],
-              address: ["武昌区中北路值守点", "洪山区宝通寺值守点", "青山区徐东应急点", "汉阳区钟家村值守点"][(idx + markerIndex) % 4],
-            };
-            var marker = L.marker(
-              [
-                WUHAN[0] + 0.02 * Math.sin(idx + k) + jitter(200 + idx, k) * 0.02,
-                WUHAN[1] + 0.025 * Math.cos(idx * 2 + k) + jitter(201 + idx, k) * 0.02,
-              ],
-              {
-                icon: makeBadgeIcon("#f97316", "fa-solid fa-user", 28),
-              }
-            ).addTo(g);
+      for (var k = 0; k < 2; k++) {
+        (function (markerIndex) {
+          var person = {
+            name: ["张鹏", "李威", "周敏", "徐强", "刘畅", "何俊", "陈洁", "彭凯"][(idx + markerIndex) % 8],
+            phone: "138 0000 " + String(1200 + idx * 10 + markerIndex).padStart(4, "0"),
+            code: "EMP" + String(8600 + idx * 10 + markerIndex),
+            line: ["武汉地铁 2 号线", "武汉地铁 4 号线", "武汉地铁 5 号线", "武汉地铁 8 号线"][idx % 4],
+            dept: ["抢险队", "轨道车间", "应急中心", "机电班组"][markerIndex % 4],
+            post: ["应急抢修员", "值班员", "现场协调员", "巡查员"][idx % 4],
+            address: ["武昌区中北路值守点", "洪山区宝通寺值守点", "青山区徐东应急点", "汉阳区钟家村值守点"][(idx + markerIndex) % 4],
+          };
+          var marker = L.marker(
+          [
+            WUHAN[0] + 0.02 * Math.sin(idx + k) + jitter(200 + idx, k) * 0.02,
+            WUHAN[1] + 0.025 * Math.cos(idx * 2 + k) + jitter(201 + idx, k) * 0.02,
+          ],
+          {
+            icon: makeBadgeIcon("#f97316", "fa-solid fa-user", 28),
+          }
+          ).addTo(g);
             registerFeature(marker, g, "emergency", lineKeyFromLabel(person.line), ek);
-            marker.on("click", function () {
-              openDetailPanel(
-                "人员信息",
-                renderDetailFields([
-                  { label: "姓名", value: person.name },
-                  { label: "电话", value: person.phone },
-                  { label: "工号", value: person.code },
-                  { label: "所属线路", value: person.line },
-                  { label: "部门", value: person.dept },
-                  { label: "岗位", value: person.post },
-                  { label: "常驻地址", value: person.address },
+          marker.on("click", function () {
+            openDetailPanel(
+              "人员信息",
+              renderDetailFields([
+                { label: "姓名", value: person.name },
+                { label: "电话", value: person.phone },
+                { label: "工号", value: person.code },
+                { label: "所属线路", value: person.line },
+                { label: "部门", value: person.dept },
+                { label: "岗位", value: person.post },
+                { label: "常驻地址", value: person.address },
                 ]) + buildDetailNavHtml(emergencyStaffDetailUrl(person))
-              );
-            });
+            );
+          });
             (function (personMarker, personData) {
               var ll = personMarker.getLatLng();
               addSearchEntry({
@@ -2384,7 +2384,7 @@
                 marker: personMarker,
               });
             })(marker, person);
-          })(k);
+        })(k);
         }
       }
       layers.emergency[ek] = g;
@@ -3062,7 +3062,7 @@
 
     function setupMobileSearchNav() {
       var searchInput = document.querySelector('[data-action="search-input"]');
-      var searchBtn = document.querySelector('[data-action="search-jump"]');
+    var searchBtn = document.querySelector('[data-action="search-jump"]');
       function openSearchPage() {
         var q = searchInput ? (searchInput.value || "").trim() : "";
         var url = "gis-search.html" + (q ? "?q=" + encodeURIComponent(q) : "");
@@ -3087,7 +3087,7 @@
     }
 
     function setupLayerSearch() {
-      var searchInput = document.querySelector('[data-action="search-input"]');
+    var searchInput = document.querySelector('[data-action="search-input"]');
       var searchBtn = document.querySelector('[data-action="search-jump"]');
       var searchRow = searchInput && searchInput.closest(".gis-search-row");
       if (!searchInput || !searchRow) return;
@@ -3160,8 +3160,8 @@
             var idx = Number(btn.getAttribute("data-search-index"));
             if (hits[idx]) pickSearchEntryInline(hits[idx].entry);
           });
-        });
-      }
+      });
+    }
 
       function escapeHtml(text) {
         return String(text)
@@ -3253,12 +3253,12 @@
 
   var autoBoot = document.getElementById("map-container") && !document.body.classList.contains("gis-mobile-page");
   if (autoBoot) {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function () {
-        setTimeout(init, 150);
-      });
-    } else {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () {
       setTimeout(init, 150);
+    });
+  } else {
+    setTimeout(init, 150);
     }
   }
 })();

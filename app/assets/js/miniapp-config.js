@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 小程序原型菜单与页面配置
  */
 (function (global) {
@@ -137,10 +137,24 @@
     return item.home;
   }).concat(["patrol/pages/today-task.html"]);
 
+  function normalizePathname(path) {
+    return String(path || "")
+      .replace(/\\/g, "/")
+      .split("?")[0]
+      .replace(/\/+$/, "");
+  }
+
+  function pathMatchesTabHome(path, home) {
+    path = normalizePathname(path);
+    home = String(home || "").replace(/\\/g, "/");
+    if (path.indexOf(home) >= 0) return true;
+    var noExt = home.replace(/\.html$/i, "");
+    return noExt !== home && path.indexOf(noExt) >= 0;
+  }
+
   function isTabbarRootPath(path) {
-    path = String(path || "").replace(/\\/g, "/");
     return TAB_ROOT_HOMES.some(function (home) {
-      return path.indexOf(home) >= 0;
+      return pathMatchesTabHome(path, home);
     });
   }
 

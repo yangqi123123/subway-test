@@ -12,13 +12,28 @@
     "mine/home.html",
   ];
 
+  function normalizePathname(path) {
+    return String(path || "")
+      .replace(/\\/g, "/")
+      .split("?")[0]
+      .replace(/\/+$/, "");
+  }
+
+  function pathMatchesTabHome(path, home) {
+    path = normalizePathname(path);
+    home = String(home || "").replace(/\\/g, "/");
+    if (path.indexOf(home) >= 0) return true;
+    var noExt = home.replace(/\.html$/i, "");
+    return noExt !== home && path.indexOf(noExt) >= 0;
+  }
+
   function isTabbarRootPath(path) {
     if (global.MiniAppConfig && global.MiniAppConfig.isTabbarRootPath) {
       return global.MiniAppConfig.isTabbarRootPath(path);
     }
-    path = String(path || global.location.pathname || "").replace(/\\/g, "/");
+    path = path || global.location.pathname || "";
     return DEFAULT_TAB_ROOTS.some(function (home) {
-      return path.indexOf(home) >= 0;
+      return pathMatchesTabHome(path, home);
     });
   }
 

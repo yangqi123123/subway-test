@@ -391,7 +391,7 @@
           <div class="flex items-center gap-4"><label class="form-label">所在区间：</label><select id="f-section" class="wh-input h-8 w-[360px] px-2"><option value="">请选择</option><option value="水果湖-洪山路">水果湖-洪山路</option><option value="洪山路-小洪山">洪山路-小洪山</option></select></div>
           <div class="flex items-center gap-4"><label class="form-label">站点：</label><select id="f-station" class="wh-input h-8 w-[360px] px-2"><option value="">请选择</option><option value="洪山路">洪山路</option><option value="小洪山">小洪山</option></select></div>
           <div class="flex items-center gap-4"><label class="form-label required">所在项目：</label><select id="f-project" class="wh-input h-8 flex-1 max-w-[720px] px-2"><option value="">请选择项目</option><option value="新建商业文化设施项目">新建商业文化设施项目</option><option value="洪山路至小洪山商业公寓项目">洪山路至小洪山商业公寓项目</option></select></div>
-          <div class="flex items-center gap-4"><label class="form-label required">巡查日期：</label><input id="f-patrol-date" class="wh-input h-8 w-[360px] px-2" placeholder="巡查日期" /></div>
+          <div class="flex items-center gap-4"><label class="form-label required">巡查日期：</label><input id="f-patrol-date" type="datetime-local" class="wh-input h-8 w-[360px] px-2" placeholder="请选择巡查日期时间" /></div>
           <div class="flex items-start gap-4">
             <label class="form-label pt-2">巡查照片：</label>
             <div class="flex-1 min-w-0">
@@ -540,6 +540,16 @@
       }
 
       function $(id) { return document.getElementById(id); }
+      function toDatetimeLocal(value) {
+        if (!value) return "";
+        var s = String(value).trim().replace(" ", "T");
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s += "T00:00";
+        return s;
+      }
+      function fromDatetimeLocal(value) {
+        if (!value) return "";
+        return String(value).trim().replace("T", " ");
+      }
       function extOf(name) {
         var p = (name || "").lastIndexOf(".");
         return p >= 0 ? name.slice(p + 1).toLowerCase() : "";
@@ -772,7 +782,7 @@
         $("f-section").value = row.section || "";
         $("f-station").value = row.station || "";
         $("f-project").value = row.projectName || "";
-        $("f-patrol-date").value = row.patrolDate || "";
+        $("f-patrol-date").value = toDatetimeLocal(row.patrolDate);
         $("f-progress").value = row.progress || "";
         $("f-remark").value = row.remark || "";
         clearUploads();
@@ -810,7 +820,7 @@
           progress: $("f-progress").value.trim(),
           remark: $("f-remark").value.trim(),
           user: "当前用户",
-          patrolDate: $("f-patrol-date").value.trim(),
+          patrolDate: fromDatetimeLocal($("f-patrol-date").value),
           updatedAt: now,
           logs:
             editingIndex != null

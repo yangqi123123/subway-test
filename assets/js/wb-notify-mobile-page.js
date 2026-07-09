@@ -6,6 +6,7 @@
 
   var STORAGE_NOTIFY_EXTRA = "whmetro-notify-extra";
   var STORAGE_NOTIFY_MANUAL_DETAIL = "whmetro-notify-manual-detail";
+  var STORAGE_NOTIFY_OPEN_DETAIL = "whmetro-notify-open-detail";
   var MANUAL_NOTIFY_PROJECT_TYPES = {
     "新建商业文化设施项目": "一般项目",
     "洪山路至小洪山商业公寓项目": "重点项目",
@@ -37,6 +38,15 @@
     if (read === "未读") return "mp-wb-tag--warn";
     if (read === "已读") return "mp-wb-tag--ok";
     return "";
+  }
+
+  function uniqueUsers(projects) {
+    var users = [];
+    (projects || []).forEach(function (proj) {
+      var u = proj.user || "李明";
+      if (users.indexOf(u) < 0) users.push(u);
+    });
+    return users;
   }
 
   function normalizeNotifyRow(row) {
@@ -232,28 +242,42 @@
 
     function renderManualNotifyCard(row, index) {
       var read = row.read || "未读";
-      var isAggregated = Array.isArray(row.projects) && row.projects.length > 0;
-      var rowsHtml = "";
-      if (isAggregated) {
-        rowsHtml =
+      var isTodayTaskNotify = row.source === "今日巡线" && Array.isArray(row.projects) && row.projects.length > 0;
+      if (isTodayTaskNotify) {
+        var firstProject = row.projects[0];
+        var title = (firstProject.section || firstProject.projectName || "项目") + "已完成巡查";
+        var users = uniqueUsers(row.projects).join("、") || "李明";
+        return (
+          '<article class="mp-project-card mp-wb-card mp-wb-card--todo" data-index="' + index + '" role="listitem">' +
+          '<div class="mp-wb-card__head">' +
+          '<h3 class="mp-project-card__title mp-wb-card__title">' + esc(title) + '</h3>' +
+          '<span class="mp-wb-tag ' + readClass(read) + '">' + esc(read) + '</span></div>' +
+          '<div class="mp-wb-card__rows">' +
           '<div class="mp-wb-card__row"><span class="mp-wb-card__label">通知类型</span><span class="mp-wb-card__value">' + esc(row.type || "项目巡查") + '</span></div>' +
           '<div class="mp-wb-card__row"><span class="mp-wb-card__label">发布时间</span><span class="mp-wb-card__value">' + esc(row.time || "-") + '</span></div>' +
-          '<div class="mp-wb-card__row"><span class="mp-wb-card__label">已完成项目</span></div>' +
-          '<div class="mp-wb-card__projects">' + row.projects.map(function (proj, pidx) {
-            return '<button type="button" class="mp-wb-card__project" data-action="wb-view-project" data-project-index="' + pidx + '">' + esc(proj.projectName || proj.title || "项目") + '</button>';
-          }).join("") + '</div>';
-      } else {
-        rowsHtml = manualNotifyCardRows(row).map(function (pair) {
-          return '<div class="mp-wb-card__row"><span class="mp-wb-card__label">' + esc(pair[0]) + '</span><span class="mp-wb-card__value">' + esc(pair[1]) + '</span></div>';
-        }).join("");
+          '<div class="mp-wb-card__row"><span class="mp-wb-card__label">巡查人员</span><span class="mp-wb-card__value">' + esc(users) + '</span></div>' +
+          '</div>' +
+          '<div class="mp-project-card__actions">' +
+          '<button type="button" class="mp-project-action" data-action="wb-view">查看</button>' +
+          '</div></article>'
+        );
       }
+      var manualProject = row.projects && row.projects[0] ? row.projects[0] : row;
+      var manualTitle = (manualProject.section || manualProject.projectName || "项目") + "已完成巡查";
+      var manualUser = manualProject.user || "李明";
       return (
         '<article class="mp-project-card mp-wb-card mp-wb-card--todo" data-index="' + index + '" role="listitem">' +
-        '<div class="mp-wb-card__head" data-action="wb-view">' +
-        '<h3 class="mp-project-card__title mp-wb-card__title">' + esc(isAggregated ? row.title : ((row.projectName || row.title || "项目") + " + 已完成")) + '</h3>' +
+        '<div class="mp-wb-card__head">' +
+        '<h3 class="mp-project-card__title mp-wb-card__title">' + esc(manualTitle) + '</h3>' +
         '<span class="mp-wb-tag ' + readClass(read) + '">' + esc(read) + '</span></div>' +
-        '<div class="mp-wb-card__rows">' + rowsHtml + '</div>' +
-        '</article>'
+        '<div class="mp-wb-card__rows">' +
+        '<div class="mp-wb-card__row"><span class="mp-wb-card__label">通知类型</span><span class="mp-wb-card__value">' + esc(row.type || "项目巡查") + '</span></div>' +
+        '<div class="mp-wb-card__row"><span class="mp-wb-card__label">发布时间</span><span class="mp-wb-card__value">' + esc(row.time || "-") + '</span></div>' +
+        '<div class="mp-wb-card__row"><span class="mp-wb-card__label">巡查人员</span><span class="mp-wb-card__value">' + esc(manualUser) + '</span></div>' +
+        '</div>' +
+        '<div class="mp-project-card__actions">' +
+        '<button type="button" class="mp-project-action" data-action="wb-view-manual">查看</button>' +
+        '</div></article>'
       );
     }
 
@@ -314,6 +338,33 @@
       } catch (e) {}
     }
 
+    function restoreDetailFromQuery() {
+      try {
+        var params = new URLSearchParams(global.location.search);
+        var openDetailFlag = params.get("openDetail");
+        var notifyId = params.get("notifyId");
+        if (!notifyId) {
+          try {
+            notifyId = global.sessionStorage.getItem(STORAGE_NOTIFY_OPEN_DETAIL);
+          } catch (e) {}
+        }
+        if (!notifyId || !detailView || !detailBody) return;
+        var targetRow = null;
+        var rows = state.filtered.length ? state.filtered : allRows();
+        rows.forEach(function (row) {
+          if (String(row.id || "") === String(notifyId)) targetRow = row;
+        });
+        if (!targetRow) return;
+        markRowRead(targetRow);
+        openDetail(targetRow);
+        clearNotifyOpenDetail();
+        if (openDetailFlag && global.history && typeof global.history.replaceState === "function") {
+          var cleanUrl = global.location.pathname + global.location.hash;
+          global.history.replaceState(null, "", cleanUrl);
+        }
+      } catch (e) {}
+    }
+
     function buildDetailGrid(pairs) {
       return '<dl class="mp-disease-detail-grid">' + pairs.filter(function (p) {
         return p[1] != null && p[1] !== "";
@@ -324,20 +375,28 @@
 
     function buildAggregatedNotifyDetailHtml(row) {
       var projects = row.projects || [];
+      var firstProject = projects[0] || {};
+      var title = (firstProject.section || firstProject.projectName || "项目") + "已完成巡查";
+      var users = uniqueUsers(projects).join("、") || "李明";
       var listHtml = projects.map(function (proj, pidx) {
         return '<button type="button" class="mp-wb-detail-project" data-action="wb-view-project" data-project-index="' + pidx + '">' + esc(proj.projectName || proj.title || "项目") + '</button>';
       }).join("");
       return '<section class="mp-patrol-alert-section mp-todo-detail-section">' +
-        '<h4 class="mp-patrol-alert-section__title">项目巡查汇总</h4>' +
+        '<h4 class="mp-patrol-alert-section__title">项目巡查</h4>' +
         '<div class="mp-patrol-alert-section__body">' +
-        '<p class="mp-wb-detail-lead">' + esc(row.title) + '</p>' +
+        '<dl class="mp-disease-detail-grid">' +
+        '<div class="mp-disease-detail-grid__full"><dt>标题</dt><dd>' + esc(title) + '</dd></div>' +
+        '<div class="mp-disease-detail-grid__full"><dt>通知类型</dt><dd>' + esc(row.type || "项目巡查") + '</dd></div>' +
+        '<div class="mp-disease-detail-grid__full"><dt>发布时间</dt><dd>' + esc(row.time || "-") + '</dd></div>' +
+        '<div class="mp-disease-detail-grid__full"><dt>巡查人员</dt><dd>' + esc(users) + '</dd></div>' +
+        '<div class="mp-disease-detail-grid__full"><dt>已完成项目</dt><dd>' +
         '<div class="mp-wb-detail-projects">' + listHtml + '</div>' +
-        '<p class="mp-wb-detail-hint">（点击项目名称可查看详情）</p>' +
-        '</div></section>';
+        '</dd></div>' +
+        '</dl></div></section>';
     }
 
     function buildNotifyDetailHtml(row) {
-      if (isManualNotify(row) && Array.isArray(row.projects) && row.projects.length > 0) {
+      if (isManualNotify(row) && row.source === "今日巡线" && Array.isArray(row.projects) && row.projects.length > 0) {
         return buildAggregatedNotifyDetailHtml(row);
       }
       if (isManualNotify(row)) {
@@ -354,7 +413,18 @@
       state.lastViewedRow = row;
       detailBody.innerHTML = buildNotifyDetailHtml(row);
       var titleEl = $("detail-wb-title");
-      if (titleEl) titleEl.textContent = "详情";
+      if (titleEl) {
+        if (isManualNotify(row) && row.source === "今日巡线" && Array.isArray(row.projects) && row.projects.length > 0) {
+          titleEl.textContent = "项目巡查";
+        } else if (isManualNotify(row)) {
+          titleEl.textContent = "人工巡检详情";
+        } else {
+          titleEl.textContent = "详情";
+        }
+      }
+      if (global.WHPatrolMediaGallery && typeof global.WHPatrolMediaGallery.bind === "function") {
+        global.WHPatrolMediaGallery.bind(detailBody);
+      }
       if (listView) listView.classList.add("hidden");
       detailView.classList.remove("hidden");
       global.dispatchEvent(new Event("wh-wb-view-change"));
@@ -363,6 +433,7 @@
     function showList() {
       if (detailView) detailView.classList.add("hidden");
       if (listView) listView.classList.remove("hidden");
+      clearNotifyOpenDetail();
       global.dispatchEvent(new Event("wh-wb-view-change"));
     }
 
@@ -408,6 +479,19 @@
       } catch (e) {}
     }
 
+    function cacheNotifyOpenDetail(row) {
+      if (!row || !row.id) return;
+      try {
+        global.sessionStorage.setItem(STORAGE_NOTIFY_OPEN_DETAIL, row.id);
+      } catch (e) {}
+    }
+
+    function clearNotifyOpenDetail() {
+      try {
+        global.sessionStorage.removeItem(STORAGE_NOTIFY_OPEN_DETAIL);
+      } catch (e) {}
+    }
+
     function buildManualDetailHref(project) {
       if (!project) return "../../patrol/pages/manual.html";
       var name = project.projectName || project.title || "";
@@ -428,7 +512,12 @@
       if (!project) return;
       markRowRead(row);
       cacheNotifyManualProject(project);
-      global.location.href = buildManualDetailHref(project);
+      cacheNotifyOpenDetail(row);
+      var href = buildManualDetailHref(project);
+      if (row.id) {
+        href += "&fromNotifyDetail=1&notifyId=" + encodeURIComponent(row.id);
+      }
+      global.location.href = href;
     }
 
     function bindEvents() {
@@ -450,6 +539,19 @@
           if (!row) return;
           var pidx = Number(trigger.getAttribute("data-project-index"));
           openProjectDetail(row, pidx);
+          return;
+        }
+
+        if (action === "wb-view-manual") {
+          var manualCard = trigger.closest(".mp-wb-card");
+          if (!manualCard) return;
+          var manualIndex = Number(manualCard.getAttribute("data-index"));
+          var manualRow = state.filtered[manualIndex];
+          if (!manualRow) return;
+          markRowRead(manualRow);
+          var manualProject = manualRow.projects && manualRow.projects[0] ? manualRow.projects[0] : manualRow;
+          cacheNotifyManualProject(manualProject);
+          global.location.href = buildManualDetailHref(manualProject);
           return;
         }
 
@@ -523,6 +625,7 @@
     bindEvents();
     initFromQuery();
     applyFilter(undefined, true);
+    setTimeout(restoreDetailFromQuery, 50);
     global.WHNotifyMobilePage = {
       boot: bootNotifyMobilePage,
       showList: showList

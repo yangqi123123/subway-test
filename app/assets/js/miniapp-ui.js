@@ -535,10 +535,24 @@
     var tabs = document.querySelectorAll("[data-tab-id]");
     if (!frame || !tabs.length) return;
 
+    function appFrameHref(rel) {
+      if (!rel || /^https?:/i.test(rel)) return rel;
+      var path = global.location.pathname || "";
+      var base = "/app/";
+      var marker = "/app";
+      var idx = path.indexOf(marker);
+      if (idx >= 0) {
+        base = path.slice(0, idx + marker.length) + "/";
+      }
+      return base + String(rel).replace(/^\//, "");
+    }
+
     function syncShellTabbar(hidden) {
       var bar = global.document.querySelector(".device-tabbar");
       if (bar) bar.classList.toggle("is-hidden", !!hidden);
     }
+
+    syncShellTabbar(false);
 
     function syncTabbarFromFrame() {
       try {
@@ -555,7 +569,7 @@
         return t.id === id;
       });
       if (!item) return;
-      frame.src = item.home;
+      frame.src = appFrameHref(item.home);
       tabs.forEach(function (btn) {
         btn.classList.toggle("is-active", btn.getAttribute("data-tab-id") === id);
       });
@@ -569,7 +583,7 @@
     var todayTaskBtn = global.document.querySelector(".device-tabbar__fab");
     if (todayTaskBtn) {
       todayTaskBtn.addEventListener("click", function () {
-        frame.src = "patrol/pages/today-task.html";
+        frame.src = appFrameHref("patrol/pages/today-task.html");
         tabs.forEach(function (btn) {
           btn.classList.toggle("is-active", false);
         });
@@ -586,7 +600,7 @@
     } catch (e) {}
 
     if (pageParam) {
-      frame.src = pageParam;
+      frame.src = appFrameHref(pageParam);
       tabs.forEach(function (btn) {
         btn.classList.toggle("is-active", false);
       });

@@ -19,11 +19,19 @@
     { id: "T-003", name: "三金潭车辆段上盖物业综合开发项目", distance: 1543, type: "一般项目", lastTime: "2025-06-27 10:54:00", progress: "现场钢筋绑扎施工", lat: 30.5812, lng: 114.3201, level: "normal", done: false, line: "2号线", direction: "上行", section: "金潭路-宏图大道", station: "宏图大道", patrolDate: "2025-06-27" },
     { id: "T-004", name: "中北路地下商业连通道项目", distance: 268, type: "一般项目", lastTime: "2025-06-27 09:42:00", progress: "围护结构施工准备", lat: 30.5844, lng: 114.3168, level: "normal", done: false, line: "8号线", direction: "上行", section: "水果湖-洪山路", station: "洪山路", patrolDate: "2025-06-27" },
     { id: "T-005", name: "东亭停车场附属配套工程", distance: 836, type: "重点项目", lastTime: "2025-06-27 08:35:00", progress: "基坑支护监测中", lat: 30.5891, lng: 114.3187, level: "key", done: false, line: "7号线", direction: "下行", section: "洪山路-小洪山", station: "小洪山", patrolDate: "2025-06-27" },
-    { id: "T-006", name: "楚河汉街区间市政接驳改造项目", distance: 1124, type: "一般项目", lastTime: "2025-06-27 11:18:00", progress: "临边围挡加固施工", lat: 30.5827, lng: 114.3129, level: "normal", done: false, line: "8号线", direction: "上行", section: "水果湖-洪山路", station: "洪山路", patrolDate: "2025-06-27" }
+    { id: "T-006", name: "楚河汉街区间市政接驳改造项目", distance: 1124, type: "一般项目", lastTime: "2025-06-27 11:18:00", progress: "临边围挡加固施工", lat: 30.5827, lng: 114.3129, level: "normal", done: false, line: "8号线", direction: "上行", section: "水果湖-洪山路", station: "洪山路", patrolDate: "2025-06-27" },
+    { id: "T-007", name: "金融街六中北项目", distance: 428, type: "重点项目", lastTime: "2025-06-27 11:06:00", progress: "基坑降水与支护施工", lat: 30.5876, lng: 114.3074, level: "key", done: false, line: "2号线", direction: "上行", section: "中南路-宝通寺", station: "中南路", patrolDate: "2025-06-27" },
+    { id: "T-008", name: "光谷广场综合体基坑项目", distance: 2156, type: "一般项目", lastTime: "2025-06-27 10:22:00", progress: "土方开挖与栈桥搭设", lat: 30.5789, lng: 114.3256, level: "normal", done: false, line: "2号线", direction: "下行", section: "光谷广场-杨家湾", station: "光谷广场", patrolDate: "2025-06-27" },
+    { id: "T-009", name: "武昌滨江总部基地项目", distance: 692, type: "重点项目", lastTime: "2025-06-27 09:58:00", progress: "桩基施工与泥浆外运", lat: 30.5903, lng: 114.3218, level: "key", done: false, line: "7号线", direction: "上行", section: "徐家棚-湖北大学", station: "徐家棚", patrolDate: "2025-06-27" },
+    { id: "T-010", name: "后湖大道市政管廊项目", distance: 978, type: "一般项目", lastTime: "2025-06-27 09:15:00", progress: "管廊顶板浇筑养护", lat: 30.5798, lng: 114.3082, level: "normal", done: false, line: "3号线", direction: "下行", section: "后湖大道-兴业路", station: "后湖大道", patrolDate: "2025-06-27" },
+    { id: "T-011", name: "街道口站联络通道工程", distance: 356, type: "一般项目", lastTime: "2025-06-27 08:48:00", progress: "联络通道开挖支护", lat: 30.5831, lng: 114.3175, level: "normal", done: false, line: "8号线", direction: "下行", section: "街道口-马房山", station: "街道口", patrolDate: "2025-06-27" },
+    { id: "T-012", name: "青山区徐东应急点配套施工", distance: 1247, type: "重点项目", lastTime: "2025-06-27 08:12:00", progress: "临建拆除与场地平整", lat: 30.5918, lng: 114.3264, level: "key", done: false, line: "4号线", direction: "上行", section: "岳家嘴-铁机路", station: "岳家嘴", patrolDate: "2025-06-27" }
   ];
 
   var currentTab = "route";
   var alertFrameLoaded = false;
+  var todayTaskMap = null;
+  var todayTaskMarkers = {};
 
   function $(id) { return document.getElementById(id); }
   function esc(value) { return String(value == null ? "" : value).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -52,9 +60,37 @@
     }
   }
   function getTaskById(id) { for (var i = 0; i < TASK_ROWS.length; i += 1) { if (TASK_ROWS[i].id === id) return TASK_ROWS[i]; } return null; }
-  function projectHref(item) { var name = item && item.name ? "?project=" + encodeURIComponent(item.name) : ""; return "project.html" + name; }
+  function scrollToAndHighlightCard(id) {
+    var container = $("today-task-route-view");
+    var card = document.querySelector('.mp-today-task-item[data-id="' + id + '"]');
+    if (!container || !card) return;
+    document.querySelectorAll(".mp-today-task-item.is-highlighted").forEach(function (el) { el.classList.remove("is-highlighted"); });
+    card.classList.add("is-highlighted");
+    var offsetTop = card.offsetTop - container.offsetTop;
+    var containerHeight = container.clientHeight;
+    var cardHeight = card.offsetHeight;
+    var desiredScroll = Math.max(0, offsetTop - containerHeight / 2 + cardHeight / 2);
+    container.scrollTo({ top: desiredScroll, behavior: "smooth" });
+  }
+  function panToTask(id) {
+    var marker = todayTaskMarkers[id];
+    if (!todayTaskMap || !marker) return;
+    var ll = marker.getLatLng();
+    todayTaskMap.flyTo([ll.lat, ll.lng], 16, { duration: 0.6 });
+    marker.openTooltip();
+  }
+  function projectHref(item) { var name = item && item.name ? "?view=detail&project=" + encodeURIComponent(item.name) + "&source=today-task" : ""; return "project.html" + name; }
   function manualNewHref(item) {
     return "manual.html?action=new&source=today-task&taskId=" + encodeURIComponent(item.id) +
+      "&project=" + encodeURIComponent(item.name) +
+      "&line=" + encodeURIComponent(item.line || "") +
+      "&direction=" + encodeURIComponent(item.direction || "") +
+      "&section=" + encodeURIComponent(item.section || "") +
+      "&station=" + encodeURIComponent(item.station || "") +
+      "&patrolDate=" + encodeURIComponent(item.patrolDate || "");
+  }
+  function manualDetailHref(item) {
+    return "manual.html?source=today-task&action=detail&taskId=" + encodeURIComponent(item.id) +
       "&project=" + encodeURIComponent(item.name) +
       "&line=" + encodeURIComponent(item.line || "") +
       "&direction=" + encodeURIComponent(item.direction || "") +
@@ -125,39 +161,9 @@
       }
     } catch (e) {}
   }
-  function findTodayBatchNotifyIndex(extras, today) {
-    for (var i = 0; i < extras.length; i += 1) {
-      var row = extras[i];
-      if (
-        row &&
-        row.type === "项目巡查" &&
-        row.source === "今日巡线" &&
-        Array.isArray(row.projects) &&
-        row.time &&
-        String(row.time).slice(0, 10) === today
-      ) {
-        return i;
-      }
-    }
-    return -1;
-  }
-  function mergeNotifyProjects(existing, incoming) {
-    var merged = (existing || []).slice();
-    var seen = {};
-    merged.forEach(function (proj) {
-      var key = (proj.taskId || "") + "|" + (proj.projectName || proj.title || "");
-      seen[key] = true;
-    });
-    incoming.forEach(function (proj) {
-      var key = (proj.taskId || "") + "|" + (proj.projectName || proj.title || "");
-      if (seen[key]) return;
-      seen[key] = true;
-      merged.push(proj);
-    });
-    return merged;
-  }
   function buildPendingNotifyProjects() {
     var manualRows = readManualRows();
+    var doneMap = readTaskDoneMap();
     var today = todayStr();
     var notified = readNotifiedKeys();
     var projects = [];
@@ -168,49 +174,52 @@
       if (!row.savedAt || row.savedAt.slice(0, 10) !== today) return;
       if (!row.taskId) return;
       var key = manualRowNotifyKey(row);
-      if (notified.indexOf(key) >= 0) return;
       var name = row.projectName || row.title || "";
       if (!name || seen[name]) return;
       seen[name] = true;
       projects.push(enrichNotifyProject(Object.assign({}, row, { projectName: name })));
-      newKeys.push(key);
+      if (notified.indexOf(key) < 0) newKeys.push(key);
+    });
+
+    TASK_ROWS.forEach(function (task) {
+      var doneDate = doneMap[task.id];
+      if (!doneDate) return;
+      if (doneDate !== true && doneDate !== today) return;
+      var name = task.name || "";
+      if (!name || seen[name]) return;
+      seen[name] = true;
+      var key = "task:" + task.id;
+      projects.push(enrichNotifyProject(Object.assign({}, task, {
+        taskId: task.id,
+        projectName: name,
+        user: task.user || "李明"
+      })));
+      if (notified.indexOf(key) < 0) newKeys.push(key);
     });
 
     return { projects: projects, newKeys: newKeys };
   }
   function generateDailyNotify() {
     var pending = buildPendingNotifyProjects();
-    if (!pending.projects.length) return { created: false, count: 0 };
+    var newProjects = pending.projects.filter(function (proj) {
+      return pending.newKeys.indexOf(manualRowNotifyKey(proj)) >= 0;
+    });
+    if (!newProjects.length) return { created: false, count: 0 };
     var today = todayStr();
     var extras = readNotifyExtras();
     extras = extras.filter(function (row) {
       return !(row.type === "项目巡查" && row.source === "今日巡线" && !Array.isArray(row.projects));
     });
-    var existingIdx = findTodayBatchNotifyIndex(extras, today);
-    var mergedProjects;
-    var notifyRow;
-    if (existingIdx >= 0) {
-      notifyRow = Object.assign({}, extras[existingIdx]);
-      mergedProjects = mergeNotifyProjects(notifyRow.projects, pending.projects);
-      notifyRow.projects = mergedProjects;
-      notifyRow.time = formatNow();
-      notifyRow.read = notifyRow.read || "未读";
-      notifyRow.title = today + " " + uniqueUsers(mergedProjects).join("、") + " 已完成以下项目的巡查";
-      extras.splice(existingIdx, 1);
-      extras.unshift(notifyRow);
-    } else {
-      mergedProjects = pending.projects;
-      notifyRow = {
-        id: "task-notify-" + Date.now(),
-        title: today + " " + uniqueUsers(mergedProjects).join("、") + " 已完成以下项目的巡查",
-        type: "项目巡查",
-        time: formatNow(),
-        read: "未读",
-        source: "今日巡线",
-        projects: mergedProjects
-      };
-      extras.unshift(notifyRow);
-    }
+    var notifyRow = {
+      id: "task-notify-" + Date.now(),
+      title: today + " " + uniqueUsers(newProjects).join("、") + " 已完成以下项目的巡查",
+      type: "项目巡查",
+      time: formatNow(),
+      read: "未读",
+      source: "今日巡线",
+      projects: newProjects
+    };
+    extras.unshift(notifyRow);
     try { global.localStorage.setItem(STORAGE_NOTIFY_EXTRA, JSON.stringify(extras)); } catch (e) {}
     var notified = readNotifiedKeys();
     pending.newKeys.forEach(function (key) {
@@ -219,7 +228,7 @@
     writeNotifiedKeys(notified);
     updateNotifyBadge();
     try { if (global.top && global.top.WHHeaderBadges && global.top.WHHeaderBadges.refreshMineHubBadges) { global.top.WHHeaderBadges.refreshMineHubBadges(); } } catch (e) {}
-    return { created: true, count: pending.projects.length, total: mergedProjects.length };
+    return { created: true, count: newProjects.length, total: newProjects.length };
   }
 
   function renderList() {
@@ -233,7 +242,7 @@
           '<div class="mp-today-task-item__click" data-action="open-project" data-id="' + esc(item.id) + '">' +
             '<div class="mp-today-task-item__head">' +
               '<div class="mp-today-task-item__title-wrap">' +
-                '<h3 class="mp-today-task-item__title">' + esc(item.name) + '</h3>' +
+                '<h3 class="mp-today-task-item__title" data-action="locate-task" data-id="' + esc(item.id) + '">' + esc(item.name) + '</h3>' +
                 (item.done ? '<span class="mp-today-task-item__done">已完成</span>' : '') +
               '</div>' +
               '<div class="mp-today-task-item__distance">距离' + esc(item.distance) + 'm</div>' +
@@ -245,33 +254,17 @@
             '</dl>' +
           '</div>' +
           '<div class="mp-today-task-item__foot">' +
-            '<button type="button" class="mp-today-task-item__fill"' +
-            (item.done ? ' disabled aria-disabled="true"' : '') +
-            ' data-action="fill-task" data-id="' + esc(item.id) + '"><span class="mp-today-task-item__fill-text">填写</span></button>' +
+            '<button type="button" class="mp-today-task-item__fill' + (item.done ? ' is-record' : '') + '"' +
+            ' data-action="fill-task" data-id="' + esc(item.id) + '"><span class="mp-today-task-item__fill-text">' + (item.done ? '巡查记录' : '填写') + '</span></button>' +
           '</div>' +
         '</article>';
     }).join("");
-    bindFillButtons(host);
   }
 
   function navigateFillTask(id) {
     var fillTask = getTaskById(id);
     if (!fillTask || fillTask.done) return;
     global.location.href = manualNewHref(fillTask);
-  }
-
-  function bindFillButtons(host) {
-    if (!host) return;
-    host.querySelectorAll("[data-action='fill-task']").forEach(function (btn) {
-      if (btn._fillBound) return;
-      btn._fillBound = true;
-      btn.addEventListener("click", function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        if (btn.disabled) return;
-        navigateFillTask(btn.getAttribute("data-id"));
-      });
-    });
   }
 
   function setActiveRouteTab() { var tabs = document.querySelectorAll(".mp-today-task-tab"); tabs.forEach(function (node) { var active = node.getAttribute("data-tab") === "route"; node.classList.toggle("is-active", active); node.setAttribute("aria-selected", active ? "true" : "false"); }); }
@@ -283,22 +276,26 @@
     var host = $("today-task-map");
     if (!host || typeof L === "undefined") return;
     if (host._leaflet_id != null) { host._leaflet_id = null; host.innerHTML = ""; }
-    var map = L.map(host, { zoomControl: false, attributionControl: false }).setView([30.5858, 114.3121], 15);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+    todayTaskMap = L.map(host, { zoomControl: false, attributionControl: false }).setView([30.5858, 114.3121], 15);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(todayTaskMap);
     var markers = [];
+    todayTaskMarkers = {};
     TASK_ROWS.forEach(function (item) {
-      var marker = L.marker([item.lat, item.lng], { icon: makeTaskIcon(item.level) }).addTo(map);
+      var marker = L.marker([item.lat, item.lng], { icon: makeTaskIcon(item.level) }).addTo(todayTaskMap);
       marker.bindTooltip(item.name, { direction: "top", offset: [0, -10], opacity: 0.96 });
+      marker._taskId = item.id;
+      todayTaskMarkers[item.id] = marker;
+      marker.on("click", function () { scrollToAndHighlightCard(item.id); });
       markers.push(marker);
     });
-    var userMarker = L.marker([30.5846, 114.3109], { icon: makeUserIcon() }).addTo(map);
+    var userMarker = L.marker([30.5846, 114.3109], { icon: makeUserIcon() }).addTo(todayTaskMap);
     userMarker.bindTooltip("当前人员位置", { direction: "top", offset: [0, -12], opacity: 0.96 });
     markers.push(userMarker);
     if (markers.length) {
       var group = new L.featureGroup(markers);
-      map.fitBounds(group.getBounds().pad(0.18));
+      todayTaskMap.fitBounds(group.getBounds().pad(0.18));
     }
-    setTimeout(function () { map.invalidateSize(); }, 80);
+    setTimeout(function () { todayTaskMap.invalidateSize(); }, 80);
   }
 
   function openConfirm() {
@@ -344,8 +341,21 @@
       if (fillBtn) {
         event.preventDefault();
         event.stopPropagation();
-        if (fillBtn.disabled) return;
-        navigateFillTask(fillBtn.getAttribute("data-id"));
+        var taskId = fillBtn.getAttribute("data-id");
+        var taskRow = getTaskById(taskId);
+        if (!taskRow) return;
+        if (taskRow.done) {
+          global.location.href = manualDetailHref(taskRow);
+        } else {
+          navigateFillTask(taskId);
+        }
+        return;
+      }
+      var titleEl = event.target.closest("[data-action='locate-task']");
+      if (titleEl) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        panToTask(titleEl.getAttribute("data-id"));
         return;
       }
       var projectCard = event.target.closest("[data-action='open-project']");
@@ -378,7 +388,9 @@
       }
     });
     global.addEventListener("pageshow", refreshView);
-    global.addEventListener("focus", refreshView);
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") refreshView();
+    });
   }
 
   function boot() {

@@ -25,6 +25,8 @@
   }
 
   function bindNavBack() {
+    var params = new URLSearchParams(global.location.search);
+    var sourcePage = params.get("source");
     global.document.addEventListener("click", function (event) {
       var btn = event.target.closest("[data-action='mp-nav-back']");
       if (!btn) return;
@@ -33,6 +35,10 @@
       var list = global.document.getElementById("project-list-view");
       if (detail && !detail.classList.contains("hidden")) {
         event.preventDefault();
+        if (sourcePage === "today-task") {
+          global.location.href = "today-task.html";
+          return;
+        }
         var back = global.document.querySelector("[data-action='back-list']");
         if (back) back.click();
         return;

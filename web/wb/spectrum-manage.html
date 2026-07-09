@@ -278,7 +278,7 @@
       var columns = {
         spectrums:["报警区间","报警位置","施工类型","最新报警时间","频谱图","备注","操作"],
         labels:["分类标签名称","排序","创建人","创建时间","操作"],
-        events:["分类标签名称","报警区间","报警位置","最新报警时间","操作"],
+        events:["分类标签名称","报警区间","报警位置","最新报警时间","频谱图","操作"],
         features:["分类标签名称","特征名称","频谱图","创建人","创建时间","操作"]
       };
       var filters = {
@@ -328,7 +328,7 @@
       function rowCells(row){
         if(state.tab==="spectrums") return [row.section,row.position,row.type,row.time,'<img class="spectrum-thumb" src="'+spectrumSrc+'" alt="频谱图" />',esc(row.remark||"-"),actions(row.id,true)];
         if(state.tab==="labels") return [row.name,row.sort,row.creator,row.created,actions(row.id,false)];
-        if(state.tab==="events") return [row.label,row.section||"—",row.position||"—",row.latestTime||row.startTime||"—",actions(row.id,true)];
+        if(state.tab==="events") return [row.label,row.section||"—",row.position||"—",row.latestTime||row.startTime||"—",'<span class="spectrum-action" data-action="preview" data-id="'+row.id+'"><img class="spectrum-thumb" src="'+spectrumSrc+'" alt="频谱图" /></span>',actions(row.id,true)];
         return [row.label,row.feature,'<img class="spectrum-thumb" src="'+spectrumSrc+'" alt="频谱图" />',row.creator,row.created,actions(row.id,true)];
       }
       function actions(id,preview){

@@ -146,6 +146,20 @@ body.mp-disease-page .mp-disease-detail-grid {
   margin: 0;
 }
 
+body.mp-disease-page .mp-disease-detail-grid--common {
+  margin-bottom: 14px;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.12);
+  border-radius: 10px;
+}
+
+body.mp-disease-page .mp-disease-detail-grid--follow {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--mp-border, rgba(0, 0, 0, 0.08));
+}
+
 body.mp-disease-page .mp-disease-detail-grid > div {
   display: flex;
   flex-direction: column;

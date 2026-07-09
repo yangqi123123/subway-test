@@ -107,30 +107,10 @@
           remark: "请负责人完成续期材料准备。",
         },
         {
-          id: "n5",
-          source: "人工巡查",
-          type: "项目巡查",
-          title: "2026-05-15 鲍雄澎 已完成 洪山路至小洪山商业公寓项目 的巡查",
-          time: "2026-05-15 17:30",
-          read: "未读",
-          recordId: "122820",
-          projectName: "洪山路至小洪山商业公寓项目",
-          projectType: "重点项目",
-          line: "2号线",
-          direction: "上行",
-          section: "洪山路~小洪山",
-          station: "",
-          user: "鲍雄澎",
-          patrolDate: "2026-05-15 17:30",
-          progress: "正常施工",
-          remark: "",
-          updatedAt: "2026-05-15 17:30",
-        },
-        {
           id: "n6",
           source: "今日巡线",
           type: "项目巡查",
-          title: "2026-07-03 李明 已完成以下项目的巡查",
+          title: "洪山路-小洪山已完成巡查",
           time: "2026-07-03 20:27",
           read: "未读",
           projects: [
@@ -207,7 +187,7 @@
           ],
         },
       ],
-      actions: ["查看"],
+      actions: ["查看", "删除"],
       toolbar: ["全部已读"],
     },
     "wb-done": {
@@ -1263,13 +1243,7 @@
   function buildPatrolBatchTitle(row) {
     if (row.title) return row.title;
     var date = String(row.time || "").slice(0, 10);
-    var users = [];
-    (row.projects || []).forEach(function (proj) {
-      var name = proj.user || "李明";
-      if (users.indexOf(name) < 0) users.push(name);
-    });
-    if (!users.length) users = ["李明"];
-    return date + " " + users.join("、") + " 已完成以下项目的巡查";
+    return date + " " + patrolNotifyUsers(row) + " 已完成以下项目的巡查";
   }
 
   function patrolNotifyTitle(row) {
@@ -1287,6 +1261,16 @@
     if (!names.length) return "";
     if (names.length <= 2) return "已完成项目：" + names.join("、");
     return "已完成项目：" + names.slice(0, 2).join("、") + " 等 " + names.length + " 项";
+  }
+
+  function patrolNotifyUsers(row) {
+    var users = [];
+    (row.projects || []).forEach(function (proj) {
+      var name = proj.user || "李明";
+      if (users.indexOf(name) < 0) users.push(name);
+    });
+    if (!users.length) users = ["李明"];
+    return users.join("、");
   }
 
   function normalizePatrolNotifyRow(row) {
@@ -1384,6 +1368,7 @@
       notifyDetailField("标题", patrolNotifyTitle(row), { full: true }) +
       notifyDetailField("通知类型", "项目巡查", { full: true }) +
       notifyDetailField("发布时间", row.time, { full: true }) +
+      notifyDetailField("巡查人员", patrolNotifyUsers(row), { full: true }) +
       "</div>" +
       '<div class="wb-notify-patrol-projects"><div class="wb-notify-patrol-projects__label">已完成项目</div><div class="wb-notify-project-links">' +
       projects
@@ -1817,6 +1802,14 @@
       if (key === "wb-sys-notify" && r) {
         if (action === "查看") {
           openNotifyView(r);
+          return;
+        }
+        if (action === "删除") {
+          if (confirm("确定删除该通知吗？")) {
+            current.rows.splice(index, 1);
+            applyFilter();
+            if (global.WHHeaderBadges) WHHeaderBadges.refresh();
+          }
           return;
         }
         if (action === "全部已读") {

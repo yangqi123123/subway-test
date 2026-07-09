@@ -314,6 +314,20 @@
       if (!username || !password) return;
       saveRememberLogin(username, password, remember);
       try {
+        global.localStorage.removeItem("whmetro-today-task-done");
+        global.localStorage.removeItem("whmetro-today-task-notified-keys");
+        var manualRows = JSON.parse(global.localStorage.getItem("whmetro-manual-rows") || "[]");
+        manualRows = manualRows.filter(function (row) {
+          return !(row.source === "今日巡线" || row.taskId);
+        });
+        global.localStorage.setItem("whmetro-manual-rows", JSON.stringify(manualRows));
+        var notifyExtras = JSON.parse(global.localStorage.getItem("whmetro-notify-extra") || "[]");
+        notifyExtras = notifyExtras.filter(function (row) {
+          return row.source !== "今日巡线";
+        });
+        global.localStorage.setItem("whmetro-notify-extra", JSON.stringify(notifyExtras));
+      } catch (e) {}
+      try {
         if (global.top && global.top !== global) {
           global.top.location.href = "../index.html";
           return;

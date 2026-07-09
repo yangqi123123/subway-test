@@ -140,7 +140,7 @@ async function main() {
   await navigate(cdp, manualUrl);
   await evalExpr(cdp, `
     document.getElementById('f-progress').value = '项目进展正常，无异常';
-    document.getElementById('f-patrol-date').value = '2026-07-03';
+    document.getElementById('f-patrol-date').value = '2026-07-03T00:00';
     document.querySelector('[data-action="save-manual"]').click();
     "saved";
   `, true);

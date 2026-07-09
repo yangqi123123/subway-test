@@ -15,7 +15,13 @@
     "三金潭车辆段上盖物业综合开发项目": { taskId: "T-003", line: "2号线", direction: "上行", section: "金潭路-宏图大道", station: "宏图大道", patrolDate: "2025-06-27", progress: "现场钢筋绑扎施工", projectType: "一般项目" },
     "中北路地下商业连通道项目": { taskId: "T-004", line: "8号线", direction: "上行", section: "水果湖-洪山路", station: "洪山路", patrolDate: "2025-06-27", progress: "围护结构施工准备", projectType: "一般项目" },
     "东亭停车场附属配套工程": { taskId: "T-005", line: "7号线", direction: "下行", section: "洪山路-小洪山", station: "小洪山", patrolDate: "2025-06-27", progress: "基坑支护监测中", projectType: "重点项目" },
-    "楚河汉街区间市政接驳改造项目": { taskId: "T-006", line: "8号线", direction: "上行", section: "水果湖-洪山路", station: "洪山路", patrolDate: "2025-06-27", progress: "临边围挡加固施工", projectType: "一般项目" }
+    "楚河汉街区间市政接驳改造项目": { taskId: "T-006", line: "8号线", direction: "上行", section: "水果湖-洪山路", station: "洪山路", patrolDate: "2025-06-27", progress: "临边围挡加固施工", projectType: "一般项目" },
+    "金融街六中北项目": { taskId: "T-007", line: "2号线", direction: "上行", section: "中南路-宝通寺", station: "中南路", patrolDate: "2025-06-27", progress: "基坑降水与支护施工", projectType: "重点项目" },
+    "光谷广场综合体基坑项目": { taskId: "T-008", line: "2号线", direction: "下行", section: "光谷广场-杨家湾", station: "光谷广场", patrolDate: "2025-06-27", progress: "土方开挖与栈桥搭设", projectType: "一般项目" },
+    "武昌滨江总部基地项目": { taskId: "T-009", line: "7号线", direction: "上行", section: "徐家棚-湖北大学", station: "徐家棚", patrolDate: "2025-06-27", progress: "桩基施工与泥浆外运", projectType: "重点项目" },
+    "后湖大道市政管廊项目": { taskId: "T-010", line: "3号线", direction: "下行", section: "后湖大道-兴业路", station: "后湖大道", patrolDate: "2025-06-27", progress: "管廊顶板浇筑养护", projectType: "一般项目" },
+    "街道口站联络通道工程": { taskId: "T-011", line: "8号线", direction: "下行", section: "街道口-马房山", station: "街道口", patrolDate: "2025-06-27", progress: "联络通道开挖支护", projectType: "一般项目" },
+    "青山区徐东应急点配套施工": { taskId: "T-012", line: "4号线", direction: "上行", section: "岳家嘴-铁机路", station: "岳家嘴", patrolDate: "2025-06-27", progress: "临建拆除与场地平整", projectType: "重点项目" }
   };
 
   function readQuery() {
@@ -28,6 +34,8 @@
         manualId: params.get("manualId") || "",
         project: params.get("project") || "",
         notifyType: params.get("notifyType") || "",
+        fromNotifyDetail: params.get("fromNotifyDetail") || "",
+        notifyId: params.get("notifyId") || "",
         line: params.get("line") || "",
         direction: params.get("direction") || "",
         section: params.get("section") || "",
@@ -35,12 +43,13 @@
         patrolDate: params.get("patrolDate") || ""
       };
     } catch (e) {
-      return { action: "", source: "", taskId: "", manualId: "", project: "", notifyType: "", line: "", direction: "", section: "", station: "", patrolDate: "" };
+      return { action: "", source: "", taskId: "", manualId: "", project: "", notifyType: "", fromNotifyDetail: "", notifyId: "", line: "", direction: "", section: "", station: "", patrolDate: "" };
     }
   }
 
   function resolvePatrolHome(query) {
     if (query && query.source === "today-task") return "today-task.html";
+    if (query && query.fromNotifyDetail && query.notifyId) return "../../mine/pages/notify.html?openDetail=1&notifyId=" + encodeURIComponent(query.notifyId);
     if (query && query.source === "notify") return "../../mine/pages/notify.html";
     return "../home.html";
   }
@@ -85,13 +94,19 @@
     }
   }
   function lockProjectField(projectName) { lockField("f-project", projectName, true); }
+  function toDatetimeLocal(value) {
+    if (!value) return "";
+    var s = String(value).trim().replace(" ", "T");
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s += "T00:00";
+    return s;
+  }
   function lockTodayTaskFields(query) {
     lockField("f-line", query.line, true);
     lockField("f-direction", query.direction, true);
     lockField("f-section", query.section, true);
     lockField("f-station", query.station, true);
     lockField("f-project", query.project, true);
-    lockField("f-patrol-date", query.patrolDate, false);
+    lockField("f-patrol-date", toDatetimeLocal(query.patrolDate), false);
   }
   function openTodayTaskNewForm(query) {
     if (query.action !== "new") return;
@@ -228,10 +243,59 @@
       }, 120);
     }
   }
+  function gatherTodayTaskRecords(query) {
+    var manualRows = readManualRows();
+    var matches = manualRows.filter(function (row) {
+      if (query.taskId && String(row.taskId || "") === String(query.taskId)) return true;
+      if (query.project && projectNamesMatch(row.projectName || row.title, query.project)) return true;
+      return false;
+    });
+    matches.sort(function (a, b) {
+      return String(b.savedAt || "").localeCompare(String(a.savedAt || ""));
+    });
+    if (matches.length) {
+      return matches.map(function (row) { return normalizeManualDetailRow(row); });
+    }
+    var base = buildFallbackNotifyRow(query);
+    if (!base) return [];
+    var second = normalizeManualDetailRow(Object.assign({}, base, {
+      savedAt: (query.patrolDate || base.patrolDate) + " 10:19",
+      patrolDate: query.patrolDate || base.patrolDate
+    }));
+    base.savedAt = (query.patrolDate || base.patrolDate) + " 12:07";
+    return [base, second];
+  }
+  function openTodayTaskDetail(query) {
+    if (query.source !== "today-task" || query.action !== "detail") return;
+    var records = gatherTodayTaskRecords(query);
+    if (!records.length) return;
+    var row = records[0];
+    if (records.length > 1) row.records = records;
+    function openDetail() {
+      if (global.WHInManualPage && typeof global.WHInManualPage.openDetailByRow === "function") {
+        global.WHInManualPage.openDetailByRow(row);
+        return true;
+      }
+      if (global.WHInManualPage && typeof global.WHInManualPage.openDetail === "function") {
+        var rows = global.WHInManualPage.getRows() || [];
+        var index = rows.findIndex(function (item) {
+          return String(item.id) === String(row.id) || projectNamesMatch(item.projectName, row.projectName);
+        });
+        if (index >= 0) {
+          global.WHInManualPage.openDetail(index);
+          return true;
+        }
+      }
+      return false;
+    }
+    if (!openDetail()) {
+      setTimeout(function () { openDetail(); }, 120);
+    }
+  }
   function markTodayTaskDone(taskId) {
     if (!taskId) return;
     var doneMap = readJson(STORAGE_TASK_DONE, {});
-    doneMap[taskId] = true;
+    doneMap[taskId] = todayStr();
     writeJson(STORAGE_TASK_DONE, doneMap);
   }
   function todayStr() {
@@ -283,7 +347,7 @@
     refreshNotifyBadges();
   }
   function formatNow() { var d = new Date(); var y = d.getFullYear(); var m = String(d.getMonth() + 1).padStart(2, "0"); var day = String(d.getDate()).padStart(2, "0"); var h = String(d.getHours()).padStart(2, "0"); var min = String(d.getMinutes()).padStart(2, "0"); return y + "-" + m + "-" + day + " " + h + ":" + min; }
-  function projectTypeByName(projectName) { if (projectName === "洪山路至小洪山商业公寓项目") return "重点项目"; return "一般项目"; }
+  function projectTypeByName(projectName) { var meta = TASK_PROJECT_FALLBACK[projectName]; if (meta && meta.projectType) return meta.projectType; if (projectName === "洪山路至小洪山商业公寓项目") return "重点项目"; return "一般项目"; }
   function readManualRows() { return readJson(STORAGE_MANUAL_ROWS, []); }
   function writeManualRows(rows) { writeJson(STORAGE_MANUAL_ROWS, rows); }
   function saveManualRow(row, taskId) {
@@ -322,7 +386,7 @@
       if (detail && !detail.classList.contains("hidden")) {
         event.preventDefault();
         event.stopPropagation();
-        if (query && query.source === "notify") {
+        if (query && (query.source === "notify" || query.source === "today-task" || query.fromNotifyDetail)) {
           global.location.href = resolvePatrolHome(query);
           return;
         }
@@ -434,6 +498,7 @@
     setTimeout(function () {
       openTodayTaskNewForm(query);
       openNotifyManualDetail(query);
+      openTodayTaskDetail(query);
     }, 180);
   }
 

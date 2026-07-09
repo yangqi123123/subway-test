@@ -296,6 +296,13 @@ body.mp-today-task-page .miniapp-navbar {
   opacity: 0.72;
 }
 
+.mp-today-task-item.is-completed .mp-today-task-item__fill.is-record {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+  cursor: pointer;
+  opacity: 1;
+}
+
 .mp-today-task-item__fill:disabled {
   cursor: not-allowed;
   pointer-events: none;
@@ -351,4 +358,14 @@ body.mp-today-task-page.today-task-confirm-open .mp-today-task-map-card,
 body.mp-today-task-page.today-task-confirm-open .mp-today-task-map .leaflet-container,
 body.mp-today-task-page.today-task-confirm-open .mp-today-task-map .leaflet-pane {
   z-index: 1 !important;
+}
+
+.mp-today-task-item__title[data-action="locate-task"] {
+  cursor: pointer;
+}
+
+.mp-today-task-item.is-highlighted {
+  border-color: #236aff;
+  box-shadow: 0 0 0 3px rgba(35, 106, 255, 0.22), 0 12px 28px rgba(35, 106, 255, 0.16);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
 }

@@ -16,6 +16,18 @@
     return fallback || "一般项目";
   }
 
+  function toDatetimeLocal(value) {
+    if (!value) return "";
+    var s = String(value).trim().replace(" ", "T");
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s += "T00:00";
+    return s;
+  }
+
+  function fromDatetimeLocal(value) {
+    if (!value) return "";
+    return String(value).trim().replace("T", " ");
+  }
+
   function statusBadge(row) {
     if (hasLogAction(row, "拒绝")) {
       return { text: "已拒绝", className: "mp-disease-progress mp-disease-progress--reject" };
@@ -58,7 +70,7 @@
         return mode === "edit" ? "编辑人工巡查记录" : "新建人工巡查记录";
       },
       detailTitle: function (row) {
-        return row.id + " 人工巡检详情";
+        return "人工巡检详情";
       },
       stats: function (allRows) {
         return {
@@ -100,49 +112,65 @@
         return row.projectName;
       },
       buildDetailHtml: function (row, h) {
-        return (
-          '<dl class="mp-disease-detail-grid">' +
-          "<div><dt>编号</dt><dd>" +
-          h.esc(row.id) +
-          "</dd></div>" +
-          "<div><dt>所属线路</dt><dd>" +
-          h.esc(row.line) +
-          "</dd></div>" +
-          "<div><dt>上下行</dt><dd>" +
-          h.esc(row.direction || "-") +
-          "</dd></div>" +
-          "<div><dt>所在区间</dt><dd>" +
-          h.esc(row.section || "-") +
-          "</dd></div>" +
-          "<div><dt>站点</dt><dd>" +
-          h.esc(row.station || "-") +
-          "</dd></div>" +
-          "<div><dt>所在项目</dt><dd>" +
-          h.esc(row.projectName) +
-          (row.projectType ? " / " + h.esc(row.projectType) : "") +
-          "</dd></div>" +
-          "<div><dt>巡查日期</dt><dd>" +
-          h.esc(row.patrolDate) +
-          "</dd></div>" +
-          '<div class="mp-disease-detail-grid__full"><dt>巡查照片</dt><dd>' +
-          h.mediaCell("photo", row, 3, true) +
-          "</dd></div>" +
-          '<div class="mp-disease-detail-grid__full"><dt>巡查视频</dt><dd>' +
-          h.mediaCell("video", row, 2, true) +
-          "</dd></div>" +
-          '<div class="mp-disease-detail-grid__full"><dt>项目进展</dt><dd>' +
-          h.esc(row.progress) +
-          "</dd></div>" +
-          '<div class="mp-disease-detail-grid__full"><dt>协调情况及备注</dt><dd>' +
-          h.esc(row.remark || "-") +
-          "</dd></div>" +
-          "<div><dt>巡查人</dt><dd>" +
-          h.esc(row.user) +
-          "</dd></div>" +
-          "<div><dt>更新时间</dt><dd>" +
-          h.esc(row.updatedAt) +
+        var records = row.records && row.records.length ? row.records : [row];
+        var hasMultiple = records.length > 1;
+        var commonLine = row.line || (records[0] && records[0].line) || "";
+        var commonDirection = row.direction || (records[0] && records[0].direction) || "";
+        var commonSection = row.section || (records[0] && records[0].section) || "";
+        var commonStation = row.station || (records[0] && records[0].station) || "";
+        var commonProjectName = row.projectName || (records[0] && records[0].projectName) || "";
+        var commonProjectType = row.projectType || (records[0] && records[0].projectType) || "";
+        var commonHtml = hasMultiple ? (
+          '<dl class="mp-disease-detail-grid mp-disease-detail-grid--common">' +
+          "<div><dt>所属线路</dt><dd>" + h.esc(commonLine) + "</dd></div>" +
+          "<div><dt>上下行</dt><dd>" + h.esc(commonDirection || "-") + "</dd></div>" +
+          "<div><dt>所在区间</dt><dd>" + h.esc(commonSection || "-") + "</dd></div>" +
+          "<div><dt>站点</dt><dd>" + h.esc(commonStation || "-") + "</dd></div>" +
+          '<div class="mp-disease-detail-grid__full"><dt>所在项目</dt><dd>' +
+          h.esc(commonProjectName) +
+          (commonProjectType ? " / " + h.esc(commonProjectType) : "") +
           "</dd></div></dl>"
-        );
+        ) : "";
+        return commonHtml + records.map(function (record, idx) {
+          var commonFields = hasMultiple ? "" : (
+            "<div><dt>所属线路</dt><dd>" + h.esc(record.line) + "</dd></div>" +
+            "<div><dt>上下行</dt><dd>" + h.esc(record.direction || "-") + "</dd></div>" +
+            "<div><dt>所在区间</dt><dd>" + h.esc(record.section || "-") + "</dd></div>" +
+            "<div><dt>站点</dt><dd>" + h.esc(record.station || "-") + "</dd></div>" +
+            '<div class="mp-disease-detail-grid__full"><dt>所在项目</dt><dd>' +
+            h.esc(record.projectName) +
+            (record.projectType ? " / " + h.esc(record.projectType) : "") +
+            "</dd></div>"
+          );
+          return (
+            '<dl class="mp-disease-detail-grid' + (idx > 0 ? ' mp-disease-detail-grid--follow' : '') + '">' +
+            "<div><dt>编号</dt><dd>" +
+            h.esc(record.id) +
+            "</dd></div>" +
+            commonFields +
+            "<div><dt>巡查日期</dt><dd>" +
+            h.esc(record.patrolDate) +
+            "</dd></div>" +
+            '<div class="mp-disease-detail-grid__full"><dt>巡查照片</dt><dd>' +
+            h.mediaCell("photo", record, 3, true) +
+            "</dd></div>" +
+            '<div class="mp-disease-detail-grid__full"><dt>巡查视频</dt><dd>' +
+            h.mediaCell("video", record, 2, true) +
+            "</dd></div>" +
+            '<div class="mp-disease-detail-grid__full"><dt>项目进展</dt><dd>' +
+            h.esc(record.progress) +
+            "</dd></div>" +
+            '<div class="mp-disease-detail-grid__full"><dt>协调情况及备注</dt><dd>' +
+            h.esc(record.remark || "-") +
+            "</dd></div>" +
+            "<div><dt>巡查人</dt><dd>" +
+            h.esc(record.user) +
+            "</dd></div>" +
+            "<div><dt>更新时间</dt><dd>" +
+            h.esc(record.updatedAt) +
+            "</dd></div></dl>"
+          );
+        }).join("");
       },
       readFiltersFromForm: function () {
         function fv(id) {
@@ -176,7 +204,7 @@
           station: station,
           place: (section || "-") + " / " + (station || "-"),
           projectName: fh.fieldVal("f-project"),
-          patrolDate: fh.fieldVal("f-patrol-date"),
+          patrolDate: fromDatetimeLocal(fh.fieldVal("f-patrol-date")),
           progress: fh.fieldVal("f-progress"),
           remark: fh.fieldVal("f-remark")
         };
@@ -201,7 +229,7 @@
         fh.$("f-section").value = row.section || "";
         fh.$("f-station").value = row.station || "";
         fh.$("f-project").value = row.projectName || "";
-        fh.$("f-patrol-date").value = row.patrolDate || "";
+        fh.$("f-patrol-date").value = toDatetimeLocal(row.patrolDate);
         fh.$("f-progress").value = row.progress || "";
         fh.$("f-remark").value = row.remark || "";
         fh.clearUploads();
