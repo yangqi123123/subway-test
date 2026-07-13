@@ -278,7 +278,7 @@
       var columns = {
         spectrums:["报警区间","报警位置","施工类型","最新报警时间","频谱图","备注","操作"],
         labels:["分类标签名称","排序","创建人","创建时间","操作"],
-        events:["分类标签名称","报警区间","报警位置","最新报警时间","频谱图","操作"],
+        events:["分类标签名称","报警区间","报警位置","最新报警时间","频谱图","备注","操作"],
         features:["分类标签名称","特征名称","频谱图","创建人","创建时间","操作"]
       };
       var filters = {
@@ -300,9 +300,9 @@
           {id:13,name:"挖掘",sort:3,creator:"李工",created:"2026-03-03 14:20"}
         ],
         events:[
-          {id:21,label:"钻探",project:"金融街六中北项目",section:"中南医院站-湖北日报站",position:"Z25+610",latestTime:"2026-03-05 18:30:46",endTime:"2026-03-05 19:30:46"},
-          {id:22,label:"破拆",project:"武昌滨江地下空间",section:"徐家棚站-三角路站",position:"Y12+180",latestTime:"2026-03-06 10:10",endTime:"2026-03-06 12:10"},
-          {id:23,label:"挖掘",project:"武昌滨江地下空间",section:"徐家棚站-三角路站",position:"Y12+220",latestTime:"2026-03-06 11:25:00",endTime:"2026-03-06 13:25:00"}
+          {id:21,label:"钻探",project:"金融街六中北项目",section:"中南医院站-湖北日报站",position:"Z25+610",latestTime:"2026-03-05 18:30:46",endTime:"2026-03-05 19:30:46",remark:"钻探作业持续约1小时，频谱能量集中在低频段。"},
+          {id:22,label:"破拆",project:"武昌滨江地下空间",section:"徐家棚站-三角路站",position:"Y12+180",latestTime:"2026-03-06 10:10",endTime:"2026-03-06 12:10",remark:"破拆期间高频尖峰连续抖动，已纳入重点关注。"},
+          {id:23,label:"挖掘",project:"武昌滨江地下空间",section:"徐家棚站-三角路站",position:"Y12+220",latestTime:"2026-03-06 11:25:00",endTime:"2026-03-06 13:25:00",remark:""}
         ],
         features:[
           {id:31,label:"钻探",feature:"低频能量持续增强",creator:"管理员",created:"2026-03-05 19:20",startTime:"2026-03-05 18:00",endTime:"2026-03-05 20:00"},
@@ -328,7 +328,7 @@
       function rowCells(row){
         if(state.tab==="spectrums") return [row.section,row.position,row.type,row.time,'<img class="spectrum-thumb" src="'+spectrumSrc+'" alt="频谱图" />',esc(row.remark||"-"),actions(row.id,true)];
         if(state.tab==="labels") return [row.name,row.sort,row.creator,row.created,actions(row.id,false)];
-        if(state.tab==="events") return [row.label,row.section||"—",row.position||"—",row.latestTime||row.startTime||"—",'<span class="spectrum-action" data-action="preview" data-id="'+row.id+'"><img class="spectrum-thumb" src="'+spectrumSrc+'" alt="频谱图" /></span>',actions(row.id,true)];
+        if(state.tab==="events") return [row.label,row.section||"—",row.position||"—",row.latestTime||row.startTime||"—",'<span class="spectrum-action" data-action="preview" data-id="'+row.id+'"><img class="spectrum-thumb" src="'+spectrumSrc+'" alt="频谱图" /></span>',esc(row.remark||"-"),actions(row.id,true)];
         return [row.label,row.feature,'<img class="spectrum-thumb" src="'+spectrumSrc+'" alt="频谱图" />',row.creator,row.created,actions(row.id,true)];
       }
       function actions(id,preview){
@@ -522,7 +522,7 @@
       function formFields(){
         if(state.tab==="spectrums") return [["project","项目名称","input",true],["section","报警区间","input",true],["position","报警位置","input",true],["type","报警类型","select",true,["施工扰动","光纤扰动","结构异常"]],["time","最新报警时间","datetime-local",true],["remark","备注","textarea",false]];
         if(state.tab==="labels") return [["name","分类标签名称","input",true],["sort","排序","number",false]];
-        if(state.tab==="events") return [["label","分类标签名称","select",true,data.labels.map(function(x){return x.name})],["relatedAlarm","关联报警事件","button",false],["project","项目名称","readonly",false],["section","报警区间","readonly",false],["position","报警位置","readonly",false],["latestTime","最新报警时间","readonly",false]];
+        if(state.tab==="events") return [["label","分类标签名称","select",true,data.labels.map(function(x){return x.name})],["relatedAlarm","关联报警事件","button",false],["project","项目名称","readonly",false],["section","报警区间","readonly",false],["position","报警位置","readonly",false],["latestTime","最新报警时间","readonly",false],["remark","备注","textarea",false]];
         return [["label","分类标签名称","select",true,data.labels.map(function(x){return x.name})],["feature","特征名称","input",true],["file","选择频谱图","file",false]];
       }
       function openEdit(id){
