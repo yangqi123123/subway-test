@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>区间临时调配</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/miniapp.css" />
+  <link rel="stylesheet" href="../../assets/css/mine-mobile.css" />
+  <style>
+    /* 导航栏标题居中 */
+    body.mp-mine-page .miniapp-navbar--inner {
+      display: grid;
+      grid-template-columns: 44px 1fr 44px;
+      gap: 0;
+      padding: 0 12px;
+    }
+    body.mp-mine-page .miniapp-navbar--inner .miniapp-navbar__back {
+      width: 36px;
+      height: 36px;
+      margin: 0 auto;
+    }
+    body.mp-mine-page .miniapp-navbar--inner .miniapp-navbar__title-wrap {
+      text-align: center;
+      padding: 0;
+    }
+    body.mp-mine-page .miniapp-navbar--inner .miniapp-navbar__title {
+      padding-right: 0;
+    }
+
+    .mp-adjust-form {
+      padding: 16px 0;
+    }
+    .mp-adjust-field {
+      margin-bottom: 16px;
+      cursor: pointer;
+    }
+    .mp-adjust-field__label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--mp-text-secondary);
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+    .mp-adjust-field__value {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 48px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid var(--mp-border);
+      font-size: 14px;
+      color: var(--mp-text);
+      background: var(--mp-bg);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 34px;
+    }
+    .mp-adjust-field__value.is-placeholder {
+      color: var(--mp-text-muted);
+    }
+    .mp-adjust-hint {
+      font-size: 12px;
+      color: var(--mp-text-secondary);
+      line-height: 1.6;
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+    .mp-adjust-tip {
+      font-size: 13px;
+      color: var(--mp-primary);
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .miniapp-form-field input[type="datetime-local"] {
+      height: 48px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid var(--mp-border);
+      font-size: 14px;
+      color: var(--mp-text);
+      background: var(--mp-bg);
+      width: 100%;
+    }
+    .miniapp-form-field textarea {
+      min-height: 80px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--mp-border);
+      font-size: 14px;
+      color: var(--mp-text);
+      background: var(--mp-bg);
+      width: 100%;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .miniapp-form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .miniapp-form-actions .miniapp-btn {
+      flex: 1;
+      height: 44px;
+    }
+
+    /* 底部选择弹窗 */
+    .mp-select-sheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .mp-select-sheet.is-open {
+      display: flex;
+    }
+    .mp-select-sheet__mask {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.45);
+    }
+    .mp-select-sheet__panel {
+      position: relative;
+      background: #fff;
+      border-radius: 18px 18px 0 0;
+      max-height: 72vh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.25s ease-out;
+    }
+    .mp-select-sheet.is-open .mp-select-sheet__panel {
+      transform: translateY(0);
+    }
+    .mp-select-sheet__head {
+      display: grid;
+      grid-template-columns: 60px 1fr 60px;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--mp-border);
+    }
+    .mp-select-sheet__head button {
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      color: var(--mp-text-secondary);
+      cursor: pointer;
+      padding: 0;
+    }
+    .mp-select-sheet__head button.is-primary {
+      color: var(--mp-primary);
+      font-weight: 600;
+      text-align: right;
+    }
+    .mp-select-sheet__head span {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--mp-text);
+    }
+    .mp-select-sheet__search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--mp-border);
+    }
+    .mp-select-sheet__search i {
+      color: var(--mp-text-muted);
+      font-size: 14px;
+    }
+    .mp-select-sheet__search input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      color: var(--mp-text);
+      outline: none;
+    }
+    .mp-select-sheet__body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 4px 0 16px;
+    }
+    .mp-select-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      font-size: 15px;
+      color: var(--mp-text);
+      cursor: pointer;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .mp-select-option:last-child {
+      border-bottom: none;
+    }
+    .mp-select-option__radio {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 2px solid var(--mp-border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mp-select-option.is-selected .mp-select-option__radio {
+      border-color: var(--mp-primary);
+      background: var(--mp-primary);
+    }
+    .mp-select-option.is-selected .mp-select-option__radio::after {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #fff;
+    }
+    .mp-select-empty {
+      padding: 24px 16px;
+      text-align: center;
+      color: var(--mp-text-muted);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body class="mp-mine-page miniapp-page" data-module="mine">
+  <header class="miniapp-navbar miniapp-navbar--inner">
+    <button type="button" class="miniapp-navbar__back" data-action="mp-nav-back" aria-label="返回">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <h1 class="miniapp-navbar__title-wrap">
+      <span class="miniapp-navbar__title">区间临时调配</span>
+    </h1>
+    <span aria-hidden="true"></span>
+  </header>
+
+  <main class="miniapp-content">
+    <form id="section-adjust-form" class="mp-adjust-form">
+      <div class="mp-adjust-hint">人员调休缺岗时，可调配同线路其他区间人员临时支援至目标区间；</div>
+      <div class="mp-adjust-tip">当前用户所属线路：2号线</div>
+      <div class="mp-adjust-field" data-field="startSection" data-placeholder="请选择站点">
+        <span class="mp-adjust-field__label">起始区间</span>
+        <div class="mp-adjust-field__value is-placeholder">请选择站点</div>
+        <input type="hidden" name="startSection" />
+      </div>
+
+      <div class="mp-adjust-field" data-field="endSection" data-placeholder="请选择站点">
+        <span class="mp-adjust-field__label">终点区间</span>
+        <div class="mp-adjust-field__value is-placeholder">请选择站点</div>
+        <input type="hidden" name="endSection" />
+      </div>
+
+      <div class="mp-adjust-field" data-field="person" data-placeholder="请选择人员">
+        <span class="mp-adjust-field__label">选择人员</span>
+        <div class="mp-adjust-field__value is-placeholder">请选择人员</div>
+        <input type="hidden" name="person" />
+      </div>
+
+      <label class="miniapp-form-field">
+        <span>调配开始时间</span>
+        <input type="datetime-local" name="startTime" required />
+      </label>
+
+      <label class="miniapp-form-field">
+        <span>调配结束时间</span>
+        <input type="datetime-local" name="endTime" required />
+      </label>
+
+      <label class="miniapp-form-field">
+        <span>调配原因</span>
+        <textarea name="reason" rows="3" maxlength="240" placeholder="请输入调配原因"></textarea>
+      </label>
+
+      <div class="miniapp-form-actions">
+        <button type="button" class="miniapp-btn miniapp-btn--ghost" data-action="cancel-adjust">取消</button>
+        <button type="submit" class="miniapp-btn miniapp-btn--primary">保存</button>
+      </div>
+    </form>
+  </main>
+
+  <div id="select-sheet" class="mp-select-sheet" aria-hidden="true">
+    <div class="mp-select-sheet__mask" data-action="close-select-sheet"></div>
+    <div class="mp-select-sheet__panel">
+      <div class="mp-select-sheet__head">
+        <button type="button" data-action="close-select-sheet">取消</button>
+        <span id="select-sheet-title">选择</span>
+        <button type="button" class="is-primary" data-action="confirm-select-sheet">确定</button>
+      </div>
+      <div class="mp-select-sheet__search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input type="text" id="select-sheet-search" placeholder="搜索" />
+      </div>
+      <div class="mp-select-sheet__body" id="select-sheet-options"></div>
+    </div>
+  </div>
+
+  <div id="section-adjust-toast" class="miniapp-toast" aria-live="polite"></div>
+
+  <script src="../../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/miniapp-frame.js"></script>
+  <script src="../../assets/js/mine-page-boot.js"></script>
+  <script>
+    (function (global) {
+      "use strict";
+
+      var STORAGE_KEY = "whmetro-section-adjust-records";
+
+      var STATION_OPTIONS = [
+        "洪山路", "小洪山", "徐家棚", "徐东", "湖北大学", "水果湖",
+        "中南路", "宝通寺", "光谷广场", "杨家湾", "后湖大道", "兴业路",
+        "街道口", "马房山", "岳家嘴", "铁机路", "金潭路", "宏图大道"
+      ];
+
+      var PERSON_OPTIONS = [
+        { id: "p-001", name: "王强" },
+        { id: "p-002", name: "李磊" },
+        { id: "p-003", name: "赵敏" },
+        { id: "p-004", name: "孙伟" },
+        { id: "p-005", name: "周洋" }
+      ];
+
+      var FIELD_CONFIG = {
+        startSection: { title: "选择起始区间", options: STATION_OPTIONS.map(function (s) { return { value: s, label: s }; }) },
+        endSection: { title: "选择终点区间", options: STATION_OPTIONS.map(function (s) { return { value: s, label: s }; }) },
+        person: { title: "选择人员", options: PERSON_OPTIONS.map(function (p) { return { value: p.id, label: p.name }; }) }
+      };
+
+      var currentField = null;
+      var tempValue = "";
+
+      function $(id) { return document.getElementById(id); }
+
+      function esc(value) {
+        return String(value == null ? "" : value).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+
+      function formatDateTimeLocal(date) {
+        var d = date || new Date();
+        var y = d.getFullYear();
+        var m = String(d.getMonth() + 1).padStart(2, "0");
+        var day = String(d.getDate()).padStart(2, "0");
+        var h = String(d.getHours()).padStart(2, "0");
+        var min = String(d.getMinutes()).padStart(2, "0");
+        return y + "-" + m + "-" + day + "T" + h + ":" + min;
+      }
+
+      function toast(msg) {
+        var el = $("section-adjust-toast");
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add("show");
+        clearTimeout(toast._t);
+        toast._t = setTimeout(function () { el.classList.remove("show"); }, 2200);
+      }
+
+      function readRecords() {
+        try {
+          var raw = global.localStorage.getItem(STORAGE_KEY);
+          return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function saveRecord(record) {
+        var records = readRecords();
+        records.unshift(record);
+        try {
+          global.localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        } catch (e) {}
+      }
+
+      function initDefaults() {
+        var startInput = document.querySelector('input[name="startTime"]');
+        var endInput = document.querySelector('input[name="endTime"]');
+        var now = new Date();
+        if (startInput) startInput.value = formatDateTimeLocal(now);
+        if (endInput) {
+          var end = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+          endInput.value = formatDateTimeLocal(end);
+        }
+      }
+
+      function setFieldValue(field, value) {
+        var wrapper = document.querySelector('.mp-adjust-field[data-field="' + field + '"]');
+        if (!wrapper) return;
+        var displayEl = wrapper.querySelector('.mp-adjust-field__value');
+        var inputEl = wrapper.querySelector('input[type="hidden"]');
+        var placeholder = wrapper.getAttribute("data-placeholder") || "请选择";
+        if (inputEl) inputEl.value = value;
+        if (displayEl) {
+          var label = value;
+          if (field === "person") {
+            var found = PERSON_OPTIONS.find(function (p) { return p.id === value; });
+            label = found ? found.name : value;
+          }
+          displayEl.textContent = label || placeholder;
+          displayEl.classList.toggle("is-placeholder", !value);
+        }
+      }
+
+      function openSelectSheet(field) {
+        currentField = field;
+        var cfg = FIELD_CONFIG[field];
+        if (!cfg) return;
+        tempValue = "";
+        var wrapper = document.querySelector('.mp-adjust-field[data-field="' + field + '"]');
+        if (wrapper) {
+          var inputEl = wrapper.querySelector('input[type="hidden"]');
+          if (inputEl) tempValue = inputEl.value;
+        }
+        $("select-sheet-title").textContent = cfg.title;
+        $("select-sheet-search").value = "";
+        renderOptions("");
+        var sheet = $("select-sheet");
+        sheet.classList.add("is-open");
+        sheet.setAttribute("aria-hidden", "false");
+        document.body.classList.add("mp-scroll-locked");
+      }
+
+      function closeSelectSheet() {
+        var sheet = $("select-sheet");
+        sheet.classList.remove("is-open");
+        sheet.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("mp-scroll-locked");
+        currentField = null;
+        tempValue = "";
+      }
+
+      function confirmSelectSheet() {
+        if (currentField) {
+          setFieldValue(currentField, tempValue);
+        }
+        closeSelectSheet();
+      }
+
+      function renderOptions(keyword) {
+        var cfg = currentField ? FIELD_CONFIG[currentField] : null;
+        if (!cfg) return;
+        var kw = (keyword || "").trim().toLowerCase();
+        var filtered = cfg.options.filter(function (opt) {
+          return !kw || opt.label.toLowerCase().indexOf(kw) >= 0;
+        });
+        var host = $("select-sheet-options");
+        if (!filtered.length) {
+          host.innerHTML = '<div class="mp-select-empty">未搜索到相关结果</div>';
+          return;
+        }
+        host.innerHTML = filtered.map(function (opt) {
+          var selected = String(tempValue) === String(opt.value);
+          return '<div class="mp-select-option' + (selected ? ' is-selected' : '') + '" data-value="' + esc(opt.value) + '">' +
+            '<span class="mp-select-option__radio"></span>' +
+            '<span>' + esc(opt.label) + '</span>' +
+            '</div>';
+        }).join("");
+      }
+
+      function bindEvents() {
+        document.querySelectorAll(".mp-adjust-field").forEach(function (field) {
+          field.addEventListener("click", function () {
+            openSelectSheet(field.getAttribute("data-field"));
+          });
+        });
+
+        $("select-sheet-search").addEventListener("input", function () {
+          renderOptions(this.value);
+        });
+
+        $("select-sheet-options").addEventListener("click", function (event) {
+          var option = event.target.closest(".mp-select-option");
+          if (!option) return;
+          tempValue = option.getAttribute("data-value");
+          renderOptions($("select-sheet-search").value);
+        });
+
+        document.addEventListener("click", function (event) {
+          var action = event.target.closest("[data-action]");
+          if (!action) return;
+          var act = action.getAttribute("data-action");
+          if (act === "close-select-sheet") {
+            closeSelectSheet();
+            return;
+          }
+          if (act === "confirm-select-sheet") {
+            confirmSelectSheet();
+            return;
+          }
+          if (act === "cancel-adjust") {
+            event.preventDefault();
+            global.location.href = "../home.html";
+            return;
+          }
+        });
+
+        var form = $("section-adjust-form");
+        form.addEventListener("submit", function (event) {
+          event.preventDefault();
+          var fd = new FormData(form);
+          var data = {
+            startSection: fd.get("startSection"),
+            endSection: fd.get("endSection"),
+            personId: fd.get("person"),
+            startTime: fd.get("startTime"),
+            endTime: fd.get("endTime"),
+            reason: fd.get("reason") || ""
+          };
+
+          if (!data.startSection || !data.endSection || !data.personId || !data.startTime || !data.endTime) {
+            toast("请填写完整信息");
+            return;
+          }
+          if (data.startSection === data.endSection) {
+            toast("起始区间与终点区间不能相同");
+            return;
+          }
+          if (data.endTime <= data.startTime) {
+            toast("结束时间必须晚于开始时间");
+            return;
+          }
+
+          var person = PERSON_OPTIONS.find(function (p) { return p.id === data.personId; });
+          saveRecord({
+            id: "sa-" + Date.now(),
+            startSection: data.startSection,
+            endSection: data.endSection,
+            personId: data.personId,
+            personName: person ? person.name : "",
+            startTime: data.startTime,
+            endTime: data.endTime,
+            reason: data.reason,
+            createTime: formatDateTimeLocal()
+          });
+
+          toast("保存成功");
+          setTimeout(function () {
+            global.location.href = "../home.html";
+          }, 800);
+        });
+      }
+
+      function boot() {
+        initDefaults();
+        bindEvents();
+      }
+
+      if (global.MinePageBoot) {
+        MinePageBoot.start({ navTitle: "区间临时调配" });
+      }
+      boot();
+    })(window);
+  </script>
+</body>
+</html>

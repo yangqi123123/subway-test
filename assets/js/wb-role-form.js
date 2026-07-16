@@ -11,6 +11,8 @@
     "部门及以下或本人数据权限",
   ];
 
+  var ROLE_TYPE_OPTIONS = ["领导层", "工班长", "工班"];
+
   var MENU_PERM_TREE = [
     {
       id: "sys",
@@ -66,6 +68,215 @@
           icon: "fa-solid fa-sliders",
           menuType: "菜单",
           perms: ["查询", "新增", "修改", "删除"],
+        },
+      ],
+    },
+  ];
+
+  var MOBILE_MENU_PERM_TREE = [
+    {
+      id: "m_overview",
+      menuName: "全景地图",
+      icon: "fa-solid fa-map-location-dot",
+      menuType: "菜单",
+      perms: ["查询", "新增", "编辑", "删除"],
+    },
+    {
+      id: "m_patrol",
+      menuName: "巡查",
+      icon: "fa-solid fa-person-walking",
+      menuType: "目录",
+      children: [
+        {
+          id: "m_project_mgmt",
+          menuName: "项目管理",
+          icon: "fa-solid fa-folder-open",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_project_done",
+          menuName: "完工项目",
+          icon: "fa-solid fa-clipboard-check",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_staff_track",
+          menuName: "人员轨迹",
+          icon: "fa-solid fa-route",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_patrol_score",
+          menuName: "巡查打分",
+          icon: "fa-solid fa-star-half-stroke",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_stat_analysis",
+          menuName: "统计分析",
+          icon: "fa-solid fa-chart-pie",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_disease_patrol",
+          menuName: "病害巡查",
+          icon: "fa-solid fa-bug",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_night_work",
+          menuName: "夜班作业",
+          icon: "fa-solid fa-moon",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_manual_record",
+          menuName: "人工巡查记录",
+          icon: "fa-solid fa-pen-to-square",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_uav_record",
+          menuName: "无人机巡检记录",
+          icon: "fa-solid fa-plane-up",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_alarm_info",
+          menuName: "告警信息",
+          icon: "fa-solid fa-triangle-exclamation",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_line_project_stat",
+          menuName: "线路项目统计",
+          icon: "fa-solid fa-chart-column",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_uav_data_stat",
+          menuName: "无人机数据统计",
+          icon: "fa-solid fa-chart-line",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_fulltime_stat",
+          menuName: "全时全域统计",
+          icon: "fa-solid fa-globe",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_knowledge",
+          menuName: "知识库",
+          icon: "fa-solid fa-book",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+      ],
+    },
+    {
+      id: "m_today_task",
+      menuName: "今日任务",
+      icon: "fa-solid fa-calendar-check",
+      menuType: "菜单",
+      perms: ["查询", "新增", "编辑", "删除"],
+    },
+    {
+      id: "m_assets",
+      menuName: "资产",
+      icon: "fa-solid fa-boxes-stacked",
+      menuType: "目录",
+      children: [
+        {
+          id: "m_emergency_person",
+          menuName: "应急人员",
+          icon: "fa-solid fa-user-nurse",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_emergency_warehouse",
+          menuName: "应急仓库",
+          icon: "fa-solid fa-warehouse",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_emergency_plan",
+          menuName: "应急预案",
+          icon: "fa-solid fa-file-shield",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_repair_record",
+          menuName: "维修与检修记录",
+          icon: "fa-solid fa-screwdriver-wrench",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_flight_log",
+          menuName: "飞行日志",
+          icon: "fa-solid fa-plane-circle-check",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_resource_monitor",
+          menuName: "资源监控",
+          icon: "fa-solid fa-gauge-high",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+      ],
+    },
+    {
+      id: "m_mine",
+      menuName: "我的",
+      icon: "fa-regular fa-user",
+      menuType: "目录",
+      children: [
+        {
+          id: "m_todo",
+          menuName: "待办",
+          icon: "fa-solid fa-list-check",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_notice",
+          menuName: "系统通知",
+          icon: "fa-solid fa-bell",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_done",
+          menuName: "已处理事项",
+          icon: "fa-solid fa-check-double",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
+        },
+        {
+          id: "m_settings",
+          menuName: "设置",
+          icon: "fa-solid fa-gear",
+          menuType: "菜单",
+          perms: ["查询", "新增", "编辑", "删除"],
         },
       ],
     },
@@ -201,6 +412,10 @@
       '<div class="wb-form-item wb-form-item--full wb-menu-perm-block">' +
       formLabel("菜单权限", false) +
       '<div class="wb-menu-perm-toolbar">' +
+      '<div class="wb-menu-perm-tabs">' +
+      '<button type="button" class="wb-menu-perm-tab is-active" data-menu-tab="web">后台菜单</button>' +
+      '<button type="button" class="wb-menu-perm-tab" data-menu-tab="mobile">移动端菜单</button>' +
+      "</div>" +
       '<div class="wb-menu-perm-modes">' +
       '<button type="button" class="wb-menu-perm-mode is-active" data-menu-mode="link">节点关联</button>' +
       '<button type="button" class="wb-menu-perm-mode" data-menu-mode="solo">节点独立</button>' +
@@ -218,8 +433,11 @@
       "<thead><tr>" +
       '<th class="wb-menu-perm-col-name">菜单名称</th><th class="wb-menu-perm-col-icon">图标</th><th class="wb-menu-perm-col-type">类型</th><th class="wb-menu-perm-col-perms">权限标识</th>' +
       "</tr></thead>" +
-      "<tbody id=\"wb-menu-perm-tbody\">" +
+      "<tbody id=\"wb-menu-perm-tbody-web\">" +
       renderMenuPermRows(MENU_PERM_TREE, 0, "") +
+      "</tbody>" +
+      '<tbody id="wb-menu-perm-tbody-mobile" style="display:none">' +
+      renderMenuPermRows(MOBILE_MENU_PERM_TREE, 0, "") +
       "</tbody></table></div></div>"
     );
   }
@@ -232,6 +450,7 @@
       inputField("roleKey", "权限字符", row.roleKey, true) +
       inputField("roleSort", "角色顺序", row.roleSort, true) +
       selectField("statusText", "状态", ["启用", "停用"], row.status ? "启用" : "停用", true) +
+      selectField("roleType", "角色类型", ROLE_TYPE_OPTIONS, row.roleType, true) +
       menuPermBlockHtml() +
       '<div class="wb-form-item wb-form-item--full">' +
       formLabel("备注", false) +
@@ -242,31 +461,111 @@
     );
   }
 
-  function getDescendantRows(parentId) {
+  function getDescendantRowsFromTbody(tbody, parentId) {
     var rows = [];
-    document.querySelectorAll("#wb-menu-perm-tbody tr.wb-menu-perm-row").forEach(function (tr) {
+    tbody.querySelectorAll("tr.wb-menu-perm-row").forEach(function (tr) {
       if (tr.getAttribute("data-parent") === parentId) {
         rows.push(tr);
         if (tr.getAttribute("data-has-children") === "1") {
-          rows = rows.concat(getDescendantRows(tr.getAttribute("data-menu-id")));
+          rows = rows.concat(getDescendantRowsFromTbody(tbody, tr.getAttribute("data-menu-id")));
         }
       }
     });
     return rows;
   }
 
+  function getActiveMenuPermTab() {
+    var activeBtn = document.querySelector('[data-menu-tab].is-active');
+    return activeBtn ? activeBtn.getAttribute("data-menu-tab") : "web";
+  }
+
+  function getActiveMenuPermTbody() {
+    var tab = getActiveMenuPermTab();
+    return document.getElementById("wb-menu-perm-tbody-" + tab);
+  }
+
   function updateMenuPermCount() {
     var countEl = document.getElementById("wb-menu-perm-count");
     if (!countEl) return;
-    var n = document.querySelectorAll("#wb-menu-perm-tbody [data-menu-check]:checked").length;
+    var tbody = getActiveMenuPermTbody();
+    var n = tbody ? tbody.querySelectorAll("[data-menu-check]:checked").length : 0;
     countEl.textContent = "已选中 " + n + " 个节点";
   }
 
-  function mountMenuPermTree() {
-    var tbody = document.getElementById("wb-menu-perm-tbody");
+  function applyMenuPermSelections(row) {
+    row = row || {};
+    function applyToTbody(tbody, selected) {
+      selected = selected || { menus: [], perms: {} };
+      if (!tbody) return;
+      tbody.querySelectorAll("tr.wb-menu-perm-row").forEach(function (tr) {
+        var menuId = tr.getAttribute("data-menu-id");
+        var menuCb = tr.querySelector("[data-menu-check]");
+        if (menuCb) menuCb.checked = (selected.menus || []).indexOf(menuId) > -1;
+        var permList = selected.perms && selected.perms[menuId] ? selected.perms[menuId] : [];
+        tr.querySelectorAll("[data-perm-check]").forEach(function (cb) {
+          cb.checked = permList.indexOf(cb.value) > -1;
+        });
+      });
+      syncParentChecks(tbody);
+    }
+    applyToTbody(document.getElementById("wb-menu-perm-tbody-web"), row.webMenuPerms);
+    applyToTbody(document.getElementById("wb-menu-perm-tbody-mobile"), row.mobileMenuPerms);
+    updateMenuPermCount();
+  }
+
+  function collectMenuPermData() {
+    function collectFromTbody(tbody) {
+      var menus = [];
+      var perms = {};
+      if (!tbody) return { menus: menus, perms: perms };
+      tbody.querySelectorAll("tr.wb-menu-perm-row").forEach(function (tr) {
+        var menuId = tr.getAttribute("data-menu-id");
+        var menuCb = tr.querySelector("[data-menu-check]");
+        if (menuCb && menuCb.checked) menus.push(menuId);
+        var checkedPerms = [];
+        tr.querySelectorAll("[data-perm-check]:checked").forEach(function (cb) {
+          checkedPerms.push(cb.value);
+        });
+        if (checkedPerms.length) perms[menuId] = checkedPerms;
+      });
+      return { menus: menus, perms: perms };
+    }
+    return {
+      webMenuPerms: collectFromTbody(document.getElementById("wb-menu-perm-tbody-web")),
+      mobileMenuPerms: collectFromTbody(document.getElementById("wb-menu-perm-tbody-mobile")),
+    };
+  }
+
+  function syncParentChecks(tbody) {
     if (!tbody) return;
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll("tr.wb-menu-perm-row"));
+    for (var i = rows.length - 1; i >= 0; i--) {
+      var tr = rows[i];
+      var menuId = tr.getAttribute("data-menu-id");
+      var childRows = getDescendantRowsFromTbody(tbody, menuId).filter(function (r) {
+        return r.getAttribute("data-parent") === menuId;
+      });
+      if (!childRows.length) continue;
+      var anyChecked = childRows.some(function (r) {
+        var cb = r.querySelector("[data-menu-check]");
+        return cb && cb.checked;
+      });
+      var menuCb = tr.querySelector("[data-menu-check]");
+      if (menuCb) menuCb.checked = anyChecked;
+    }
+  }
+
+  function mountMenuPermTree(row) {
+    var tbodyWeb = document.getElementById("wb-menu-perm-tbody-web");
+    var tbodyMobile = document.getElementById("wb-menu-perm-tbody-mobile");
+    if (!tbodyWeb || !tbodyMobile) return;
 
     var linkMode = true;
+    var activeTab = "web";
+
+    function currentTbody() {
+      return activeTab === "mobile" ? tbodyMobile : tbodyWeb;
+    }
 
     function setRowVisible(tr, visible) {
       tr.style.display = visible ? "" : "none";
@@ -284,70 +583,67 @@
       if (!linkMode) return;
       var parentId = childTr.getAttribute("data-parent");
       if (!parentId) return;
+      var tbody = currentTbody();
       var parentTr = tbody.querySelector('[data-menu-id="' + parentId + '"]');
       if (!parentTr) return;
-      var childRows = getDescendantRows(parentId).filter(function (r) {
+      var childRows = getDescendantRowsFromTbody(tbody, parentId).filter(function (r) {
         return r.getAttribute("data-parent") === parentId;
       });
       var anyChecked = childRows.some(function (r) {
-        return r.querySelector("[data-menu-check]").checked;
+        var cb = r.querySelector("[data-menu-check]");
+        return cb && cb.checked;
       });
-      parentTr.querySelector("[data-menu-check]").checked = anyChecked;
+      var parentCb = parentTr.querySelector("[data-menu-check]");
+      if (parentCb) parentCb.checked = anyChecked;
       applyParentCheck(parentTr);
     }
 
-    tbody.querySelectorAll("[data-menu-check]").forEach(function (cb) {
-      cb.onchange = function () {
-        var tr = cb.closest("tr");
-        var checked = cb.checked;
-        if (linkMode) {
-          getDescendantRows(tr.getAttribute("data-menu-id")).forEach(function (row) {
-            setChecked(row, checked);
-          });
-        } else {
-          tr.querySelectorAll("[data-perm-check]").forEach(function (p) {
-            p.checked = checked;
-          });
-        }
-        if (linkMode) applyParentCheck(tr);
-        updateMenuPermCount();
-      };
-    });
+    function bindTbodyEvents(tbody) {
+      tbody.querySelectorAll("[data-menu-check]").forEach(function (cb) {
+        cb.onchange = function () {
+          var tr = cb.closest("tr");
+          var checked = cb.checked;
+          if (linkMode) {
+            getDescendantRowsFromTbody(tbody, tr.getAttribute("data-menu-id")).forEach(function (row) {
+              setChecked(row, checked);
+            });
+          } else {
+            tr.querySelectorAll("[data-perm-check]").forEach(function (p) {
+              p.checked = checked;
+            });
+          }
+          if (linkMode) applyParentCheck(tr);
+          updateMenuPermCount();
+        };
+      });
 
-    tbody.querySelectorAll("[data-perm-check]").forEach(function (cb) {
-      cb.onchange = function () {
-        var tr = cb.closest("tr");
-        var anyPerm = tr.querySelectorAll("[data-perm-check]:checked").length > 0;
-        tr.querySelector("[data-menu-check]").checked = anyPerm;
-        if (linkMode) applyParentCheck(tr);
-        updateMenuPermCount();
-      };
-    });
+      tbody.querySelectorAll("[data-perm-check]").forEach(function (cb) {
+        cb.onchange = function () {
+          var tr = cb.closest("tr");
+          var anyPerm = tr.querySelectorAll("[data-perm-check]:checked").length > 0;
+          var menuCb = tr.querySelector("[data-menu-check]");
+          if (menuCb) menuCb.checked = anyPerm;
+          if (linkMode) applyParentCheck(tr);
+          updateMenuPermCount();
+        };
+      });
 
-    document.querySelectorAll("[data-menu-mode]").forEach(function (btn) {
-      btn.onclick = function () {
-        document.querySelectorAll("[data-menu-mode]").forEach(function (b) {
-          b.classList.toggle("is-active", b === btn);
-        });
-        linkMode = btn.getAttribute("data-menu-mode") === "link";
-      };
-    });
+      tbody.querySelectorAll("[data-toggle]").forEach(function (btn) {
+        btn.onclick = function () {
+          var tr = btn.closest("tr");
+          var expanded = btn.getAttribute("aria-expanded") !== "false";
+          var nextExpanded = !expanded;
+          btn.setAttribute("aria-expanded", nextExpanded ? "true" : "false");
+          btn.innerHTML = nextExpanded
+            ? '<i class="fa-solid fa-caret-down"></i>'
+            : '<i class="fa-solid fa-caret-right"></i>';
+          collapseDescendants(tbody, tr.getAttribute("data-menu-id"), !nextExpanded);
+        };
+      });
+    }
 
-    tbody.querySelectorAll("[data-toggle]").forEach(function (btn) {
-      btn.onclick = function () {
-        var tr = btn.closest("tr");
-        var expanded = btn.getAttribute("aria-expanded") !== "false";
-        var nextExpanded = !expanded;
-        btn.setAttribute("aria-expanded", nextExpanded ? "true" : "false");
-        btn.innerHTML = nextExpanded
-          ? '<i class="fa-solid fa-caret-down"></i>'
-          : '<i class="fa-solid fa-caret-right"></i>';
-        collapseDescendants(tr.getAttribute("data-menu-id"), !nextExpanded);
-      };
-    });
-
-    function collapseDescendants(parentId, hide) {
-      getDescendantRows(parentId).forEach(function (row) {
+    function collapseDescendants(tbody, parentId, hide) {
+      getDescendantRowsFromTbody(tbody, parentId).forEach(function (row) {
         setRowVisible(row, !hide);
         if (hide && row.getAttribute("data-has-children") === "1") {
           var toggle = row.querySelector("[data-toggle]");
@@ -359,10 +655,35 @@
       });
     }
 
+    bindTbodyEvents(tbodyWeb);
+    bindTbodyEvents(tbodyMobile);
+
+    document.querySelectorAll("[data-menu-mode]").forEach(function (btn) {
+      btn.onclick = function () {
+        document.querySelectorAll("[data-menu-mode]").forEach(function (b) {
+          b.classList.toggle("is-active", b === btn);
+        });
+        linkMode = btn.getAttribute("data-menu-mode") === "link";
+      };
+    });
+
+    document.querySelectorAll("[data-menu-tab]").forEach(function (btn) {
+      btn.onclick = function () {
+        document.querySelectorAll("[data-menu-tab]").forEach(function (b) {
+          b.classList.toggle("is-active", b === btn);
+        });
+        activeTab = btn.getAttribute("data-menu-tab") || "web";
+        tbodyWeb.style.display = activeTab === "web" ? "" : "none";
+        tbodyMobile.style.display = activeTab === "mobile" ? "" : "none";
+        updateMenuPermCount();
+      };
+    });
+
     var collapseAll = document.querySelector("[data-menu-collapse]");
     var expandAll = document.querySelector("[data-menu-expand]");
     if (collapseAll) {
       collapseAll.onclick = function () {
+        var tbody = currentTbody();
         tbody.querySelectorAll("[data-toggle]").forEach(function (btn) {
           btn.setAttribute("aria-expanded", "false");
           btn.innerHTML = '<i class="fa-solid fa-caret-right"></i>';
@@ -374,6 +695,7 @@
     }
     if (expandAll) {
       expandAll.onclick = function () {
+        var tbody = currentTbody();
         tbody.querySelectorAll("tr.wb-menu-perm-row").forEach(function (tr) {
           setRowVisible(tr, true);
         });
@@ -384,7 +706,7 @@
       };
     }
 
-    updateMenuPermCount();
+    applyMenuPermSelections(row);
   }
 
   function openDataScopeModal(row) {
@@ -630,6 +952,7 @@
   global.WBRoleForm = {
     buildRoleFormHtml: buildRoleFormHtml,
     mountMenuPermTree: mountMenuPermTree,
+    collectMenuPermData: collectMenuPermData,
     openDataScopeModal: openDataScopeModal,
     openAssignUsersModal: openAssignUsersModal,
     DATA_SCOPE_OPTIONS: DATA_SCOPE_OPTIONS,

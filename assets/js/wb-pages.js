@@ -58,9 +58,9 @@
   ];
 
   var roleRows = [
-    { roleId: "1", roleName: "超级管理员", roleKey: "super_admin", roleSort: "1", dataScope: "全部数据权限", status: true, createTime: "2026-04-01 10:00", remark: "拥有全部权限" },
-    { roleId: "2", roleName: "系统管理员", roleKey: "system_admin", roleSort: "2", dataScope: "本部门及以下数据权限", status: true, createTime: "2026-04-02 10:00", remark: "负责系统维护" },
-    { roleId: "3", roleName: "业务审核员", roleKey: "reviewer", roleSort: "3", dataScope: "自定义数据权限", status: false, createTime: "2026-04-03 10:00", remark: "负责流程审核" },
+    { roleId: "1", roleName: "超级管理员", roleKey: "super_admin", roleSort: "1", roleType: "领导层", dataScope: "全部数据权限", status: true, createTime: "2026-04-01 10:00", remark: "拥有全部权限" },
+    { roleId: "2", roleName: "系统管理员", roleKey: "system_admin", roleSort: "2", roleType: "领导层", dataScope: "本部门及以下数据权限", status: true, createTime: "2026-04-02 10:00", remark: "负责系统维护" },
+    { roleId: "3", roleName: "业务审核员", roleKey: "reviewer", roleSort: "3", roleType: "工班长", dataScope: "自定义数据权限", status: false, createTime: "2026-04-03 10:00", remark: "负责流程审核" },
   ];
 
   var menuRows = [
@@ -501,6 +501,7 @@
         filters: [
           { key: "roleName", label: "角色名称" },
           { key: "roleKey", label: "权限字符" },
+          { key: "roleType", label: "角色类型", type: "select", options: ["领导层", "工班长", "工班"] },
           { key: "statusText", label: "状态", type: "select", options: ["启用", "停用"] },
           { key: "createTime", label: "创建时间" },
         ],
@@ -513,6 +514,7 @@
           { key: "roleId", label: "角色编号" },
           { key: "roleName", label: "角色名称" },
           { key: "roleKey", label: "权限字符" },
+          { key: "roleType", label: "角色类型" },
           { key: "roleSort", label: "显示顺序" },
           { key: "dataScope", label: "数据权限" },
           { key: "status", label: "状态", type: "switch" },
@@ -523,10 +525,26 @@
         buildFormHtml: function (row) {
           return WBRoleForm.buildRoleFormHtml(row);
         },
-        onFormOpen: function () {
-          WBRoleForm.mountMenuPermTree();
+        onFormOpen: function (row) {
+          WBRoleForm.mountMenuPermTree(row);
           var card = document.querySelector("#wb-modal-mask .wb-modal-card");
           if (card) card.classList.add("wb-modal-card--lg");
+        },
+        onModalSave: function (row, data) {
+          if (!window.WBRoleForm || !WBRoleForm.collectMenuPermData) return false;
+          var menuPerms = WBRoleForm.collectMenuPermData();
+          if (row) {
+            Object.assign(row, data, menuPerms);
+            row.status = data.statusText === "启用";
+          } else {
+            var next = Object.assign({}, data, menuPerms);
+            next.roleId = String(Date.now());
+            next.createTime = next.createTime || "2026-06-12 10:00";
+            next.status = next.statusText === "启用";
+            next.dataScope = "全部数据权限";
+            roleRows.unshift(next);
+          }
+          return true;
         },
         actions: roleActions(),
       };

@@ -54,7 +54,7 @@
       badge: "审批结果与到期提醒",
       filters: [
         { id: "title", label: "标题", type: "text", placeholder: "请输入标题关键词" },
-        { id: "type", label: "通知类型", options: ["全部", "项目巡查", "审批消息", "空域许可提醒"] },
+        { id: "type", label: "通知类型", options: ["全部", "项目巡查", "审批消息", "空域许可提醒", "区间调配"] },
         { id: "start", label: "发布开始", type: "date" },
         { id: "end", label: "发布结束", type: "date" }
       ],
@@ -184,7 +184,151 @@
               remark: "",
               updatedAt: "2026-07-03 19:40",
             },
+            {
+              recordId: "122806",
+              projectName: "三金潭车辆段上盖物业综合开发项目",
+              projectType: "临时项目",
+              line: "2号线",
+              direction: "上行",
+              section: "金潭路-宏图大道",
+              station: "宏图大道",
+              user: "李明",
+              patrolDate: "2026-07-03 19:55",
+              progress: "现场钢筋绑扎施工",
+              remark: "",
+              updatedAt: "2026-07-03 19:55",
+            },
           ],
+          pendingProjects: [
+            {
+              recordId: "122901",
+              projectName: "武昌滨江总部基地项目",
+              projectType: "重点项目",
+              line: "7号线",
+              direction: "上行",
+              section: "徐家棚-湖北大学",
+              station: "徐家棚",
+              user: "李明",
+              patrolDate: "",
+              progress: "桩基施工与泥浆外运",
+              remark: "",
+              updatedAt: "",
+            },
+            {
+              recordId: "122902",
+              projectName: "金融街六中北项目",
+              projectType: "一般项目",
+              line: "2号线",
+              direction: "上行",
+              section: "中南路-宝通寺",
+              station: "中南路",
+              user: "李明",
+              patrolDate: "",
+              progress: "基坑降水与支护施工",
+              remark: "",
+              updatedAt: "",
+            },
+            {
+              recordId: "122903",
+              projectName: "光谷广场综合体基坑项目",
+              projectType: "临时项目",
+              line: "2号线",
+              direction: "下行",
+              section: "光谷广场-杨家湾",
+              station: "光谷广场",
+              user: "李明",
+              patrolDate: "",
+              progress: "土方开挖与栈桥搭设",
+              remark: "",
+              updatedAt: "",
+            },
+          ],
+        },
+        {
+          id: "n7",
+          source: "今日巡线",
+          type: "项目巡查",
+          title: "新建商业文化设施项目已完成巡查",
+          time: "2026-07-04 09:30",
+          read: "未读",
+          recordId: "123001",
+          projectName: "新建商业文化设施项目",
+          projectType: "一般项目",
+          line: "8号线",
+          direction: "上行",
+          section: "水果湖-洪山路",
+          station: "洪山路",
+          user: "李明",
+          patrolDate: "2026-07-04 09:15",
+          progress: "负二层消防泵房施工完成，现场文明施工情况正常。",
+          remark: "",
+          updatedAt: "2026-07-04 09:30",
+        },
+        {
+          id: "n8",
+          type: "区间调配",
+          title: "您已被临时调配至【洪山路-徐家棚】",
+          time: "2026-07-16 09:53",
+          read: "未读",
+          source: "区间临时调配",
+          personName: "王强",
+          line: "8号线",
+          fromSection: "水果湖-洪山路",
+          toSection: "洪山路-徐家棚",
+          startTime: "2026-07-16 09:53",
+          endTime: "2026-07-16 17:53",
+          reason: "本工班李明调休，临时补位",
+          operator: "工班长-李明",
+        },
+        {
+          id: "n9",
+          type: "区间调配",
+          title: "王强已被临时调配至【洪山路-徐家棚】",
+          time: "2026-07-16 09:53",
+          read: "未读",
+          source: "区间临时调配",
+          personName: "王强",
+          line: "8号线",
+          fromSection: "水果湖-洪山路",
+          toSection: "洪山路-徐家棚",
+          startTime: "2026-07-16 09:53",
+          endTime: "2026-07-16 17:53",
+          reason: "本工班李明调休，临时补位",
+          operator: "工班长-李明",
+        },
+        {
+          id: "n10",
+          type: "区间调配",
+          subType: "user-change",
+          title: "您的责任区间已变更为【水果湖-洪山路】",
+          time: "2026-07-16 10:20",
+          read: "未读",
+          source: "用户管理",
+          userName: "张三",
+          oldLine: "8号线",
+          oldStartSection: "洪山路",
+          oldEndSection: "徐家棚",
+          newLine: "8号线",
+          newStartSection: "水果湖",
+          newEndSection: "洪山路",
+          operator: "管理员-admin",
+        },
+        {
+          id: "n11",
+          type: "区间调配",
+          subType: "user-change",
+          title: "王强的责任区间已变更为【水果湖-洪山路】",
+          time: "2026-07-16 10:25",
+          read: "未读",
+          source: "用户管理",
+          userName: "王强",
+          oldLine: "8号线",
+          oldStartSection: "洪山路",
+          oldEndSection: "徐家棚",
+          newLine: "8号线",
+          newStartSection: "水果湖",
+          newEndSection: "洪山路",
+          operator: "管理员-admin",
         },
       ],
       actions: ["查看", "删除"],
@@ -198,7 +342,7 @@
         { id: "type", label: "事项类型", options: ["全部", "审批", "告警", "空域许可续期"] },
         { id: "start", label: "处理开始", type: "date" },
         { id: "end", label: "处理结束", type: "date" },
-        { id: "result", label: "处理结果", options: ["全部", "通过", "驳回", "已复核", "已续期"] }
+        { id: "result", label: "处理结果", options: ["全部", "审核中", "通过", "驳回", "已复核", "已续期"] }
       ],
       columns: ["标题", "类型", "来源模块", "处理人", "处理时间", "处理结果", "操作"],
       rows: [
@@ -280,8 +424,8 @@
       '.wb-hero{border:1px solid rgba(34,211,238,.16);background:linear-gradient(135deg,rgba(2,8,23,.92),rgba(8,47,73,.28));box-shadow:0 22px 60px rgba(0,0,0,.28);border-radius:8px}.wb-stat{border-left:1px solid rgba(34,211,238,.18);padding-left:18px}.wb-table th,.wb-table td{height:52px;border-bottom:1px solid rgba(34,211,238,.09);border-right:1px solid rgba(34,211,238,.06);vertical-align:middle}.wb-table th:last-child,.wb-table td:last-child{border-right:0}.wb-table thead th{background:rgba(2,8,23,.72);font-size:12px;font-weight:600;white-space:nowrap}.wb-table tbody td{font-size:12px;color:rgba(226,245,255,.9)}.wb-tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;border:1px solid rgba(34,211,238,.22);background:rgba(34,211,238,.08);color:#bae6fd;font-size:11px}.wb-tag--warn{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.08);color:#fde68a}.wb-tag--danger{border-color:rgba(251,113,133,.32);background:rgba(251,113,133,.08);color:#fecdd3}.wb-tag--ok{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.08);color:#bbf7d0}.wb-action{display:inline-flex;align-items:center;gap:5px;margin-right:10px;white-space:nowrap;cursor:pointer;color:#67e8f9}.wb-action:hover{color:#fff}.wb-action--hot{color:#fbbf24}.wb-action--danger{color:#fb7185}.wb-modal-mask{position:fixed;inset:0;z-index:1250;display:none;align-items:flex-start;justify-content:center;background:rgba(2,8,23,.68);padding:72px 20px 20px}.wb-modal-mask.show{display:flex}.wb-modal{width:min(760px,94vw);max-height:calc(100dvh - 96px);overflow:auto;border:1px solid rgba(34,211,238,.2);border-radius:8px;background:#071426;box-shadow:0 30px 90px rgba(0,0,0,.5)}' +
       '.wb-approval-mask{position:fixed;inset:0;z-index:1250;display:none;align-items:flex-start;justify-content:center;background:rgba(2,8,23,.72);padding:72px 22px 22px}.wb-approval-mask.show{display:flex}.wb-approval-modal{width:min(1080px,96vw);max-height:calc(100dvh - 96px);overflow:auto;border:1px solid rgba(34,211,238,.25);border-radius:10px;background:#071b33;box-shadow:0 20px 60px rgba(0,0,0,.55)}' +
       '.wb-notify-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px}.wb-notify-detail-item--full{grid-column:1/-1}.wb-notify-detail-key{display:block;font-size:11px;color:#9cc6df;margin-bottom:6px}.wb-notify-detail-val{display:block;font-size:13px;color:#ecfeff;line-height:1.5;word-break:break-word}.wb-notify-detail-val--pass{color:#34d399;font-weight:600}.wb-notify-detail-val--reject{color:#fb7185;font-weight:600}' +
-      '.wb-notify-title-cell__main{font-size:12px;color:rgba(226,245,255,.92);line-height:1.45}.wb-notify-title-cell__sub{margin-top:4px;font-size:11px;color:#94a3b8;line-height:1.4}.wb-modal--patrol-detail{width:min(920px,96vw)}.wb-modal--patrol-split{width:min(1120px,96vw)}.wb-notify-patrol-head{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(34,211,238,.12)}.wb-notify-patrol-head__title{margin:0;font-size:16px;font-weight:600;color:#ecfeff}.wb-notify-patrol-head__sub{margin:4px 0 0;font-size:12px;color:#94a3b8}.wb-notify-patrol-split{display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:18px;min-height:420px}.wb-notify-patrol-left{padding:14px;border:1px solid rgba(34,211,238,.14);border-radius:8px;background:rgba(2,8,23,.35)}.wb-notify-patrol-right{padding:14px;border:1px solid rgba(34,211,238,.14);border-radius:8px;background:rgba(2,8,23,.22);min-height:360px}.wb-notify-patrol-meta{display:grid;gap:10px;margin-bottom:14px}.wb-notify-patrol-projects__label{font-size:11px;color:#9cc6df;margin-bottom:8px}.wb-notify-project-links{display:flex;flex-direction:column;gap:8px}.wb-notify-project-link{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:8px 10px;border:1px solid rgba(34,211,238,.14);border-radius:6px;background:rgba(15,23,42,.45);color:#67e8f9;font-size:12px;text-align:left;cursor:pointer}.wb-notify-project-link:hover,.wb-notify-project-link.is-active{border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.08);color:#ecfeff}.wb-notify-project-link__name{flex:1;min-width:0;word-break:break-word}.wb-notify-project-link__action{flex-shrink:0;font-size:11px;color:#94a3b8}.wb-notify-patrol-record-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px}.wb-notify-patrol-record-item--full{grid-column:1/-1}.wb-notify-patrol-record-key{display:block;font-size:11px;color:#9cc6df;margin-bottom:4px}.wb-notify-patrol-record-val{display:block;font-size:13px;color:#ecfeff;line-height:1.55;word-break:break-word}.wb-notify-patrol-record-empty{display:flex;align-items:center;justify-content:center;min-height:320px;color:#94a3b8;font-size:13px;text-align:center;padding:24px}@media (max-width:960px){.wb-notify-patrol-split{grid-template-columns:1fr}.wb-notify-patrol-record-grid{grid-template-columns:1fr}}' +
-      '.wb-approval-modal .field-label{color:#9cc6df;font-size:12px;margin-bottom:6px;display:block}.status-dot{width:7px;height:7px;border-radius:999px;display:inline-block;margin-right:6px}' +
+      '.wb-notify-title-cell__main{font-size:12px;color:rgba(226,245,255,.92);line-height:1.45}.wb-notify-title-cell__sub{margin-top:4px;font-size:11px;color:#94a3b8;line-height:1.4}.wb-modal--patrol-detail{width:min(920px,96vw)}.wb-modal--patrol-split{width:min(1400px,98vw)}.wb-notify-patrol-split{grid-template-columns:minmax(260px,300px) minmax(0,1fr)}.wb-notify-patrol-head{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(34,211,238,.12)}.wb-notify-patrol-head__title{margin:0;font-size:16px;font-weight:600;color:#ecfeff}.wb-notify-patrol-head__sub{margin:4px 0 0;font-size:12px;color:#94a3b8}.wb-notify-patrol-split{display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:18px;min-height:420px}.wb-notify-patrol-left{padding:14px;border:1px solid rgba(34,211,238,.14);border-radius:8px;background:rgba(2,8,23,.35)}.wb-notify-patrol-right{padding:14px;border:1px solid rgba(34,211,238,.14);border-radius:8px;background:rgba(2,8,23,.22);min-height:360px}.wb-notify-patrol-meta{display:grid;gap:10px;margin-bottom:14px}.wb-notify-patrol-projects__label{font-size:11px;color:#9cc6df;margin-bottom:8px}.wb-notify-project-links{display:flex;flex-direction:column;gap:8px}.wb-notify-project-link{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:8px 10px;border:1px solid rgba(34,211,238,.14);border-radius:6px;background:rgba(15,23,42,.45);color:#67e8f9;font-size:12px;text-align:left;cursor:pointer}.wb-notify-project-link:hover,.wb-notify-project-link.is-active{border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.08);color:#ecfeff}.wb-notify-project-link__name{flex:1;min-width:0;word-break:break-word}.wb-notify-patrol-section{margin-bottom:16px}.wb-notify-patrol-section:last-child{margin-bottom:0}.wb-notify-project-link.is-pending{border-color:transparent;background:transparent;color:#67e8f9}.wb-notify-project-link.is-pending:hover{border-color:rgba(34,211,238,.35);background:rgba(34,211,238,.08);color:#ecfeff}.wb-notify-project-link.is-pending.is-active{border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.12);color:#ecfeff}.wb-notify-project-link.is-disabled{cursor:default;opacity:.7;border-color:rgba(34,211,238,.08);background:rgba(15,23,42,.25);color:#94a3b8}.wb-notify-project-link.is-disabled .wb-notify-project-link__name{color:#94a3b8}.wb-notify-project-tag{flex-shrink:0;display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:4px;font-size:11px;font-weight:500;border:1px solid}.wb-notify-project-tag.is-key{color:#ec4899;background:rgba(236,72,153,.1);border-color:rgba(236,72,153,.35)}.wb-notify-project-tag.is-normal{color:#f97316;background:rgba(249,115,22,.1);border-color:rgba(249,115,22,.35)}.wb-notify-project-tag.is-temp{color:#f59e0b;background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.35)}.wb-notify-patrol-record-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px}.wb-notify-patrol-record-item--full{grid-column:1/-1}.wb-notify-patrol-record-key{display:block;font-size:11px;color:#9cc6df;margin-bottom:4px}.wb-notify-patrol-record-val{display:block;font-size:13px;color:#ecfeff;line-height:1.55;word-break:break-word}.wb-notify-patrol-record-empty{display:flex;align-items:center;justify-content:center;min-height:320px;color:#94a3b8;font-size:13px;text-align:center;padding:24px}@media (max-width:960px){.wb-notify-patrol-split{grid-template-columns:1fr}.wb-notify-patrol-record-grid{grid-template-columns:1fr}}' +
+      '.wb-approval-modal .field-label{color:#9cc6df;font-size:12px;margin-bottom:6px;display:block}.status-dot{width:7px;height:7px;border-radius:999px;display:inline-block;margin-right:6px}.wb-project-patrol-pane{min-height:360px}.wb-project-patrol-pane__head{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(34,211,238,.12)}.wb-project-patrol-pane__head h4{margin:0;font-size:16px;font-weight:600;color:#ecfeff}.wb-project-patrol-pane__head p{margin:4px 0 0;font-size:12px;color:#94a3b8}.wb-project-patrol-filters{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;margin-bottom:14px;padding:12px;border:1px solid rgba(34,211,238,.12);border-radius:8px;background:rgba(2,8,23,.35)}.wb-project-patrol-filters label{display:flex;flex-direction:column;gap:6px;font-size:11px;color:#9cc6df;min-width:140px}.wb-project-patrol-filters label:nth-child(3){flex:1;min-width:260px}.wb-project-patrol-filters .wh-input{height:32px;padding:0 8px;font-size:12px;border-radius:6px;border:1px solid rgba(34,211,238,.22);background:rgba(2,8,23,.55);color:#ecfeff}.wb-project-patrol-dates{display:flex;align-items:center;gap:8px}.wb-project-patrol-filters__actions{display:flex;gap:8px;margin-left:auto}.wb-project-patrol-filters__actions button{height:32px;padding:0 16px;font-size:12px;border-radius:6px}.wb-project-patrol-table-wrap{overflow-x:auto;border:1px solid rgba(34,211,238,.12);border-radius:8px;background:rgba(2,8,23,.25)}.wb-project-patrol-table{width:100%;min-width:1100px;border-collapse:collapse;font-size:12px}.wb-project-patrol-table th{padding:10px 8px;text-align:left;background:rgba(2,8,23,.72);color:#cffafe;font-weight:600;border-bottom:1px solid rgba(34,211,238,.12)}.wb-project-patrol-table td{padding:10px 8px;border-bottom:1px solid rgba(34,211,238,.08);color:rgba(226,245,255,.9);vertical-align:middle}.wb-project-patrol-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;font-size:12px;color:#94a3b8}.wb-project-patrol-pages{display:flex;gap:6px}.patrol-type-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:10px;border:1px solid rgba(34,211,238,.28);color:#a5f3fc;background:rgba(34,211,238,.08)}.patrol-type-tag--uav{border-color:rgba(96,165,250,.35);color:#93c5fd;background:rgba(59,130,246,.1)}.patrol-type-tag--alert{border-color:rgba(251,191,36,.35);color:#fcd34d;background:rgba(245,158,11,.1)}' +
       '.approval-records-scroll{max-height:min(520px,58vh);overflow-y:auto;padding:2px 8px 2px 2px}.approval-item{display:flex;gap:12px;align-items:stretch;padding:0 0 18px;border:none}.approval-item--last{padding-bottom:0}.approval-item__rail{display:flex;flex-direction:column;align-items:center;width:20px;flex-shrink:0}.approval-item__dot{width:12px;height:12px;min-width:12px;min-height:12px;border-radius:50%;background:#64748b;flex-shrink:0}.approval-item__line{flex:1;width:2px;min-height:14px;margin-top:4px;background:rgba(148,163,184,.22)}.approval-item.pass .approval-item__dot{background:#22c55e}.approval-item.wait .approval-item__dot{background:#f59e0b}.approval-item.reject .approval-item__dot{background:#ef4444}.approval-item__content{flex:1;min-width:0}' +
       '.disease-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}.disease-layout__right{position:sticky;top:72px;align-self:start;width:300px;max-height:calc(100dvh - 88px);display:flex;flex-direction:column;gap:10px}.disease-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}.disease-stat-card{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:10px;border:1px solid rgba(34,211,238,.22);background:linear-gradient(135deg,rgba(8,15,35,.92),rgba(6,12,28,.88))}.disease-stat-card__icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}.disease-stat-card--blue .disease-stat-card__icon{background:rgba(59,130,246,.18);color:#93c5fd;border:1px solid rgba(59,130,246,.35)}.disease-stat-card--cyan .disease-stat-card__icon{background:rgba(34,211,238,.12);color:#67e8f9;border:1px solid rgba(34,211,238,.35)}.disease-stat-card--green .disease-stat-card__icon{background:rgba(74,222,128,.12);color:#86efac;border:1px solid rgba(74,222,128,.35)}.disease-stat-card--amber .disease-stat-card__icon{background:rgba(251,191,36,.12);color:#fcd34d;border:1px solid rgba(251,191,36,.35)}.disease-stat-card--rose .disease-stat-card__icon{background:rgba(251,113,133,.12);color:#fda4af;border:1px solid rgba(251,113,133,.35)}.disease-stat-card__value{font-size:22px;font-weight:700;color:#f0f9ff;line-height:1.2}.disease-stat-card__unit{font-size:12px;font-weight:400;margin-left:2px;color:#94a3b8}.disease-stat-card__label{font-size:11px;color:#94a3b8;margin-top:2px}.disease-stat-card__trend{font-size:10px;margin-top:4px;color:#94a3b8}.disease-filter-panel,.disease-quick-panel{display:flex;flex-direction:column;border-radius:10px;border:1px solid rgba(34,211,238,.2);background:rgba(8,15,35,.78)}.disease-panel-title{font-size:12px;font-weight:600;color:#e2f5ff;margin:0;padding:8px 10px 7px;border-bottom:1px solid rgba(34,211,238,.12);background:rgba(8,15,35,.92)}.disease-panel-body{padding:8px 10px 10px}.disease-filter-panel .disease-panel-body{display:flex;flex-direction:column;gap:6px}.disease-filter-panel label{display:flex;flex-direction:column;gap:3px;margin:0;font-size:10px}.disease-filter-panel label>span:first-child{color:#94a3b8}.disease-filter-panel .wh-input{height:26px!important;min-height:26px;font-size:11px;padding:0 6px}.disease-filter-actions{display:flex;gap:6px;margin-top:4px;padding-top:6px;border-top:1px solid rgba(34,211,238,.1)}.disease-filter-actions button{flex:1;padding-top:4px;padding-bottom:4px;font-size:11px}.disease-list-toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}.disease-quick-panel .disease-panel-body{padding:6px 10px 8px}.disease-quick-link{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;margin-bottom:5px;border-radius:6px;border:1px solid rgba(34,211,238,.14);background:rgba(15,23,42,.45);color:#e2f5ff;font-size:11px;text-decoration:none}.disease-quick-link:last-child{margin-bottom:0}.disease-quick-link:hover{border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.08);color:#fff}.disease-quick-link.is-active{border-color:rgba(34,211,238,.55);background:rgba(34,211,238,.12);color:#a5f3fc}.disease-quick-link i{width:16px;text-align:center;color:#67e8f9;font-size:12px}@media (max-width:1400px){.disease-layout{grid-template-columns:1fr}.disease-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.disease-layout__right{position:static;width:100%;max-height:none;display:grid;grid-template-columns:1fr 1fr;gap:10px}}@media (max-width:768px){.disease-stats{grid-template-columns:1fr}.disease-layout__right{grid-template-columns:1fr}}' +
     '</style>');
@@ -326,10 +470,10 @@
     }
     if (key === "wb-sys-notify") {
       return (
-        diseaseStatCard("blue", "fa-bell", "wb-stat-unread", "未读", "需关注", "条") +
         diseaseStatCard("amber", "fa-clipboard-list", "wb-stat-patrol", "项目巡查", "通知类型", "条") +
         diseaseStatCard("cyan", "fa-file-signature", "wb-stat-approval-msg", "审批消息", "通知类型", "条") +
-        diseaseStatCard("green", "fa-route", "wb-stat-airspace", "空域许可", "到期提醒", "条")
+        diseaseStatCard("green", "fa-route", "wb-stat-airspace", "空域许可", "到期提醒", "条") +
+        diseaseStatCard("purple", "fa-shuffle", "wb-stat-section-adjust", "区间调配", "区间临时调配/变更", "条")
       );
     }
     if (key === "wb-done") {
@@ -432,12 +576,6 @@
     }
     if (key === "wb-sys-notify") {
       setStatNum(
-        "wb-stat-unread",
-        rows.filter(function (r) {
-          return r.read === "未读";
-        }).length
-      );
-      setStatNum(
         "wb-stat-patrol",
         rows.filter(function (r) {
           return isPatrolNotify(r);
@@ -453,6 +591,12 @@
         "wb-stat-airspace",
         rows.filter(function (r) {
           return isAirspaceNotify(r);
+        }).length
+      );
+      setStatNum(
+        "wb-stat-section-adjust",
+        rows.filter(function (r) {
+          return r.type === "区间调配";
         }).length
       );
       return;
@@ -1229,11 +1373,35 @@
     return row && (row.type === "项目巡查" || row.type === "项目巡线");
   }
 
+  function isSectionAdjustNotify(row) {
+    return row && row.type === "区间调配";
+  }
+
   function isPatrolBatch(row) {
     return isPatrolNotify(row) && Array.isArray(row.projects) && row.projects.length > 0;
   }
 
+  function getProjectTypeLabel(proj) {
+    return proj.projectType || proj.type || "一般项目";
+  }
+
+  function buildSortedProjectItems(projects, includeTemp) {
+    var indexed = (projects || []).map(function (proj, idx) {
+      return { proj: proj, idx: idx, typeLabel: getProjectTypeLabel(proj) };
+    });
+    var keys = [], normals = [], temps = [];
+    indexed.forEach(function (item) {
+      if (item.typeLabel === "重点项目") keys.push(item);
+      else if (item.typeLabel === "临时项目") temps.push(item);
+      else normals.push(item);
+    });
+    var result = keys.concat(normals);
+    if (includeTemp) result = result.concat(temps);
+    return result;
+  }
+
   function buildPatrolSingleTitle(row) {
+    if (row.title) return row.title;
     var date = String(row.patrolDate || row.time || "").slice(0, 10);
     var user = row.user || "—";
     var project = row.projectName || "项目";
@@ -1357,12 +1525,42 @@
     var body = document.getElementById("wb-modal-body");
     if (!body) return;
     var projects = row.projects || [];
+    var doneItems = buildSortedProjectItems(projects, true);
+    var pendingProjects = (row.pendingProjects || []).filter(function (proj) {
+      return getProjectTypeLabel(proj) !== "临时项目";
+    });
+    var pendingItems = buildSortedProjectItems(pendingProjects, false);
+
     var activeIndex =
       typeof selectedIndex === "number" && selectedIndex >= 0
         ? selectedIndex
-        : projects.length
-          ? 0
+        : doneItems.length
+          ? doneItems[0].idx
           : -1;
+
+    function renderProjectTag(typeLabel) {
+      var cls = "wb-notify-project-tag";
+      if (typeLabel === "重点项目") cls += " is-key";
+      else if (typeLabel === "临时项目") cls += " is-temp";
+      else cls += " is-normal";
+      return '<span class="' + cls + '">' + esc(typeLabel) + "</span>";
+    }
+
+    function renderProjectItem(item, clickable, action, displayIndex, pending) {
+      var name = esc(item.proj.projectName || item.proj.title || "项目");
+      var activeClass = item.idx === activeIndex && action === "patrol-view-project" ? " is-active" : "";
+      if (clickable) {
+        return '<button type="button" class="wb-notify-project-link' + (pending ? " is-pending" : "") + activeClass + '" data-action="' + esc(action || "patrol-view-project") + '" data-project-index="' + (displayIndex != null ? displayIndex : item.idx) + '">' +
+          '<span class="wb-notify-project-link__name">' + name + "</span>" +
+          renderProjectTag(item.typeLabel) +
+          "</button>";
+      }
+      return '<div class="wb-notify-project-link is-disabled">' +
+        '<span class="wb-notify-project-link__name">' + name + "</span>" +
+        renderProjectTag(item.typeLabel) +
+        "</div>";
+    }
+
     var leftHtml =
       '<div class="wb-notify-patrol-meta">' +
       notifyDetailField("标题", patrolNotifyTitle(row), { full: true }) +
@@ -1370,21 +1568,18 @@
       notifyDetailField("发布时间", row.time, { full: true }) +
       notifyDetailField("巡查人员", patrolNotifyUsers(row), { full: true }) +
       "</div>" +
-      '<div class="wb-notify-patrol-projects"><div class="wb-notify-patrol-projects__label">已完成项目</div><div class="wb-notify-project-links">' +
-      projects
-        .map(function (proj, index) {
-          return (
-            '<button type="button" class="wb-notify-project-link' +
-            (index === activeIndex ? " is-active" : "") +
-            '" data-action="patrol-view-project" data-project-index="' +
-            index +
-            '"><span class="wb-notify-project-link__name">' +
-            esc(proj.projectName || proj.title || "项目") +
-            '</span><span class="wb-notify-project-link__action">查看详情</span></button>'
-          );
-        })
-        .join("") +
-      "</div></div>";
+      '<div class="wb-notify-patrol-projects">' +
+      '<div class="wb-notify-patrol-section">' +
+      '<div class="wb-notify-patrol-projects__label">已完成项目</div>' +
+      '<div class="wb-notify-project-links">' +
+      doneItems.map(function (item) { return renderProjectItem(item, true, "patrol-view-project"); }).join("") +
+      "</div></div>" +
+      '<div class="wb-notify-patrol-section">' +
+      '<div class="wb-notify-patrol-projects__label">未完成项目</div>' +
+      '<div class="wb-notify-project-links">' +
+      pendingItems.map(function (item, idx) { return renderProjectItem(item, true, "patrol-view-pending-project", idx, true); }).join("") +
+      "</div></div>" +
+      "</div>";
     var rightHtml =
       activeIndex >= 0 && projects[activeIndex]
         ? buildPatrolRecordDetailHtml(projects[activeIndex])
@@ -1415,7 +1610,243 @@
     if (titleEl) titleEl.textContent = "详情";
   }
 
+  function openProjectPatrolDrawer(projectName) {
+    var id = "wb-project-patrol-drawer";
+    var drawer = document.getElementById(id);
+    if (!drawer) {
+      drawer = document.createElement("div");
+      drawer.id = id;
+      drawer.innerHTML =
+        '<div class="wb-project-patrol-drawer__mask" data-action="close-project-patrol-drawer"></div>' +
+        '<div class="wb-project-patrol-drawer__panel">' +
+        '<div class="wb-project-patrol-drawer__head">' +
+        '<div><h3>项目巡查</h3><p class="wb-project-patrol-drawer__subtitle"></p></div>' +
+        '<button type="button" class="wb-project-patrol-drawer__close" data-action="close-project-patrol-drawer" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>' +
+        '</div>' +
+        '<div class="wb-project-patrol-drawer__body">' +
+        '<iframe id="wb-project-patrol-frame" title="巡查记录"></iframe>' +
+        '</div></div>';
+      document.body.appendChild(drawer);
+      drawer.addEventListener("click", function (e) {
+        var trigger = e.target.closest('[data-action="close-project-patrol-drawer"]');
+        if (trigger) closeProjectPatrolDrawer();
+      });
+      var style = document.createElement("style");
+      style.textContent =
+        "#wb-project-patrol-drawer { position:fixed; inset:0; z-index:1300; display:none; }" +
+        "#wb-project-patrol-drawer.is-open { display:block; }" +
+        "#wb-project-patrol-drawer .wb-project-patrol-drawer__mask { position:absolute; inset:0; background:rgba(2,8,23,.72); }" +
+        "#wb-project-patrol-drawer .wb-project-patrol-drawer__panel { position:absolute; right:0; top:0; bottom:0; width:100vw; background:linear-gradient(180deg,#040914,#091426); border-left:1px solid rgba(34,211,238,.18); box-shadow:-24px 0 80px rgba(0,0,0,.5); display:flex; flex-direction:column; }" +
+        "#wb-project-patrol-drawer .wb-project-patrol-drawer__head { flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 18px; border-bottom:1px solid rgba(34,211,238,.12); }" +
+        "#wb-project-patrol-drawer .wb-project-patrol-drawer__head h3 { font-size:16px; font-weight:600; color:#ecfeff; margin:0; }" +
+        "#wb-project-patrol-drawer .wb-project-patrol-drawer__subtitle { font-size:11px; color:#94a3b8; margin:4px 0 0; }" +
+        "#wb-project-patrol-drawer .wb-project-patrol-drawer__close { width:32px; height:32px; border:0; background:transparent; color:#94a3b8; font-size:18px; cursor:pointer; }" +
+        "#wb-project-patrol-drawer .wb-project-patrol-drawer__close:hover { color:#fff; }" +
+        "#wb-project-patrol-drawer .wb-project-patrol-drawer__body { flex:1; min-height:0; overflow:auto; padding:16px; }" +
+        "#wb-project-patrol-drawer iframe { width:100%; height:100%; min-height:calc(100vh - 90px); border:0; border-radius:8px; background:#020617; }";
+      document.head.appendChild(style);
+    }
+    var sub = drawer.querySelector(".wb-project-patrol-drawer__subtitle");
+    if (sub) sub.textContent = projectName ? "关联项目：" + projectName : "";
+    var frame = drawer.querySelector("iframe");
+    if (frame) {
+      var src = "in-project-patrol.html?embed=1";
+      if (projectName) src += "&project=" + encodeURIComponent(projectName);
+      frame.src = src;
+    }
+    drawer.classList.add("is-open");
+  }
+
+  function closeProjectPatrolDrawer() {
+    var drawer = document.getElementById("wb-project-patrol-drawer");
+    if (drawer) drawer.classList.remove("is-open");
+  }
+
+  function renderProjectPatrolPane(projectName) {
+    var pane = document.getElementById("wb-patrol-detail-pane");
+    if (!pane) return;
+    var now = new Date();
+    var weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    var records = PROJECT_PATROL_RECORDS.map(function (r) {
+      return Object.assign({}, r, { projectName: projectName || r.projectName });
+    });
+
+    function parseTime(s) {
+      if (!s) return null;
+      var d = new Date(String(s).replace(/-/g, "/").replace("T", " "));
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function typeBadge(type) {
+      var cls = "patrol-type-tag";
+      if (type === "无人机巡查") cls += " patrol-type-tag--uav";
+      else if (type === "全时全域告警") cls += " patrol-type-tag--alert";
+      return '<span class="' + cls + '">' + esc(type) + "</span>";
+    }
+
+    function mediaCell(row, kind) {
+      if (global.WHPatrolMediaGallery) {
+        return global.WHPatrolMediaGallery.renderCell({
+          kind: kind,
+          projectName: row.projectName,
+          rowKey: row.id,
+          previewCount: kind === "photo" ? 2 : 1
+        });
+      }
+      return '<span class="text-slate-500">—</span>';
+    }
+
+    function rowHtml(row, index) {
+      var actions = row.patrolType === "人工巡查"
+        ? '<span class="wb-action"><i class="fa-regular fa-pen-to-square"></i>编辑</span><span class="wb-action"><i class="fa-regular fa-circle-check"></i>工班确认</span><span class="wb-action wb-action--danger"><i class="fa-regular fa-circle-xmark"></i>拒绝</span><span class="wb-action wb-action--danger"><i class="fa-regular fa-trash-can"></i>删除</span><span class="wb-action"><i class="fa-regular fa-clock"></i>操作记录</span>'
+        : '<span class="wb-action"><i class="fa-regular fa-file-lines"></i>查看报告</span><span class="wb-action"><i class="fa-solid fa-download"></i>下载报告</span>';
+      return (
+        '<tr data-patrol-index="' + index + '">' +
+        '<td class="px-3 text-slate-100/95">' + esc(row.projectName) + "</td>" +
+        '<td class="px-3">' + typeBadge(row.patrolType) + "</td>" +
+        '<td class="px-3 text-slate-100/95 max-w-[200px] truncate" title="' + esc(row.progress) + '">' + esc(row.progress) + "</td>" +
+        '<td class="px-3">' + mediaCell(row, "photo") + "</td>" +
+        '<td class="px-3">' + mediaCell(row, "video") + "</td>" +
+        '<td class="px-3 text-slate-100/95 whitespace-nowrap">' + esc(row.updatedAt) + "</td>" +
+        '<td class="px-3 text-slate-100/95">' + esc(row.operator) + "</td>" +
+        '<td class="px-3 disease-col-actions"><div class="disease-op-actions">' + actions + "</div></td></tr>"
+      );
+    }
+
+    function renderTable(filtered) {
+      var tbody = pane.querySelector(".wb-project-patrol-table tbody");
+      if (!tbody) return;
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="px-3 py-6 text-center text-slate-400">暂无巡查记录</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtered.map(rowHtml).join("");
+      var totalEl = pane.querySelector(".wb-project-patrol-total");
+      if (totalEl) totalEl.textContent = String(filtered.length);
+    }
+
+    function applyFilters() {
+      var typeEl = pane.querySelector('[data-pp-filter="type"]');
+      var operatorEl = pane.querySelector('[data-pp-filter="operator"]');
+      var startEl = pane.querySelector('[data-pp-filter="time-start"]');
+      var endEl = pane.querySelector('[data-pp-filter="time-end"]');
+      var type = typeEl ? typeEl.value : "";
+      var operator = operatorEl ? operatorEl.value.trim() : "";
+      var start = startEl ? startEl.value : "";
+      var end = endEl ? endEl.value : "";
+      var filtered = records.filter(function (row) {
+        if (type && row.patrolType !== type) return false;
+        if (operator && String(row.operator).indexOf(operator) < 0) return false;
+        var t = parseTime(row.updatedAt);
+        if (start) {
+          var s = parseTime(start);
+          if (s && t && t < s) return false;
+        }
+        if (end) {
+          var e = parseTime(end);
+          if (e && t && t > e) return false;
+        }
+        return true;
+      });
+      renderTable(filtered);
+    }
+
+    pane.innerHTML =
+      '<div class="wb-project-patrol-pane">' +
+      '<div class="wb-project-patrol-pane__head"><h4>项目巡查</h4><p>关联项目：' + esc(projectName || "—") + "</p></div>" +
+      '<div class="wb-project-patrol-filters">' +
+      '<label><span>巡查类型</span><select data-pp-filter="type" class="wh-input"><option value="">全部</option><option value="人工巡查">人工巡查</option><option value="无人机巡查">无人机巡查</option><option value="全时全域告警">全时全域告警</option></select></label>' +
+      '<label><span>巡查人/飞手</span><input data-pp-filter="operator" class="wh-input" placeholder="请输入巡查人或飞手" /></label>' +
+      '<label><span>更新时间</span><div class="wb-project-patrol-dates"><input data-pp-filter="time-start" type="datetime-local" class="wh-input" /><input data-pp-filter="time-end" type="datetime-local" class="wh-input" /></div></label>' +
+      '<div class="wb-project-patrol-filters__actions"><button type="button" data-pp-action="search" class="wh-btn-primary">搜索</button><button type="button" data-pp-action="reset" class="wh-btn-ghost">重置</button></div>' +
+      "</div>" +
+      '<div class="wb-project-patrol-table-wrap">' +
+      '<table class="wb-project-patrol-table wb-table">' +
+      '<thead><tr><th>项目名称</th><th>巡查类型</th><th>项目进展</th><th>巡查照片</th><th>巡查视频</th><th>更新时间</th><th>巡查人/飞手</th><th>操作</th></tr></thead>' +
+      '<tbody></tbody>' +
+      "</table></div>" +
+      '<div class="wb-project-patrol-foot"><span>共 <b class="wb-project-patrol-total">0</b> 条</span><div class="wb-project-patrol-pages"><button type="button" class="wh-btn-ghost">&lt;</button><button type="button" class="wh-btn-primary">1</button><button type="button" class="wh-btn-ghost">&gt;</button></div></div>' +
+      "</div>";
+
+    var startInput = pane.querySelector('[data-pp-filter="time-start"]');
+    var endInput = pane.querySelector('[data-pp-filter="time-end"]');
+    if (startInput) startInput.value = formatDateTimeLocal(weekAgo);
+    if (endInput) endInput.value = formatDateTimeLocal(now);
+
+    pane.querySelectorAll('[data-pp-filter]').forEach(function (el) {
+      el.addEventListener("change", applyFilters);
+      el.addEventListener("input", applyFilters);
+    });
+    pane.querySelectorAll('[data-pp-action]').forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var act = btn.getAttribute("data-pp-action");
+        if (act === "search") {
+          applyFilters();
+        } else if (act === "reset") {
+          pane.querySelectorAll('[data-pp-filter]').forEach(function (el) {
+            if (el.tagName === "SELECT") el.selectedIndex = 0;
+            else el.value = "";
+          });
+          if (startInput) startInput.value = formatDateTimeLocal(weekAgo);
+          if (endInput) endInput.value = formatDateTimeLocal(now);
+          applyFilters();
+        }
+      });
+    });
+
+    applyFilters();
+    if (global.WHPatrolMediaGallery) {
+      global.WHPatrolMediaGallery.bind(pane);
+    }
+  }
+
   var patrolNotifyContext = null;
+
+  var PROJECT_PATROL_RECORDS = [
+    {
+      id: "M-122820",
+      patrolType: "人工巡查",
+      projectName: "武昌滨江总部基地项目",
+      progress: "负二层消防泵房施工，负一层通风安装作业同步推进，现场文明施工情况正常。",
+      updatedAt: "2026-07-15 10:00",
+      operator: "李玲",
+      line: "8号线",
+      direction: "下行",
+      section: "洪山路~小洪山",
+      station: "小洪山"
+    },
+    {
+      id: "FL20251225001",
+      patrolType: "无人机巡查",
+      projectName: "武昌滨江总部基地项目",
+      progress: "—",
+      updatedAt: "2026-07-16 09:00",
+      operator: "张三",
+      uav: {
+        taskId: "FL20251225001",
+        planId: 1,
+        planName: "8号线车辆段常规巡检",
+        route: "车辆段日常巡查航线",
+        airport: "车辆段机场",
+        deviceName: "车辆段无人机 M350",
+        taskType: "自动执行计划/临时任务",
+        line: "8号线",
+        takeoff: "2026-07-16 08:00",
+        landing: "2026-07-16 09:00",
+        operator: "张三"
+      }
+    }
+  ];
+
+  function formatDateTimeLocal(date) {
+    var d = date || new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    var h = String(d.getHours()).padStart(2, "0");
+    var min = String(d.getMinutes()).padStart(2, "0");
+    return y + "-" + m + "-" + day + "T" + h + ":" + min;
+  }
 
   function openPatrolNotifyView(row) {
     markNotifyRead(row);
@@ -1438,6 +1869,7 @@
     if (!filterType || filterType === "全部") return true;
     if (filterType === "空域许可提醒") return isAirspaceNotify(row);
     if (filterType === "项目巡查") return isPatrolNotify(row);
+    if (filterType === "区间调配") return isSectionAdjustNotify(row);
     return row.type === filterType;
   }
 
@@ -1484,6 +1916,31 @@
         notifyDetailField("通知类型", "空域许可提醒"),
         notifyDetailField("发布时间", row.time),
       ].join("");
+    } else if (isSectionAdjustNotify(row)) {
+      var isUserChange = row.subType === "user-change";
+      var fields = [
+        notifyDetailField("标题", row.title, { full: true }),
+        notifyDetailField("通知类型", "区间调配"),
+        notifyDetailField("发布时间", row.time)
+      ];
+      if (isUserChange) {
+        fields.push(notifyDetailField("用户姓名", row.userName));
+        fields.push(notifyDetailField("原所属线路", row.oldLine));
+        fields.push(notifyDetailField("原起始区间", row.oldStartSection));
+        fields.push(notifyDetailField("原终点区间", row.oldEndSection));
+        fields.push(notifyDetailField("新所属线路", row.newLine));
+        fields.push(notifyDetailField("新起始区间", row.newStartSection));
+        fields.push(notifyDetailField("新终点区间", row.newEndSection));
+      } else {
+        fields.push(notifyDetailField("被调配人", row.personName));
+        fields.push(notifyDetailField("所属线路", row.line));
+        fields.push(notifyDetailField("原区间", row.fromSection));
+        fields.push(notifyDetailField("目标区间", row.toSection));
+        fields.push(notifyDetailField("调配时段", (row.startTime || "—") + " 至 " + (row.endTime || "—")));
+        fields.push(notifyDetailField("调配原因", row.reason));
+      }
+      fields.push(notifyDetailField("操作人", row.operator));
+      html = fields.join("");
     } else {
       html = notifyDetailField("标题", row.title, { full: true }) + notifyDetailField("发布时间", row.time);
     }
@@ -1743,6 +2200,21 @@
       if (action === "patrol-view-project" && patrolNotifyContext) {
         var projectIndex = Number(node.dataset.projectIndex);
         renderPatrolBatchNotifyDetail(patrolNotifyContext, projectIndex);
+        return;
+      }
+      if (action === "patrol-view-pending-project" && patrolNotifyContext) {
+        var pendingIdx = Number(node.dataset.projectIndex);
+        var pendingProjects = (patrolNotifyContext.pendingProjects || []).filter(function (proj) {
+          return getProjectTypeLabel(proj) !== "临时项目";
+        });
+        var pendingItems = buildSortedProjectItems(pendingProjects, false);
+        var pendingItem = pendingItems[pendingIdx];
+        if (pendingItem && pendingItem.proj) {
+          // 高亮当前选中的未完成项目，清空所有已完成/未完成项目的 active 状态
+          document.querySelectorAll('.wb-notify-project-link').forEach(function (el) { el.classList.remove("is-active"); });
+          node.classList.add("is-active");
+          renderProjectPatrolPane(pendingItem.proj.projectName || pendingItem.proj.title || "");
+        }
         return;
       }
       if (action === "close-approval") document.getElementById("wb-approval-mask").classList.remove("show");

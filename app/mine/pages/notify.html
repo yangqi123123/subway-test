@@ -26,15 +26,8 @@
     <section id="wb-list-view" class="mp-project-view">
       <div class="mp-list-scroll">
         <div class="mp-project-stats mp-project-stats--quad">
-          <div class="mp-stat-card mp-stat-card--total">
-            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-bell"></i></div>
-            <div class="mp-stat-card__body">
-              <div class="mp-stat-card__value" id="stat-total"><span class="mp-stat-card__num">0</span><span class="mp-stat-card__unit">条</span></div>
-              <div class="mp-stat-card__label">未读</div>
-            </div>
-          </div>
           <div class="mp-stat-card mp-stat-card--key">
-            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-envelope-open-text"></i></div>
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-clipboard-list"></i></div>
             <div class="mp-stat-card__body">
               <div class="mp-stat-card__value" id="stat-unread"><span class="mp-stat-card__num">0</span><span class="mp-stat-card__unit">条</span></div>
               <div class="mp-stat-card__label">项目巡查</div>
@@ -52,6 +45,13 @@
             <div class="mp-stat-card__body">
               <div class="mp-stat-card__value" id="stat-airspace"><span class="mp-stat-card__num">0</span><span class="mp-stat-card__unit">条</span></div>
               <div class="mp-stat-card__label">空域许可</div>
+            </div>
+          </div>
+          <div class="mp-stat-card mp-stat-card--total">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-shuffle"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-section-adjust"><span class="mp-stat-card__num">0</span><span class="mp-stat-card__unit">条</span></div>
+              <div class="mp-stat-card__label">区间调配</div>
             </div>
           </div>
         </div>
@@ -96,6 +96,7 @@
             <option value="空域许可提醒">空域许可提醒</option>
             <option value="审批消息">审批消息</option>
             <option value="项目巡查">项目巡查</option>
+            <option value="区间调配">区间调配</option>
           </select>
         </label>
         <label class="mp-filter-field"><span>发布开始</span>

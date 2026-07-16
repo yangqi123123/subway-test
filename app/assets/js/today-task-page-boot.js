@@ -16,12 +16,12 @@
   var TASK_ROWS = [
     { id: "T-001", name: "新建商业文化设施项目", distance: 13, type: "一般项目", lastTime: "2025-06-27 10:54:00", progress: "现场混凝土养护", lat: 30.5864, lng: 114.3098, level: "normal", done: false, line: "8号线", direction: "上行", section: "水果湖-洪山路", station: "洪山路", patrolDate: "2025-06-27" },
     { id: "T-002", name: "洪山路至小洪山商业公寓项目", distance: 156, type: "重点项目", lastTime: "2025-06-27 10:54:00", progress: "现场混凝土养护", lat: 30.5852, lng: 114.3146, level: "key", done: false, line: "8号线", direction: "下行", section: "洪山路-小洪山", station: "小洪山", patrolDate: "2025-06-27" },
-    { id: "T-003", name: "三金潭车辆段上盖物业综合开发项目", distance: 1543, type: "一般项目", lastTime: "2025-06-27 10:54:00", progress: "现场钢筋绑扎施工", lat: 30.5812, lng: 114.3201, level: "normal", done: false, line: "2号线", direction: "上行", section: "金潭路-宏图大道", station: "宏图大道", patrolDate: "2025-06-27" },
+    { id: "T-003", name: "三金潭车辆段上盖物业综合开发项目", distance: 1543, type: "临时项目", lastTime: "2025-06-27 10:54:00", progress: "现场钢筋绑扎施工", lat: 30.5812, lng: 114.3201, level: "normal", done: false, line: "2号线", direction: "上行", section: "金潭路-宏图大道", station: "宏图大道", patrolDate: "2025-06-27" },
     { id: "T-004", name: "中北路地下商业连通道项目", distance: 268, type: "一般项目", lastTime: "2025-06-27 09:42:00", progress: "围护结构施工准备", lat: 30.5844, lng: 114.3168, level: "normal", done: false, line: "8号线", direction: "上行", section: "水果湖-洪山路", station: "洪山路", patrolDate: "2025-06-27" },
     { id: "T-005", name: "东亭停车场附属配套工程", distance: 836, type: "重点项目", lastTime: "2025-06-27 08:35:00", progress: "基坑支护监测中", lat: 30.5891, lng: 114.3187, level: "key", done: false, line: "7号线", direction: "下行", section: "洪山路-小洪山", station: "小洪山", patrolDate: "2025-06-27" },
     { id: "T-006", name: "楚河汉街区间市政接驳改造项目", distance: 1124, type: "一般项目", lastTime: "2025-06-27 11:18:00", progress: "临边围挡加固施工", lat: 30.5827, lng: 114.3129, level: "normal", done: false, line: "8号线", direction: "上行", section: "水果湖-洪山路", station: "洪山路", patrolDate: "2025-06-27" },
     { id: "T-007", name: "金融街六中北项目", distance: 428, type: "重点项目", lastTime: "2025-06-27 11:06:00", progress: "基坑降水与支护施工", lat: 30.5876, lng: 114.3074, level: "key", done: false, line: "2号线", direction: "上行", section: "中南路-宝通寺", station: "中南路", patrolDate: "2025-06-27" },
-    { id: "T-008", name: "光谷广场综合体基坑项目", distance: 2156, type: "一般项目", lastTime: "2025-06-27 10:22:00", progress: "土方开挖与栈桥搭设", lat: 30.5789, lng: 114.3256, level: "normal", done: false, line: "2号线", direction: "下行", section: "光谷广场-杨家湾", station: "光谷广场", patrolDate: "2025-06-27" },
+    { id: "T-008", name: "光谷广场综合体基坑项目", distance: 2156, type: "临时项目", lastTime: "2025-06-27 10:22:00", progress: "土方开挖与栈桥搭设", lat: 30.5789, lng: 114.3256, level: "normal", done: false, line: "2号线", direction: "下行", section: "光谷广场-杨家湾", station: "光谷广场", patrolDate: "2025-06-27" },
     { id: "T-009", name: "武昌滨江总部基地项目", distance: 692, type: "重点项目", lastTime: "2025-06-27 09:58:00", progress: "桩基施工与泥浆外运", lat: 30.5903, lng: 114.3218, level: "key", done: false, line: "7号线", direction: "上行", section: "徐家棚-湖北大学", station: "徐家棚", patrolDate: "2025-06-27" },
     { id: "T-010", name: "后湖大道市政管廊项目", distance: 978, type: "一般项目", lastTime: "2025-06-27 09:15:00", progress: "管廊顶板浇筑养护", lat: 30.5798, lng: 114.3082, level: "normal", done: false, line: "3号线", direction: "下行", section: "后湖大道-兴业路", station: "后湖大道", patrolDate: "2025-06-27" },
     { id: "T-011", name: "街道口站联络通道工程", distance: 356, type: "一般项目", lastTime: "2025-06-27 08:48:00", progress: "联络通道开挖支护", lat: 30.5831, lng: 114.3175, level: "normal", done: false, line: "8号线", direction: "下行", section: "街道口-马房山", station: "街道口", patrolDate: "2025-06-27" },
@@ -199,6 +199,16 @@
 
     return { projects: projects, newKeys: newKeys };
   }
+  function buildUnfinishedTaskProjects() {
+    var doneMap = readTaskDoneMap();
+    var today = todayStr();
+    return TASK_ROWS.filter(function (task) {
+      var doneDate = doneMap[task.id];
+      return !doneDate || (doneDate !== true && doneDate !== today);
+    }).map(function (task) {
+      return Object.assign({}, task, { projectName: task.name, user: task.user || "李明" });
+    });
+  }
   function generateDailyNotify() {
     var pending = buildPendingNotifyProjects();
     var newProjects = pending.projects.filter(function (proj) {
@@ -210,14 +220,22 @@
     extras = extras.filter(function (row) {
       return !(row.type === "项目巡查" && row.source === "今日巡线" && !Array.isArray(row.projects));
     });
+    var firstProject = newProjects[0];
+    var title;
+    if (newProjects.length === 1) {
+      title = (firstProject.projectName || firstProject.section || "项目") + "已完成巡查";
+    } else {
+      title = (firstProject.section || firstProject.projectName || "项目") + "已完成巡查";
+    }
     var notifyRow = {
       id: "task-notify-" + Date.now(),
-      title: today + " " + uniqueUsers(newProjects).join("、") + " 已完成以下项目的巡查",
+      title: title,
       type: "项目巡查",
       time: formatNow(),
       read: "未读",
       source: "今日巡线",
-      projects: newProjects
+      projects: newProjects,
+      pendingProjects: buildUnfinishedTaskProjects()
     };
     extras.unshift(notifyRow);
     try { global.localStorage.setItem(STORAGE_NOTIFY_EXTRA, JSON.stringify(extras)); } catch (e) {}
@@ -269,7 +287,12 @@
 
   function setActiveRouteTab() { var tabs = document.querySelectorAll(".mp-today-task-tab"); tabs.forEach(function (node) { var active = node.getAttribute("data-tab") === "route"; node.classList.toggle("is-active", active); node.setAttribute("aria-selected", active ? "true" : "false"); }); }
   function setActiveAlertTab() { var tabs = document.querySelectorAll(".mp-today-task-tab"); tabs.forEach(function (node) { var active = node.getAttribute("data-tab") === "alert"; node.classList.toggle("is-active", active); node.setAttribute("aria-selected", active ? "true" : "false"); }); }
-  function makeTaskIcon(level) { var color = level === "key" ? "#ef4444" : "#3b82f6"; return L.divIcon({ className: "", html: '<div style="width:18px;height:18px;border-radius:999px;background:' + color + ';border:2px solid #fff;box-shadow:0 0 12px rgba(37,99,235,.25);"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }); }
+  function makeTaskIcon(item) {
+    var color = "#3b82f6";
+    if (item && item.type === "临时项目") { color = "#f59e0b"; }
+    else if (item && item.level === "key") { color = "#ef4444"; }
+    return L.divIcon({ className: "", html: '<div style="width:18px;height:18px;border-radius:999px;background:' + color + ';border:2px solid #fff;box-shadow:0 0 12px rgba(37,99,235,.25);"></div>', iconSize: [18, 18], iconAnchor: [9, 9] });
+  }
   function makeUserIcon() { return L.divIcon({ className: "", html: '<div style="width:22px;height:22px;border-radius:999px;background:#236aff;border:3px solid #fff;box-shadow:0 0 16px rgba(35,106,255,.28);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;"><i class="fa-solid fa-location-dot"></i></div>', iconSize: [22, 22], iconAnchor: [11, 11] }); }
 
   function mountMap() {
@@ -281,7 +304,7 @@
     var markers = [];
     todayTaskMarkers = {};
     TASK_ROWS.forEach(function (item) {
-      var marker = L.marker([item.lat, item.lng], { icon: makeTaskIcon(item.level) }).addTo(todayTaskMap);
+      var marker = L.marker([item.lat, item.lng], { icon: makeTaskIcon(item) }).addTo(todayTaskMap);
       marker.bindTooltip(item.name, { direction: "top", offset: [0, -10], opacity: 0.96 });
       marker._taskId = item.id;
       todayTaskMarkers[item.id] = marker;

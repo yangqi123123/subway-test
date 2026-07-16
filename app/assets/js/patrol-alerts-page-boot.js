@@ -108,6 +108,175 @@
     global.WHProjectMobile.enhanceSelectFields(sheet);
   }
 
+  function formatAlertGeoCoord(project) {
+    if (!project) return "—";
+    var lat = project.latitude;
+    var lng = project.longitude;
+    if (lat == null || lng == null) return project.geoCoord || "—";
+    return Number(lng).toFixed(4) + ", " + Number(lat).toFixed(4);
+  }
+
+  function toggleUavReviewDetailFields() {
+    var checked = global.document.querySelector('input[name="uav-review-false-alarm"]:checked');
+    var isMisreport = checked && checked.value === "是";
+    global.document.querySelectorAll("[data-uav-detail-field]").forEach(function (el) {
+      el.classList.toggle("is-hidden", isMisreport);
+    });
+  }
+
+  function fillUavReviewModal(project) {
+    var WA = global.WHMapAlerts;
+    var timeEl = global.document.getElementById("uav-review-time");
+    var coordEl = global.document.getElementById("uav-review-coord");
+    var projectEl = global.document.getElementById("uav-review-project");
+    var positionEl = global.document.getElementById("uav-review-position");
+    var typeEl = global.document.getElementById("uav-review-type");
+    var levelEl = global.document.getElementById("uav-review-level");
+    var sourceEl = global.document.getElementById("uav-review-source");
+
+    if (timeEl) timeEl.textContent = project.alertTime || project.latestTime || project.startTime || "—";
+    if (coordEl) coordEl.textContent = formatAlertGeoCoord(project);
+    if (projectEl) projectEl.textContent = project.projectName || "—";
+    if (positionEl) positionEl.textContent = project.alarmPosition || project.position || project.location || "—";
+    if (typeEl) typeEl.textContent = project.alarmType || project.type || "—";
+    if (levelEl) levelEl.textContent = project.riskLevel || (project.uavRecord && project.uavRecord.level) || "—";
+    if (sourceEl) sourceEl.textContent = WA ? WA.formatAlertSourceDisplay(project.source) : (project.source || "—");
+
+    var falseAlarmInputs = global.document.querySelectorAll('input[name="uav-review-false-alarm"]');
+    falseAlarmInputs.forEach(function (input) { input.checked = input.value === "否"; });
+    var illegalInputs = global.document.querySelectorAll('input[name="uav-review-illegal"]');
+    illegalInputs.forEach(function (input) { input.checked = input.value === "否"; });
+    var riskLevel = global.document.getElementById("uav-review-risk-level");
+    if (riskLevel) riskLevel.value = "一级告警";
+    var content = global.document.getElementById("uav-review-content");
+    if (content) content.value = "";
+    toggleUavReviewDetailFields();
+  }
+
+  function readUavReviewForm() {
+    var falseAlarmChecked = global.document.querySelector('input[name="uav-review-false-alarm"]:checked');
+    var illegalChecked = global.document.querySelector('input[name="uav-review-illegal"]:checked');
+    var riskLevel = global.document.getElementById("uav-review-risk-level");
+    var content = global.document.getElementById("uav-review-content");
+    return {
+      falseAlarm: falseAlarmChecked ? falseAlarmChecked.value : "否",
+      illegal: illegalChecked ? illegalChecked.value : "否",
+      riskLevel: riskLevel ? riskLevel.value : "一级告警",
+      content: content ? (content.value || "").trim() : ""
+    };
+  }
+
+  function setShellTabbarHidden(hidden) {
+    try {
+      var target = global.top || global.parent;
+      if (target && target !== global) {
+        target.postMessage({ type: "wh-miniapp-tabbar", hidden: !!hidden }, "*");
+      }
+    } catch (e) {}
+  }
+
+  function openUavReviewModal(project) {
+    var modal = global.document.getElementById("uav-review-modal");
+    if (!modal) return;
+    modal._currentProject = project;
+    fillUavReviewModal(project);
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    global.document.body.classList.add("mp-scroll-locked");
+    setShellTabbarHidden(true);
+  }
+
+  function closeUavReviewModal() {
+    var modal = global.document.getElementById("uav-review-modal");
+    if (!modal) return;
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    modal._currentProject = null;
+    global.document.body.classList.remove("mp-scroll-locked");
+    setShellTabbarHidden(false);
+  }
+
+  function saveUavReviewModal() {
+    var modal = global.document.getElementById("uav-review-modal");
+    var project = modal ? modal._currentProject : null;
+    var data = readUavReviewForm();
+    if (project) {
+      project.workflowStatus = "已复核";
+      project.review = {
+        falseAlarm: data.falseAlarm,
+        illegal: data.illegal,
+        riskLevel: data.riskLevel,
+        content: data.content,
+        reviewTime: new Date().toLocaleString("zh-CN")
+      };
+      project.mistaken = data.falseAlarm === "是" ? "是" : "否";
+    }
+    closeUavReviewModal();
+    showToast("复核已保存");
+    if (global.WHMapAlertsMobile && typeof global.WHMapAlertsMobile.refresh === "function") {
+      global.WHMapAlertsMobile.refresh();
+    }
+  }
+
+  function showToast(msg) {
+    var el = global.document.getElementById("patrol-alerts-toast");
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function () {
+      el.classList.remove("show");
+    }, 1800);
+  }
+
+  function initUavReviewModal() {
+    global.document.addEventListener("click", function (event) {
+      var openBtn = event.target.closest("[data-action='alert-review-uav']");
+      if (openBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        var id = openBtn.getAttribute("data-id");
+        var WA = global.WHMapAlerts;
+        var project = WA && WA.findProject ? WA.findProject(id) : null;
+        if (project) openUavReviewModal(project);
+        return;
+      }
+      var closeBtn = event.target.closest("[data-action='close-uav-review-modal']");
+      if (closeBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeUavReviewModal();
+        return;
+      }
+      var saveBtn = event.target.closest("[data-action='save-uav-review-modal']");
+      if (saveBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        saveUavReviewModal();
+        return;
+      }
+    });
+
+    global.document.addEventListener("change", function (event) {
+      if (event.target.matches('input[name="uav-review-false-alarm"]')) {
+        toggleUavReviewDetailFields();
+      }
+    });
+
+    var modal = global.document.getElementById("uav-review-modal");
+    if (modal) {
+      modal.addEventListener("click", function (event) {
+        if (event.target === modal || event.target.classList.contains("mp-uav-review-modal__mask")) {
+          closeUavReviewModal();
+        }
+      });
+    }
+
+    if (global.WHMapAlerts) {
+      global.WHMapAlerts.openUavReview = openUavReviewModal;
+    }
+  }
+
   function start() {
     var params = new URLSearchParams(global.location.search);
     var hideHeader = params.get("hideHeader") === "1";
@@ -121,6 +290,7 @@
     }
 
     bindNavBack();
+    initUavReviewModal();
     if (global.MiniAppFrame && global.MiniAppFrame.syncTabbar) {
       global.MiniAppFrame.syncTabbar();
     }

@@ -102,6 +102,11 @@
     );
     var isUav = WA.isUavSourceAlert(project);
     if (isUav) {
+      btns.push(
+        '<button type="button" class="mp-project-action" data-action="alert-review-uav" data-id="' +
+          esc(project.id) +
+          '"><i class="fa-regular fa-user-check"></i>复核</button>'
+      );
       return '<div class="mp-project-card__actions mp-alert-card__actions">' + btns.join("") + "</div>";
     }
     if (project.workflowStatus === "未复核") {
@@ -320,6 +325,16 @@
       e.preventDefault();
       e.stopPropagation();
       WA.openManualReview(project);
+      return;
+    }
+    if (action === "alert-review-uav") {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof WA.openUavReview === "function") {
+        WA.openUavReview(project);
+      } else if (global.WHMapAlertsMobileUavReview) {
+        global.WHMapAlertsMobileUavReview.open(project);
+      }
       return;
     }
   }

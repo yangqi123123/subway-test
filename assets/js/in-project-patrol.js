@@ -13,17 +13,17 @@
       patrolType: TYPE_MANUAL,
       projectName: DEMO_PROJECT,
       progress: "负二层消防泵房施工，负一层通风安装作业同步推进，现场文明施工情况正常。",
-      updatedAt: "2026-03-05 12:07",
+      updatedAt: "2026-07-15 10:00",
       operator: "李玲",
       line: "8号线",
       direction: "下行",
       section: "洪山路~小洪山",
       station: "小洪山",
-      patrolDate: "2026-03-05 12:19",
+      patrolDate: "2026-07-15 10:00",
       remark: "",
       logs: [
-        { action: "新增人工巡查", user: "鲍雄澎", time: "2026-05-12 14:40:31" },
-        { action: "工班确认", user: "工班长", time: "2026-05-12 15:02:10" },
+        { action: "新增人工巡查", user: "鲍雄澎", time: "2026-07-15 10:00:00" },
+        { action: "工班确认", user: "工班长", time: "2026-07-15 11:00:00" },
       ],
     },
     {
@@ -31,7 +31,7 @@
       patrolType: TYPE_UAV,
       projectName: DEMO_PROJECT,
       progress: "—",
-      updatedAt: "2025-12-25 18:15",
+      updatedAt: "2026-07-16 09:00",
       operator: "张三",
       uav: {
         taskId: "FL20251225001",
@@ -42,15 +42,15 @@
         deviceName: "车辆段无人机 M350",
         taskType: "自动执行计划/临时任务",
         line: "8号线",
-        takeoff: "2025-12-25 10:00",
-        landing: "2025-12-25 18:15",
+        takeoff: "2026-07-16 08:00",
+        landing: "2026-07-16 09:00",
         operator: "张三",
       },
     },
     {
       id: "AL-201",
       patrolType: TYPE_ALERT,
-      projectName: DEMO_PROJECT,
+      projectName: "武昌段排水改造工程",
       progress: "—",
       updatedAt: "2026-03-05 08:14:49",
       operator: "—",
@@ -1047,6 +1047,34 @@
     });
   }
 
+  function formatDateTimeLocal(date) {
+    var d = date || new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    var h = String(d.getHours()).padStart(2, "0");
+    var min = String(d.getMinutes()).padStart(2, "0");
+    return y + "-" + m + "-" + day + "T" + h + ":" + min;
+  }
+
+  function setDefaultTimeRange() {
+    var now = new Date();
+    var weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    filters.timeStart = formatDateTimeLocal(weekAgo);
+    filters.timeEnd = formatDateTimeLocal(now);
+    var sheet = document.getElementById("patrol-filter-sheet");
+    if (sheet) {
+      var startEl = sheet.querySelector('[data-patrol-filter="time-start"]');
+      var endEl = sheet.querySelector('[data-patrol-filter="time-end"]');
+      if (startEl) startEl.value = filters.timeStart;
+      if (endEl) endEl.value = filters.timeEnd;
+    }
+    var desktopStart = document.getElementById("filter-time-start");
+    var desktopEnd = document.getElementById("filter-time-end");
+    if (desktopStart) desktopStart.value = filters.timeStart;
+    if (desktopEnd) desktopEnd.value = filters.timeEnd;
+  }
+
   function init() {
     cacheManualFormFoot();
     if (global.WHMapAlerts && WHMapAlerts.initPortalDetailModal) {
@@ -1056,6 +1084,7 @@
     initQuickLinks();
     bindEvents();
     syncPatrolSearchClear();
+    setDefaultTimeRange();
     renderTable();
     try {
       var params = new URLSearchParams(global.location.search);

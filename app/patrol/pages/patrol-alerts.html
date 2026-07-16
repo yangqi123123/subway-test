@@ -282,6 +282,68 @@
     </div>
   </div>
 
+  <!-- 无人机告警复核弹窗 -->
+  <div id="uav-review-modal" class="mp-uav-review-modal" aria-hidden="true">
+    <div class="mp-uav-review-modal__mask" data-action="close-uav-review-modal"></div>
+    <div class="mp-uav-review-modal__panel" role="dialog" aria-labelledby="uav-review-modal-title">
+      <div class="mp-uav-review-modal__head">
+        <h3 id="uav-review-modal-title" class="mp-uav-review-modal__title">复核</h3>
+        <button type="button" class="mp-icon-btn" data-action="close-uav-review-modal" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="mp-uav-review-modal__body">
+        <section class="mp-uav-review-section">
+          <h4 class="mp-uav-review-section__title">基本信息</h4>
+          <div class="mp-uav-review-info-grid" id="uav-review-basic-info">
+            <div><span>预警时间</span><strong id="uav-review-time">—</strong></div>
+            <div><span>地理坐标</span><strong id="uav-review-coord">—</strong></div>
+            <div><span>对应项目</span><strong id="uav-review-project">—</strong></div>
+            <div><span>位置</span><strong id="uav-review-position">—</strong></div>
+            <div><span>类型</span><strong id="uav-review-type">—</strong></div>
+            <div><span>等级</span><strong id="uav-review-level">—</strong></div>
+            <div class="mp-uav-review-info-grid__full"><span>告警来源</span><strong id="uav-review-source">—</strong></div>
+          </div>
+        </section>
+
+        <section class="mp-uav-review-section">
+          <h4 class="mp-uav-review-section__title">填写审批信息</h4>
+          <div class="mp-uav-review-form">
+            <div class="mp-uav-review-form__row">
+              <label class="mp-uav-review-form__label">是否误报</label>
+              <div class="mp-uav-review-radio-group">
+                <label><input type="radio" name="uav-review-false-alarm" value="否" checked /> 否</label>
+                <label><input type="radio" name="uav-review-false-alarm" value="是" /> 是</label>
+              </div>
+            </div>
+            <div class="mp-uav-review-form__row" data-uav-detail-field>
+              <label class="mp-uav-review-form__label">是否违规施工</label>
+              <div class="mp-uav-review-radio-group">
+                <label><input type="radio" name="uav-review-illegal" value="否" checked /> 否</label>
+                <label><input type="radio" name="uav-review-illegal" value="是" /> 是</label>
+              </div>
+            </div>
+            <div class="mp-uav-review-form__row" data-uav-detail-field>
+              <label class="mp-uav-review-form__label" for="uav-review-risk-level">风险等级</label>
+              <select id="uav-review-risk-level" class="mp-uav-review-select">
+                <option value="一级告警">一级告警</option>
+                <option value="二级告警">二级告警</option>
+                <option value="三级告警">三级告警</option>
+              </select>
+            </div>
+            <div class="mp-uav-review-form__row" data-uav-detail-field>
+              <label class="mp-uav-review-form__label" for="uav-review-content">审批内容</label>
+              <textarea id="uav-review-content" class="mp-uav-review-textarea" placeholder="请填写审批内容"></textarea>
+            </div>
+            <p class="mp-uav-review-form__tip">若是误报，后面几项在页面自动隐藏，无需填写。</p>
+          </div>
+        </section>
+      </div>
+      <div class="mp-uav-review-modal__foot">
+        <button type="button" class="mp-uav-review-btn mp-uav-review-btn--ghost" data-action="close-uav-review-modal">取消</button>
+        <button type="button" class="mp-uav-review-btn mp-uav-review-btn--primary" data-action="save-uav-review-modal">保存</button>
+      </div>
+    </div>
+  </div>
+
   <div id="mp-picker-sheet" class="mp-picker-sheet" aria-hidden="true">
     <div class="mp-picker-sheet__mask" data-action="mp-picker-mask-close"></div>
     <div class="mp-picker-sheet__panel" role="dialog">

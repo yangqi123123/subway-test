@@ -6,5 +6,8 @@
     "start": "python -m http.server 8080",
     "start:py": "py -m http.server 8080",
     "serve": "npx serve -l 8080 ."
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.3.0"
   }
 }

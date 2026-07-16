@@ -59,12 +59,92 @@
     return next;
   }
 
+  function getSectionAdjustMockRows() {
+    return [
+      {
+        id: "adjust-001",
+        title: "您已被临时调配至【洪山路-徐家棚】",
+        type: "区间调配",
+        time: "2026-07-16 09:53",
+        read: "未读",
+        source: "区间临时调配",
+        user: "王强",
+        personName: "王强",
+        line: "8号线",
+        fromSection: "水果湖-洪山路",
+        toSection: "洪山路-徐家棚",
+        startTime: "2026-07-16 09:53",
+        endTime: "2026-07-16 17:53",
+        reason: "本工班李明调休，临时补位",
+        operator: "工班长-李明"
+      },
+      {
+        id: "adjust-002",
+        title: "王强已被临时调配至【洪山路-徐家棚】",
+        type: "区间调配",
+        time: "2026-07-16 09:53",
+        read: "未读",
+        source: "区间临时调配",
+        user: "李明",
+        personName: "王强",
+        line: "8号线",
+        fromSection: "水果湖-洪山路",
+        toSection: "洪山路-徐家棚",
+        startTime: "2026-07-16 09:53",
+        endTime: "2026-07-16 17:53",
+        reason: "本工班李明调休，临时补位",
+        operator: "工班长-李明"
+      },
+      {
+        id: "adjust-003",
+        title: "您的责任区间已变更为【水果湖-洪山路】",
+        type: "区间调配",
+        time: "2026-07-16 10:20",
+        read: "未读",
+        source: "用户管理",
+        userName: "张三",
+        oldLine: "8号线",
+        oldStartSection: "洪山路",
+        oldEndSection: "徐家棚",
+        newLine: "8号线",
+        newStartSection: "水果湖",
+        newEndSection: "洪山路",
+        operator: "管理员-admin"
+      },
+      {
+        id: "adjust-004",
+        title: "王强的责任区间已变更为【水果湖-洪山路】",
+        type: "区间调配",
+        time: "2026-07-16 10:25",
+        read: "未读",
+        source: "用户管理",
+        userName: "王强",
+        oldLine: "8号线",
+        oldStartSection: "洪山路",
+        oldEndSection: "徐家棚",
+        newLine: "8号线",
+        newStartSection: "水果湖",
+        newEndSection: "洪山路",
+        operator: "管理员-admin"
+      }
+    ].map(normalizeNotifyRow);
+  }
+
   function readExtraNotifyRows() {
     try {
       var raw = global.localStorage.getItem(STORAGE_NOTIFY_EXTRA);
-      return raw ? JSON.parse(raw).map(normalizeNotifyRow) : [];
+      var stored = raw ? JSON.parse(raw).map(normalizeNotifyRow) : [];
+      var mockRows = getSectionAdjustMockRows();
+      var mockById = {};
+      mockRows.forEach(function (r) { if (r.id) mockById[r.id] = r; });
+      var storedById = {};
+      stored.forEach(function (r) { if (r.id) storedById[r.id] = r; });
+      // 保留已有 mock 的本地状态（如已读），同时补充新增的 mock 数据
+      var merged = mockRows.map(function (r) { return storedById[r.id] || r; });
+      var nonMockStored = stored.filter(function (r) { return !r.id || !mockById[r.id]; });
+      return merged.concat(nonMockStored);
     } catch (e) {
-      return [];
+      return getSectionAdjustMockRows();
     }
   }
 
@@ -98,6 +178,10 @@
 
   function isManualNotify(row) {
     return row && (row.type === "项目巡查" || row.type === "项目巡线");
+  }
+
+  function isSectionAdjustNotify(row) {
+    return row && row.type === "区间调配";
   }
 
   function manualNotifyProjectType(row) {
@@ -206,7 +290,7 @@
         var typeLabel = row.type === "提醒" ? "空域许可提醒" : row.type;
         if (typeLabel !== f.type) return false;
       }
-      var searchable = [row.title, row.projectName, row.progress].join(" ");
+      var searchable = [row.title, row.projectName, row.progress, row.source, row.personName, row.userName].join(" ");
       if (Array.isArray(row.projects) && row.projects.length) {
         searchable += " " + row.projects.map(function (proj) {
           return proj.projectName || proj.title || "";
@@ -231,10 +315,10 @@
         if (numEl) numEl.textContent = String(val);
         else el.textContent = String(val);
       };
-      set("stat-total", rows.length);
-      set("stat-unread", rows.filter(function (r) { return r.read === "未读"; }).length);
+      set("stat-unread", rows.filter(function (r) { return isManualNotify(r); }).length);
       set("stat-approval-msg", rows.filter(function (r) { return r.type === "审批消息"; }).length);
       set("stat-airspace", rows.filter(function (r) { return isAirspaceNotify(r); }).length);
+      set("stat-section-adjust", rows.filter(function (r) { return isSectionAdjustNotify(r); }).length);
       if (global.WHHeaderBadges && global.WHHeaderBadges.refresh) {
         global.WHHeaderBadges.refresh();
       }
@@ -245,7 +329,12 @@
       var isTodayTaskNotify = row.source === "今日巡线" && Array.isArray(row.projects) && row.projects.length > 0;
       if (isTodayTaskNotify) {
         var firstProject = row.projects[0];
-        var title = (firstProject.section || firstProject.projectName || "项目") + "已完成巡查";
+        var title;
+        if (row.projects.length === 1) {
+          title = (firstProject.projectName || firstProject.section || "项目") + "已完成巡查";
+        } else {
+          title = (firstProject.section || firstProject.projectName || "项目") + "已完成巡查";
+        }
         var users = uniqueUsers(row.projects).join("、") || "李明";
         return (
           '<article class="mp-project-card mp-wb-card mp-wb-card--todo" data-index="' + index + '" role="listitem">' +
@@ -263,7 +352,7 @@
         );
       }
       var manualProject = row.projects && row.projects[0] ? row.projects[0] : row;
-      var manualTitle = (manualProject.section || manualProject.projectName || "项目") + "已完成巡查";
+      var manualTitle = (manualProject.projectName || manualProject.section || "项目") + "已完成巡查";
       var manualUser = manualProject.user || "李明";
       return (
         '<article class="mp-project-card mp-wb-card mp-wb-card--todo" data-index="' + index + '" role="listitem">' +
@@ -277,6 +366,23 @@
         '</div>' +
         '<div class="mp-project-card__actions">' +
         '<button type="button" class="mp-project-action" data-action="wb-view-manual">查看</button>' +
+        '</div></article>'
+      );
+    }
+
+    function renderSectionAdjustCard(row, index) {
+      var read = row.read || "未读";
+      return (
+        '<article class="mp-project-card mp-wb-card mp-wb-card--todo" data-index="' + index + '" role="listitem">' +
+        '<div class="mp-wb-card__head">' +
+        '<h3 class="mp-project-card__title mp-wb-card__title">' + esc(row.title) + '</h3>' +
+        '<span class="mp-wb-tag ' + readClass(read) + '">' + esc(read) + '</span></div>' +
+        '<div class="mp-wb-card__rows">' +
+        '<div class="mp-wb-card__row"><span class="mp-wb-card__label">通知类型</span><span class="mp-wb-card__value">' + esc(row.type || "区间调配") + '</span></div>' +
+        '<div class="mp-wb-card__row"><span class="mp-wb-card__label">发布时间</span><span class="mp-wb-card__value">' + esc(row.time || "-") + '</span></div>' +
+        '</div>' +
+        '<div class="mp-project-card__actions">' +
+        '<button type="button" class="mp-project-action" data-action="wb-view">查看</button>' +
         '</div></article>'
       );
     }
@@ -305,6 +411,7 @@
         return;
       }
       listEl.innerHTML = state.filtered.map(function (row, index) {
+        if (isSectionAdjustNotify(row)) return renderSectionAdjustCard(row, index);
         return isManualNotify(row) ? renderManualNotifyCard(row, index) : renderDefaultNotifyCard(row, index);
       }).join("");
     }
@@ -373,14 +480,68 @@
       }).join("") + '</dl>';
     }
 
+    function getProjectTypeLabel(proj) {
+      return proj.projectType || proj.type || "一般项目";
+    }
+
+    function buildSortedProjectItems(projects, includeTemp) {
+      var indexed = (projects || []).map(function (proj, idx) {
+        return { proj: proj, idx: idx, typeLabel: getProjectTypeLabel(proj) };
+      });
+      var keys = [], normals = [], temps = [];
+      indexed.forEach(function (item) {
+        if (item.typeLabel === "重点项目") keys.push(item);
+        else if (item.typeLabel === "临时项目") temps.push(item);
+        else normals.push(item);
+      });
+      var result = keys.concat(normals);
+      if (includeTemp) result = result.concat(temps);
+      return result;
+    }
+
+    function renderProjectItem(proj, originalIdx, clickable, action) {
+      var name = esc(proj.projectName || proj.title || proj.name || "项目");
+      var typeLabel = esc(getProjectTypeLabel(proj));
+      var tagClass = "mp-wb-detail-project__tag";
+      if (typeLabel === "重点项目") tagClass += " is-key";
+      else if (typeLabel === "临时项目") tagClass += " is-temp";
+      else tagClass += " is-normal";
+      if (clickable) {
+        return '<button type="button" class="mp-wb-detail-project" data-action="' + esc(action || "wb-view-project") + '" data-project-index="' + originalIdx + '">' +
+          '<span class="mp-wb-detail-project__name">' + name + '</span>' +
+          '<span class="' + tagClass + '">' + typeLabel + '</span>' +
+          '</button>';
+      }
+      return '<div class="mp-wb-detail-project is-disabled">' +
+        '<span class="mp-wb-detail-project__name">' + name + '</span>' +
+        '<span class="' + tagClass + '">' + typeLabel + '</span>' +
+        '</div>';
+    }
+
+    function renderProjectList(items, clickable, action) {
+      if (!items || !items.length) {
+        return '<p class="mp-wb-detail-hint">暂无项目</p>';
+      }
+      return '<div class="mp-wb-detail-projects">' +
+        items.map(function (item) { return renderProjectItem(item.proj, item.idx, clickable, action); }).join("") +
+        '</div>';
+    }
+
     function buildAggregatedNotifyDetailHtml(row) {
       var projects = row.projects || [];
       var firstProject = projects[0] || {};
-      var title = (firstProject.section || firstProject.projectName || "项目") + "已完成巡查";
+      var title;
+      if (projects.length === 1) {
+        title = (firstProject.projectName || firstProject.section || "项目") + "已完成巡查";
+      } else {
+        title = (firstProject.section || firstProject.projectName || "项目") + "已完成巡查";
+      }
       var users = uniqueUsers(projects).join("、") || "李明";
-      var listHtml = projects.map(function (proj, pidx) {
-        return '<button type="button" class="mp-wb-detail-project" data-action="wb-view-project" data-project-index="' + pidx + '">' + esc(proj.projectName || proj.title || "项目") + '</button>';
-      }).join("");
+      var doneItems = buildSortedProjectItems(projects, true);
+      var pendingProjects = (row.pendingProjects || []).filter(function (proj) {
+        return getProjectTypeLabel(proj) !== "临时项目";
+      });
+      var pendingItems = buildSortedProjectItems(pendingProjects, false);
       return '<section class="mp-patrol-alert-section mp-todo-detail-section">' +
         '<h4 class="mp-patrol-alert-section__title">项目巡查</h4>' +
         '<div class="mp-patrol-alert-section__body">' +
@@ -389,13 +550,48 @@
         '<div class="mp-disease-detail-grid__full"><dt>通知类型</dt><dd>' + esc(row.type || "项目巡查") + '</dd></div>' +
         '<div class="mp-disease-detail-grid__full"><dt>发布时间</dt><dd>' + esc(row.time || "-") + '</dd></div>' +
         '<div class="mp-disease-detail-grid__full"><dt>巡查人员</dt><dd>' + esc(users) + '</dd></div>' +
-        '<div class="mp-disease-detail-grid__full"><dt>已完成项目</dt><dd>' +
-        '<div class="mp-wb-detail-projects">' + listHtml + '</div>' +
-        '</dd></div>' +
-        '</dl></div></section>';
+        '</dl>' +
+        '<div class="mp-wb-detail-section">' +
+        '<h5 class="mp-wb-detail-section__title">已完成项目</h5>' +
+        renderProjectList(doneItems, true, "wb-view-project") +
+        '</div>' +
+        '<div class="mp-wb-detail-section">' +
+        '<h5 class="mp-wb-detail-section__title">未完成项目</h5>' +
+        renderProjectList(pendingItems, true, "wb-view-project-pending") +
+        '</div>' +
+        '</div></section>';
+    }
+
+    function buildSectionAdjustDetailHtml(row) {
+      var pairs = [
+        ["标题", row.title],
+        ["通知类型", row.type || "区间调配"],
+        ["发布时间", row.time || "-"]
+      ];
+      if (row.source === "用户管理") {
+        pairs.push(["用户姓名", row.userName || "-"]);
+        pairs.push(["原所属线路", row.oldLine || "-"]);
+        pairs.push(["原起始区间", row.oldStartSection || "-"]);
+        pairs.push(["原终点区间", row.oldEndSection || "-"]);
+        pairs.push(["新所属线路", row.newLine || "-"]);
+        pairs.push(["新起始区间", row.newStartSection || "-"]);
+        pairs.push(["新终点区间", row.newEndSection || "-"]);
+      } else {
+        pairs.push(["被调配人", row.personName || row.user || "-"]);
+        pairs.push(["所属线路", row.line || "-"]);
+        pairs.push(["原区间", row.fromSection || "-"]);
+        pairs.push(["目标区间", row.toSection || "-"]);
+        pairs.push(["调配时段", (row.startTime || "-") + " 至 " + (row.endTime || "-")]);
+        pairs.push(["调配原因", row.reason || "-"]);
+      }
+      pairs.push(["操作人", row.operator || "-"]);
+      return '<section class="mp-patrol-alert-section mp-todo-detail-section"><h4 class="mp-patrol-alert-section__title">区间调配</h4><div class="mp-patrol-alert-section__body">' + buildDetailGrid(pairs) + '</div></section>';
     }
 
     function buildNotifyDetailHtml(row) {
+      if (isSectionAdjustNotify(row)) {
+        return buildSectionAdjustDetailHtml(row);
+      }
       if (isManualNotify(row) && row.source === "今日巡线" && Array.isArray(row.projects) && row.projects.length > 0) {
         return buildAggregatedNotifyDetailHtml(row);
       }
@@ -414,7 +610,9 @@
       detailBody.innerHTML = buildNotifyDetailHtml(row);
       var titleEl = $("detail-wb-title");
       if (titleEl) {
-        if (isManualNotify(row) && row.source === "今日巡线" && Array.isArray(row.projects) && row.projects.length > 0) {
+        if (isSectionAdjustNotify(row)) {
+          titleEl.textContent = "区间调配";
+        } else if (isManualNotify(row) && row.source === "今日巡线" && Array.isArray(row.projects) && row.projects.length > 0) {
           titleEl.textContent = "项目巡查";
         } else if (isManualNotify(row)) {
           titleEl.textContent = "人工巡检详情";
@@ -520,6 +718,18 @@
       global.location.href = href;
     }
 
+    function openProjectPatrolList(row, projectIndex) {
+      var pendingProjects = row && row.pendingProjects ? row.pendingProjects : [];
+      var project = pendingProjects[projectIndex];
+      if (!project) return;
+      markRowRead(row);
+      var projectName = project.projectName || project.title || project.name || "";
+      var href = "../../patrol/pages/project-patrol.html?source=notify";
+      if (projectName) href += "&project=" + encodeURIComponent(projectName);
+      if (row.id) href += "&notifyId=" + encodeURIComponent(row.id);
+      global.location.href = href;
+    }
+
     function bindEvents() {
       document.addEventListener("click", function (e) {
         var trigger = e.target.closest("[data-action]");
@@ -539,6 +749,22 @@
           if (!row) return;
           var pidx = Number(trigger.getAttribute("data-project-index"));
           openProjectDetail(row, pidx);
+          return;
+        }
+
+        if (action === "wb-view-project-pending") {
+          var pendingCard = trigger.closest(".mp-wb-card");
+          var pendingDetail = trigger.closest(".mp-detail-view");
+          var pendingRow = null;
+          if (pendingCard) {
+            var pendingIndex = Number(pendingCard.getAttribute("data-index"));
+            pendingRow = state.filtered[pendingIndex];
+          } else if (pendingDetail && state.lastViewedRow) {
+            pendingRow = state.lastViewedRow;
+          }
+          if (!pendingRow) return;
+          var pendingPidx = Number(trigger.getAttribute("data-project-index"));
+          openProjectPatrolList(pendingRow, pendingPidx);
           return;
         }
 

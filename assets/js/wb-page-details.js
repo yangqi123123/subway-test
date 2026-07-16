@@ -47,6 +47,7 @@
     html += detailRowHtml("角色编号", row.roleId);
     html += detailRowHtml("角色名称", row.roleName);
     html += detailRowHtml("权限字符", row.roleKey);
+    html += detailRowHtml("角色类型", row.roleType);
     html += detailRowHtml("显示顺序", row.roleSort);
     html += detailRowHtml("数据权限", row.dataScope, true);
     html += detailStatusRow("状态", row.status);
