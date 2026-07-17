@@ -274,6 +274,41 @@
       syncSearchClear();
     }
 
+    var DRONE_DEVICES = [
+      { name: "A区巡检机01", color: "#1e90ff" },
+      { name: "青山巡检无人机", color: "#22d3ee" },
+      { name: "DJI-M300E-01", color: "#2dd4bf" },
+      { name: "徐家棚巡检机02", color: "#f0b93f" }
+    ];
+
+    var DRONE_TREND_DATA = {
+      months: ["一月", "二月", "三月", "四月", "五月", "六月"],
+      series: [
+        { name: "A区巡检机01", values: [12, 18, 15, 22, 28, 24], color: "#1e90ff" },
+        { name: "青山巡检无人机", values: [10, 22, 18, 25, 30, 20], color: "#22d3ee" },
+        { name: "DJI-M300E-01", values: [15, 20, 25, 18, 22, 30], color: "#2dd4bf" },
+        { name: "徐家棚巡检机02", values: [8, 15, 20, 28, 25, 18], color: "#f0b93f" }
+      ]
+    };
+
+    var DRONE_DURATION_DATA = {
+      months: ["一月", "二月", "三月", "四月", "五月", "六月"],
+      series: [
+        { name: "A区巡检机01", values: [20, 35, 30, 45, 55, 50], color: "#1e90ff" },
+        { name: "青山巡检无人机", values: [15, 40, 35, 50, 60, 40], color: "#22d3ee" },
+        { name: "DJI-M300E-01", values: [25, 35, 45, 35, 40, 55], color: "#2dd4bf" },
+        { name: "徐家棚巡检机02", values: [10, 25, 40, 55, 45, 35], color: "#f0b93f" }
+      ]
+    };
+
+    function renderLegend(hostId, series) {
+      var host = $(hostId);
+      if (!host) return;
+      host.innerHTML = series.map(function (item) {
+        return '<span class="dc-legend-item"><span class="dc-dot" style="background:' + esc(item.color) + '"></span>' + esc(item.name) + '</span>';
+      }).join("");
+    }
+
     function drawTrendChart() {
       var canvas = $("trend-chart");
       if (!canvas) return;
@@ -284,9 +319,9 @@
       var right = isMobile ? 12 : 18;
       var top = isMobile ? 14 : 18;
       var bottom = isMobile ? 28 : 34;
-      var months = ["一月", "二月", "三月", "四月", "五月", "六月"];
-      var drone = [10, 20, 10, 15, 30, 20];
-      var airport = [20, 25, 50, 45, 30, 30];
+      var data = DRONE_TREND_DATA;
+      var months = data.months;
+      var series = data.series;
       ctx.clearRect(0, 0, w, h);
       ctx.strokeStyle = isMobile ? "rgba(148,163,184,.25)" : "rgba(148,163,184,.18)";
       ctx.fillStyle = isMobile ? "#64748b" : "#94a3b8";
@@ -303,7 +338,9 @@
         var x = left + ((w - left - right) / (months.length - 1)) * idx;
         ctx.fillText(m, x - (isMobile ? 10 : 12), h - 8);
       });
-      function drawSeries(list, color) {
+      series.forEach(function (s) {
+        var color = s.color;
+        var list = s.values;
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -325,9 +362,8 @@
           ctx.lineWidth = 2;
           ctx.stroke();
         });
-      }
-      drawSeries(drone, "#1e90ff");
-      drawSeries(airport, "#22d3ee");
+      });
+      renderLegend("trend-legend", series);
     }
 
     function drawDurationChart() {
@@ -340,9 +376,12 @@
       var right = isMobile ? 16 : 24;
       var top = isMobile ? 12 : 16;
       var bottom = isMobile ? 20 : 24;
-      var labels = ["一月", "二月", "三月", "四月", "五月", "六月"];
-      var drone = [10, 20, 30, 40, 50, 60];
-      var airport = [20, 25, 50, 45, 30, 100];
+      var data = DRONE_DURATION_DATA;
+      var labels = data.months;
+      var series = data.series;
+      var barH = isMobile ? 5 : 7;
+      var barGap = isMobile ? 2 : 3;
+      var scale = isMobile ? 2.2 : 2.9;
       ctx.clearRect(0, 0, w, h);
       ctx.strokeStyle = isMobile ? "rgba(148,163,184,.25)" : "rgba(148,163,184,.18)";
       ctx.fillStyle = isMobile ? "#64748b" : "#94a3b8";
@@ -358,14 +397,14 @@
       labels.forEach(function (m, i) {
         var y = top + ((h - top - bottom) / labels.length) * i + 16;
         ctx.fillText(m, isMobile ? 4 : 8, y + 4);
-        var y1 = y - 8;
-        var barH = isMobile ? 8 : 10;
-        var scale = isMobile ? 2.2 : 2.9;
-        ctx.fillStyle = "#1e90ff";
-        ctx.fillRect(left, y1, drone[i] * scale, barH);
-        ctx.fillStyle = "#31c5e4";
-        ctx.fillRect(left, y1 + (isMobile ? 11 : 14), airport[i] * scale, barH);
+        var totalH = series.length * barH + (series.length - 1) * barGap;
+        var y1 = y - 8 - totalH / 2;
+        series.forEach(function (s, idx) {
+          ctx.fillStyle = s.color;
+          ctx.fillRect(left, y1 + idx * (barH + barGap), s.values[i] * scale, barH);
+        });
       });
+      renderLegend("duration-legend", series);
     }
 
     function drawViolationMonthChart(values) {

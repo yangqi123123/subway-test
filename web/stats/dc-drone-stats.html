@@ -171,7 +171,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div class="dc-panel dc-chart-shell">
           <div class="flex items-center justify-between mb-2">
-                  <div class="dc-chart-title">月度新增违规项目统计</div>
+                  <div class="dc-chart-title">月度违规施工行为</div>
             <div class="dc-chart-note">单位：个</div>
           </div>
           <canvas id="violation-month-chart" class="dc-canvas" width="420" height="214"></canvas>
@@ -197,10 +197,7 @@
             <div class="dc-chart-note">单位：百分比</div>
           </div>
           <canvas id="trend-chart" class="dc-canvas" width="420" height="214"></canvas>
-          <div class="dc-legend">
-            <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>无人机</span>
-            <span class="dc-legend-item"><span class="dc-dot bg-[#22d3ee]"></span>机场设备</span>
-          </div>
+          <div id="trend-legend" class="dc-legend"></div>
         </div>
 
         <div class="dc-panel dc-chart-shell">
@@ -209,10 +206,7 @@
             <div class="dc-chart-note">单位：月份 / 小时</div>
           </div>
           <canvas id="duration-chart" class="dc-canvas" width="420" height="214"></canvas>
-          <div class="dc-legend">
-            <span class="dc-legend-item"><span class="dc-dot bg-[#1e90ff]"></span>无人机</span>
-            <span class="dc-legend-item"><span class="dc-dot bg-[#31c5e4]"></span>机场设备</span>
-          </div>
+          <div id="duration-legend" class="dc-legend"></div>
         </div>
       </div>
     </section>

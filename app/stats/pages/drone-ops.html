@@ -67,7 +67,7 @@
           <div class="mp-drone-chart-stack">
             <div class="mp-drone-chart-card">
               <div class="mp-drone-chart-card__head">
-                <div class="mp-drone-chart-card__title">月度新增违规项目统计</div>
+                <div class="mp-drone-chart-card__title">月度违规施工行为</div>
                 <div class="mp-drone-chart-card__note">单位：个</div>
               </div>
               <canvas id="violation-month-chart" class="mp-drone-canvas" width="720" height="220"></canvas>
@@ -93,10 +93,7 @@
                 <div class="mp-drone-chart-card__note">单位：百分比</div>
               </div>
               <canvas id="trend-chart" class="mp-drone-canvas" width="720" height="220"></canvas>
-              <div class="mp-drone-legend">
-                <span class="dc-legend-item"><span class="dc-dot" style="background:#1e90ff"></span>无人机</span>
-                <span class="dc-legend-item"><span class="dc-dot" style="background:#22d3ee"></span>机场设备</span>
-              </div>
+              <div id="trend-legend" class="mp-drone-legend"></div>
             </div>
 
             <div class="mp-drone-chart-card">
@@ -105,10 +102,7 @@
                 <div class="mp-drone-chart-card__note">单位：月份 / 小时</div>
               </div>
               <canvas id="duration-chart" class="mp-drone-canvas" width="720" height="220"></canvas>
-              <div class="mp-drone-legend">
-                <span class="dc-legend-item"><span class="dc-dot" style="background:#1e90ff"></span>无人机</span>
-                <span class="dc-legend-item"><span class="dc-dot" style="background:#31c5e4"></span>机场设备</span>
-              </div>
+              <div id="duration-legend" class="mp-drone-legend"></div>
             </div>
           </div>
         </div>
