@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>巡线任务频率设置</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/wb-project-layout.css" />
+  <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
+  <style>
+    .tf-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      margin: 1px 3px 1px 0;
+      border-radius: 4px;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .tf-tag--cyan { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.3); }
+    .tf-tag--amber { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.3); }
+    .tf-tag--slate { background: rgba(148, 163, 184, 0.12); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .tf-tag--violet { background: rgba(167, 139, 250, 0.12); color: #c4b5fd; border: 1px solid rgba(167, 139, 250, 0.3); }
+    .tf-tag--green { background: rgba(52, 211, 153, 0.12); color: #6ee7b7; border: 1px solid rgba(52, 211, 153, 0.3); }
+    .tf-tag--red { background: rgba(244, 63, 94, 0.12); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.3); }
+
+    .tf-ops a { color: #7dd3fc; margin-right: 10px; cursor: pointer; white-space: nowrap; }
+    .tf-ops a.warn { color: #fbbf24; }
+    .tf-ops a.danger { color: #fb7185; }
+    .tf-empty { text-align: center; color: rgba(148, 163, 184, 0.6); padding: 28px 0 !important; }
+
+    .tf-tabs { display: flex; gap: 6px; border-bottom: 1px solid rgba(34, 211, 238, 0.14); padding-bottom: 10px; margin-bottom: 14px; }
+    .tf-tabs span { padding: 6px 16px; border-radius: 6px; color: #94a3b8; cursor: pointer; font-size: 12px; }
+    .tf-tabs span.active { color: #22d3ee; background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.3); font-weight: 600; }
+
+    .tf-modal-mask {
+      position: fixed; inset: 0; z-index: 120; display: none;
+      align-items: flex-start; justify-content: center; padding-top: 90px;
+      background: rgba(2, 8, 23, 0.72);
+    }
+    .tf-modal-mask.show { display: flex; }
+    .tf-modal {
+      width: 640px; max-width: 94vw; border-radius: 12px;
+      background: #0d1729; border: 1px solid rgba(34, 211, 238, 0.25);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+    }
+    .tf-modal__head { display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-bottom: 1px solid rgba(34, 211, 238, 0.14); }
+    .tf-modal__head h3 { font-size: 14px; font-weight: 600; color: #f0f9ff; margin: 0; }
+    .tf-modal__x { color: #64748b; cursor: pointer; background: none; border: none; font-size: 14px; }
+    .tf-modal__body { padding: 16px 18px; }
+    .tf-modal__foot { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 18px; border-top: 1px solid rgba(34, 211, 238, 0.14); }
+
+    .tf-frow { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+    .tf-frow > label { width: 90px; flex-shrink: 0; color: #94a3b8; padding-top: 6px; text-align: right; font-size: 12px; }
+    .tf-frow > label .req { color: #fb7185; }
+    .tf-fw { flex: 1; min-width: 0; }
+
+    .tf-checks { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tf-check {
+      display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+      border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #94a3b8; cursor: pointer; user-select: none; font-size: 12px;
+    }
+    .tf-check.on { color: #67e8f9; border-color: rgba(34, 211, 238, 0.5); background: rgba(34, 211, 238, 0.1); }
+    .tf-check input { display: none; }
+    .tf-check .dot { width: 13px; height: 13px; border-radius: 50%; border: 1px solid currentColor; display: inline-flex; align-items: center; justify-content: center; }
+    .tf-check .box { width: 13px; height: 13px; border-radius: 3px; border: 1px solid currentColor; display: inline-flex; align-items: center; justify-content: center; }
+    .tf-check.on .dot::after, .tf-check.on .box::after { content: ""; width: 7px; height: 7px; border-radius: 2px; background: currentColor; }
+    .tf-check.on .dot::after { border-radius: 50%; }
+
+    .tf-conflict {
+      display: flex; gap: 8px; padding: 10px 12px; margin-bottom: 4px;
+      border-radius: 8px; background: rgba(251, 191, 36, 0.08);
+      border: 1px solid rgba(251, 191, 36, 0.35); color: #fcd34d;
+      font-size: 12px; line-height: 1.7;
+    }
+    .tf-conflict b { color: #fde68a; }
+
+    .tf-toast {
+      position: fixed; right: 28px; bottom: 28px; z-index: 130; display: none;
+      padding: 10px 14px; border: 1px solid rgba(34, 211, 238, 0.28); border-radius: 8px;
+      background: rgba(8, 15, 35, 0.94); color: #cffafe; font-size: 12px;
+    }
+    .tf-toast.show { display: block; }
+  </style>
+</head>
+<body data-shell="default" data-top="wb" data-sidebar-key="in-task-frequency" data-wb-view="page">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <section id="freq-list-view">
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+        <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">巡线任务频率设置</h1>
+        <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">项目管理面板</span>
+      </div>
+
+      <div class="disease-layout disease-layout--fixed-sidebar">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="频率规则统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-calendar-week"></i></div>
+              <div>
+                <div id="stat-rules" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">条</span></div>
+                <div class="disease-stat-card__label">频率规则</div>
+                <div class="disease-stat-card__trend">全部规则</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-earth-asia"></i></div>
+              <div>
+                <div id="stat-all" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">条</span></div>
+                <div class="disease-stat-card__label">全线范围规则</div>
+                <div class="disease-stat-card__trend">全线路项目</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-layer-group"></i></div>
+              <div>
+                <div id="stat-shallow" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">条</span></div>
+                <div class="disease-stat-card__label">浅埋段范围规则</div>
+                <div class="disease-stat-card__trend">浅埋段项目</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-location-dot"></i></div>
+              <div>
+                <div id="stat-sections" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">段</span></div>
+                <div class="disease-stat-card__label">浅埋段区间</div>
+                <div class="disease-stat-card__trend">起始站 - 终点站</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="disease-list-area">
+            <div class="wh-table-shell bg-slate-950/35" id="panel-rules">
+              <div class="px-4 pt-4">
+                <div class="tf-tabs">
+                  <span class="active" data-action="switch-tab" data-tab="rules">频率规则</span>
+                  <span data-action="switch-tab" data-tab="shallow">浅埋段范围设置</span>
+                </div>
+                <div class="disease-list-toolbar mb-3">
+                  <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new-rule">
+                    <i class="fa-solid fa-plus mr-1"></i>新增规则
+                  </button>
+                </div>
+              </div>
+              <div class="project-table-wrap overflow-x-auto">
+                <table class="project-table min-w-[1180px] w-full text-left text-[11px]">
+                  <thead>
+                    <tr class="bg-slate-950/75">
+                      <th class="px-3 text-cyan-50/95">规则编号</th>
+                      <th class="px-3 text-cyan-50/95">应用范围</th>
+                      <th class="px-3 text-cyan-50/95">项目类型</th>
+                      <th class="px-3 text-cyan-50/95">生成周期</th>
+                      <th class="px-3 text-cyan-50/95">状态</th>
+                      <th class="px-3 text-cyan-50/95">最近生成时间</th>
+                      <th class="px-3 text-cyan-50/95">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rules-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="wh-table-shell bg-slate-950/35" id="panel-shallow" style="display:none">
+              <div class="px-4 pt-4">
+                <div class="tf-tabs">
+                  <span data-action="switch-tab" data-tab="rules">频率规则</span>
+                  <span class="active" data-action="switch-tab" data-tab="shallow">浅埋段范围设置</span>
+                </div>
+                <div class="disease-list-toolbar mb-3">
+                  <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new-section">
+                    <i class="fa-solid fa-plus mr-1"></i>新增浅埋段
+                  </button>
+                </div>
+              </div>
+              <div class="project-table-wrap overflow-x-auto">
+                <table class="project-table min-w-[980px] w-full text-left text-[11px]">
+                  <thead>
+                    <tr class="bg-slate-950/75">
+                      <th class="px-3 text-cyan-50/95">编号</th>
+                      <th class="px-3 text-cyan-50/95">所属线路</th>
+                      <th class="px-3 text-cyan-50/95">起始站点</th>
+                      <th class="px-3 text-cyan-50/95">终点站点</th>
+                      <th class="px-3 text-cyan-50/95">说明</th>
+                      <th class="px-3 text-cyan-50/95">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="shallow-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label class="disease-filter-span-2"><span>规则编号</span><input id="filter-id" class="wh-input w-full px-2" placeholder="请输入规则编号" /></label>
+              <label><span>应用范围</span><select id="filter-scope" class="wh-input w-full px-2"><option value="">全部</option><option value="all">全线范围</option><option value="shallow">浅埋段范围</option></select></label>
+              <label><span>项目类型</span><select id="filter-type" class="wh-input w-full px-2"><option value="">全部</option><option>重点项目</option><option>一般项目</option><option>临时项目</option></select></label>
+              <label><span>状态</span><select id="filter-status" class="wh-input w-full px-2"><option value="">全部</option><option value="enabled">启用</option><option value="disabled">停用</option></select></label>
+              <div class="disease-filter-actions">
+                <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary flex-1" data-action="filter-search">搜索</button>
+                <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost flex-1" data-action="filter-reset">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="project-quick-links"></div>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <!-- 新增/编辑规则弹窗 -->
+  <div class="tf-modal-mask" id="rule-modal">
+    <div class="tf-modal" role="dialog" aria-labelledby="rule-modal-title">
+      <div class="tf-modal__head">
+        <h3 id="rule-modal-title">新增规则</h3>
+        <button type="button" class="tf-modal__x" data-action="rule-cancel" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="tf-modal__body">
+        <div class="tf-frow">
+          <label><span class="req">*</span> 应用范围</label>
+          <div class="tf-checks">
+            <label class="tf-check on"><input type="radio" name="rule-scope" value="all" checked /><span class="dot"></span>全线范围</label>
+            <label class="tf-check"><input type="radio" name="rule-scope" value="shallow" /><span class="dot"></span>浅埋段范围</label>
+          </div>
+        </div>
+        <div class="tf-frow">
+          <label><span class="req">*</span> 项目类型</label>
+          <div class="tf-checks">
+            <label class="tf-check"><input type="checkbox" data-type="重点项目" /><span class="box"></span>重点项目</label>
+            <label class="tf-check"><input type="checkbox" data-type="一般项目" /><span class="box"></span>一般项目</label>
+            <label class="tf-check"><input type="checkbox" data-type="临时项目" /><span class="box"></span>临时项目</label>
+          </div>
+        </div>
+        <div class="tf-frow">
+          <label><span class="req">*</span> 生成周期</label>
+          <div class="tf-checks">
+            <label class="tf-check"><input type="checkbox" data-weekday="周一" /><span class="box"></span>周一</label>
+            <label class="tf-check"><input type="checkbox" data-weekday="周二" /><span class="box"></span>周二</label>
+            <label class="tf-check"><input type="checkbox" data-weekday="周三" /><span class="box"></span>周三</label>
+            <label class="tf-check"><input type="checkbox" data-weekday="周四" /><span class="box"></span>周四</label>
+            <label class="tf-check"><input type="checkbox" data-weekday="周五" /><span class="box"></span>周五</label>
+            <label class="tf-check"><input type="checkbox" data-weekday="周六" /><span class="box"></span>周六</label>
+            <label class="tf-check"><input type="checkbox" data-weekday="周日" /><span class="box"></span>周日</label>
+            <label class="tf-check"><input type="checkbox" data-weekday-all /><span class="box"></span>全选</label>
+          </div>
+        </div>
+        <div class="tf-frow">
+          <label>备注</label>
+          <div class="tf-fw"><textarea id="rule-remark" class="wh-input w-full px-2 py-2 min-h-[56px] resize-none"></textarea></div>
+        </div>
+        <div class="tf-conflict" id="rule-conflict" hidden></div>
+      </div>
+      <div class="tf-modal__foot">
+        <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost" data-action="rule-cancel">取消</button>
+        <!-- <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost" data-action="rule-edit-original">去修改原规则</button> -->
+        <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="rule-save">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新增/编辑浅埋段弹窗 -->
+  <div class="tf-modal-mask" id="shallow-modal">
+    <div class="tf-modal" role="dialog" aria-labelledby="shallow-modal-title">
+      <div class="tf-modal__head">
+        <h3 id="shallow-modal-title">新增浅埋段</h3>
+        <button type="button" class="tf-modal__x" data-action="shallow-cancel" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="tf-modal__body">
+        <div class="tf-frow">
+          <label><span class="req">*</span> 所属线路</label>
+          <div class="tf-fw"><select id="shallow-line" class="wh-input w-full h-8 px-2"></select></div>
+        </div>
+        <div class="tf-frow">
+          <label><span class="req">*</span> 起始站点</label>
+          <div class="tf-fw"><select id="shallow-from" class="wh-input w-full h-8 px-2"></select></div>
+        </div>
+        <div class="tf-frow">
+          <label><span class="req">*</span> 终点站点</label>
+          <div class="tf-fw"><select id="shallow-to" class="wh-input w-full h-8 px-2"></select></div>
+        </div>
+        <div class="tf-frow">
+          <label>说明</label>
+          <div class="tf-fw"><textarea id="shallow-remark" class="wh-input w-full px-2 py-2 min-h-[56px] resize-none" placeholder="请输入浅埋段说明（选填）"></textarea></div>
+        </div>
+      </div>
+      <div class="tf-modal__foot">
+        <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost" data-action="shallow-cancel">取消</button>
+        <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="shallow-save">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认弹窗 -->
+  <div class="tf-modal-mask" id="confirm-modal">
+    <div class="tf-modal" style="width:420px" role="alertdialog">
+      <div class="tf-modal__head"><h3 id="confirm-title">确认操作</h3></div>
+      <div class="tf-modal__body">
+        <p id="confirm-text" class="text-slate-300 text-xs">确定删除吗？</p>
+      </div>
+      <div class="tf-modal__foot">
+        <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost" data-action="confirm-cancel">取消</button>
+        <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" id="confirm-ok-btn" data-action="confirm-ok">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tf-toast" id="page-toast" aria-live="polite"></div>
+
+  <script src="../../assets/js/in-project-data.js"></script>
+  <script src="../../assets/js/in-task-frequency-data.js"></script>
+  <script src="../../assets/js/in-task-frequency-page.js"></script>
+  <script src="../../assets/js/project-quick-links.js"></script>
+  <script>WHProjectQuickLinks.render("project-quick-links", "in-task-frequency");</script>
+  <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/workbench-mega.js"></script>
+  <script src="../../assets/js/shell.js"></script>
+</body>
+</html>

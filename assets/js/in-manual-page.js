@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 人工巡检记录 - Web / 移动端共用逻辑
  */
 (function (global) {
@@ -32,10 +32,95 @@
     if (hasLogAction(row, "拒绝")) {
       return { text: "已拒绝", className: "mp-disease-progress mp-disease-progress--reject" };
     }
-    if (hasLogAction(row, "工班确认")) {
-      return { text: "已确认", className: "mp-disease-progress mp-disease-progress--done" };
+    if (hasLogAction(row, "车间确认")) {
+      return { text: "已完成", className: "mp-disease-progress mp-disease-progress--done" };
     }
     return { text: "待确认", className: "mp-disease-progress mp-disease-progress--pending" };
+  }
+
+  var DEFAULT_LINE = "8号线";
+  var DEFAULT_PROGRESS = "地下室结构基本浇筑完成，剩余小部分暂未浇筑，目前正在搭建地上一层主体结构脚手架。";
+  var DEFAULT_REMARK = "无";
+
+  var SECTION_INFO = {
+    "水果湖-洪山路": { start: "DK08+120", end: "DK09+450", length: "1330.00", method: "盾构" },
+    "洪山路-小洪山": { start: "DK09+450", end: "DK10+720", length: "1270.00", method: "盾构" },
+    "金潭路-宏图大道": { start: "DK02+330", end: "DK03+910", length: "1580.00", method: "明挖" },
+  };
+
+  function selectValues(el) {
+    if (!el) return "";
+    if (el.multiple) {
+      return Array.prototype.filter.call(el.options, function (o) {
+        return o.selected && o.value;
+      }).map(function (o) {
+        return o.value;
+      }).join("、");
+    }
+    return String(el.value || "").trim();
+  }
+
+  function setSelectValues(el, value) {
+    if (!el) return;
+    var values = String(value || "")
+      .split(/[、,，]/)
+      .map(function (s) {
+        return s.trim();
+      })
+      .filter(Boolean);
+    Array.prototype.forEach.call(el.options, function (o) {
+      o.selected = values.indexOf(o.value) >= 0;
+    });
+  }
+
+  function todayLocal() {
+    var d = new Date();
+    function pad(n) {
+      return (n < 10 ? "0" : "") + n;
+    }
+    return (
+      d.getFullYear() +
+      "-" +
+      pad(d.getMonth() + 1) +
+      "-" +
+      pad(d.getDate()) +
+      "T" +
+      pad(d.getHours()) +
+      ":" +
+      pad(d.getMinutes())
+    );
+  }
+
+  function renderSectionInfo() {
+    var row = document.getElementById("f-section-info-row");
+    var box = document.getElementById("f-section-info");
+    var select = document.getElementById("f-section");
+    if (!row || !box || !select) return;
+    var selected = selectValues(select).split("、").filter(Boolean);
+    var cards = selected
+      .filter(function (name) {
+        return SECTION_INFO[name];
+      })
+      .map(function (name) {
+        var info = SECTION_INFO[name];
+        return (
+          '<div class="mp-section-info__card">' +
+          '<div class="mp-section-info__title">' +
+          name +
+          '</div><div class="mp-section-info__grid">' +
+          "<span>起点里程：" +
+          info.start +
+          "</span><span>终点里程：" +
+          info.end +
+          "</span><span>长度：" +
+          info.length +
+          "</span><span>施工方法：" +
+          info.method +
+          "</span></div></div>"
+        );
+      });
+    box.innerHTML = cards.join("");
+    row.hidden = !cards.length;
   }
 
   function bootManualPage(options) {
@@ -47,7 +132,7 @@
       });
     });
 
-    return global.WHPatrolCrudPage.boot({
+    var api = global.WHPatrolCrudPage.boot({
       mobile: !!options.mobile,
       prefix: "manual",
       rows: rows,
@@ -64,7 +149,26 @@
         confirmTitle: "工班确认",
         confirmMsg: "确定通过该人工巡检记录？",
         rejectTitle: "拒绝受理",
-        rejectMsg: "确定拒绝该人工巡检记录？"
+        rejectMsg: "确定拒绝该人工巡检记录？",
+        deleteTitle: "确认删除",
+        deleteMsg: "确定删除该人工巡检记录吗？删除后不可恢复。"
+      },
+      confirmLabel: function (row) {
+        return hasLogAction(row, "工班确认") ? "车间确认" : "工班确认";
+      },
+      confirmAction: function (row) {
+        return hasLogAction(row, "工班确认") ? "车间确认" : "工班确认";
+      },
+      confirmDialog: function (row) {
+        return hasLogAction(row, "工班确认")
+          ? { title: "车间确认", msg: "确定车间确认该人工巡检记录？" }
+          : { title: "工班确认", msg: "确定通过该人工巡检记录？" };
+      },
+      isRowLocked: function (row) {
+        return hasLogAction(row, "车间确认") || hasLogAction(row, "拒绝");
+      },
+      showDelete: function () {
+        return true;
       },
       formTitle: function (mode) {
         return mode === "edit" ? "编辑人工巡查记录" : "新建人工巡查记录";
@@ -79,10 +183,10 @@
             return r.patrolDate && String(r.patrolDate).indexOf("2026-03") === 0;
           }).length,
           pending: allRows.filter(function (r) {
-            return !hasLogAction(r, "工班确认") && !hasLogAction(r, "拒绝");
+            return !hasLogAction(r, "车间确认") && !hasLogAction(r, "拒绝");
           }).length,
           completed: allRows.filter(function (r) {
-            return hasLogAction(r, "工班确认");
+            return hasLogAction(r, "车间确认");
           }).length
         };
       },
@@ -182,6 +286,7 @@
           direction: fv("filter-direction"),
           section: fv("filter-section"),
           station: fv("filter-station"),
+          user: fv("filter-user"),
           dateStart: fv("filter-date-start"),
           dateEnd: fv("filter-date-end")
         };
@@ -191,6 +296,7 @@
         if (f.direction && row.direction !== f.direction) return false;
         if (f.section && row.section !== f.section) return false;
         if (f.station && row.station !== f.station) return false;
+        if (f.user && String(row.user || "").indexOf(f.user) < 0) return false;
         return true;
       },
       readForm: function (fh) {
@@ -211,16 +317,17 @@
       },
       resetForm: function (fh) {
         fh.$("f-id").value = fh.genId();
-        fh.$("f-line").value = "";
+        fh.$("f-line").value = DEFAULT_LINE;
         fh.$("f-direction").value = "";
         fh.$("f-section").value = "";
         fh.$("f-station").value = "";
         fh.$("f-project").value = "";
-        fh.$("f-patrol-date").value = "";
-        fh.$("f-progress").value = "";
-        fh.$("f-remark").value = "";
+        fh.$("f-patrol-date").value = todayLocal();
+        fh.$("f-progress").value = DEFAULT_PROGRESS;
+        fh.$("f-remark").value = DEFAULT_REMARK;
         fh.clearUploads();
         fh.refreshFormPickers();
+        renderSectionInfo();
       },
       loadForm: function (row, fh) {
         fh.$("f-id").value = row.id;
@@ -234,6 +341,7 @@
         fh.$("f-remark").value = row.remark || "";
         fh.clearUploads();
         fh.refreshFormPickers();
+        renderSectionInfo();
       },
       validateForm: function (fh) {
         if (!fh.fieldVal("f-line")) {
@@ -280,6 +388,11 @@
         };
       }
     });
+    var sectionSelect = document.getElementById("f-section");
+    if (sectionSelect) {
+      sectionSelect.addEventListener("change", renderSectionInfo);
+    }
+    return api;
   }
 
   global.WHInManualPage = { boot: bootManualPage };

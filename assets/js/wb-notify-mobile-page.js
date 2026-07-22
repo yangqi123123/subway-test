@@ -543,7 +543,7 @@
       });
       var pendingItems = buildSortedProjectItems(pendingProjects, false);
       return '<section class="mp-patrol-alert-section mp-todo-detail-section">' +
-        '<h4 class="mp-patrol-alert-section__title">项目巡查</h4>' +
+        '<h4 class="mp-patrol-alert-section__title">' + esc(row.type || "项目巡查") + '</h4>' +
         '<div class="mp-patrol-alert-section__body">' +
         '<dl class="mp-disease-detail-grid">' +
         '<div class="mp-disease-detail-grid__full"><dt>标题</dt><dd>' + esc(title) + '</dd></div>' +
@@ -585,7 +585,7 @@
         pairs.push(["调配原因", row.reason || "-"]);
       }
       pairs.push(["操作人", row.operator || "-"]);
-      return '<section class="mp-patrol-alert-section mp-todo-detail-section"><h4 class="mp-patrol-alert-section__title">区间调配</h4><div class="mp-patrol-alert-section__body">' + buildDetailGrid(pairs) + '</div></section>';
+      return '<section class="mp-patrol-alert-section mp-todo-detail-section"><h4 class="mp-patrol-alert-section__title">' + esc(row.type || "区间调配") + '</h4><div class="mp-patrol-alert-section__body">' + buildDetailGrid(pairs) + '</div></section>';
     }
 
     function buildNotifyDetailHtml(row) {
@@ -596,12 +596,13 @@
         return buildAggregatedNotifyDetailHtml(row);
       }
       if (isManualNotify(row)) {
-        return '<section class="mp-patrol-alert-section mp-todo-detail-section"><h4 class="mp-patrol-alert-section__title">人工巡检详情</h4><div class="mp-patrol-alert-section__body">' + buildManualNotifyDetailHtml(row) + '</div></section>';
+        return '<section class="mp-patrol-alert-section mp-todo-detail-section"><h4 class="mp-patrol-alert-section__title">' + esc(row.type || "项目巡查") + '</h4><div class="mp-patrol-alert-section__body">' + buildManualNotifyDetailHtml(row) + '</div></section>';
       }
       var pairs = global.WHWorkbenchNotify && global.WHWorkbenchNotify.notifyDetailPairs
         ? global.WHWorkbenchNotify.notifyDetailPairs(row)
         : [["标题", row.title], ["发布时间", row.time]];
-      return '<section class="mp-patrol-alert-section mp-todo-detail-section"><h4 class="mp-patrol-alert-section__title">通知详情</h4><div class="mp-patrol-alert-section__body">' + buildDetailGrid(pairs) + '</div></section>';
+      var typeLabel = row.type === "提醒" ? "空域许可提醒" : (row.type || "通知详情");
+      return '<section class="mp-patrol-alert-section mp-todo-detail-section"><h4 class="mp-patrol-alert-section__title">' + esc(typeLabel) + '</h4><div class="mp-patrol-alert-section__body">' + buildDetailGrid(pairs) + '</div></section>';
     }
 
     function openDetail(row) {
@@ -610,15 +611,8 @@
       detailBody.innerHTML = buildNotifyDetailHtml(row);
       var titleEl = $("detail-wb-title");
       if (titleEl) {
-        if (isSectionAdjustNotify(row)) {
-          titleEl.textContent = "区间调配";
-        } else if (isManualNotify(row) && row.source === "今日巡线" && Array.isArray(row.projects) && row.projects.length > 0) {
-          titleEl.textContent = "项目巡查";
-        } else if (isManualNotify(row)) {
-          titleEl.textContent = "人工巡检详情";
-        } else {
-          titleEl.textContent = "详情";
-        }
+        // 顶部标题统一显示「系统通知」，通知类型由详情副标题动态展示
+        titleEl.textContent = "系统通知";
       }
       if (global.WHPatrolMediaGallery && typeof global.WHPatrolMediaGallery.bind === "function") {
         global.WHPatrolMediaGallery.bind(detailBody);

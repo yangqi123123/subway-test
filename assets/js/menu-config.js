@@ -227,6 +227,7 @@
           items: [
             { key: "in-project", label: "项目管理", href: "wb/in-project.html" },
             { key: "in-project-done", label: "完工项目", href: "wb/in-project-done.html" },
+            { key: "in-task-frequency", label: "频率设置", href: "wb/in-task-frequency.html" },
           ],
         },
         {

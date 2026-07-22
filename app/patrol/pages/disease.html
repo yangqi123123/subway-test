@@ -102,6 +102,7 @@
               <option value="">请选择上下行</option>
               <option value="上行">上行</option>
               <option value="下行">下行</option>
+              <option value="上下行">上下行</option>
             </select>
           </div>
           <div class="mp-form-row">
@@ -113,6 +114,9 @@
               <option value="白沙六路-光霞">白沙六路-光霞</option>
             </select>
           </div>
+          <div class="mp-form-row mp-form-row--full" id="f-section-info-row" hidden>
+            <div id="f-section-info" class="mp-section-info"></div>
+          </div>
           <div class="mp-form-row">
             <label class="project-form-label">站点</label>
             <select id="f-station" class="wh-input mp-field">
@@ -120,11 +124,16 @@
               <option value="常青花园">常青花园</option>
               <option value="长港路">长港路</option>
               <option value="汉口火车站">汉口火车站</option>
+              <option value="无">无</option>
             </select>
           </div>
           <div class="mp-form-row">
             <label class="project-form-label project-required">病害里程</label>
-            <input id="f-mileage" class="wh-input mp-field" placeholder="病害里程" />
+            <div class="mp-mileage-fields">
+              <input id="f-mileage-text" class="wh-input mp-field" placeholder="输入里程" />
+              <span class="mp-mileage-fields__plus">+</span>
+              <input id="f-mileage-num" class="wh-input mp-field" placeholder="输入数字" inputmode="numeric" />
+            </div>
           </div>
           <div class="mp-form-row">
             <label class="project-form-label project-required">巡查项</label>
@@ -148,7 +157,7 @@
           </div>
           <div class="mp-form-row">
             <label class="project-form-label">环号</label>
-            <input id="f-ring" class="wh-input mp-field" placeholder="环号" />
+            <input id="f-ring" class="wh-input mp-field" placeholder="请输入数字" inputmode="numeric" />
           </div>
           <div class="mp-form-row mp-form-row--full">
             <label class="project-form-label">病害描述</label>
@@ -232,6 +241,9 @@
             <option value="常青花园">常青花园</option>
             <option value="长港路">长港路</option>
           </select>
+        </label>
+        <label class="mp-filter-field mp-filter-field--full"><span>巡查人</span>
+          <input id="filter-user" class="wh-input w-full px-2" placeholder="请输入巡查人" />
         </label>
         <label class="mp-filter-field"><span>病害类型</span>
           <select id="filter-type" class="wh-input w-full px-2"></select>

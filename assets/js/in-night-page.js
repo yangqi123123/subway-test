@@ -14,10 +14,78 @@
     if (hasLogAction(row, "拒绝")) {
       return { text: "已拒绝", className: "mp-disease-progress mp-disease-progress--reject" };
     }
+    if (hasLogAction(row, "车间确认")) {
+      return { text: "已完成", className: "mp-disease-progress mp-disease-progress--done" };
+    }
     if (hasLogAction(row, "工班确认")) {
-      return { text: "已确认", className: "mp-disease-progress mp-disease-progress--done" };
+      return { text: "待确认", className: "mp-disease-progress mp-disease-progress--pending" };
     }
     return { text: "待确认", className: "mp-disease-progress mp-disease-progress--pending" };
+  }
+
+  var DEFAULT_LINE = "5号线";
+  var DEFAULT_DESC = "夜间对保护区区间结构、照明、围挡及排水设施进行巡查，未发现异常情况。";
+
+  var SECTION_INFO = {
+    "白沙六路-光霞": { start: "DK17+054", end: "DK18+934", length: "1880.00", method: "盾构" },
+    "盘龙城-宏图大道": { start: "DK03+210", end: "DK04+860", length: "1650.00", method: "明挖" },
+  };
+
+  function selectValues(el) {
+    if (!el) return "";
+    if (el.multiple) {
+      return Array.prototype.filter.call(el.options, function (o) {
+        return o.selected && o.value;
+      }).map(function (o) {
+        return o.value;
+      }).join("、");
+    }
+    return String(el.value || "").trim();
+  }
+
+  function setSelectValues(el, value) {
+    if (!el) return;
+    var values = String(value || "")
+      .split(/[、,，]/)
+      .map(function (s) {
+        return s.trim();
+      })
+      .filter(Boolean);
+    Array.prototype.forEach.call(el.options, function (o) {
+      o.selected = values.indexOf(o.value) >= 0;
+    });
+  }
+
+  function renderSectionInfo() {
+    var row = document.getElementById("f-section-info-row");
+    var box = document.getElementById("f-section-info");
+    var select = document.getElementById("f-section");
+    if (!row || !box || !select) return;
+    var selected = selectValues(select).split("、").filter(Boolean);
+    var cards = selected
+      .filter(function (name) {
+        return SECTION_INFO[name];
+      })
+      .map(function (name) {
+        var info = SECTION_INFO[name];
+        return (
+          '<div class="mp-section-info__card">' +
+          '<div class="mp-section-info__title">' +
+          name +
+          '</div><div class="mp-section-info__grid">' +
+          "<span>起点里程：" +
+          info.start +
+          "</span><span>终点里程：" +
+          info.end +
+          "</span><span>长度：" +
+          info.length +
+          "</span><span>施工方法：" +
+          info.method +
+          "</span></div></div>"
+        );
+      });
+    box.innerHTML = cards.join("");
+    row.hidden = !cards.length;
   }
 
   function bootNightPage(options) {
@@ -26,7 +94,7 @@
       return Object.assign({}, row, { logs: (row.logs || []).slice() });
     });
 
-    return global.WHPatrolCrudPage.boot({
+    var api = global.WHPatrolCrudPage.boot({
       mobile: !!options.mobile,
       prefix: "night",
       rows: rows,
@@ -44,6 +112,25 @@
         confirmMsg: "确定通过该夜班作业记录？",
         rejectTitle: "拒绝受理",
         rejectMsg: "确定拒绝该夜班作业记录？",
+        deleteTitle: "确认删除",
+        deleteMsg: "确定删除该夜班作业记录吗？删除后不可恢复。",
+      },
+      confirmLabel: function (row) {
+        return hasLogAction(row, "工班确认") ? "车间确认" : "工班确认";
+      },
+      confirmAction: function (row) {
+        return hasLogAction(row, "工班确认") ? "车间确认" : "工班确认";
+      },
+      confirmDialog: function (row) {
+        return hasLogAction(row, "工班确认")
+          ? { title: "车间确认", msg: "确定车间确认该夜班作业记录？" }
+          : { title: "工班确认", msg: "确定通过该夜班作业记录？" };
+      },
+      isRowLocked: function (row) {
+        return hasLogAction(row, "车间确认") || hasLogAction(row, "拒绝");
+      },
+      showDelete: function () {
+        return true;
       },
       formTitle: function (mode) {
         return mode === "edit" ? "编辑夜班作业" : "新建夜班作业";
@@ -58,10 +145,10 @@
             return r.time && String(r.time).indexOf("2026-03") === 0;
           }).length,
           pending: allRows.filter(function (r) {
-            return !hasLogAction(r, "工班确认") && !hasLogAction(r, "拒绝");
+            return !hasLogAction(r, "车间确认") && !hasLogAction(r, "拒绝");
           }).length,
           completed: allRows.filter(function (r) {
-            return hasLogAction(r, "工班确认") || (r.desc && r.desc.indexOf("已完成") >= 0);
+            return hasLogAction(r, "车间确认") || (r.desc && r.desc.indexOf("已完成") >= 0);
           }).length,
         };
       },
@@ -144,6 +231,7 @@
           direction: fv("filter-direction"),
           section: fv("filter-section"),
           station: fv("filter-station"),
+          user: fv("filter-user"),
           dateStart: fv("filter-date-start"),
           dateEnd: fv("filter-date-end"),
         };
@@ -153,11 +241,12 @@
         if (f.direction && row.direction !== f.direction) return false;
         if (f.section && row.section !== f.section) return false;
         if (f.station && row.station !== f.station) return false;
+        if (f.user && String(row.user || "").indexOf(f.user) < 0) return false;
         return true;
       },
       readForm: function (fh) {
-        var section = fh.fieldVal("f-section");
-        var station = fh.fieldVal("f-station");
+        var section = selectValues(fh.$("f-section"));
+        var station = selectValues(fh.$("f-station"));
         var direction = fh.fieldVal("f-direction");
         var place =
           (section || "—") +
@@ -179,29 +268,31 @@
       },
       resetForm: function (fh) {
         fh.$("f-id").value = fh.genId();
-        fh.$("f-line").value = "";
+        fh.$("f-line").value = DEFAULT_LINE;
         fh.$("f-direction").value = "";
-        fh.$("f-section").value = "";
-        fh.$("f-station").value = "";
-        fh.$("f-desc").value = "";
+        setSelectValues(fh.$("f-section"), "");
+        setSelectValues(fh.$("f-station"), "");
+        fh.$("f-desc").value = DEFAULT_DESC;
         fh.$("f-company").value = "";
         fh.$("f-special-type").value = "";
         fh.$("f-time").value = "";
         fh.clearUploads();
         fh.refreshFormPickers();
+        renderSectionInfo();
       },
       loadForm: function (row, fh) {
         fh.$("f-id").value = row.id;
         fh.$("f-line").value = row.line || "";
         fh.$("f-direction").value = row.direction || "";
-        fh.$("f-section").value = row.section || "";
-        fh.$("f-station").value = row.station || "";
+        setSelectValues(fh.$("f-section"), row.section || "");
+        setSelectValues(fh.$("f-station"), row.station || "");
         fh.$("f-desc").value = row.desc || "";
         fh.$("f-company").value = row.company || "";
         fh.$("f-special-type").value = row.specialType || "";
         fh.$("f-time").value = row.time || "";
         fh.clearUploads();
         fh.refreshFormPickers();
+        renderSectionInfo();
       },
       validateForm: function (fh) {
         if (!fh.fieldVal("f-line")) {
@@ -243,6 +334,11 @@
         };
       },
     });
+    var sectionSelect = document.getElementById("f-section");
+    if (sectionSelect) {
+      sectionSelect.addEventListener("change", renderSectionInfo);
+    }
+    return api;
   }
 
   global.WHInNightPage = { boot: bootNightPage };

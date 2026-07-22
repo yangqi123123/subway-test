@@ -226,3 +226,55 @@ body.mp-manual-page select.wh-input:disabled,
 body.mp-manual-page select.wh-input[data-locked] {
   background-image: none;
 }
+
+/* 从系统通知进入的人工巡检详情：卡片副标题 */
+body.mp-manual-page .mp-notify-subtitle {
+  margin: 0 0 10px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--mp-border-light);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mp-text);
+  line-height: 1.4;
+}
+
+body.mp-manual-page .mp-notify-subtitle::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  margin-right: 8px;
+  border-radius: 999px;
+  background: var(--mp-primary);
+  vertical-align: -2px;
+}
+
+/* 所在区间信息卡片 */
+body.mp-manual-page .mp-section-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+body.mp-manual-page .mp-section-info__card {
+  border: 1px solid var(--mp-border-light);
+  border-radius: 8px;
+  background: var(--mp-bg);
+  padding: 10px 12px;
+}
+
+body.mp-manual-page .mp-section-info__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mp-text);
+  text-align: left;
+  margin-bottom: 6px;
+}
+
+body.mp-manual-page .mp-section-info__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  font-size: 12px;
+  color: var(--mp-text-muted);
+}

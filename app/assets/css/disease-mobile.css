@@ -447,3 +447,51 @@ body.mp-scroll-locked #disease-record-mask .mp-record-modal__body {
   -webkit-overflow-scrolling: touch !important;
   overscroll-behavior: contain;
 }
+
+/* 病害里程双输入框 */
+body.mp-disease-page .mp-mileage-fields {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+body.mp-disease-page .mp-mileage-fields .mp-field {
+  flex: 1;
+  min-width: 0;
+}
+
+body.mp-disease-page .mp-mileage-fields__plus {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--mp-text);
+}
+
+/* 所在区间信息卡片 */
+body.mp-disease-page .mp-section-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+body.mp-disease-page .mp-section-info__card {
+  border: 1px solid var(--mp-border-light);
+  border-radius: 8px;
+  background: var(--mp-bg);
+  padding: 10px 12px;
+}
+
+body.mp-disease-page .mp-section-info__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mp-text);
+  text-align: left;
+  margin-bottom: 6px;
+}
+
+body.mp-disease-page .mp-section-info__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  font-size: 12px;
+  color: var(--mp-text-muted);
+}

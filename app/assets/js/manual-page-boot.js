@@ -57,6 +57,14 @@
   function readJson(key, fallback) { try { var raw = global.localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch (e) { return fallback; } }
   function writeJson(key, value) { try { global.localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} }
   function updateNavTitle(text) { var el = global.document.getElementById("manual-nav-title"); if (el) el.textContent = text || "人工巡检记录"; }
+  function ensureNotifySubtitle() {
+    var body = global.document.getElementById("manual-detail-body");
+    if (!body || !body.firstChild || body.querySelector(".mp-notify-subtitle")) return;
+    var subtitle = global.document.createElement("h4");
+    subtitle.className = "mp-notify-subtitle";
+    subtitle.textContent = "项目巡查";
+    body.insertBefore(subtitle, body.firstChild);
+  }
   function ensureSelectOption(field, value) {
     if (!field || !value) return;
     var exists = Array.prototype.some.call(field.options || [], function (option) { return option.value === value; });
@@ -416,6 +424,12 @@
         return;
       }
       if (detailEl && !detailEl.classList.contains("hidden")) {
+        if (query && query.source === "notify") {
+          // 从系统通知进入：顶部标题固定为「系统通知」，详情卡片顶部加「项目巡查」副标题
+          updateNavTitle("系统通知");
+          ensureNotifySubtitle();
+          return;
+        }
         var nameEl = global.document.getElementById("detail-manual-title");
         updateNavTitle(nameEl && nameEl.textContent ? nameEl.textContent : "人工巡查详情");
         return;

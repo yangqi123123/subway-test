@@ -763,14 +763,7 @@
             </div>
           </div>
 
-          <div class="disease-quick-panel">
-            <div class="disease-panel-title"><i class="fa-solid fa-bolt mr-2 text-cyan-400"></i>快捷操作</div>
-            <div class="disease-panel-body">
-              <a class="disease-quick-link" data-quick-href="wb/in-project.html" href="in-project.html"><i class="fa-solid fa-folder-tree"></i><span>项目管理</span></a>
-              <a class="disease-quick-link is-active" data-quick-href="wb/in-project-done.html" href="in-project-done.html"><i class="fa-solid fa-circle-check"></i><span>完工项目</span></a>
-              <a class="disease-quick-link hidden" data-quick-href="wb/in-project-patrol.html" href="in-project-patrol.html" aria-hidden="true" hidden><i class="fa-solid fa-route"></i><span>项目巡查</span></a>
-            </div>
-          </div>
+          <div id="project-quick-links"></div>
         </aside>
       </div>
     </section>
@@ -1906,6 +1899,8 @@
 
     })();
   </script>
+  <script src="../../assets/js/project-quick-links.js"></script>
+  <script>WHProjectQuickLinks.render("project-quick-links", "in-project-done");</script>
   <script src="../../assets/js/menu-config.js"></script>
   <script src="../../assets/js/workbench-mega.js"></script>
   <script src="../../assets/js/shell.js"></script>

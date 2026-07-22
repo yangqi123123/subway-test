@@ -13,4 +13,16 @@
     "body.wh-layout-embed #page-root{max-width:100%!important;margin:0!important;padding:12px 16px 20px;min-height:100vh;box-sizing:border-box}" +
     "body.wh-layout-embed [data-embed-hide]{display:none!important}";
   document.head.appendChild(style);
+
+  // 嵌入模式下，快捷操作等站内链接改为跳转顶层窗口，避免页面在 iframe 内嵌套外壳
+  document.addEventListener("click", function (event) {
+    var anchor = event.target.closest("a[data-quick-href]");
+    if (!anchor) return;
+    event.preventDefault();
+    try {
+      window.top.location.href = anchor.href;
+    } catch (e) {
+      window.open(anchor.href, "_top");
+    }
+  });
 })();

@@ -10,6 +10,33 @@
   <link rel="stylesheet" href="../../assets/css/patrol-media-gallery.css" />
   <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
   <style>
+    /* Tag 式多选组件（所在区间/站点） */
+    .wh-tag-select { position: relative; font-size: 12px; }
+    .wh-tag-select__box {
+      min-height: 32px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+      padding: 3px 8px; border: 1px solid rgba(148, 163, 184, 0.35); border-radius: 6px;
+      background: rgba(15, 23, 42, 0.6); cursor: pointer;
+    }
+    .wh-tag-select__placeholder { color: #64748b; }
+    .wh-tag-select__tag {
+      display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px;
+      background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: #7dd3fc;
+    }
+    .wh-tag-select__tag i { cursor: pointer; opacity: 0.7; }
+    .wh-tag-select__tag i:hover { opacity: 1; }
+    .wh-tag-select__panel {
+      position: absolute; z-index: 60; top: calc(100% + 4px); left: 0; right: 0;
+      background: #0f172a; border: 1px solid rgba(148, 163, 184, 0.35); border-radius: 6px;
+      max-height: 180px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    }
+    .wh-tag-select__opt {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 10px; color: #cbd5e1; cursor: pointer;
+    }
+    .wh-tag-select__opt:hover { background: rgba(56, 189, 248, 0.08); }
+    .wh-tag-select__opt.is-checked { color: #38bdf8; }
+  </style>
+  <style>
     .page-table th, .page-table td { height: 46px; border-right: 1px solid rgba(34,211,238,.08); border-bottom: 1px solid rgba(34,211,238,.1); vertical-align: middle; }
     .page-table th:last-child, .page-table td:last-child { border-right: 0; }
     .form-label { width:126px; flex:0 0 126px; text-align:right; color:rgba(226,245,255,.88); font-size:12px; line-height:32px; }
@@ -361,6 +388,7 @@
               <label><span>上下行</span><select class="wh-input w-full px-2"><option>全部</option><option>上行</option><option>下行</option></select></label>
               <label><span>所在区间</span><select class="wh-input w-full px-2"><option>全部</option><option>白沙六路-光霞</option><option>盘龙城-宏图大道</option></select></label>
               <label><span>所在站点</span><select class="wh-input w-full px-2"><option>全部</option><option>白沙六路</option><option>盘龙城</option></select></label>
+              <label class="disease-filter-span-2"><span>巡查人</span><input class="wh-input w-full px-2" placeholder="请输入巡查人" /></label>
               <label class="disease-filter-span-2"><span>时间范围</span><div class="disease-filter-dates"><input class="wh-input w-full px-2" value="2026-02-03 18:59:20" /><input class="wh-input w-full px-2" value="2026-03-05 18:59:20" /></div></label>
               <div class="disease-filter-actions">
                 <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary flex-1">搜索</button>
@@ -381,10 +409,10 @@
       <div class="neon-panel neon-panel--tight p-6">
         <div class="max-w-[1280px] space-y-4 text-xs">
           <div class="flex items-center gap-4"><label class="form-label required">编号：</label><input id="f-id" type="text" class="wh-input wh-input--readonly h-8 w-[360px] px-2" readonly tabindex="-1" placeholder="自动生成" /></div>
-          <div class="flex items-center gap-4"><label class="form-label required">所属线路：</label><select id="f-line" class="wh-input h-8 w-[360px] px-2"><option value="">请选择</option><option value="5号线">5号线</option><option value="2号线">2号线</option><option value="19号线">19号线</option></select></div>
-          <div class="flex items-center gap-4"><label class="form-label required">上下行：</label><select id="f-direction" class="wh-input h-8 w-[360px] px-2"><option value="">请选择</option><option value="上行">上行</option><option value="下行">下行</option></select></div>
-          <div class="flex items-center gap-4"><label class="form-label">所在区间：</label><select id="f-section" class="wh-input h-8 w-[360px] px-2"><option value="">请选择</option><option value="白沙六路-光霞">白沙六路-光霞</option><option value="盘龙城-宏图大道">盘龙城-宏图大道</option></select></div>
-          <div class="flex items-center gap-4"><label class="form-label">站点：</label><select id="f-station" class="wh-input h-8 w-[360px] px-2"><option value="">请选择</option><option value="白沙六路">白沙六路</option><option value="盘龙城">盘龙城</option></select></div>
+          <div class="flex items-center gap-4"><label class="form-label required">所属线路：</label><select id="f-line" class="wh-input h-8 w-[360px] px-2"><option value="">请选择</option><option value="5号线" selected>5号线</option><option value="2号线">2号线</option><option value="19号线">19号线</option></select></div>
+          <div class="flex items-center gap-4"><label class="form-label required">上下行：</label><select id="f-direction" class="wh-input h-8 w-[360px] px-2"><option value="">请选择</option><option value="上行">上行</option><option value="下行">下行</option><option value="上下行">上下行</option></select></div>
+          <div class="flex items-start gap-4"><label class="form-label">所在区间：</label><div class="w-[360px] space-y-2"><select id="f-section" class="hidden" multiple><option value="白沙六路-光霞">白沙六路-光霞</option><option value="盘龙城-宏图大道">盘龙城-宏图大道</option></select><div class="wh-tag-select" data-tag-select="f-section"></div><div id="f-section-info" class="space-y-2"></div></div></div>
+          <div class="flex items-start gap-4"><label class="form-label">站点：</label><div class="w-[360px]"><select id="f-station" class="hidden" multiple><option value="白沙六路">白沙六路</option><option value="盘龙城">盘龙城</option><option value="无">无</option></select><div class="wh-tag-select" data-tag-select="f-station"></div></div></div>
           <div class="flex items-start gap-4"><label class="form-label required">夜班作业描述：</label><textarea id="f-desc" class="wh-input min-h-[140px] flex-1 px-2 py-2" placeholder="请输入夜班作业描述"></textarea></div>
           <div class="flex items-center gap-4"><label class="form-label">作业单位：</label><input id="f-company" class="wh-input h-8 flex-1 max-w-[720px] px-2" placeholder="作业单位" /></div>
           <div class="flex items-center gap-4"><label class="form-label">特种作业类型：</label><select id="f-special-type" class="wh-input h-8 flex-1 max-w-[720px] px-2"><option value="">请选择</option><option value="动火作业">动火作业</option><option value="吊装作业">吊装作业</option><option value="有限空间作业">有限空间作业</option></select></div>
@@ -704,13 +732,13 @@
         setText(
           "stat-pending",
           rows.filter(function (r) {
-            return !hasLogAction(r, "工班确认") && !hasLogAction(r, "拒绝");
+            return !hasLogAction(r, "车间确认") && !hasLogAction(r, "拒绝");
           }).length
         );
         setText(
           "stat-completed",
           rows.filter(function (r) {
-            return hasLogAction(r, "工班确认") || (r.desc && r.desc.indexOf("已完成") >= 0);
+            return hasLogAction(r, "车间确认") || (r.desc && r.desc.indexOf("已完成") >= 0);
           }).length
         );
         setText("table-total", rows.length);
@@ -728,6 +756,17 @@
         updateDashboardStats();
         tbody.innerHTML = rows
           .map(function (row, index) {
+            var rowLocked = hasLogAction(row, "车间确认") || hasLogAction(row, "拒绝");
+            var confirmLabel = hasLogAction(row, "工班确认") ? "车间确认" : "工班确认";
+            var editActionHtml = rowLocked
+              ? ""
+              : '<span class="row-action text-sky-300" data-action="edit-item" data-index="' + index + '"><i class="fa-regular fa-pen-to-square"></i>编辑</span>';
+            var confirmActionHtml = rowLocked
+              ? ""
+              : '<span class="row-action text-cyan-300" data-action="confirm-item" data-index="' + index + '"><i class="fa-regular fa-circle-check"></i>' + confirmLabel + "</span>";
+            var rejectActionHtml = rowLocked
+              ? ""
+              : '<span class="row-action text-rose-300" data-action="reject-item" data-index="' + index + '"><i class="fa-regular fa-circle-xmark"></i>拒绝</span>';
             return (
               '<tr class="wh-row-open ' +
               (index % 2 ? "bg-slate-900/35" : "bg-slate-950/25") +
@@ -756,31 +795,142 @@
               row.user +
               '</td><td class="px-3 text-slate-100/95">' +
               row.updatedAt +
-              '</td><td class="px-3 disease-col-actions"><div class="disease-op-actions"><span class="row-action text-sky-300" data-action="edit-item" data-index="' +
+              '</td><td class="px-3 disease-col-actions"><div class="disease-op-actions">' +
+              editActionHtml +
+              confirmActionHtml +
+              rejectActionHtml +
+              '<span class="row-action text-rose-300" data-action="delete-item" data-index="' +
               index +
-              '"><i class="fa-regular fa-pen-to-square"></i>编辑</span><span class="row-action text-cyan-300" data-action="confirm-item" data-index="' +
-              index +
-              '"><i class="fa-regular fa-circle-check"></i>工班确认</span><span class="row-action text-rose-300" data-action="reject-item" data-index="' +
-              index +
-              '"><i class="fa-regular fa-circle-xmark"></i>拒绝</span><span class="row-action text-rose-300"><i class="fa-regular fa-trash-can"></i>删除</span><span class="row-action text-sky-300" data-action="view-records" data-index="' +
+              '"><i class="fa-regular fa-trash-can"></i>删除</span><span class="row-action text-sky-300" data-action="view-records" data-index="' +
               index +
               '"><i class="fa-regular fa-clock"></i>操作记录</span></div></td></tr>'
             );
           })
           .join("");
       }
+      function getMultiValues(id) {
+        var el = $(id);
+        if (!el) return "";
+        return Array.prototype.filter.call(el.options, function (o) {
+          return o.selected && o.value;
+        }).map(function (o) {
+          return o.value;
+        }).join("、");
+      }
+      function setMultiValues(id, value) {
+        var el = $(id);
+        if (!el) return;
+        var values = String(value || "").split(/[、,，]/).map(function (s) { return s.trim(); }).filter(Boolean);
+        Array.prototype.forEach.call(el.options, function (o) {
+          o.selected = values.indexOf(o.value) >= 0;
+        });
+      }
+      var SECTION_INFO = {
+        "白沙六路-光霞": { start: "DK17+054", end: "DK18+934", length: "1880.00", method: "盾构" },
+        "盘龙城-宏图大道": { start: "DK03+210", end: "DK04+860", length: "1650.00", method: "明挖" },
+      };
+      function renderSectionInfo() {
+        var box = $("f-section-info");
+        if (!box) return;
+        var names = getMultiValues("f-section").split("、").filter(Boolean);
+        box.innerHTML = names
+          .filter(function (n) { return SECTION_INFO[n]; })
+          .map(function (name) {
+            var info = SECTION_INFO[name];
+            return (
+              '<div class="rounded border border-slate-600/50 bg-slate-900/60 px-3 py-2 text-[12px] text-slate-300">' +
+              '<div class="text-slate-100 font-medium mb-1">' + name + "</div>" +
+              '<div class="grid grid-cols-2 gap-x-4 gap-y-1">' +
+              "<span>起点里程：" + info.start + "</span><span>终点里程：" + info.end + "</span>" +
+              "<span>长度：" + info.length + "</span><span>施工方法：" + info.method + "</span>" +
+              "</div></div>"
+            );
+          })
+          .join("");
+      }
+      function initTagSelects() {
+        document.querySelectorAll(".wh-tag-select[data-tag-select]").forEach(function (box) {
+          var select = $(box.getAttribute("data-tag-select"));
+          if (!select) return;
+          box.innerHTML =
+            '<div class="wh-tag-select__box"><span class="wh-tag-select__placeholder">请选择</span></div>' +
+            '<div class="wh-tag-select__panel" hidden></div>';
+          var inner = box.querySelector(".wh-tag-select__box");
+          var panel = box.querySelector(".wh-tag-select__panel");
+          function selectedValues() {
+            return getMultiValues(select.id).split("、").filter(Boolean);
+          }
+          function renderTags() {
+            var values = selectedValues();
+            inner.innerHTML = values.length
+              ? values.map(function (v) {
+                  return '<span class="wh-tag-select__tag">' + v + '<i class="fa-solid fa-xmark" data-remove="' + v + '"></i></span>';
+                }).join("")
+              : '<span class="wh-tag-select__placeholder">请选择</span>';
+          }
+          function renderPanel() {
+            var values = selectedValues();
+            panel.innerHTML = Array.prototype.map.call(select.options, function (o) {
+              var checked = values.indexOf(o.value) >= 0;
+              return (
+                '<div class="wh-tag-select__opt' + (checked ? " is-checked" : "") + '" data-value="' + o.value + '">' +
+                "<span>" + o.text + "</span>" +
+                (checked ? '<i class="fa-solid fa-check"></i>' : "") +
+                "</div>"
+              );
+            }).join("");
+          }
+          inner.addEventListener("click", function (e) {
+            var remove = e.target.closest("[data-remove]");
+            if (remove) {
+              e.stopPropagation();
+              Array.prototype.forEach.call(select.options, function (o) {
+                if (o.value === remove.getAttribute("data-remove")) o.selected = false;
+              });
+              renderTags();
+              renderPanel();
+              select.dispatchEvent(new Event("change", { bubbles: true }));
+              return;
+            }
+            renderPanel();
+            panel.hidden = !panel.hidden;
+          });
+          panel.addEventListener("click", function (e) {
+            var optEl = e.target.closest("[data-value]");
+            if (!optEl) return;
+            var value = optEl.getAttribute("data-value");
+            Array.prototype.forEach.call(select.options, function (o) {
+              if (o.value === value) o.selected = !o.selected;
+            });
+            renderTags();
+            renderPanel();
+            select.dispatchEvent(new Event("change", { bubbles: true }));
+          });
+          document.addEventListener("click", function (e) {
+            if (!box.contains(e.target)) panel.hidden = true;
+          });
+          box._refreshTags = renderTags;
+        });
+      }
+      function refreshTagSelects() {
+        document.querySelectorAll(".wh-tag-select[data-tag-select]").forEach(function (box) {
+          if (box._refreshTags) box._refreshTags();
+        });
+      }
       function resetForm() {
         lockIdField();
         $("f-id").value = genId();
-        $("f-line").value = "";
+        $("f-line").value = "5号线";
         $("f-direction").value = "";
-        $("f-section").value = "";
-        $("f-station").value = "";
-        $("f-desc").value = "";
+        setMultiValues("f-section", "");
+        setMultiValues("f-station", "");
+        $("f-desc").value = "夜间对保护区区间结构、照明、围挡及排水设施进行巡查，未发现异常情况。";
         $("f-company").value = "";
         $("f-special-type").value = "";
         $("f-time").value = "";
         clearUploads();
+        refreshTagSelects();
+        renderSectionInfo();
         $("form-page-title").textContent = "新建夜班作业";
       }
       function loadForm(row) {
@@ -788,13 +938,15 @@
         $("f-id").value = row.id;
         $("f-line").value = row.line || "";
         $("f-direction").value = row.direction || "";
-        $("f-section").value = row.section || "";
-        $("f-station").value = row.station || "";
+        setMultiValues("f-section", row.section || "");
+        setMultiValues("f-station", row.station || "");
         $("f-desc").value = row.desc || "";
         $("f-company").value = row.company || "";
         $("f-special-type").value = row.specialType || "";
         $("f-time").value = row.time || "";
         clearUploads();
+        refreshTagSelects();
+        renderSectionInfo();
         $("form-page-title").textContent = "编辑夜班作业";
       }
       function showForm(mode, index) {
@@ -814,8 +966,8 @@
         if (!$("f-desc").value.trim()) return alert("请填写夜班作业描述");
         if (!$("f-time").value.trim()) return alert("请填写作业时间");
         var now = "2026-05-12 18:30";
-        var section = $("f-section").value;
-        var station = $("f-station").value;
+        var section = getMultiValues("f-section");
+        var station = getMultiValues("f-station");
         var place = (section || "—") + " / " + ($("f-direction").value || "—") + (station ? " · " + station : "");
         var row = {
           id: $("f-id").value,
@@ -839,7 +991,14 @@
       }
       function openConfirm(kind, index, trigger) {
         pendingConfirm = { kind: kind, index: index };
-        confirmText.textContent = kind === "confirm" ? "确定通过？" : "确定拒绝？";
+        confirmText.textContent =
+          kind === "confirm"
+            ? hasLogAction(rows[index], "工班确认")
+              ? "确定车间确认？"
+              : "确定通过？"
+            : kind === "delete"
+              ? "确定删除？删除后不可恢复。"
+              : "确定拒绝？";
         confirmIcon.className = "fa-solid fa-star " + (kind === "confirm" ? "text-amber-400" : "text-red-400");
         var rect = trigger.getBoundingClientRect();
         confirmPop.style.left = Math.max(16, rect.left + rect.width / 2 - 66) + "px";
@@ -878,6 +1037,9 @@
       bindUploader("doc", "f-doc-input");
       bindUploader("photo", "f-photo-input");
       bindUploader("video", "f-video-input");
+      initTagSelects();
+      var sectionField = $("f-section");
+      if (sectionField) sectionField.addEventListener("change", renderSectionInfo);
       initQuickLinks();
       renderRows();
       if (window.WHPatrolMediaGallery) {
@@ -903,13 +1065,23 @@
         if (action === "save-item") saveItem();
         if (action === "confirm-item") openConfirm("confirm", index, target);
         if (action === "reject-item") openConfirm("reject", index, target);
+        if (action === "delete-item") openConfirm("delete", index, target);
         if (action === "cancel-confirm") closeConfirm();
         if (action === "submit-confirm" && pendingConfirm) {
-          rows[pendingConfirm.index].logs.push({
-            action: pendingConfirm.kind === "confirm" ? "工班确认" : "拒绝",
-            user: "鲍雄澎",
-            time: "2026-05-12 14:40:31",
-          });
+          if (pendingConfirm.kind === "delete") {
+            rows.splice(pendingConfirm.index, 1);
+          } else {
+            rows[pendingConfirm.index].logs.push({
+              action:
+                pendingConfirm.kind === "confirm"
+                  ? hasLogAction(rows[pendingConfirm.index], "工班确认")
+                    ? "车间确认"
+                    : "工班确认"
+                  : "拒绝",
+              user: "鲍雄澎",
+              time: "2026-05-12 14:40:31",
+            });
+          }
           closeConfirm();
           renderRows();
         }

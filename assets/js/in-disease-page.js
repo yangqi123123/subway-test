@@ -130,6 +130,7 @@
         direction: fieldVal("filter-direction"),
         section: fieldVal("filter-section"),
         station: fieldVal("filter-station"),
+        user: fieldVal("filter-user"),
         diseaseType: fieldVal("filter-type"),
         level: fieldVal("filter-level"),
         development: fieldVal("filter-development"),
@@ -149,6 +150,7 @@
       if (f.direction && row.direction !== f.direction) return false;
       if (f.section && row.section !== f.section) return false;
       if (f.station && row.station !== f.station) return false;
+      if (f.user && String(row.inspector || "").indexOf(f.user) < 0) return false;
       if (f.diseaseType && row.diseaseType !== f.diseaseType) return false;
       if (f.level && row.level !== f.level) return false;
       if (f.development && row.development !== f.development) return false;
@@ -228,6 +230,7 @@
         "filter-direction",
         "filter-section",
         "filter-station",
+        "filter-user",
         "filter-type",
         "filter-level",
         "filter-development",
@@ -636,20 +639,87 @@
       renderUploadList("video");
     }
 
+    var DEFAULT_LINE = "2号线";
+    var DEFAULT_DESC = "巡查发现区间结构存在裂缝病害，已现场记录并拍照留存，建议纳入整改计划。";
+
+    var SECTION_INFO = {
+      "常青花园-长港路": { start: "DK21+300", end: "DK22+650", length: "1350.00", method: "盾构" },
+      "长港路-汉口火车站": { start: "DK22+650", end: "DK23+980", length: "1330.00", method: "盾构" },
+      "白沙六路-光霞": { start: "DK17+054", end: "DK18+934", length: "1880.00", method: "盾构" },
+    };
+
+    function renderSectionInfo() {
+      var row = $("f-section-info-row");
+      var box = $("f-section-info");
+      var select = $("f-section");
+      if (!row || !box || !select) return;
+      var name = String(select.value || "").trim();
+      var info = name && SECTION_INFO[name];
+      if (!info) {
+        box.innerHTML = "";
+        row.hidden = true;
+        return;
+      }
+      box.innerHTML =
+        '<div class="mp-section-info__card">' +
+        '<div class="mp-section-info__title">' +
+        name +
+        '</div><div class="mp-section-info__grid">' +
+        "<span>起点里程：" +
+        info.start +
+        "</span><span>终点里程：" +
+        info.end +
+        "</span><span>长度：" +
+        info.length +
+        "</span><span>施工方法：" +
+        info.method +
+        "</span></div></div>";
+      row.hidden = false;
+    }
+
+    function combineMileage() {
+      var text = fieldVal("f-mileage-text");
+      var num = fieldVal("f-mileage-num");
+      if (text && num) return text + "+" + num;
+      return text || num;
+    }
+
+    function fillMileage(value) {
+      var v = String(value || "");
+      var text = v;
+      var num = "";
+      var idx = v.lastIndexOf("+");
+      if (idx > 0) {
+        text = v.slice(0, idx);
+        num = v.slice(idx + 1);
+      }
+      if ($("f-mileage-text")) $("f-mileage-text").value = text;
+      if ($("f-mileage-num")) $("f-mileage-num").value = num;
+    }
+
+    function bindNumericInput(id) {
+      var el = $(id);
+      if (!el) return;
+      el.addEventListener("input", function () {
+        el.value = el.value.replace(/\D/g, "");
+      });
+    }
+
     function resetForm() {
       $("f-id").value = genId();
-      $("f-line").value = "";
+      $("f-line").value = DEFAULT_LINE;
       $("f-direction").value = "下行";
       $("f-section").value = "";
       $("f-station").value = "";
-      $("f-mileage").value = "";
+      fillMileage("");
       $("f-ring").value = "";
-      $("f-desc").value = "";
+      $("f-desc").value = DEFAULT_DESC;
       $("f-tags").value = "";
       clearUploads();
       fillDictSelects(null);
       fillHistoryOptions(null);
       refreshFormPickers();
+      renderSectionInfo();
     }
 
     function loadForm(row) {
@@ -658,13 +728,14 @@
       $("f-direction").value = row.direction || "";
       $("f-section").value = row.section || "";
       $("f-station").value = row.station || "";
-      $("f-mileage").value = row.mileage || "";
+      fillMileage(row.mileage || "");
       $("f-ring").value = row.ring || "";
       $("f-desc").value = row.desc || "";
       $("f-tags").value = row.tags || "";
       fillDictSelects(row);
       fillHistoryOptions(row.id, row.historyId || "");
       refreshFormPickers();
+      renderSectionInfo();
     }
 
     function readForm() {
@@ -679,7 +750,7 @@
         station: station,
         place: place,
         direction: fieldVal("f-direction"),
-        mileage: fieldVal("f-mileage"),
+        mileage: combineMileage(),
         inspectItem: fieldVal("f-inspect-item"),
         structureType: fieldVal("f-structure-type"),
         diseaseType: fieldVal("f-disease-type"),
@@ -984,6 +1055,10 @@
 
     bindUploader("photo", "f-photo-input");
     bindUploader("video", "f-video-input");
+    bindNumericInput("f-ring");
+    bindNumericInput("f-mileage-num");
+    var sectionField = $("f-section");
+    if (sectionField) sectionField.addEventListener("change", renderSectionInfo);
     initFilterSelects();
     refreshFilterPickers();
     renderList();

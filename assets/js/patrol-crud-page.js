@@ -61,6 +61,11 @@
     var mediaProjectName = requireOpt(options, "mediaProjectName");
     var renderTableRow = options.renderTableRow || null;
     var onConfirm = options.onConfirm || null;
+    var confirmLabelFn = options.confirmLabel || null;
+    var confirmActionFn = options.confirmAction || null;
+    var confirmDialogFn = options.confirmDialog || null;
+    var isRowLockedFn = options.isRowLocked || null;
+    var showDeleteFn = options.showDelete || null;
     var initFilters = options.initFilters || null;
     var rowMatchesSearchFn =
       options.rowMatchesSearch ||
@@ -72,6 +77,7 @@
     var formTitleFn = options.formTitle || null;
     var detailTitleFn = options.detailTitle || null;
     var saveToast = options.saveToast || "记录已保存";
+    var deleteToast = options.deleteToast || "记录已删除";
     var cardClass = options.cardClass || "mp-project-card";
     var viewChangeEvent = options.viewChangeEvent || "wh-" + prefix + "-view-change";
 
@@ -283,6 +289,38 @@
 
     function renderMobileCard(row, index) {
       var badge = statusBadge(row);
+      var rowLocked = isRowLockedFn ? !!isRowLockedFn(row) : false;
+      var confirmLabel = confirmLabelFn ? confirmLabelFn(row) : "工班确认";
+      var editBtnHtml = rowLocked
+        ? ""
+        : '<button type="button" class="mp-project-action" data-action="edit-' +
+          prefix +
+          '" data-index="' +
+          index +
+          '"><i class="fa-regular fa-pen-to-square"></i>编辑</button>';
+      var confirmBtnHtml = rowLocked || !confirmLabel
+        ? ""
+        : '<button type="button" class="mp-project-action" data-action="confirm-' +
+          prefix +
+          '" data-index="' +
+          index +
+          '"><i class="fa-regular fa-circle-check"></i>' +
+          esc(confirmLabel) +
+          "</button>";
+      var rejectBtnHtml = rowLocked
+        ? ""
+        : '<button type="button" class="mp-project-action" data-action="reject-' +
+          prefix +
+          '" data-index="' +
+          index +
+          '"><i class="fa-regular fa-circle-xmark"></i>拒绝</button>';
+      var deleteBtnHtml = showDeleteFn && showDeleteFn(row)
+        ? '<button type="button" class="mp-project-action mp-project-action--danger" data-action="delete-' +
+          prefix +
+          '" data-index="' +
+          index +
+          '"><i class="fa-regular fa-trash-can"></i>删除</button>'
+        : "";
       var metaHtml = (cardMeta(row) || [])
         .map(function (item) {
           var clsParts = [];
@@ -333,26 +371,15 @@
         '-detail" data-index="' +
         index +
         '"><i class="fa-regular fa-eye"></i>详情</button>' +
-        '<button type="button" class="mp-project-action" data-action="edit-' +
-        prefix +
-        '" data-index="' +
-        index +
-        '"><i class="fa-regular fa-pen-to-square"></i>编辑</button>' +
-        '<button type="button" class="mp-project-action" data-action="confirm-' +
-        prefix +
-        '" data-index="' +
-        index +
-        '"><i class="fa-regular fa-circle-check"></i>工班确认</button>' +
-        '<button type="button" class="mp-project-action" data-action="reject-' +
-        prefix +
-        '" data-index="' +
-        index +
-        '"><i class="fa-regular fa-circle-xmark"></i>拒绝</button>' +
+        editBtnHtml +
+        confirmBtnHtml +
+        rejectBtnHtml +
         '<button type="button" class="mp-project-action" data-action="view-' +
         prefix +
         '-records" data-index="' +
         index +
         '"><i class="fa-regular fa-clock"></i>操作记录</button>' +
+        deleteBtnHtml +
         "</div></article>"
       );
     }
@@ -638,18 +665,28 @@
 
     function openConfirm(kind, index) {
       pendingConfirm = { kind: kind, index: index };
+      var dialog = null;
+      if (kind === "confirm" && confirmDialogFn) {
+        dialog = confirmDialogFn(lastRenderedList[index]) || null;
+      }
       if (confirmTitle) {
         confirmTitle.textContent =
           kind === "confirm"
-            ? confirmMessages.confirmTitle || "工班确认"
-            : confirmMessages.rejectTitle || "拒绝受理";
+            ? (dialog && dialog.title) || confirmMessages.confirmTitle || "工班确认"
+            : kind === "delete"
+              ? confirmMessages.deleteTitle || "确认删除"
+              : confirmMessages.rejectTitle || "拒绝受理";
       }
       if (confirmMsg) {
         confirmMsg.textContent =
           kind === "confirm"
-            ? confirmMessages.confirmMsg || "确定通过该记录？"
-            : confirmMessages.rejectMsg || "确定拒绝该记录？";
+            ? (dialog && dialog.msg) || confirmMessages.confirmMsg || "确定通过该记录？"
+            : kind === "delete"
+              ? confirmMessages.deleteMsg || "确定删除该记录吗？删除后不可恢复。"
+              : confirmMessages.rejectMsg || "确定拒绝该记录？";
       }
+      var okBtn = confirmMask ? confirmMask.querySelector("[data-action$='-confirm-ok']") : null;
+      if (okBtn) okBtn.textContent = kind === "delete" ? "确定删除" : "确定";
       if (confirmMask) {
         confirmMask.classList.add("is-open");
         confirmMask.setAttribute("aria-hidden", "false");
@@ -667,6 +704,12 @@
     function submitConfirm() {
       if (!pendingConfirm) return;
       var kind = pendingConfirm.kind;
+      if (kind === "delete") {
+        var delIndex = pendingConfirm.index;
+        closeConfirm();
+        deleteItem(delIndex);
+        return;
+      }
       var row = lastRenderedList[pendingConfirm.index];
       var realIdx = findRowIndex(row);
       if (realIdx < 0) {
@@ -674,15 +717,33 @@
         return;
       }
       if (!rows[realIdx].logs) rows[realIdx].logs = [];
+      var actionName =
+        kind === "confirm"
+          ? (confirmActionFn ? confirmActionFn(rows[realIdx]) : null) || "工班确认"
+          : "拒绝";
       rows[realIdx].logs.push({
-        action: kind === "confirm" ? "工班确认" : "拒绝",
+        action: actionName,
         user: "鲍雄澎",
         time: "2026-05-12 14:40:31",
       });
       if (onConfirm) onConfirm(rows[realIdx], kind);
       closeConfirm();
       renderList();
-      showToast(kind === "confirm" ? "已工班确认" : "已拒绝");
+      showToast(kind === "confirm" ? "已" + actionName : "已拒绝");
+    }
+
+    function deleteItem(index) {
+      var row = lastRenderedList[index];
+      if (!row) return;
+      var realIdx = findRowIndex(row);
+      if (realIdx < 0) return;
+      rows.splice(realIdx, 1);
+      if (filteredRows) {
+        var filteredIdx = filteredRows.indexOf(row);
+        if (filteredIdx >= 0) filteredRows.splice(filteredIdx, 1);
+      }
+      renderList();
+      showToast(deleteToast);
     }
 
     function syncRecordScrollLock() {
@@ -749,6 +810,10 @@
         }
         if (action === "reject-" + prefix) {
           openConfirm("reject", index);
+          return;
+        }
+        if (action === "delete-" + prefix) {
+          openConfirm("delete", index);
           return;
         }
         if (action === prefix + "-confirm-cancel" || action === prefix + "-confirm-mask-close") {

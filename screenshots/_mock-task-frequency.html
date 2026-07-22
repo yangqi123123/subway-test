@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>巡线任务频率设置 — 设计稿</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
+  body { background: #060b18; color: #e2e8f0; font-size: 12px; }
+  .topbar { height: 56px; display: flex; align-items: center; gap: 18px; padding: 0 22px; background: linear-gradient(180deg,#0b1526,#081020); border-bottom: 1px solid rgba(34,211,238,.18); }
+  .topbar .logo { font-size: 15px; font-weight: 700; color: #f0f9ff; letter-spacing: 1px; }
+  .topbar .nav { display: flex; gap: 4px; margin-left: 20px; }
+  .topbar .nav span { padding: 6px 14px; border-radius: 6px; color: #94a3b8; }
+  .topbar .nav span.active { color: #22d3ee; background: rgba(34,211,238,.1); border: 1px solid rgba(34,211,238,.25); }
+  .wrap { max-width: 1360px; margin: 0 auto; padding: 18px 22px 40px; }
+  .page-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .page-head h1 { font-size: 17px; font-weight: 600; color: #f8fafc; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .stat { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 10px; background: rgba(15,23,42,.65); border: 1px solid rgba(34,211,238,.14); }
+  .stat .icon { width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .stat .num { font-size: 22px; font-weight: 700; color: #f8fafc; }
+  .stat .num small { font-size: 11px; color: #64748b; font-weight: 400; margin-left: 2px; }
+  .stat .label { color: #94a3b8; font-size: 11px; margin-top: 2px; }
+  .icon-cyan { background: rgba(34,211,238,.12); color: #22d3ee; }
+  .icon-amber { background: rgba(251,191,36,.12); color: #fbbf24; }
+  .icon-lime { background: rgba(163,230,53,.12); color: #a3e635; }
+  .icon-violet { background: rgba(167,139,250,.12); color: #a78bfa; }
+
+  .panel { background: rgba(15,23,42,.55); border: 1px solid rgba(34,211,238,.14); border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; }
+  .tabs { display: flex; gap: 6px; border-bottom: 1px solid rgba(34,211,238,.14); padding-bottom: 10px; margin-bottom: 14px; }
+  .tabs span { padding: 6px 16px; border-radius: 6px; color: #94a3b8; cursor: pointer; }
+  .tabs span.active { color: #22d3ee; background: rgba(34,211,238,.1); border: 1px solid rgba(34,211,238,.3); font-weight: 600; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .btn { padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; border: 1px solid transparent; }
+  .btn-primary { background: linear-gradient(180deg,#0ea5e9,#0284c7); color: #fff; }
+  .btn-ghost { background: rgba(148,163,184,.08); color: #cbd5e1; border-color: rgba(148,163,184,.25); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 9px 12px; color: #7dd3fc; font-weight: 600; background: rgba(2,6,23,.6); border-bottom: 1px solid rgba(34,211,238,.18); white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid rgba(148,163,184,.1); color: #cbd5e1; vertical-align: middle; }
+  tr:nth-child(even) td { background: rgba(2,6,23,.3); }
+  .tag { display: inline-block; padding: 2px 8px; margin: 1px 3px 1px 0; border-radius: 4px; font-size: 11px; }
+  .tag-cyan { background: rgba(34,211,238,.12); color: #67e8f9; border: 1px solid rgba(34,211,238,.3); }
+  .tag-amber { background: rgba(251,191,36,.12); color: #fcd34d; border: 1px solid rgba(251,191,36,.3); }
+  .tag-slate { background: rgba(148,163,184,.12); color: #cbd5e1; border: 1px solid rgba(148,163,184,.3); }
+  .tag-violet { background: rgba(167,139,250,.12); color: #c4b5fd; border: 1px solid rgba(167,139,250,.3); }
+  .tag-green { background: rgba(52,211,153,.12); color: #6ee7b7; border: 1px solid rgba(52,211,153,.3); }
+  .tag-red { background: rgba(244,63,94,.12); color: #fda4af; border: 1px solid rgba(244,63,94,.3); }
+  .ops a { color: #7dd3fc; margin-right: 10px; cursor: pointer; white-space: nowrap; }
+  .ops a.warn { color: #fbbf24; }
+  .ops a.danger { color: #fb7185; }
+
+  /* —— 弹窗 —— */
+  .mask { position: fixed; inset: 0; z-index: 100; display: none; align-items: flex-start; justify-content: center; padding-top: 90px; background: rgba(2,8,23,.72); }
+  .mask.show { display: flex; }
+  .modal { width: 640px; border-radius: 12px; background: #0d1729; border: 1px solid rgba(34,211,238,.25); box-shadow: 0 24px 64px rgba(0,0,0,.55); }
+  .modal-lg { width: 780px; }
+  .modal__head { display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-bottom: 1px solid rgba(34,211,238,.14); }
+  .modal__head h3 { font-size: 14px; font-weight: 600; color: #f0f9ff; }
+  .modal__head .x { color: #64748b; cursor: pointer; font-size: 14px; }
+  .modal__body { padding: 16px 18px; }
+  .modal__foot { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 18px; border-top: 1px solid rgba(34,211,238,.14); }
+
+  .frow { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+  .frow > label { width: 90px; flex-shrink: 0; color: #94a3b8; padding-top: 6px; text-align: right; }
+  .frow > label .req { color: #fb7185; }
+  .checks { display: flex; flex-wrap: wrap; gap: 8px; }
+  .check { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(148,163,184,.3); color: #94a3b8; cursor: pointer; user-select: none; }
+  .check.on { color: #67e8f9; border-color: rgba(34,211,238,.5); background: rgba(34,211,238,.1); }
+  .check .box { width: 13px; height: 13px; border-radius: 3px; border: 1px solid currentColor; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+  .radio-dot { width: 13px; height: 13px; border-radius: 50%; border: 1px solid currentColor; display: inline-flex; align-items: center; justify-content: center; }
+  .check.on .radio-dot::after, .check.on .box::after { content: ""; width: 7px; height: 7px; border-radius: 2px; background: currentColor; }
+  .check.on .radio-dot::after { border-radius: 50%; }
+  .input, .select { width: 100%; padding: 6px 10px; border-radius: 6px; background: rgba(2,6,23,.6); border: 1px solid rgba(148,163,184,.3); color: #e2e8f0; }
+  .fw { flex: 1; min-width: 0; }
+  textarea.input { height: 56px; resize: none; }
+
+  .conflict { display: flex; gap: 8px; padding: 10px 12px; margin-bottom: 4px; border-radius: 8px; background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.35); color: #fcd34d; line-height: 1.7; }
+  .conflict b { color: #fde68a; }
+
+  .preview-meta { color: #94a3b8; margin-bottom: 10px; }
+  .preview-meta b { color: #67e8f9; }
+  .modal .table-wrap { max-height: 320px; overflow-y: auto; border: 1px solid rgba(148,163,184,.15); border-radius: 8px; }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="logo">武汉地铁保护区管理平台</div>
+    <div class="nav">
+      <span>全景地图</span><span>虚拟座舱</span><span>巡查</span><span>数据统计</span><span class="active">项目管理</span><span>我的工作台</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="page-head">
+      <h1>巡线任务频率设置</h1>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="icon icon-cyan">▦</div><div><div class="num">3<small>条</small></div><div class="label">频率规则</div></div></div>
+      <div class="stat"><div class="icon icon-amber">◎</div><div><div class="num">2<small>条</small></div><div class="label">全线范围规则</div></div></div>
+      <div class="stat"><div class="icon icon-lime">◍</div><div><div class="num">1<small>条</small></div><div class="label">浅埋段范围规则</div></div></div>
+      <div class="stat"><div class="icon icon-violet">⌖</div><div><div class="num">1<small>段</small></div><div class="label">浅埋段区间</div></div></div>
+    </div>
+
+    <div class="panel" id="panel-rules">
+      <div class="tabs"><span class="active">频率规则</span><span>浅埋段范围设置</span></div>
+      <div class="toolbar"><button class="btn btn-primary">＋ 新增规则</button></div>
+      <table>
+        <thead>
+          <tr><th>规则编号</th><th>应用范围</th><th>项目类型</th><th>生成周期</th><th>状态</th><th>最近生成时间</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>R-001</td>
+            <td><span class="tag tag-amber">全线范围</span></td>
+            <td><span class="tag tag-red">重点项目</span></td>
+            <td><span class="tag tag-cyan">周一</span><span class="tag tag-cyan">周三</span><span class="tag tag-cyan">周五</span></td>
+            <td><span class="tag tag-green">启用</span></td>
+            <td>2026-07-20 08:00</td>
+            <td class="ops"><a>编辑</a><a>立即生成</a><a class="warn">停用</a><a class="danger">删除</a></td>
+          </tr>
+          <tr>
+            <td>R-003</td>
+            <td><span class="tag tag-amber">全线范围</span></td>
+            <td><span class="tag tag-red">重点项目</span></td>
+            <td><span class="tag tag-cyan">周二</span></td>
+            <td><span class="tag tag-green">启用</span></td>
+            <td>—</td>
+            <td class="ops"><a>编辑</a><a>立即生成</a><a class="warn">停用</a><a class="danger">删除</a></td>
+          </tr>
+          <tr>
+            <td>R-002</td>
+            <td><span class="tag tag-violet">浅埋段范围</span></td>
+            <td><span class="tag tag-red">重点项目</span><span class="tag tag-slate">一般项目</span><span class="tag tag-amber">临时项目</span></td>
+            <td><span class="tag tag-cyan">周二</span><span class="tag tag-cyan">周四</span></td>
+            <td><span class="tag tag-green">启用</span></td>
+            <td>—</td>
+            <td class="ops"><a>编辑</a><a>立即生成</a><a class="warn">停用</a><a class="danger">删除</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="panel-shallow" style="display:none">
+      <div class="tabs"><span>频率规则</span><span class="active">浅埋段范围设置</span></div>
+      <div class="toolbar"><button class="btn btn-primary">＋ 新增浅埋段</button></div>
+      <table>
+        <thead>
+          <tr><th>编号</th><th>所属线路</th><th>起始站点</th><th>终点站点</th><th>说明</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>S-001</td>
+            <td><span class="tag tag-cyan">8号线</span></td>
+            <td>水果湖</td>
+            <td>小洪山</td>
+            <td>水果湖至小洪山区间为穿江浅埋段，需加密巡查</td>
+            <td class="ops"><a>编辑</a><a class="danger">删除</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 新增规则弹窗（含冲突提示） -->
+  <div class="mask" id="modal-rule">
+    <div class="modal">
+      <div class="modal__head"><h3>新增规则</h3><span class="x">✕</span></div>
+      <div class="modal__body">
+        <div class="frow">
+          <label><span class="req">*</span> 应用范围</label>
+          <div class="checks">
+            <span class="check on"><span class="radio-dot"></span>全线范围</span>
+            <span class="check"><span class="radio-dot"></span>浅埋段范围</span>
+          </div>
+        </div>
+        <div class="frow">
+          <label><span class="req">*</span> 项目类型</label>
+          <div class="checks">
+            <span class="check on"><span class="box"></span>重点项目</span>
+            <span class="check"><span class="box"></span>一般项目</span>
+            <span class="check"><span class="box"></span>临时项目</span>
+          </div>
+        </div>
+        <div class="frow">
+          <label><span class="req">*</span> 生成周期</label>
+          <div class="checks">
+            <span class="check"><span class="box"></span>周一</span>
+            <span class="check on"><span class="box"></span>周二</span>
+            <span class="check"><span class="box"></span>周三</span>
+            <span class="check"><span class="box"></span>周四</span>
+            <span class="check"><span class="box"></span>周五</span>
+            <span class="check"><span class="box"></span>周六</span>
+            <span class="check"><span class="box"></span>周日</span>
+            <span class="check"><span class="box"></span>全选</span>
+          </div>
+        </div>
+        <div class="frow">
+          <label>备注</label>
+          <div class="fw"><textarea class="input">按项目类型配置巡线任务生成周期，周期到达自动生成任务并下发至移动端「今日任务」</textarea></div>
+        </div>
+        <div class="conflict">
+          <span>⚠</span>
+          <div><b>冲突提示：</b>「重点项目」已存在于规则 <b>R-001</b>（全线范围 · 周一/周三/周五）、<b>R-003</b>（全线范围 · 周二）。保存后该类型将按多条规则的<b>并集</b>生效，同一项目同一天仅生成一条任务。</div>
+        </div>
+      </div>
+      <div class="modal__foot">
+        <button class="btn btn-ghost">取消</button>
+        <button class="btn btn-ghost">去修改原规则</button>
+        <button class="btn btn-primary">继续保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新增浅埋段弹窗（含说明字段） -->
+  <div class="mask" id="modal-shallow">
+    <div class="modal">
+      <div class="modal__head"><h3>新增浅埋段</h3><span class="x">✕</span></div>
+      <div class="modal__body">
+        <div class="frow">
+          <label><span class="req">*</span> 所属线路</label>
+          <div class="fw"><select class="select"><option>8号线</option><option>2号线</option><option>4号线</option><option>5号线</option><option>7号线</option></select></div>
+        </div>
+        <div class="frow">
+          <label><span class="req">*</span> 起始站点</label>
+          <div class="fw"><select class="select"><option>水果湖</option><option>洪山路</option><option>小洪山</option><option>街道口</option><option>马房山</option></select></div>
+        </div>
+        <div class="frow">
+          <label><span class="req">*</span> 终点站点</label>
+          <div class="fw"><select class="select"><option>小洪山</option><option>水果湖</option><option>洪山路</option><option>街道口</option><option>马房山</option></select></div>
+        </div>
+        <div class="frow">
+          <label>说明</label>
+          <div class="fw"><textarea class="input" placeholder="请输入浅埋段说明（选填）">水果湖至小洪山区间为穿江浅埋段，需加密巡查</textarea></div>
+        </div>
+      </div>
+      <div class="modal__foot">
+        <button class="btn btn-ghost">取消</button>
+        <button class="btn btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var q = location.search;
+    if (q.indexOf("tab=shallow") >= 0) {
+      document.getElementById("panel-rules").style.display = "none";
+      document.getElementById("panel-shallow").style.display = "";
+    }
+    if (q.indexOf("modal=rule") >= 0) document.getElementById("modal-rule").classList.add("show");
+    if (q.indexOf("modal=preview") >= 0) document.getElementById("modal-preview").classList.add("show");
+    if (q.indexOf("modal=shallow") >= 0) document.getElementById("modal-shallow").classList.add("show");
+  </script>
+</body>
+</html>

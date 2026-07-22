@@ -270,54 +270,41 @@
     <form id="section-adjust-form" class="mp-adjust-form">
       <div class="mp-adjust-hint">人员调休缺岗时，可调配同线路其他区间人员临时支援至目标区间；</div>
 
-      <div class="mp-adjust-group-title">被临时调配人员：</div>
       <div class="mp-adjust-field is-readonly" data-field="assignedLine">
         <span class="mp-adjust-field__label">调配线路</span>
         <div class="mp-adjust-field__value" id="assigned-line-display">2号线</div>
         <input type="hidden" name="assignedLine" value="2号线" />
       </div>
+      <div class="mp-adjust-field" data-field="assignedPerson" data-placeholder="请选择人员">
+        <span class="mp-adjust-field__label">调配人员</span>
+        <div class="mp-adjust-field__value is-placeholder">请选择人员</div>
+        <input type="hidden" name="assignedPerson" />
+      </div>
       <div class="mp-adjust-field" data-field="assignedStartSection" data-placeholder="请选择站点">
-        <span class="mp-adjust-field__label">起始区间</span>
+        <span class="mp-adjust-field__label">调配目标起始区间</span>
         <div class="mp-adjust-field__value is-placeholder">请选择站点</div>
         <input type="hidden" name="assignedStartSection" />
       </div>
       <div class="mp-adjust-field" data-field="assignedEndSection" data-placeholder="请选择站点">
-        <span class="mp-adjust-field__label">终点区间</span>
+        <span class="mp-adjust-field__label">调配目标终点区间</span>
         <div class="mp-adjust-field__value is-placeholder">请选择站点</div>
         <input type="hidden" name="assignedEndSection" />
-      </div>
-      <div class="mp-adjust-field" data-field="assignedPerson" data-placeholder="请选择人员">
-        <span class="mp-adjust-field__label">选择人员</span>
-        <div class="mp-adjust-field__value is-placeholder">请选择人员</div>
-        <input type="hidden" name="assignedPerson" />
       </div>
 
       <label class="miniapp-form-field">
         <span>调配开始时间</span>
-        <input type="date" name="startTime" required />
+        <input type="datetime-local" name="startTime" required />
       </label>
 
       <label class="miniapp-form-field">
         <span>调配结束时间</span>
-        <input type="date" name="endTime" required />
+        <input type="datetime-local" name="endTime" required />
       </label>
 
       <label class="miniapp-form-field">
         <span>调配原因</span>
         <textarea name="reason" rows="3" maxlength="240" placeholder="请输入调配原因"></textarea>
       </label>
-
-      <div class="mp-adjust-group-title">目标区间：</div>
-      <div class="mp-adjust-field" data-field="targetStartSection" data-placeholder="请选择站点">
-        <span class="mp-adjust-field__label">起始区间</span>
-        <div class="mp-adjust-field__value is-placeholder">请选择站点</div>
-        <input type="hidden" name="targetStartSection" />
-      </div>
-      <div class="mp-adjust-field" data-field="targetEndSection" data-placeholder="请选择站点">
-        <span class="mp-adjust-field__label">终点区间</span>
-        <div class="mp-adjust-field__value is-placeholder">请选择站点</div>
-        <input type="hidden" name="targetEndSection" />
-      </div>
 
       <div class="miniapp-form-actions">
         <button type="button" class="miniapp-btn miniapp-btn--ghost" data-action="cancel-adjust">取消</button>
@@ -368,11 +355,9 @@
       ];
 
       var FIELD_CONFIG = {
-        targetStartSection: { title: "选择起始区间", options: STATION_OPTIONS.map(function (s) { return { value: s, label: s }; }) },
-        targetEndSection: { title: "选择终点区间", options: STATION_OPTIONS.map(function (s) { return { value: s, label: s }; }) },
-        assignedStartSection: { title: "选择起始区间", options: STATION_OPTIONS.map(function (s) { return { value: s, label: s }; }) },
-        assignedEndSection: { title: "选择终点区间", options: STATION_OPTIONS.map(function (s) { return { value: s, label: s }; }) },
-        assignedPerson: { title: "选择被调配人员", options: PERSON_OPTIONS.map(function (p) { return { value: p.id, label: p.name }; }) }
+        assignedStartSection: { title: "调配目标起始区间", options: STATION_OPTIONS.map(function (s) { return { value: s, label: s }; }) },
+        assignedEndSection: { title: "调配目标终点区间", options: STATION_OPTIONS.map(function (s) { return { value: s, label: s }; }) },
+        assignedPerson: { title: "选择调配人员", options: PERSON_OPTIONS.map(function (p) { return { value: p.id, label: p.name }; }) }
       };
 
       var currentField = null;
@@ -384,14 +369,6 @@
         return String(value == null ? "" : value).replace(/[&<>"']/g, function (c) {
           return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
         });
-      }
-
-      function formatDate(date) {
-        var d = date || new Date();
-        var y = d.getFullYear();
-        var m = String(d.getMonth() + 1).padStart(2, "0");
-        var day = String(d.getDate()).padStart(2, "0");
-        return y + "-" + m + "-" + day;
       }
 
       function formatDateTimeLocal(date) {
@@ -434,10 +411,10 @@
         var startInput = document.querySelector('input[name="startTime"]');
         var endInput = document.querySelector('input[name="endTime"]');
         var now = new Date();
-        if (startInput) startInput.value = formatDate(now);
+        if (startInput) startInput.value = formatDateTimeLocal(now);
         if (endInput) {
           var end = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-          endInput.value = formatDate(end);
+          endInput.value = formatDateTimeLocal(end);
         }
       }
 
@@ -557,8 +534,6 @@
           event.preventDefault();
           var fd = new FormData(form);
           var data = {
-            targetStartSection: fd.get("targetStartSection"),
-            targetEndSection: fd.get("targetEndSection"),
             assignedLine: fd.get("assignedLine"),
             assignedStartSection: fd.get("assignedStartSection"),
             assignedEndSection: fd.get("assignedEndSection"),
@@ -568,18 +543,13 @@
             reason: fd.get("reason") || ""
           };
 
-          if (!data.targetStartSection || !data.targetEndSection ||
-              !data.assignedStartSection || !data.assignedEndSection || !data.assignedPersonId ||
+          if (!data.assignedStartSection || !data.assignedEndSection || !data.assignedPersonId ||
               !data.startTime || !data.endTime) {
             toast("请填写完整信息");
             return;
           }
-          if (data.targetStartSection === data.targetEndSection) {
-            toast("目标区间起始区间与终点区间不能相同");
-            return;
-          }
           if (data.assignedStartSection === data.assignedEndSection) {
-            toast("被调配人员起始区间与终点区间不能相同");
+            toast("调配目标起始区间与终点区间不能相同");
             return;
           }
           if (data.endTime <= data.startTime) {
@@ -590,8 +560,6 @@
           var assignedPerson = PERSON_OPTIONS.find(function (p) { return p.id === data.assignedPersonId; });
           saveRecord({
             id: "sa-" + Date.now(),
-            targetStartSection: data.targetStartSection,
-            targetEndSection: data.targetEndSection,
             assignedLine: data.assignedLine,
             assignedStartSection: data.assignedStartSection,
             assignedEndSection: data.assignedEndSection,

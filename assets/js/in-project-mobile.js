@@ -57,8 +57,17 @@
     if (!btn) return;
     var span = btn.querySelector(".mp-picker-field__text");
     if (!span) return;
-    var opt = select.options[select.selectedIndex];
-    var text = opt ? opt.text : "";
+    var text;
+    if (select.multiple) {
+      text = Array.prototype.filter.call(select.options, function (o) {
+        return o.selected && o.value && !/^请选择/.test(o.text);
+      }).map(function (o) {
+        return o.text;
+      }).join("、");
+    } else {
+      var opt = select.options[select.selectedIndex];
+      text = opt ? opt.text : "";
+    }
     var placeholder = btn.getAttribute("data-placeholder") || "请选择";
     var isEmpty = !text || /^请选择/.test(text) || text === "全部";
     span.textContent = isEmpty ? placeholder : text;
@@ -155,14 +164,22 @@
       });
     if (!options.length) return;
 
-    var current = select.options[select.selectedIndex];
     pickerState.key = "__dynamic__";
     pickerState.dynamicSelectId = selectId;
-    pickerState.multiple = false;
+    pickerState.multiple = !!select.multiple;
     pickerState.options = options;
     pickerState.hiddenId = null;
     pickerState.title = title || getSelectLabel(select);
-    pickerState.selected = current && current.text && !/^请选择/.test(current.text) ? [current.text] : [];
+    if (pickerState.multiple) {
+      pickerState.selected = Array.prototype.filter.call(select.options, function (o) {
+        return o.selected && o.text && !/^请选择/.test(o.text);
+      }).map(function (o) {
+        return o.text;
+      });
+    } else {
+      var current = select.options[select.selectedIndex];
+      pickerState.selected = current && current.text && !/^请选择/.test(current.text) ? [current.text] : [];
+    }
 
     var titleEl = document.getElementById("mp-picker-title");
     if (titleEl) titleEl.textContent = pickerState.title;
@@ -206,15 +223,21 @@
     if (pickerState.key === "__dynamic__" && pickerState.dynamicSelectId) {
       var select = document.getElementById(pickerState.dynamicSelectId);
       if (select) {
-        var picked = values[0] || "";
-        var matched = -1;
-        Array.prototype.forEach.call(select.options, function (opt, idx) {
-          if (opt.text === picked) matched = idx;
-        });
-        if (matched >= 0) select.selectedIndex = matched;
-        else if (picked) {
-          select.selectedIndex = 0;
-          if (select.options[0]) select.options[0].text = picked;
+        if (pickerState.multiple) {
+          Array.prototype.forEach.call(select.options, function (opt) {
+            opt.selected = values.indexOf(opt.text) >= 0;
+          });
+        } else {
+          var picked = values[0] || "";
+          var matched = -1;
+          Array.prototype.forEach.call(select.options, function (opt, idx) {
+            if (opt.text === picked) matched = idx;
+          });
+          if (matched >= 0) select.selectedIndex = matched;
+          else if (picked) {
+            select.selectedIndex = 0;
+            if (select.options[0]) select.options[0].text = picked;
+          }
         }
         syncSelectPickerButton(select);
         select.dispatchEvent(new Event("change", { bubbles: true }));
