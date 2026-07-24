@@ -365,6 +365,7 @@
                   <thead>
                     <tr>
                       <th class="px-4">编号</th>
+                      <th class="px-4">排序</th>
                       <th class="px-4">区间名称</th>
                       <th class="px-4">所属线路</th>
                       <th class="px-4">上下行</th>
@@ -466,6 +467,7 @@
       <div class="p-6">
         <div class="section-form-grid">
           <label class="section-form-item"><span class="section-form-label">编号：</span><input id="section-id" class="wh-input h-8 flex-1 px-3" placeholder="请输入编号" /></label>
+          <label class="section-form-item"><span class="section-form-label is-required">排序：</span><input id="section-sort" class="wh-input h-8 flex-1 px-3" placeholder="请输入排序（仅数字）" inputmode="numeric" /></label>
           <label class="section-form-item"><span class="section-form-label is-required">区间名称：</span><input id="section-name" class="wh-input h-8 flex-1 px-3" placeholder="请输入区间名称" /></label>
           <label class="section-form-item"><span class="section-form-label is-required">所属线路：</span><select id="section-line" class="wh-input h-8 flex-1 px-2"><option>2号线</option><option>5号线</option><option>7号线</option><option>11号线</option></select></label>
           <label class="section-form-item"><span class="section-form-label is-required">上下行：</span><select id="section-direction" class="wh-input h-8 flex-1 px-2"><option>上行</option><option>下行</option></select></label>
@@ -528,11 +530,11 @@
       );
 
       var rows = [
-        { id:"Q201", name:"常青花园-长港路", line:"2号线", direction:"上行", startMile:"K12+320", endMile:"K14+050", length:"1730", strata:"粉质黏土", builder:"武汉地铁集团", method:"盾构法", createdAt:"2026-05-01 10:15" },
-        { id:"Q202", name:"长港路-汉口火车站", line:"2号线", direction:"下行", startMile:"K14+050", endMile:"K15+760", length:"1710", strata:"砂质黏土", builder:"中铁十一局", method:"盾构法", createdAt:"2026-05-01 10:22" },
-        { id:"Q501", name:"白沙六路-青菱", line:"5号线", direction:"上行", startMile:"K21+100", endMile:"K23+480", length:"2380", strata:"卵石层", builder:"中铁隧道局", method:"盖挖法", createdAt:"2026-05-01 10:28" },
-        { id:"Q701", name:"光谷广场-杨家湾", line:"7号线", direction:"上行", startMile:"K30+000", endMile:"K31+200", length:"1200", strata:"强风化岩层", builder:"中建三局", method:"暗挖法", createdAt:"2026-05-01 10:36" },
-        { id:"Q1101", name:"光谷五路-左岭", line:"11号线", direction:"下行", startMile:"K08+260", endMile:"K10+420", length:"2160", strata:"中风化砂岩", builder:"中铁一局", method:"明挖法", createdAt:"2026-05-01 10:42" }
+        { id:"Q201", name:"常青花园-长港路", line:"2号线", direction:"上行", startMile:"K12+320", endMile:"K14+050", length:"1730", strata:"粉质黏土", builder:"武汉地铁集团", method:"盾构法", sort:"1", createdAt:"2026-05-01 10:15" },
+        { id:"Q202", name:"长港路-汉口火车站", line:"2号线", direction:"下行", startMile:"K14+050", endMile:"K15+760", length:"1710", strata:"砂质黏土", builder:"中铁十一局", method:"盾构法", sort:"2", createdAt:"2026-05-01 10:22" },
+        { id:"Q501", name:"白沙六路-青菱", line:"5号线", direction:"上行", startMile:"K21+100", endMile:"K23+480", length:"2380", strata:"卵石层", builder:"中铁隧道局", method:"盖挖法", sort:"3", createdAt:"2026-05-01 10:28" },
+        { id:"Q701", name:"光谷广场-杨家湾", line:"7号线", direction:"上行", startMile:"K30+000", endMile:"K31+200", length:"1200", strata:"强风化岩层", builder:"中建三局", method:"暗挖法", sort:"4", createdAt:"2026-05-01 10:36" },
+        { id:"Q1101", name:"光谷五路-左岭", line:"11号线", direction:"下行", startMile:"K08+260", endMile:"K10+420", length:"2160", strata:"中风化砂岩", builder:"中铁一局", method:"明挖法", sort:"5", createdAt:"2026-05-01 10:42" }
       ];
 
       var displayRows = rows.slice();
@@ -563,6 +565,7 @@
         return (
           '<div class="section-form-grid">' +
           detailRow("编号", row.id) +
+          detailRow("排序", row.sort) +
           detailRow("区间名称", row.name) +
           detailRow("所属线路", row.line) +
           detailRow("上下行", row.direction) +
@@ -642,6 +645,7 @@
         tableBody.innerHTML = displayRows.map(function (row, index) {
           return '<tr class="wh-row-open ' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '" data-row-index="' + index + '">' +
             '<td class="px-4">' + row.id + '</td>' +
+            '<td class="px-4">' + escHtml(row.sort) + '</td>' +
             '<td class="px-4">' + row.name + '</td>' +
             '<td class="px-4">' + row.line + '</td>' +
             '<td class="px-4">' + row.direction + '</td>' +
@@ -697,6 +701,7 @@
         strataSelect.setValue(row ? row.strata : "");
         builderSelect.setValue(row ? row.builder : "");
         document.getElementById("section-method").value = row ? row.method : "";
+        document.getElementById("section-sort").value = row ? row.sort : "";
         modalMask.classList.add("show");
       }
 
@@ -710,8 +715,13 @@
         var direction = document.getElementById("section-direction").value.trim();
         var startMile = document.getElementById("section-start-mile").value.trim();
         var endMile = document.getElementById("section-end-mile").value.trim();
-        if (!name || !line || !direction || !startMile || !endMile) {
-          alert("请完善必填项：区间名称、所属线路、上下行、起点里程、终点里程");
+        var sort = document.getElementById("section-sort").value.trim();
+        if (!name || !line || !direction || !startMile || !endMile || !sort) {
+          alert("请完善必填项：区间名称、所属线路、上下行、起点里程、终点里程、排序");
+          return;
+        }
+        if (!/^\d+$/.test(sort)) {
+          alert("排序只能输入数字");
           return;
         }
         var row = {
@@ -725,6 +735,7 @@
           strata: strataSelect.getValue() || "-",
           builder: builderSelect.getValue() || "-",
           method: document.getElementById("section-method").value.trim() || "-",
+          sort: sort,
           createdAt: editIndex > -1 ? rows[editIndex].createdAt : "2026-05-12 19:30"
         };
         if (editIndex > -1) rows[editIndex] = row;
@@ -735,6 +746,9 @@
 
       document.getElementById("btn-search").addEventListener("click", applyFilter);
       document.getElementById("btn-reset").addEventListener("click", resetFilters);
+      document.getElementById("section-sort").addEventListener("input", function () {
+        this.value = this.value.replace(/\D/g, "");
+      });
       document.getElementById("btn-export").addEventListener("click", function () {
         alert("导出当前筛选结果（原型演示）");
       });

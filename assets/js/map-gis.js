@@ -1982,8 +1982,8 @@
           renderDetailFields([
             { label: "站点名称", value: item.name },
             { label: "所属线路", value: item.line },
-            { label: "开始里程", value: item.startMileage },
-            { label: "结束里程", value: item.endMileage },
+            { label: "起点里程", value: item.startMileage },
+            { label: "终点里程", value: item.endMileage },
             { label: "长度", value: item.length },
             { label: "经度", value: item.lng },
             { label: "纬度", value: item.lat },
@@ -2058,7 +2058,6 @@
             { label: "所属线路", value: item.line },
             { label: "所在区间站点", value: item.section },
             { label: "项目类型", value: item.level },
-            { label: "工程类型", value: item.workType },
             { label: "工程类别", value: item.category },
             { label: "距离地铁结构最小净距", value: item.minDistance },
             { label: "地铁结构埋深", value: item.depth },

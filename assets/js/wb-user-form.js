@@ -87,6 +87,23 @@
     var sectionText =
       row.sectionName ||
       (section.start && section.end ? section.start + "-" + section.end : section.start || section.end || "");
+    var lineText = row.lineName;
+    if (Array.isArray(row.sections) && row.sections.length) {
+      var lineSet = {};
+      var lineList = [];
+      row.sections.forEach(function (s) {
+        if (s.lineName && !lineSet[s.lineName]) {
+          lineSet[s.lineName] = true;
+          lineList.push(s.lineName);
+        }
+      });
+      lineText = lineList.join("、");
+      sectionText = row.sections
+        .map(function (s) {
+          return (s.lineName ? s.lineName + " " : "") + (s.start || "") + "-" + (s.end || "");
+        })
+        .join("、");
+    }
     var avatarHtml = row.avatarUrl
       ? '<div class="wb-detail-value"><img src="' +
         escapeHtml(row.avatarUrl) +
@@ -106,7 +123,7 @@
     html += detailRowHtml("所属部门", row.deptName);
     html += detailRowHtml("角色", row.roleName);
     html += detailRowHtml("岗位", row.postName);
-    html += detailRowHtml("所属线路", row.lineName);
+    html += detailRowHtml("所属线路", lineText);
     html += detailRowHtml("所属区间", sectionText, true);
     html += detailRowHtml("手机号码", row.phone);
     html += detailRowHtml("邮箱", row.email);
@@ -166,7 +183,6 @@
     var html = '<div class="wb-form-item">' + formLabel(label, false);
     html += '<div id="' + key + '" class="wh-form-search-select"></div>';
     html += '<input type="hidden" data-form="' + key + '" id="' + key + '-value" value="' + escapeHtml(value || "") + '" />';
-    html += '<p class="form-hint">' + escapeHtml(placeholder || "") + '</p>';
     html += "</div>";
     return html;
   }
@@ -199,12 +215,65 @@
     );
   }
 
+  function lineSectionSelectHtml(kind, options, value, placeholder) {
+    var html =
+      '<select class="wh-input wb-line-section__sel" data-ls="' + kind + '">' +
+      '<option value="">' + escapeHtml(placeholder) + "</option>";
+    options.forEach(function (opt) {
+      html +=
+        '<option value="' +
+        escapeHtml(opt) +
+        '"' +
+        (String(opt) === String(value) ? " selected" : "") +
+        ">" +
+        escapeHtml(opt) +
+        "</option>";
+    });
+    return html + "</select>";
+  }
+
+  function lineSectionRowHtml(item) {
+    item = item || {};
+    var line = item.lineName || "";
+    var stations = line ? STATION_BY_LINE[line] || stationsFromSections(DEFAULT_SECTIONS) : [];
+    return (
+      '<tr class="wb-line-section-row">' +
+      "<td>" +
+      lineSectionSelectHtml("line", LINE_OPTIONS, line, "请选择线路") +
+      "</td>" +
+      "<td>" +
+      lineSectionSelectHtml("start", stations, item.start || "", STATION_PLACEHOLDER) +
+      "</td>" +
+      "<td>" +
+      lineSectionSelectHtml("end", stations, item.end || "", STATION_PLACEHOLDER) +
+      "</td>" +
+      '<td class="wb-line-section__op"><button type="button" class="wb-line-section__del">删除</button></td>' +
+      "</tr>"
+    );
+  }
+
+  function buildLineSectionBlockHtml() {
+    return (
+      '<div class="wb-form-item wb-form-item--full wb-line-section">' +
+      '<div class="wb-line-section__head">' +
+      formLabel("线路区间", true) +
+      '<button type="button" class="wb-line-section__add" id="wb-line-section-add">' +
+      '<i class="fa-solid fa-plus"></i> 新增</button>' +
+      "</div>" +
+      '<div class="wb-line-section__wrap">' +
+      '<table class="wb-line-section__table">' +
+      "<thead><tr><th>所属线路</th><th>起始区间</th><th>终点区间</th>" +
+      '<th class="wb-line-section__op">操作</th></tr></thead>' +
+      '<tbody id="wb-line-section-rows"></tbody>' +
+      "</table>" +
+      "</div>" +
+      "</div>"
+    );
+  }
+
   function buildUserFormHtml(row, roleOptions, deptOptions) {
     row = row || {};
     var isEdit = !!(row && row.userId);
-    var line = row.lineName || "8号线";
-    var stations = STATION_BY_LINE[line] || stationsFromSections(DEFAULT_SECTIONS);
-    var section = parseSectionFields(row);
 
     return (
       '<div class="wb-form-grid wb-form-grid--user">' +
@@ -221,13 +290,11 @@
       selectField("deptName", "所属部门", deptOptions, row.deptName, true) +
       selectField("roleName", "角色", roleOptions, row.roleName, true) +
       searchSelectPlaceholder("wb-post-select", "岗位", row.postName || "", "选择岗位时请先选择部门") +
-      selectField("lineName", "所属线路", LINE_OPTIONS, line, true) +
-      selectField("sectionStart", "起始区间", stations, section.start, true, STATION_PLACEHOLDER) +
-      selectField("sectionEnd", "终点区间", stations, section.end, true, STATION_PLACEHOLDER) +
       inputField("phone", "手机号码", row.phone, true) +
       inputField("email", "邮箱", row.email, false) +
       selectField("sex", "性别", ["男", "女"], row.sex, false) +
       selectField("statusText", "状态", ["启用", "停用"], row.status ? "启用" : "停用", true) +
+      buildLineSectionBlockHtml() +
       '<div class="wb-form-item wb-form-item--full">' +
       formLabel("上传头像", false) +
       '<div class="wb-upload-zone wb-upload-zone--image" id="wb-avatar-zone">' +
@@ -407,38 +474,86 @@
       }
     })();
 
-    var lineSelect = document.querySelector('[data-form="lineName"]');
-    var sectionStartSelect = document.querySelector('[data-form="sectionStart"]');
-    var sectionEndSelect = document.querySelector('[data-form="sectionEnd"]');
+    initLineSectionRows(row);
+  }
 
-    function fillStationSelect(select, stations, prev) {
-      if (!select) return;
-      var html =
-        '<option value="">' + escapeHtml(STATION_PLACEHOLDER) + "</option>" +
-        stations
-          .map(function (s) {
-            return (
-              '<option value="' +
-              escapeHtml(s) +
-              '"' +
-              (s === prev ? " selected" : "") +
-              ">" +
-              escapeHtml(s) +
-              "</option>"
-            );
-          })
-          .join("");
-      select.innerHTML = html;
-      if (!prev || stations.indexOf(prev) === -1) select.selectedIndex = 0;
+  function initLineSectionRows(row) {
+    row = row || {};
+    var tbody = document.getElementById("wb-line-section-rows");
+    var addBtn = document.getElementById("wb-line-section-add");
+    if (!tbody || !addBtn) return;
+
+    var items = [];
+    if (Array.isArray(row.sections) && row.sections.length) {
+      items = row.sections.map(function (s) {
+        return { lineName: s.lineName || "", start: s.start || "", end: s.end || "" };
+      });
+    } else {
+      var section = parseSectionFields(row);
+      if (row.lineName || section.start || section.end) {
+        items.push({ lineName: row.lineName || "", start: section.start, end: section.end });
+      }
+    }
+    if (!items.length) items.push({ lineName: "", start: "", end: "" });
+
+    function render() {
+      tbody.innerHTML = items
+        .map(function (item) {
+          return lineSectionRowHtml(item);
+        })
+        .join("");
     }
 
-    if (lineSelect && sectionStartSelect && sectionEndSelect) {
-      lineSelect.onchange = function () {
-        var stations = STATION_BY_LINE[lineSelect.value] || stationsFromSections(DEFAULT_SECTIONS);
-        fillStationSelect(sectionStartSelect, stations, "");
-        fillStationSelect(sectionEndSelect, stations, "");
-      };
+    function fillRowStations(tr, line) {
+      var stations = line ? STATION_BY_LINE[line] || stationsFromSections(DEFAULT_SECTIONS) : [];
+      tr.querySelectorAll('select[data-ls="start"], select[data-ls="end"]').forEach(function (sel) {
+        var html = '<option value="">' + escapeHtml(STATION_PLACEHOLDER) + "</option>";
+        stations.forEach(function (s) {
+          html += '<option value="' + escapeHtml(s) + '">' + escapeHtml(s) + "</option>";
+        });
+        sel.innerHTML = html;
+      });
     }
+
+    addBtn.onclick = function () {
+      tbody.insertAdjacentHTML("beforeend", lineSectionRowHtml({ lineName: "", start: "", end: "" }));
+    };
+
+    tbody.addEventListener("click", function (e) {
+      var del = e.target.closest(".wb-line-section__del");
+      if (!del) return;
+      var tr = del.closest("tr");
+      if (tr) tr.remove();
+      if (!tbody.querySelector("tr")) {
+        tbody.insertAdjacentHTML("beforeend", lineSectionRowHtml({ lineName: "", start: "", end: "" }));
+      }
+    });
+
+    tbody.addEventListener("change", function (e) {
+      var sel = e.target.closest('select[data-ls="line"]');
+      if (!sel) return;
+      var tr = sel.closest("tr");
+      if (tr) fillRowStations(tr, sel.value);
+    });
+
+    render();
+  }
+
+  function collectLineSections() {
+    var tbody = document.getElementById("wb-line-section-rows");
+    var sections = [];
+    if (!tbody) return sections;
+    tbody.querySelectorAll("tr.wb-line-section-row").forEach(function (tr) {
+      var line = tr.querySelector('select[data-ls="line"]');
+      var start = tr.querySelector('select[data-ls="start"]');
+      var end = tr.querySelector('select[data-ls="end"]');
+      sections.push({
+        lineName: line ? line.value : "",
+        start: start ? start.value : "",
+        end: end ? end.value : "",
+      });
+    });
+    return sections;
   }
 
   function applyUserFormData(row, data) {
@@ -448,17 +563,33 @@
       }
       return false;
     }
-    if (!data.sectionStart || !data.sectionEnd) {
+    var sections = collectLineSections();
+    if (!sections.length) {
       if (global.WBSystem && global.WBSystem.toast) {
-        global.WBSystem.toast("请选择起始区间与终点区间站点");
+        global.WBSystem.toast("请至少新增一条线路区间");
       }
       return false;
     }
-    if (data.sectionStart === data.sectionEnd) {
-      if (global.WBSystem && global.WBSystem.toast) {
-        global.WBSystem.toast("起始区间与终点区间不能相同");
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i];
+      if (!s.lineName) {
+        if (global.WBSystem && global.WBSystem.toast) {
+          global.WBSystem.toast("请选择第 " + (i + 1) + " 行的所属线路");
+        }
+        return false;
       }
-      return false;
+      if (!s.start || !s.end) {
+        if (global.WBSystem && global.WBSystem.toast) {
+          global.WBSystem.toast("请选择第 " + (i + 1) + " 行的起始区间与终点区间站点");
+        }
+        return false;
+      }
+      if (s.start === s.end) {
+        if (global.WBSystem && global.WBSystem.toast) {
+          global.WBSystem.toast("第 " + (i + 1) + " 行的起始区间与终点区间不能相同");
+        }
+        return false;
+      }
     }
     // 获取岗位值（可能来自搜索选择框）
     var postName = data.postName;
@@ -473,10 +604,11 @@
       deptName: data.deptName,
       roleName: data.roleName,
       postName: postName || (data.postName || "").trim(),
-      lineName: data.lineName,
-      sectionStart: data.sectionStart,
-      sectionEnd: data.sectionEnd,
-      sectionName: data.sectionStart + "-" + data.sectionEnd,
+      lineName: sections[0].lineName,
+      sectionStart: sections[0].start,
+      sectionEnd: sections[0].end,
+      sectionName: sections[0].start + "-" + sections[0].end,
+      sections: sections,
       phone: (data.phone || "").trim(),
       email: (data.email || "").trim(),
       sex: data.sex || "",

@@ -460,6 +460,7 @@
       <div class="p-6">
         <div class="station-form-grid">
           <label class="station-form-item"><span class="station-form-label">编号：</span><input id="station-id" class="wh-input h-8 flex-1 px-3" placeholder="请输入编号" /></label>
+          <label class="station-form-item"><span class="station-form-label is-required">排序：</span><input id="station-sort" class="wh-input h-8 flex-1 px-3" inputmode="numeric" placeholder="请输入排序（仅数字）" oninput="this.value=this.value.replace(/\D/g,'')" /></label>
           <label class="station-form-item"><span class="station-form-label is-required">站点名称：</span><input id="station-name" class="wh-input h-8 flex-1 px-3" placeholder="请输入站点名称" /></label>
           <label class="station-form-item"><span class="station-form-label is-required">所属线路：</span><select id="station-line" class="wh-input h-8 flex-1 px-2"><option>2号线</option><option>5号线</option><option>7号线</option><option>11号线</option></select></label>
           <label class="station-form-item"><span class="station-form-label">联系电话：</span><input id="station-phone" class="wh-input h-8 flex-1 px-3" placeholder="请输入联系电话" /></label>
@@ -515,11 +516,11 @@
       ];
 
       var rows = [
-        { id:"S201", name:"常青花园", line:"2号线", startMile:"K12+320", endMile:"K13+180", length:"860", lng:"114.2415", lat:"30.6501", strata:"(10-1d) 粉质黏土", builder:"中南勘基", method:"明挖法", phone:"13800001201" },
-        { id:"S202", name:"长港路", line:"2号线", startMile:"K13+180", endMile:"K14+050", length:"870", lng:"114.2541", lat:"30.6428", strata:"3-2 黏土", builder:"浙江八方电信有限公司", method:"盾构法", phone:"13800001202" },
-        { id:"S501", name:"白沙六路", line:"5号线", startMile:"K21+100", endMile:"K21+980", length:"880", lng:"114.3142", lat:"30.5077", strata:"1-1 杂填土", builder:"武汉城发智慧能源有限公司", method:"盖挖法", phone:"13800001203" },
-        { id:"S701", name:"光谷广场", line:"7号线", startMile:"K30+000", endMile:"K31+120", length:"1120", lng:"114.4035", lat:"30.5112", strata:"(18c-1) 强风化泥质砂岩", builder:"汉阳区水务和湖泊局", method:"暗挖法", phone:"13800001204" },
-        { id:"S1101", name:"光谷五路", line:"11号线", startMile:"K08+260", endMile:"K09+140", length:"880", lng:"114.4496", lat:"30.4855", strata:"(13-1) 砂砾岩残积土", builder:"武汉百纵商业发展有限公司", method:"明挖法", phone:"13800001205" }
+        { id:"S201", name:"常青花园", line:"2号线", startMile:"K12+320", endMile:"K13+180", length:"860", lng:"114.2415", lat:"30.6501", strata:"(10-1d) 粉质黏土", builder:"中南勘基", method:"明挖法", phone:"13800001201", sort:"1" },
+        { id:"S202", name:"长港路", line:"2号线", startMile:"K13+180", endMile:"K14+050", length:"870", lng:"114.2541", lat:"30.6428", strata:"3-2 黏土", builder:"浙江八方电信有限公司", method:"盾构法", phone:"13800001202", sort:"2" },
+        { id:"S501", name:"白沙六路", line:"5号线", startMile:"K21+100", endMile:"K21+980", length:"880", lng:"114.3142", lat:"30.5077", strata:"1-1 杂填土", builder:"武汉城发智慧能源有限公司", method:"盖挖法", phone:"13800001203", sort:"3" },
+        { id:"S701", name:"光谷广场", line:"7号线", startMile:"K30+000", endMile:"K31+120", length:"1120", lng:"114.4035", lat:"30.5112", strata:"(18c-1) 强风化泥质砂岩", builder:"汉阳区水务和湖泊局", method:"暗挖法", phone:"13800001204", sort:"4" },
+        { id:"S1101", name:"光谷五路", line:"11号线", startMile:"K08+260", endMile:"K09+140", length:"880", lng:"114.4496", lat:"30.4855", strata:"(13-1) 砂砾岩残积土", builder:"武汉百纵商业发展有限公司", method:"明挖法", phone:"13800001205", sort:"5" }
       ];
 
       var displayRows = rows.slice();
@@ -552,6 +553,7 @@
         return (
           '<div class="station-form-grid">' +
           detailRow("编号", row.id) +
+          detailRow("排序", row.sort) +
           detailRow("站点名称", row.name) +
           detailRow("所属线路", row.line) +
           detailRow("联系电话", row.phone) +
@@ -596,6 +598,7 @@
         }
         openDetailRow({
           id: params.get("id") || "—",
+          sort: params.get("sort") || "—",
           name: name,
           line: params.get("line") || "—",
           phone: params.get("phone") || "—",
@@ -714,6 +717,7 @@
         modalTitle.textContent = mode === "edit" ? "编辑站点" : "新增站点";
         var row = index > -1 ? rows[index] : null;
         document.getElementById("station-id").value = row ? row.id : "";
+        document.getElementById("station-sort").value = row ? row.sort || "" : "";
         document.getElementById("station-name").value = row ? row.name : "";
         document.getElementById("station-line").value = row ? row.line : "2号线";
         document.getElementById("station-phone").value = row ? row.phone : "";
@@ -737,12 +741,22 @@
         var line = document.getElementById("station-line").value.trim();
         var startMile = document.getElementById("station-start-mile").value.trim();
         var endMile = document.getElementById("station-end-mile").value.trim();
+        var sort = document.getElementById("station-sort").value.trim();
         if (!name || !line || !startMile || !endMile) {
           alert("请完善必填项：站点名称、所属线路、起点里程、终点里程");
           return;
         }
+        if (!sort) {
+          alert("请输入排序");
+          return;
+        }
+        if (!/^\d+$/.test(sort)) {
+          alert("排序只能输入数字");
+          return;
+        }
         var row = {
           id: document.getElementById("station-id").value.trim() || "S000",
+          sort: sort,
           name: name,
           line: line,
           phone: document.getElementById("station-phone").value.trim() || "-",

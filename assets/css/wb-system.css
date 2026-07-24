@@ -320,6 +320,93 @@
   grid-column: 1 / -1;
 }
 
+/* 用户表单：线路区间多行编辑 */
+.wb-line-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.wb-line-section__head > label {
+  margin-bottom: 0;
+}
+
+.wb-line-section__add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  font-size: 12px;
+  color: #042f2e;
+  font-weight: 600;
+  background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.35);
+}
+
+.wb-line-section__add:hover {
+  filter: brightness(1.1);
+}
+
+.wb-line-section__wrap {
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  border-radius: 8px;
+  background: rgba(8, 15, 35, 0.45);
+  overflow: hidden;
+}
+
+.wb-line-section__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.wb-line-section__table th {
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: #9cc6df;
+  background: rgba(34, 211, 238, 0.08);
+  border-bottom: 1px solid rgba(34, 211, 238, 0.18);
+}
+
+.wb-line-section__table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.1);
+}
+
+.wb-line-section__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.wb-line-section__sel {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 8px;
+}
+
+.wb-line-section__op {
+  width: 64px;
+  text-align: center;
+}
+
+.wb-line-section__del {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  color: #fb7185;
+  cursor: pointer;
+}
+
+.wb-line-section__del:hover {
+  color: #f43f5e;
+  text-shadow: 0 0 8px rgba(244, 63, 94, 0.5);
+}
+
 .wb-form-grid--role {
   padding-bottom: 8px;
 }
