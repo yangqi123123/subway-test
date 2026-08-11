@@ -366,6 +366,7 @@
                   <thead>
                     <tr>
                       <th class="px-4">编号</th>
+                      <th class="px-4">排序</th>
                       <th class="px-4">站点名称</th>
                       <th class="px-4">所属线路</th>
                       <th class="px-4">起点里程</th>
@@ -673,6 +674,7 @@
         tableBody.innerHTML = displayRows.map(function (row, index) {
           return '<tr class="wh-row-open ' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '" data-row-index="' + index + '">' +
             '<td class="px-4">' + row.id + '</td>' +
+            '<td class="px-4">' + escHtml(row.sort) + '</td>' +
             '<td class="px-4">' + row.name + '</td>' +
             '<td class="px-4">' + row.line + '</td>' +
             '<td class="px-4">' + row.startMile + '</td>' +

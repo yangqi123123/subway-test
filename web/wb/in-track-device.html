@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>设备信息</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
+  <style>
+    .disease-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+      align-items: start;
+    }
+    .disease-layout__right {
+      position: sticky;
+      top: 72px;
+      align-self: start;
+      width: 300px;
+      max-height: calc(100dvh - 88px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .disease-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .disease-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88));
+    }
+    .disease-stat-card__icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+    .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__unit { font-size: 12px; font-weight: 400; margin-left: 2px; color: #94a3b8; }
+    .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
+    .disease-filter-panel,
+    .disease-quick-panel {
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(8, 15, 35, 0.78);
+    }
+    .disease-panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2f5ff;
+      margin: 0;
+      padding: 8px 10px 7px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.92);
+    }
+    .disease-panel-body { padding: 8px 10px 10px; }
+    .disease-filter-panel .disease-panel-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .disease-filter-panel label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 0;
+      font-size: 10px;
+    }
+    .disease-filter-panel label > span:first-child { color: #94a3b8; }
+    .disease-filter-panel .wh-input {
+      height: 26px !important;
+      min-height: 26px;
+      font-size: 11px;
+      padding: 0 6px;
+    }
+    .disease-filter-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .disease-filter-actions button {
+      flex: 1;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      font-size: 11px;
+    }
+    .disease-list-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+    .disease-quick-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.14);
+      background: rgba(15, 23, 42, 0.45);
+      color: #e2f5ff;
+      font-size: 11px;
+      text-decoration: none;
+    }
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.08);
+      color: #fff;
+    }
+    .disease-quick-link.is-active {
+      border-color: rgba(34, 211, 238, 0.55);
+      background: rgba(34, 211, 238, 0.12);
+      color: #a5f3fc;
+    }
+    .disease-quick-link i {
+      width: 16px;
+      text-align: center;
+      color: #67e8f9;
+      font-size: 12px;
+    }
+    @media (max-width: 1400px) {
+      .disease-layout { grid-template-columns: 1fr; }
+      .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .disease-layout__right {
+        position: static;
+        width: 100%;
+        max-height: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+    }
+    @media (max-width: 768px) {
+      .disease-stats { grid-template-columns: 1fr; }
+      .disease-layout__right { grid-template-columns: 1fr; }
+    }
+    .device-table th,
+    .device-table td {
+      height: 52px;
+      border-right: 1px solid rgba(34,211,238,.08);
+      border-bottom: 1px solid rgba(34,211,238,.08);
+      vertical-align: middle;
+    }
+    .device-table th:last-child,
+    .device-table td:last-child { border-right: 0; }
+    .device-table thead th {
+      color: rgba(240,249,255,.96);
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(2,8,23,.66);
+      white-space: nowrap;
+    }
+    .device-table tbody td {
+      color: rgba(226,245,255,.88);
+      font-size: 12px;
+    }
+    .device-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+    .device-modal-mask,
+    .device-import-mask,
+    .confirm-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15,23,42,.56);
+      padding: 24px;
+    }
+    .device-modal-mask.show,
+    .device-import-mask.show,
+    .confirm-mask.show { display: flex; }
+    .device-modal {
+      width: min(920px, 92vw);
+      border-radius: 8px;
+      border: 1px solid rgba(34,211,238,.16);
+      background: #071426;
+      box-shadow: 0 24px 80px rgba(0,0,0,.48);
+      overflow: hidden;
+    }
+    .device-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 28px;
+    }
+    .device-form-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .device-form-item--full { grid-column: 1 / -1; }
+    .device-form-item--top { align-items: flex-start; }
+    .device-form-item--top .device-form-label { line-height: 32px; }
+    .device-form-label {
+      width: 96px;
+      flex: 0 0 96px;
+      text-align: right;
+      color: rgba(226,245,255,.78);
+      font-size: 12px;
+    }
+    .device-form-label.is-required::before {
+      content: "*";
+      color: #fb7185;
+      margin-right: 4px;
+    }
+    .device-upload {
+      flex: 1;
+      min-width: 0;
+      border: 1px dashed rgba(34, 211, 238, 0.3);
+      border-radius: 8px;
+      background: rgba(8, 15, 35, 0.45);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: rgba(156, 198, 223, 0.85);
+      font-size: 12px;
+      text-align: center;
+    }
+    .device-upload:hover { border-color: rgba(34, 211, 238, 0.55); }
+    .device-upload.is-dragover {
+      border-color: rgba(34, 211, 238, 0.75);
+      background: rgba(34, 211, 238, 0.08);
+    }
+    .device-upload__hint { font-size: 10px; color: #64748b; }
+    .device-upload__preview img {
+      width: 72px;
+      height: 72px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid rgba(34, 211, 238, 0.25);
+    }
+    .device-upload__preview {
+      position: relative;
+      display: none;
+    }
+    .device-upload__preview.show { display: block; }
+    .device-upload__remove {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: none;
+      background: #f43f5e;
+      color: #fff;
+      font-size: 11px;
+      line-height: 18px;
+      cursor: pointer;
+    }
+    .device-import {
+      width: min(560px, 92vw);
+      border-radius: 8px;
+      border: 1px solid rgba(34,211,238,.16);
+      background: #071426;
+      box-shadow: 0 24px 80px rgba(0,0,0,.48);
+      overflow: hidden;
+    }
+    .device-import__drop {
+      margin: 20px 24px 0;
+      border: 1px dashed rgba(34, 211, 238, 0.3);
+      border-radius: 8px;
+      background: rgba(8, 15, 35, 0.45);
+      padding: 28px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: rgba(156, 198, 223, 0.85);
+      font-size: 12px;
+    }
+    .device-import__drop:hover { border-color: rgba(34, 211, 238, 0.55); }
+    .device-import__drop.is-dragover {
+      border-color: rgba(34, 211, 238, 0.75);
+      background: rgba(34, 211, 238, 0.08);
+    }
+    .device-import__drop i { font-size: 26px; color: #67e8f9; }
+    .device-import__meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px 0;
+      font-size: 11px;
+      color: #64748b;
+    }
+    .device-import__meta a {
+      color: #67e8f9;
+      text-decoration: none;
+    }
+    .device-import__meta a:hover { color: #a5f3fc; }
+    .device-import__file {
+      padding: 8px 24px 0;
+      font-size: 11px;
+      color: #86efac;
+      min-height: 22px;
+    }
+    .confirm-card {
+      width: 320px;
+      border-radius: 8px;
+      border: 1px solid rgba(34,211,238,.14);
+      background: #071426;
+      box-shadow: 0 24px 80px rgba(0,0,0,.48);
+      overflow: hidden;
+    }
+    .am-detail-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 115;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(2, 8, 23, 0.72);
+    }
+    .am-detail-mask.show { display: flex; }
+    .am-detail-dialog {
+      width: min(1180px, 96vw);
+      max-height: min(86vh, 900px);
+      border-radius: 8px;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      background: linear-gradient(180deg, #071525, #020617);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .am-detail-dialog__head {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+    }
+    .am-detail-dialog__body {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 20px 24px 16px;
+    }
+    .am-detail-dialog__foot {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 14px 24px 18px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .detail-value {
+      flex: 1;
+      min-width: 0;
+      min-height: 32px;
+      line-height: 32px;
+      color: rgba(226, 245, 255, 0.92);
+      font-size: 12px;
+      word-break: break-word;
+    }
+    .detail-value--empty { color: #64748b; }
+    .usage-table-wrap {
+      overflow-x: auto;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      border-radius: 8px;
+      background: rgba(8, 15, 35, 0.45);
+    }
+    .usage-table {
+      width: 100%;
+      min-width: 1500px;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .usage-table th {
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #9cc6df;
+      background: rgba(34, 211, 238, 0.08);
+      border-bottom: 1px solid rgba(34, 211, 238, 0.18);
+      white-space: nowrap;
+    }
+    .usage-table td {
+      padding: 8px 12px;
+      color: rgba(226, 245, 255, 0.88);
+      border-bottom: 1px solid rgba(34, 211, 238, 0.1);
+      white-space: nowrap;
+    }
+    .usage-table tbody tr:last-child td { border-bottom: none; }
+    .usage-empty {
+      padding: 28px 12px;
+      text-align: center;
+      color: #64748b;
+      font-size: 12px;
+    }
+    .usage-filter {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: flex-end;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .usage-filter label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 0;
+      font-size: 10px;
+      color: #94a3b8;
+      flex: 1;
+      min-width: 0;
+    }
+    .usage-filter .wh-input {
+      height: 26px !important;
+      min-height: 26px;
+      font-size: 11px;
+      padding: 0 6px;
+      width: 100%;
+      min-width: 0;
+    }
+    .usage-filter button {
+      height: 26px;
+      padding: 0 14px;
+      font-size: 11px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .detail-photo img {
+      width: 72px;
+      height: 72px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid rgba(34, 211, 238, 0.25);
+    }
+  </style>
+</head>
+<body data-shell="default" data-top="wb" data-sidebar-key="in-track-device" data-wb-view="page">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">设备信息</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">设备信息面板</span>
+    </div>
+
+    <section id="device-list-view">
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="设备统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-microchip"></i></div>
+              <div>
+                <div id="stat-total" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">台</span></div>
+                <div class="disease-stat-card__label">设备总数</div>
+                <div class="disease-stat-card__trend">定位设备台账</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-signal"></i></div>
+              <div>
+                <div id="stat-online" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">台</span></div>
+                <div class="disease-stat-card__label">在线设备</div>
+                <div class="disease-stat-card__trend">今日有在线记录</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-plug-circle-xmark"></i></div>
+              <div>
+                <div id="stat-offline" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">台</span></div>
+                <div class="disease-stat-card__label">离线设备</div>
+                <div class="disease-stat-card__trend">最近无在线记录</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-link"></i></div>
+              <div>
+                <div id="stat-bound" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">台</span></div>
+                <div class="disease-stat-card__label">已绑定人员</div>
+                <div class="disease-stat-card__trend">绑定中的设备</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="disease-list-area">
+            <div class="disease-list-toolbar">
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new-device">
+                <i class="fa-solid fa-plus mr-1"></i>新增
+              </button>
+              <button id="btn-import" type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">
+                <i class="fa-solid fa-file-import mr-1"></i>导入设备
+              </button>
+              <button id="btn-export" type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">
+                <i class="fa-solid fa-file-export mr-1"></i>导出
+              </button>
+            </div>
+            <div class="wh-table-shell bg-slate-950/35">
+              <div class="am-table-wrap overflow-x-auto">
+                <table class="device-table min-w-[2000px] w-full text-left">
+                  <thead>
+                    <tr>
+                      <th class="px-4">设备IMEI</th>
+                      <th class="px-4">设备型号</th>
+                      <th class="px-4">设备名称</th>
+                      <th class="px-4">颜色</th>
+                      <th class="px-4">产地</th>
+                      <th class="px-4">厂家</th>
+                      <th class="px-4">最后在线时间</th>
+                      <th class="px-4">备注</th>
+                      <th class="px-4">创建时间</th>
+                      <th class="px-4 disease-col-actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="device-table-body"></tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+                <span>共 <b id="table-total" class="text-cyan-200">0</b> 条</span>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <button type="button" class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button>
+                  <select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select>
+                  <span>跳至</span>
+                  <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+                  <span>页</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label>
+                <span>设备IMEI</span>
+                <input id="filter-imei" class="wh-input w-full" placeholder="请输入设备IMEI" />
+              </label>
+              <label>
+                <span>设备型号</span>
+                <input id="filter-model" class="wh-input w-full" placeholder="请输入设备型号" />
+              </label>
+              <label>
+                <span>在线开始时间</span>
+                <input id="filter-online-start" type="date" class="wh-input w-full" />
+              </label>
+              <label>
+                <span>在线结束时间</span>
+                <input id="filter-online-end" type="date" class="wh-input w-full" />
+              </label>
+              <div class="disease-filter-actions">
+                <button id="btn-search" type="button" class="wh-btn-primary">搜索</button>
+                <button id="btn-reset" type="button" class="wh-btn-ghost">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div data-quick-links-group="巡查质量"></div>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <div id="device-detail-mask" class="am-detail-mask" aria-hidden="true">
+    <div class="am-detail-dialog" role="dialog" aria-labelledby="device-detail-title">
+      <div class="am-detail-dialog__head">
+        <div>
+          <h3 id="device-detail-title" class="text-white font-semibold text-sm m-0">设备详情</h3>
+          <div id="device-detail-subtitle" class="text-[11px] text-slate-400 mt-0.5">定位设备</div>
+        </div>
+        <button type="button" class="wh-modal-close text-slate-400 hover:text-white text-xl leading-none" data-action="close-device-detail" aria-label="关闭">×</button>
+      </div>
+      <div id="device-detail-body" class="am-detail-dialog__body"></div>
+      <div class="am-detail-dialog__foot">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-device-detail">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="device-modal-mask" class="device-modal-mask">
+    <div class="device-modal">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
+        <h3 id="device-modal-title" class="text-white text-[16px] font-semibold">新增设备</h3>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-device-modal">×</button>
+      </div>
+      <div class="p-6">
+        <div class="device-form-grid">
+          <label class="device-form-item"><span class="device-form-label is-required">设备IMEI：</span><input id="device-imei" class="wh-input h-8 flex-1 px-3" placeholder="请输入设备IMEI" /></label>
+          <label class="device-form-item"><span class="device-form-label is-required">设备型号：</span><input id="device-model" class="wh-input h-8 flex-1 px-3" placeholder="请输入设备型号" /></label>
+          <label class="device-form-item"><span class="device-form-label">设备名称：</span><input id="device-name" class="wh-input h-8 flex-1 px-3" placeholder="请输入设备名称" /></label>
+          <label class="device-form-item"><span class="device-form-label">颜色：</span><input id="device-color" class="wh-input h-8 flex-1 px-3" placeholder="请输入颜色" /></label>
+          <label class="device-form-item"><span class="device-form-label">产地：</span><input id="device-origin" class="wh-input h-8 flex-1 px-3" placeholder="请输入产地" /></label>
+          <label class="device-form-item"><span class="device-form-label">厂家：</span><input id="device-maker" class="wh-input h-8 flex-1 px-3" placeholder="请输入厂家" /></label>
+          <label class="device-form-item device-form-item--full device-form-item--top"><span class="device-form-label">备注：</span><textarea id="device-remark" class="wh-input flex-1 px-3 py-2" rows="2" placeholder="请输入备注"></textarea></label>
+          <div class="device-form-item device-form-item--full device-form-item--top">
+            <span class="device-form-label">上传照片：</span>
+            <label class="device-upload" id="device-photo-drop">
+              <i class="fa-solid fa-image text-xl text-cyan-300/80"></i>
+              <span>点击或拖拽上传照片</span>
+              <span class="device-upload__hint">仅支持 1 张图片（JPG/PNG）</span>
+              <input type="file" id="device-photo-input" accept="image/jpeg,image/png,image/webp" class="hidden" />
+              <span class="device-upload__preview" id="device-photo-preview">
+                <img id="device-photo-img" alt="设备照片预览" />
+                <button type="button" class="device-upload__remove" id="device-photo-remove" title="移除">×</button>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-device-modal">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="save-device">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="device-import-mask" class="device-import-mask">
+    <div class="device-import">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
+        <h3 class="text-white text-[16px] font-semibold">导入设备</h3>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-device-import">×</button>
+      </div>
+      <label class="device-import__drop" id="device-import-drop">
+        <i class="fa-solid fa-inbox"></i>
+        <span>点击或者拖拽到此处上传文件</span>
+        <input type="file" id="device-import-file" accept=".xlsx,.xls" class="hidden" />
+      </label>
+      <div class="device-import__file" id="device-import-file-name"></div>
+      <div class="device-import__meta">
+        <span>允许导入 xlsx、xls 文件</span>
+        <a href="#" id="device-import-template"><i class="fa-regular fa-file-excel"></i> 下载模板</a>
+      </div>
+      <div class="px-6 py-4 mt-3 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-device-import">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="confirm-device-import">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirm-mask" class="confirm-mask">
+    <div class="confirm-card">
+      <div class="px-6 py-5 border-b border-cyan-400/15 text-white text-[16px] font-semibold">删除确认</div>
+      <div class="px-6 py-6 text-sm text-cyan-100/80">当前设备已绑定人员，请解绑后删除</div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="cancel-delete">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="confirm-delete">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var rows = [
+        { imei:"864502070112345", model:"WH-TRK01", name:"定位手环-01", color:"黑色", origin:"湖北武汉", maker:"武汉北斗星通科技", lastOnline:"2026-07-23 18:42", remark:"巡检一组配发", createdAt:"2026-05-10 09:20", bound:true, photo:"" },
+        { imei:"864502070112346", model:"WH-TRK01", name:"定位手环-02", color:"白色", origin:"湖北武汉", maker:"武汉北斗星通科技", lastOnline:"2026-07-23 17:05", remark:"", createdAt:"2026-05-10 09:25", bound:true, photo:"" },
+        { imei:"869523054478812", model:"BD-900", name:"安全帽定位器-01", color:"黄色", origin:"广东深圳", maker:"深圳华测导航", lastOnline:"2026-07-22 08:30", remark:"备用", createdAt:"2026-05-12 14:02", bound:false, photo:"" },
+        { imei:"869523054478813", model:"BD-900", name:"安全帽定位器-02", color:"黄色", origin:"广东深圳", maker:"深圳华测导航", lastOnline:"2026-07-23 19:11", remark:"", createdAt:"2026-05-12 14:05", bound:true, photo:"" },
+        { imei:"862104059977331", model:"GT-06N", name:"车载定位器-01", color:"黑色", origin:"上海", maker:"上海移为通信", lastOnline:"2026-07-20 11:56", remark:"无人机巡检车", createdAt:"2026-05-15 10:40", bound:false, photo:"" }
+      ];
+
+      var displayRows = rows.slice();
+      var editIndex = -1;
+      var deleteImei = "";
+      var photoUrl = "";
+      var tableBody = document.getElementById("device-table-body");
+      var tableTotal = document.getElementById("table-total");
+      var modalMask = document.getElementById("device-modal-mask");
+      var importMask = document.getElementById("device-import-mask");
+      var confirmMask = document.getElementById("confirm-mask");
+      var modalTitle = document.getElementById("device-modal-title");
+      var detailMask = document.getElementById("device-detail-mask");
+      var detailBody = document.getElementById("device-detail-body");
+      var detailSubtitle = document.getElementById("device-detail-subtitle");
+      var photoInput = document.getElementById("device-photo-input");
+      var photoDrop = document.getElementById("device-photo-drop");
+      var photoPreview = document.getElementById("device-photo-preview");
+      var photoImg = document.getElementById("device-photo-img");
+      var importInput = document.getElementById("device-import-file");
+      var importDrop = document.getElementById("device-import-drop");
+      var importFileName = document.getElementById("device-import-file-name");
+
+      function escHtml(value) {
+        return String(value || "").replace(/[&<>"']/g, function (char) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+        });
+      }
+      function detailValue(value) {
+        var text = value === undefined || value === null || value === "" ? "—" : String(value);
+        return '<div class="detail-value' + (text === "—" ? " detail-value--empty" : "") + '">' + escHtml(text) + "</div>";
+      }
+      function detailRow(label, value, full) {
+        return '<label class="device-form-item' + (full ? " device-form-item--full" : "") + '"><span class="device-form-label">' + escHtml(label) + "：</span>" + detailValue(value) + "</label>";
+      }
+      function buildDetailHtml(row) {
+        var photoHtml = row.photo
+          ? '<div class="detail-value detail-photo"><img src="' + row.photo + '" alt="设备照片" /></div>'
+          : detailValue("");
+        return (
+          '<div class="device-form-grid">' +
+          detailRow("设备IMEI", row.imei) +
+          detailRow("设备型号", row.model) +
+          detailRow("设备名称", row.name) +
+          detailRow("颜色", row.color) +
+          detailRow("产地", row.origin) +
+          detailRow("厂家", row.maker) +
+          detailRow("最后在线时间", row.lastOnline) +
+          detailRow("创建时间", row.createdAt) +
+          detailRow("备注", row.remark, true) +
+          '<label class="device-form-item device-form-item--full"><span class="device-form-label">照片：</span>' + photoHtml + "</label>" +
+          "</div>"
+        );
+      }
+
+      var USAGE_RECORDS = {
+        "864502070112345": [
+          { user: "张强", line: "8号线", section: "洪山路-小洪山", phone: "13800001111", dept: "巡检业务部 / 人工巡检组", imei: "864502070112345", model: "WH-TRK01", devName: "定位手环-01", bindTime: "2026-06-01 09:30", useStart: "2026-06-01 10:00", useEnd: "2026-06-10 18:00" },
+          { user: "张强", line: "8号线", section: "洪山路-小洪山", phone: "13800001111", dept: "巡检业务部 / 人工巡检组", imei: "864502070112345", model: "WH-TRK01", devName: "定位手环-01", bindTime: "2026-06-15 08:50", useStart: "2026-06-15 09:00", useEnd: "" }
+        ],
+        "864502070112346": [
+          { user: "李磊", line: "8号线", section: "徐家棚-徐东", phone: "13800002222", dept: "巡检业务部 / 无人机巡检组", imei: "864502070112346", model: "WH-TRK01", devName: "定位手环-02", bindTime: "2026-06-01 09:35", useStart: "2026-06-01 10:05", useEnd: "" }
+        ],
+        "869523054478813": [
+          { user: "赵敏", line: "7号线", section: "光谷广场-杨家湾", phone: "13800004444", dept: "巡检业务部 / 人工巡检组", imei: "869523054478813", model: "BD-900", devName: "安全帽定位器-02", bindTime: "2026-06-02 14:10", useStart: "2026-06-02 14:30", useEnd: "2026-06-20 17:40" }
+        ]
+      };
+      var USAGE_HEADERS = ["用户名称", "所属线路", "所属区间", "手机号码", "所属部门", "设备IMEI", "设备型号", "设备名称", "绑定时间", "领用开始时间", "领用结束时间"];
+      var USAGE_KEYS = ["user", "line", "section", "phone", "dept", "imei", "model", "devName", "bindTime", "useStart", "useEnd"];
+      var detailRow_ = null;
+      var detailViewMode = "detail";
+      var usageFilter = { imei: "", model: "", user: "", useStart: "", useEnd: "" };
+
+      function resetUsageFilter() {
+        usageFilter = { imei: "", model: "", user: "", useStart: "", useEnd: "" };
+      }
+
+      function filteredUsageRecords(row) {
+        var records = USAGE_RECORDS[row.imei] || [];
+        return records.filter(function (rec) {
+          if (usageFilter.imei && rec.imei.indexOf(usageFilter.imei) === -1) return false;
+          if (usageFilter.model && rec.model.indexOf(usageFilter.model) === -1) return false;
+          if (usageFilter.user && rec.user.indexOf(usageFilter.user) === -1) return false;
+          var startDay = (rec.useStart || "").slice(0, 10);
+          var endDay = (rec.useEnd || "").slice(0, 10);
+          if (usageFilter.useStart && (!startDay || startDay < usageFilter.useStart)) return false;
+          if (usageFilter.useEnd && (!endDay || endDay > usageFilter.useEnd)) return false;
+          return true;
+        });
+      }
+
+      function buildUsageHtml(row) {
+        var filterHtml =
+          '<div class="usage-filter">' +
+          '<label><span>设备IMEI</span><input id="usage-f-imei" class="wh-input" placeholder="请输入设备IMEI" value="' + escHtml(usageFilter.imei) + '" /></label>' +
+          '<label><span>设备型号</span><input id="usage-f-model" class="wh-input" placeholder="请输入设备型号" value="' + escHtml(usageFilter.model) + '" /></label>' +
+          '<label><span>用户名称</span><input id="usage-f-user" class="wh-input" placeholder="请输入用户名称" value="' + escHtml(usageFilter.user) + '" /></label>' +
+          '<label><span>领用开始时间</span><input id="usage-f-start" type="date" class="wh-input" value="' + escHtml(usageFilter.useStart) + '" /></label>' +
+          '<label><span>领用结束时间</span><input id="usage-f-end" type="date" class="wh-input" value="' + escHtml(usageFilter.useEnd) + '" /></label>' +
+          '<button type="button" class="wh-btn-primary" data-action="usage-search">搜索</button>' +
+          '<button type="button" class="wh-btn-ghost" data-action="usage-reset">重置</button>' +
+          "</div>";
+        var records = filteredUsageRecords(row);
+        if (!records.length) {
+          return filterHtml + '<div class="usage-table-wrap"><div class="usage-empty">暂无领用记录</div></div>';
+        }
+        return (
+          filterHtml +
+          '<div class="usage-table-wrap"><table class="usage-table"><thead><tr>' +
+          USAGE_HEADERS.map(function (h) { return "<th>" + escHtml(h) + "</th>"; }).join("") +
+          "</tr></thead><tbody>" +
+          records.map(function (rec) {
+            return "<tr>" + USAGE_KEYS.map(function (key) {
+              return "<td>" + escHtml(rec[key] || "-") + "</td>";
+            }).join("") + "</tr>";
+          }).join("") +
+          "</tbody></table></div>"
+        );
+      }
+
+      function renderDetailBody() {
+        if (!detailRow_ || !detailBody) return;
+        var titleEl = document.getElementById("device-detail-title");
+        if (detailViewMode === "usage") {
+          detailBody.innerHTML = buildUsageHtml(detailRow_);
+          if (titleEl) titleEl.textContent = "领用记录";
+        } else {
+          detailBody.innerHTML = buildDetailHtml(detailRow_);
+          if (titleEl) titleEl.textContent = "设备详情";
+        }
+      }
+
+      function openDetail(displayIndex, mode) {
+        var row = displayRows[displayIndex];
+        if (!row || !detailMask || !detailBody) return;
+        detailRow_ = row;
+        detailViewMode = mode === "usage" ? "usage" : "detail";
+        resetUsageFilter();
+        if (detailSubtitle) detailSubtitle.textContent = row.name || row.imei || "设备详情";
+        renderDetailBody();
+        detailMask.classList.add("show");
+        detailMask.setAttribute("aria-hidden", "false");
+      }
+      function closeDetail() {
+        if (!detailMask) return;
+        detailMask.classList.remove("show");
+        detailMask.setAttribute("aria-hidden", "true");
+        detailRow_ = null;
+        detailViewMode = "detail";
+      }
+
+      function findRowIndex(imei) {
+        return rows.findIndex(function (row) { return row.imei === imei; });
+      }
+
+      function setStatNum(id, val) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var numEl = el.querySelector(".disease-stat-card__num");
+        if (numEl) {
+          numEl.textContent = String(val);
+          return;
+        }
+        el.textContent = String(val);
+      }
+
+      function updateDeviceStats(data) {
+        var list = data || [];
+        var bound = 0;
+        var latest = "";
+        list.forEach(function (row) {
+          var day = String(row.lastOnline || "").slice(0, 10);
+          if (day > latest) latest = day;
+        });
+        var online = 0;
+        list.forEach(function (row) {
+          if (latest && String(row.lastOnline || "").indexOf(latest) === 0) online += 1;
+          if (row.bound) bound += 1;
+        });
+        setStatNum("stat-total", list.length);
+        setStatNum("stat-online", online);
+        setStatNum("stat-offline", list.length - online);
+        setStatNum("stat-bound", bound);
+        if (tableTotal) tableTotal.textContent = String(list.length);
+      }
+
+      function renderRows() {
+        tableBody.innerHTML = displayRows.map(function (row, index) {
+          return '<tr class="wh-row-open ' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '" data-row-index="' + index + '">' +
+            '<td class="px-4">' + escHtml(row.imei) + '</td>' +
+            '<td class="px-4">' + escHtml(row.model) + '</td>' +
+            '<td class="px-4">' + escHtml(row.name) + '</td>' +
+            '<td class="px-4">' + escHtml(row.color) + '</td>' +
+            '<td class="px-4">' + escHtml(row.origin) + '</td>' +
+            '<td class="px-4">' + escHtml(row.maker) + '</td>' +
+            '<td class="px-4">' + escHtml(row.lastOnline) + '</td>' +
+            '<td class="px-4">' + escHtml(row.remark || "-") + '</td>' +
+            '<td class="px-4">' + escHtml(row.createdAt) + '</td>' +
+            '<td class="px-4 disease-col-actions"><div class="disease-op-actions">' +
+              '<span class="device-action text-cyan-300" data-action="detail-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-regular fa-file-lines"></i>详情</span>' +
+              '<span class="device-action text-emerald-300" data-action="usage-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-solid fa-clipboard-list"></i>领用记录</span>' +
+              '<span class="device-action text-amber-300" data-action="edit-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-regular fa-pen-to-square"></i>编辑</span>' +
+              '<span class="device-action text-rose-300" data-action="delete-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
+            '</div></td>' +
+          '</tr>';
+        }).join("");
+        updateDeviceStats(displayRows);
+      }
+
+      function applyFilter() {
+        var imei = document.getElementById("filter-imei").value.trim();
+        var model = document.getElementById("filter-model").value.trim();
+        var onlineStart = document.getElementById("filter-online-start").value;
+        var onlineEnd = document.getElementById("filter-online-end").value;
+        displayRows = rows.filter(function (row) {
+          if (imei && row.imei.indexOf(imei) === -1) return false;
+          if (model && row.model.indexOf(model) === -1) return false;
+          var onlineDay = String(row.lastOnline || "").slice(0, 10);
+          if (onlineStart && (!onlineDay || onlineDay < onlineStart)) return false;
+          if (onlineEnd && (!onlineDay || onlineDay > onlineEnd)) return false;
+          return true;
+        });
+        renderRows();
+      }
+
+      function resetFilters() {
+        document.getElementById("filter-imei").value = "";
+        document.getElementById("filter-model").value = "";
+        document.getElementById("filter-online-start").value = "";
+        document.getElementById("filter-online-end").value = "";
+        displayRows = rows.slice();
+        renderRows();
+      }
+
+      function renderPhotoPreview() {
+        if (photoUrl) {
+          photoImg.src = photoUrl;
+          photoPreview.classList.add("show");
+        } else {
+          photoImg.removeAttribute("src");
+          photoPreview.classList.remove("show");
+        }
+      }
+
+      function pickPhoto(file) {
+        if (!file || !file.type.match(/^image\//)) return;
+        if (photoUrl && photoUrl.indexOf("blob:") === 0) URL.revokeObjectURL(photoUrl);
+        photoUrl = URL.createObjectURL(file);
+        renderPhotoPreview();
+      }
+
+      function openModal(mode, index) {
+        editIndex = mode === "edit" ? index : -1;
+        modalTitle.textContent = mode === "edit" ? "编辑设备" : "新增设备";
+        var row = index > -1 ? rows[index] : null;
+        document.getElementById("device-imei").value = row ? row.imei : "";
+        document.getElementById("device-model").value = row ? row.model : "";
+        document.getElementById("device-name").value = row ? row.name : "";
+        document.getElementById("device-color").value = row ? row.color : "";
+        document.getElementById("device-origin").value = row ? row.origin : "";
+        document.getElementById("device-maker").value = row ? row.maker : "";
+        document.getElementById("device-remark").value = row ? row.remark : "";
+        photoUrl = row ? row.photo || "" : "";
+        photoInput.value = "";
+        renderPhotoPreview();
+        modalMask.classList.add("show");
+      }
+
+      function closeModal() {
+        modalMask.classList.remove("show");
+      }
+
+      function saveDevice() {
+        var imei = document.getElementById("device-imei").value.trim();
+        var model = document.getElementById("device-model").value.trim();
+        if (!imei || !model) {
+          alert("请完善必填项：设备IMEI、设备型号");
+          return;
+        }
+        var row = {
+          imei: imei,
+          model: model,
+          name: document.getElementById("device-name").value.trim() || "-",
+          color: document.getElementById("device-color").value.trim() || "-",
+          origin: document.getElementById("device-origin").value.trim() || "-",
+          maker: document.getElementById("device-maker").value.trim() || "-",
+          remark: document.getElementById("device-remark").value.trim(),
+          photo: photoUrl,
+          lastOnline: editIndex > -1 ? rows[editIndex].lastOnline : "-",
+          bound: editIndex > -1 ? rows[editIndex].bound : false,
+          createdAt: editIndex > -1 ? rows[editIndex].createdAt : "2026-07-23 20:00"
+        };
+        if (editIndex > -1) rows[editIndex] = row;
+        else rows.unshift(row);
+        closeModal();
+        applyFilter();
+      }
+
+      function openImport() {
+        importInput.value = "";
+        importFileName.textContent = "";
+        importMask.classList.add("show");
+      }
+      function closeImport() {
+        importMask.classList.remove("show");
+      }
+      function showImportFile(file) {
+        if (!file) return;
+        if (!/\.(xlsx|xls)$/i.test(file.name)) {
+          alert("仅支持上传 .xlsx、.xls 格式文件");
+          importInput.value = "";
+          importFileName.textContent = "";
+          return;
+        }
+        importFileName.textContent = "已选择：" + file.name;
+      }
+
+      function xmlEscape(value) {
+        return String(value === undefined || value === null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function downloadXls(filename, sheetName, headers, dataRows) {
+        var xml =
+          '<?xml version="1.0" encoding="UTF-8"?>\n' +
+          '<?mso-application progid="Excel.Sheet"?>\n' +
+          '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" ' +
+          'xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' +
+          '<Worksheet ss:Name="' + xmlEscape(sheetName) + '"><Table>';
+        xml += "<Row>" + headers.map(function (h) {
+          return '<Cell><Data ss:Type="String">' + xmlEscape(h) + "</Data></Cell>";
+        }).join("") + "</Row>";
+        (dataRows || []).forEach(function (row) {
+          xml += "<Row>" + row.map(function (cell) {
+            return '<Cell><Data ss:Type="String">' + xmlEscape(cell) + "</Data></Cell>";
+          }).join("") + "</Row>";
+        });
+        xml += "</Table></Worksheet></Workbook>";
+        var blob = new Blob(["\ufeff" + xml], { type: "application/vnd.ms-excel" });
+        var link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000);
+      }
+
+      function exportDevices() {
+        var headers = ["设备IMEI", "设备型号", "设备名称", "颜色", "产地", "厂家", "最后在线时间", "备注", "创建时间"];
+        var dataRows = displayRows.map(function (row) {
+          return [row.imei, row.model, row.name, row.color, row.origin, row.maker, row.lastOnline, row.remark || "", row.createdAt];
+        });
+        downloadXls("设备信息导出.xls", "设备信息", headers, dataRows);
+      }
+
+      function downloadImportTemplate() {
+        var headers = ["设备IMEI（必填）", "设备型号（必填）", "设备名称", "颜色", "产地", "厂家", "备注"];
+        downloadXls("设备导入模板.xls", "设备导入模板", headers, []);
+      }
+
+      document.getElementById("btn-search").addEventListener("click", applyFilter);
+      document.getElementById("btn-reset").addEventListener("click", resetFilters);
+      document.getElementById("btn-export").addEventListener("click", exportDevices);
+      document.getElementById("btn-import").addEventListener("click", openImport);
+      document.getElementById("device-import-template").addEventListener("click", function (event) {
+        event.preventDefault();
+        downloadImportTemplate();
+      });
+
+      importInput.addEventListener("change", function () {
+        showImportFile(importInput.files && importInput.files[0]);
+      });
+      importDrop.addEventListener("dragover", function (e) {
+        e.preventDefault();
+        importDrop.classList.add("is-dragover");
+      });
+      importDrop.addEventListener("dragleave", function () {
+        importDrop.classList.remove("is-dragover");
+      });
+      importDrop.addEventListener("drop", function (e) {
+        e.preventDefault();
+        importDrop.classList.remove("is-dragover");
+        var file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (!file) return;
+        if (!/\.(xlsx|xls)$/i.test(file.name)) {
+          alert("仅支持上传 .xlsx、.xls 格式文件");
+          return;
+        }
+        try {
+          var dt = new DataTransfer();
+          dt.items.add(file);
+          importInput.files = dt.files;
+        } catch (err) {
+          /* 部分环境不支持 DataTransfer 赋值 */
+        }
+        showImportFile(file);
+      });
+
+      photoInput.addEventListener("change", function () {
+        pickPhoto(photoInput.files && photoInput.files[0]);
+      });
+      photoDrop.addEventListener("dragover", function (e) {
+        e.preventDefault();
+        photoDrop.classList.add("is-dragover");
+      });
+      photoDrop.addEventListener("dragleave", function () {
+        photoDrop.classList.remove("is-dragover");
+      });
+      photoDrop.addEventListener("drop", function (e) {
+        e.preventDefault();
+        photoDrop.classList.remove("is-dragover");
+        pickPhoto(e.dataTransfer.files && e.dataTransfer.files[0]);
+      });
+      document.getElementById("device-photo-remove").addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (photoUrl && photoUrl.indexOf("blob:") === 0) URL.revokeObjectURL(photoUrl);
+        photoUrl = "";
+        photoInput.value = "";
+        renderPhotoPreview();
+      });
+
+      function setupListRowClick() {
+        if (!window.WHTableRowClick) return window.setTimeout(setupListRowClick, 40);
+        WHTableRowClick.bindById("device-table-body", {
+          getRows: function () { return displayRows; },
+          onOpen: function (row, index) { openDetail(index); }
+        });
+      }
+      setupListRowClick();
+      displayRows = rows.slice();
+      renderRows();
+
+      document.addEventListener("click", function (event) {
+        var trigger = event.target.closest("[data-action]");
+        if (!trigger) return;
+        var action = trigger.getAttribute("data-action");
+        var imei = trigger.getAttribute("data-device-imei");
+        var index = imei ? findRowIndex(imei) : -1;
+        if (action === "new-device") openModal("new");
+        if (action === "edit-device" && index > -1) openModal("edit", index);
+        if (action === "detail-device" && index > -1) {
+          var displayIndex = displayRows.indexOf(rows[index]);
+          openDetail(displayIndex > -1 ? displayIndex : index);
+        }
+        if (action === "usage-device" && index > -1) {
+          var usageDisplayIndex = displayRows.indexOf(rows[index]);
+          openDetail(usageDisplayIndex > -1 ? usageDisplayIndex : index, "usage");
+        }
+        if (action === "delete-device" && imei) {
+          deleteImei = imei;
+          confirmMask.classList.add("show");
+        }
+        if (action === "close-device-modal") closeModal();
+        if (action === "close-device-detail") closeDetail();
+        if (action === "usage-search") {
+          usageFilter = {
+            imei: document.getElementById("usage-f-imei").value.trim(),
+            model: document.getElementById("usage-f-model").value.trim(),
+            user: document.getElementById("usage-f-user").value.trim(),
+            useStart: document.getElementById("usage-f-start").value,
+            useEnd: document.getElementById("usage-f-end").value,
+          };
+          renderDetailBody();
+        }
+        if (action === "usage-reset") {
+          resetUsageFilter();
+          renderDetailBody();
+        }
+        if (action === "close-device-import") closeImport();
+        if (action === "save-device") saveDevice();
+        if (action === "confirm-device-import") {
+          closeImport();
+          alert("设备数据导入完成");
+        }
+        if (action === "cancel-delete") {
+          deleteImei = "";
+          confirmMask.classList.remove("show");
+        }
+        if (action === "confirm-delete") {
+          var deleteIndex = deleteImei ? findRowIndex(deleteImei) : -1;
+          if (deleteIndex > -1) rows.splice(deleteIndex, 1);
+          deleteImei = "";
+          confirmMask.classList.remove("show");
+          applyFilter();
+        }
+      });
+      if (detailMask) {
+        detailMask.addEventListener("click", function (event) {
+          if (event.target === detailMask) closeDetail();
+        });
+      }
+    })();
+  </script>
+  <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/quick-links-panel.js"></script>
+  <script src="../../assets/js/workbench-mega.js"></script>
+  <script src="../../assets/js/shell.js"></script>
+</body>
+</html>

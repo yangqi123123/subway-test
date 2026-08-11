@@ -118,6 +118,9 @@
   "in-score.html": "wb/in-score.html",
   "in-track-drone.html": "wb/in-track-drone.html",
   "in-track-person.html": "wb/in-track-person.html",
+  "in-track-device.html": "wb/in-track-device.html",
+  "in-score-rule.html": "wb/in-score-rule.html",
+  "in-device-bind.html": "wb/in-device-bind.html",
   "wb-dept.html": "wb/wb-dept.html",
   "wb-dict.html": "wb/wb-dict.html",
   "wb-done.html": "wb/wb-done.html",
@@ -234,8 +237,11 @@
           subtitle: "巡查质量",
           items: [
             { key: "in-track-person", label: "人员轨迹", href: "wb/in-track-person.html" },
+            { key: "in-track-device", label: "设备信息", href: "wb/in-track-device.html" },
+            { key: "in-device-bind", label: "设备领用", href: "wb/in-device-bind.html" },
             { key: "in-quality-stats", label: "统计分析", href: "wb/in-quality-stats.html" },
             { key: "in-score", label: "巡查打分", href: "wb/in-score.html" },
+            { key: "in-score-rule", label: "巡查打分标准", href: "wb/in-score-rule.html" },
           ],
         },
         {

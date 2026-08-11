@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>巡查打分标准</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
+  <style>
+    .disease-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+      align-items: start;
+    }
+    .disease-layout__right {
+      position: sticky;
+      top: 72px;
+      align-self: start;
+      width: 300px;
+      max-height: calc(100dvh - 88px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .disease-quick-panel {
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(8, 15, 35, 0.78);
+    }
+    .disease-panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2f5ff;
+      margin: 0;
+      padding: 8px 10px 7px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.92);
+    }
+    .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+    .disease-quick-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.14);
+      background: rgba(15, 23, 42, 0.45);
+      color: #e2f5ff;
+      font-size: 11px;
+      text-decoration: none;
+    }
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.08);
+      color: #fff;
+    }
+    .disease-quick-link.is-active {
+      border-color: rgba(34, 211, 238, 0.55);
+      background: rgba(34, 211, 238, 0.12);
+      color: #a5f3fc;
+    }
+    .disease-quick-link i {
+      width: 16px;
+      text-align: center;
+      color: #67e8f9;
+      font-size: 12px;
+    }
+    @media (max-width: 1400px) {
+      .disease-layout { grid-template-columns: 1fr; }
+      .disease-layout__right {
+        position: static;
+        width: 100%;
+        max-height: none;
+      }
+    }
+
+    /* 巡查打分标准编辑器 */
+    .sr-card {
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      background: #071426;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sr-body {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 560px;
+    }
+    .sr-left {
+      border-right: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.55);
+      display: flex;
+      flex-direction: column;
+    }
+    .sr-search {
+      padding: 12px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+    }
+    .sr-search input {
+      width: 100%;
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(2, 6, 23, 0.72);
+      color: #e2f5ff;
+      font-size: 12px;
+      outline: none;
+    }
+    .sr-tree {
+      flex: 1;
+      overflow: auto;
+      padding: 8px;
+    }
+    .sr-line-group { margin-bottom: 10px; }
+    .sr-line-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #67e8f9;
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sr-section-item {
+      padding: 7px 10px 7px 26px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #cbd5e1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid transparent;
+    }
+    .sr-section-item:hover { background: rgba(34, 211, 238, 0.08); }
+    .sr-section-item.active {
+      background: rgba(34, 211, 238, 0.16);
+      color: #fff;
+      border-color: rgba(34, 211, 238, 0.35);
+    }
+    .sr-right {
+      padding: 18px 22px;
+      overflow: auto;
+    }
+    .sr-section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sr-form-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .sr-label {
+      width: 130px;
+      flex-shrink: 0;
+      font-size: 12px;
+      color: #9cc6df;
+      text-align: right;
+    }
+    .sr-input {
+      width: 160px;
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(2, 6, 23, 0.72);
+      color: #e2f5ff;
+      font-size: 12px;
+      outline: none;
+    }
+    .sr-input:focus { border-color: rgba(34, 211, 238, 0.55); }
+    .sr-readonly {
+      background: rgba(8, 15, 35, 0.65);
+      color: #94a3b8;
+      border-color: rgba(34, 211, 238, 0.1);
+    }
+    .sr-unit { font-size: 12px; color: #94a3b8; margin-left: 6px; }
+    .sr-divider {
+      height: 1px;
+      background: rgba(34, 211, 238, 0.12);
+      margin: 16px 0 18px;
+    }
+    .sr-grade-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2f5ff;
+      margin-bottom: 12px;
+    }
+    .sr-grade-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .sr-grade-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.45);
+    }
+    .sr-grade-score {
+      width: 56px;
+      flex-shrink: 0;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 700;
+      color: #67e8f9;
+    }
+    .sr-grade-band {
+      display: block;
+      font-size: 10px;
+      font-weight: 400;
+      color: #94a3b8;
+      margin-bottom: 1px;
+    }
+    .sr-var {
+      display: inline-block;
+      min-width: 22px;
+      padding: 0 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      background: rgba(251, 191, 36, 0.1);
+      color: #fcd34d;
+      font-weight: 600;
+      text-align: center;
+    }
+    .sr-grade-text {
+      flex: 1;
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+    .sr-grade-input {
+      width: 60px;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      background: rgba(2, 6, 23, 0.72);
+      color: #e2f5ff;
+      font-size: 12px;
+      text-align: center;
+      outline: none;
+    }
+    .sr-grade-input:focus { border-color: rgba(34, 211, 238, 0.55); }
+    .sr-tip {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      background: rgba(251, 191, 36, 0.08);
+      color: #fcd34d;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+    .sr-foot {
+      height: 58px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      border-top: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.45);
+    }
+    .sr-toast {
+      position: fixed;
+      left: 50%;
+      top: 84px;
+      transform: translateX(-50%);
+      z-index: 200;
+      padding: 8px 18px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.35);
+      background: rgba(8, 15, 35, 0.92);
+      color: #a5f3fc;
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .sr-toast.show { opacity: 1; }
+    .sr-input.is-invalid,
+    .sr-grade-input.is-invalid {
+      border-color: rgba(244, 63, 94, 0.75);
+      box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.35);
+      color: #fda4af;
+    }
+    .sr-error-hint {
+      display: none;
+      margin-top: 10px;
+      font-size: 11px;
+      color: #fb7185;
+    }
+    .sr-error-hint.show { display: block; }
+    @media (max-width: 900px) {
+      .sr-body { grid-template-columns: 1fr; }
+      .sr-left { border-right: none; border-bottom: 1px solid rgba(34, 211, 238, 0.12); }
+    }
+  </style>
+</head>
+<body data-shell="default" data-top="wb" data-sidebar-key="in-score-rule" data-wb-view="page">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">巡查打分标准</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">巡查打分标准面板</span>
+    </div>
+
+    <section>
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="sr-card">
+            <div class="sr-body">
+              <div class="sr-left">
+                <div class="sr-search">
+                  <input type="text" id="sr-search" placeholder="搜索区间或线路" />
+                </div>
+                <div class="sr-tree" id="sr-tree"></div>
+              </div>
+              <div class="sr-right">
+                <div class="sr-section-title"><i class="fa-solid fa-pen-ruler text-cyan-400"></i><span id="sr-title">—</span></div>
+                <div class="sr-form-row">
+                  <div class="sr-label">区间名称</div>
+                  <input class="sr-input sr-readonly" id="sr-name" readonly />
+                </div>
+                <div class="sr-form-row">
+                  <div class="sr-label">巡查最低时间</div>
+                  <input class="sr-input" id="sr-min-time" inputmode="numeric" /><span class="sr-unit">分钟</span>
+                </div>
+                <div class="sr-divider"></div>
+                <div class="sr-grade-title">6档评分标准（只需填写超出保护区时间范围）</div>
+                <div class="sr-grade-list">
+                  <div class="sr-grade-item">
+                    <div class="sr-grade-score"><span class="sr-grade-band">A档</span>100</div>
+                    <div class="sr-grade-text">满足巡查最低时间的基础上，超出保护区时间在 ≤ <input class="sr-grade-input" data-boundary="1" inputmode="numeric" /> min</div>
+                  </div>
+                  <div class="sr-grade-item">
+                    <div class="sr-grade-score"><span class="sr-grade-band">B档</span>90</div>
+                    <div class="sr-grade-text">满足巡查最低时间，超出保护区时间在 <input class="sr-grade-input" data-boundary="1" inputmode="numeric" /> &lt; <span class="sr-var" title="超出保护区时间落在 B 档">B</span> ≤ <input class="sr-grade-input" data-boundary="2" inputmode="numeric" /> min</div>
+                  </div>
+                  <div class="sr-grade-item">
+                    <div class="sr-grade-score"><span class="sr-grade-band">C档</span>80</div>
+                    <div class="sr-grade-text">满足巡查最低时间，超出保护区时间在 <input class="sr-grade-input" data-boundary="2" inputmode="numeric" /> &lt; <span class="sr-var" title="超出保护区时间落在 C 档">C</span> ≤ <input class="sr-grade-input" data-boundary="3" inputmode="numeric" /> min</div>
+                  </div>
+                  <div class="sr-grade-item">
+                    <div class="sr-grade-score"><span class="sr-grade-band">D档</span>70</div>
+                    <div class="sr-grade-text">满足巡查最低时间，超出保护区时间在 <input class="sr-grade-input" data-boundary="3" inputmode="numeric" /> &lt; <span class="sr-var" title="超出保护区时间落在 D 档">D</span> ≤ <input class="sr-grade-input" data-boundary="4" inputmode="numeric" /> min</div>
+                  </div>
+                  <div class="sr-grade-item">
+                    <div class="sr-grade-score"><span class="sr-grade-band">E档</span>60</div>
+                    <div class="sr-grade-text">满足巡查最低时间，超出保护区时间在 <input class="sr-grade-input" data-boundary="4" inputmode="numeric" /> &lt; <span class="sr-var" title="超出保护区时间落在 E 档">E</span> ≤ <input class="sr-grade-input" data-boundary="5" inputmode="numeric" /> min</div>
+                  </div>
+                  <div class="sr-grade-item">
+                    <div class="sr-grade-score"><span class="sr-grade-band">F档</span>&lt;60</div>
+                    <div class="sr-grade-text" id="sr-low-text"></div>
+                  </div>
+                </div>
+                <div class="sr-tip">
+                  <i class="fa-solid fa-circle-info mr-1"></i>
+                  提示：保存后系统将按此规则自动计算该区间巡查得分。同一规则可批量应用至同线路其他区间。
+                </div>
+                <div class="sr-error-hint" id="sr-error-hint"></div>
+              </div>
+            </div>
+            <div class="sr-foot">
+              <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost" data-action="sr-cancel">取消</button>
+              <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost" data-action="sr-copy">复制</button>
+              <button type="button" class="px-5 h-8 rounded text-xs wh-btn-ghost hidden" id="sr-paste" data-action="sr-paste">粘贴</button>
+              <button type="button" class="px-5 h-8 rounded text-xs wh-btn-primary" data-action="sr-save">保存</button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="disease-layout__right" aria-label="快捷操作">
+          <div data-quick-links-group="巡查质量"></div>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <div class="sr-toast" id="sr-toast" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      var LINES = [
+        { line: "5号线", sections: ["红霞-黄家湖", "中医药大学-白沙六路", "黄家湖-中医药大学"] },
+        { line: "2号线", sections: ["常青花园-长港路", "长港路-汉口火车站"] },
+        { line: "7号线", sections: ["园博园-园博大道"] }
+      ];
+      var DEFAULT_RULE = { minTime: 22, boundaries: [0, 5, 8, 11, 14] };
+      var rules = {};
+      var current = null;
+
+      var treeEl = document.getElementById("sr-tree");
+      var toastEl = document.getElementById("sr-toast");
+
+      function ruleKey(line, name) {
+        return line + "|" + name;
+      }
+      function getRule(line, name) {
+        return rules[ruleKey(line, name)] || { minTime: DEFAULT_RULE.minTime, boundaries: DEFAULT_RULE.boundaries.slice() };
+      }
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(function () { toastEl.classList.remove("show"); }, 1800);
+      }
+      function esc(s) {
+        return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+
+      function renderTree(keyword) {
+        var q = (keyword || "").trim();
+        var html = "";
+        LINES.forEach(function (group) {
+          var sections = group.sections.filter(function (name) {
+            return !q || name.indexOf(q) > -1 || group.line.indexOf(q) > -1;
+          });
+          if (!sections.length) return;
+          html += '<div class="sr-line-group"><div class="sr-line-name"><i class="fa-solid fa-train-subway text-xs"></i>' + esc(group.line) + "</div>";
+          sections.forEach(function (name) {
+            var active = current && current.line === group.line && current.name === name;
+            html +=
+              '<div class="sr-section-item' + (active ? " active" : "") + '" data-line="' + esc(group.line) + '" data-name="' + esc(name) + '">' +
+              '<i class="' + (active ? "fa-regular fa-circle-dot text-cyan-400" : "fa-regular fa-circle text-slate-500") + ' text-xs"></i>' + esc(name) +
+              "</div>";
+          });
+          html += "</div>";
+        });
+        treeEl.innerHTML = html || '<div class="text-slate-500 text-xs px-2 py-3">无匹配区间</div>';
+      }
+
+      function renderEditor() {
+        if (!current) return;
+        var rule = getRule(current.line, current.name);
+        document.getElementById("sr-title").textContent = current.name + "（" + current.line + "）";
+        document.getElementById("sr-name").value = current.name;
+        document.getElementById("sr-min-time").value = rule.minTime;
+        document.querySelectorAll(".sr-grade-input").forEach(function (input) {
+          input.value = rule.boundaries[Number(input.getAttribute("data-boundary")) - 1];
+        });
+        renderLowText();
+        collectRule(true);
+      }
+
+      function renderLowText() {
+        var minTime = document.getElementById("sr-min-time").value || DEFAULT_RULE.minTime;
+        var last = (document.querySelector('.sr-grade-input[data-boundary="5"]') || {}).value;
+        if (last === undefined || last === "") last = DEFAULT_RULE.boundaries[4];
+        document.getElementById("sr-low-text").textContent =
+          "巡查时间 < " + minTime + " 分钟，或超出保护区时间 > " + last + " min";
+      }
+
+      var clipboard = null;
+
+      function markInvalid(el, invalid) {
+        if (el) el.classList.toggle("is-invalid", !!invalid);
+      }
+
+      function markBoundary(boundary, invalid) {
+        document.querySelectorAll('.sr-grade-input[data-boundary="' + boundary + '"]').forEach(function (el) {
+          markInvalid(el, invalid);
+        });
+      }
+
+      function setErrorHint(msg) {
+        var hint = document.getElementById("sr-error-hint");
+        if (!hint) return;
+        hint.textContent = msg || "";
+        hint.classList.toggle("show", !!msg);
+      }
+
+      /** 读取并校验当前编辑值；withMark 为 true 时标红并返回错误信息 */
+      function collectRule(withMark) {
+        var minTimeEl = document.getElementById("sr-min-time");
+        var minTime = minTimeEl.value.trim();
+        var error = "";
+        if (!/^\d+$/.test(minTime) || Number(minTime) <= 0) {
+          error = "巡查最低时间请输入正整数";
+          if (withMark) markInvalid(minTimeEl, true);
+        } else if (withMark) {
+          markInvalid(minTimeEl, false);
+        }
+        var boundaries = [];
+        var badNumber = {};
+        for (var b = 1; b <= 5; b++) {
+          var first = document.querySelector('.sr-grade-input[data-boundary="' + b + '"]');
+          var v = first ? first.value.trim() : "";
+          if (!/^\d+$/.test(v)) {
+            badNumber[b] = true;
+            if (!error) error = "超出保护区时间范围请输入数字";
+          } else {
+            boundaries[b - 1] = Number(v);
+          }
+        }
+        var badOrder = {};
+        if (!Object.keys(badNumber).length) {
+          for (var j = 1; j < boundaries.length; j++) {
+            if (boundaries[j] <= boundaries[j - 1]) {
+              badOrder[j] = true;
+              badOrder[j + 1] = true;
+              if (!error) error = "时间范围需逐级递增";
+            }
+          }
+        }
+        if (withMark) {
+          for (var k = 1; k <= 5; k++) {
+            markBoundary(k, !!badNumber[k] || !!badOrder[k]);
+          }
+          setErrorHint(error);
+        }
+        if (error) return null;
+        return { minTime: Number(minTime), boundaries: boundaries };
+      }
+
+      function selectSection(line, name) {
+        current = { line: line, name: name };
+        renderTree(document.getElementById("sr-search").value);
+        renderEditor();
+        syncPasteBtn();
+      }
+
+      function saveRule() {
+        if (!current) return;
+        var rule = collectRule(true);
+        if (!rule) {
+          showToast(document.getElementById("sr-error-hint").textContent || "请检查填写内容");
+          return;
+        }
+        rules[ruleKey(current.line, current.name)] = rule;
+        renderLowText();
+        showToast("巡查打分标准已保存");
+      }
+
+      function copyRule() {
+        if (!current) return;
+        var rule = collectRule(true);
+        if (!rule) {
+          showToast("请先修正当前区间的填写错误");
+          return;
+        }
+        clipboard = {
+          key: ruleKey(current.line, current.name),
+          label: current.name + "（" + current.line + "）",
+          rule: rule,
+        };
+        syncPasteBtn();
+        showToast("已复制" + clipboard.label + "的巡查打分标准，可点击其他区间进行粘贴");
+      }
+
+      function pasteRule() {
+        if (!current || !clipboard) return;
+        rules[ruleKey(current.line, current.name)] = {
+          minTime: clipboard.rule.minTime,
+          boundaries: clipboard.rule.boundaries.slice(),
+        };
+        renderEditor();
+        collectRule(true);
+        syncPasteBtn();
+        showToast("已粘贴" + clipboard.label + "的巡查打分标准");
+      }
+
+      function syncPasteBtn() {
+        var btn = document.getElementById("sr-paste");
+        if (!btn) return;
+        var show = !!(clipboard && current && ruleKey(current.line, current.name) !== clipboard.key);
+        btn.classList.toggle("hidden", !show);
+      }
+
+      document.getElementById("sr-search").addEventListener("input", function () {
+        renderTree(this.value);
+      });
+      treeEl.addEventListener("click", function (event) {
+        var item = event.target.closest(".sr-section-item");
+        if (!item) return;
+        selectSection(item.getAttribute("data-line"), item.getAttribute("data-name"));
+      });
+      document.getElementById("sr-min-time").addEventListener("input", function () {
+        renderLowText();
+        collectRule(true);
+      });
+      document.getElementById("sr-min-time").addEventListener("blur", function () {
+        collectRule(true);
+      });
+      document.querySelectorAll(".sr-grade-input").forEach(function (input) {
+        input.addEventListener("input", function () {
+          var b = this.getAttribute("data-boundary");
+          var v = this.value;
+          document.querySelectorAll('.sr-grade-input[data-boundary="' + b + '"]').forEach(function (other) {
+            if (other !== input) other.value = v;
+          });
+          renderLowText();
+          collectRule(true);
+        });
+        input.addEventListener("blur", function () {
+          collectRule(true);
+        });
+      });
+      document.addEventListener("click", function (event) {
+        var trigger = event.target.closest("[data-action]");
+        if (!trigger) return;
+        var action = trigger.getAttribute("data-action");
+        if (action === "sr-save") saveRule();
+        if (action === "sr-cancel") {
+          renderEditor();
+          collectRule(true);
+        }
+        if (action === "sr-copy") copyRule();
+        if (action === "sr-paste") pasteRule();
+      });
+
+      selectSection("5号线", "红霞-黄家湖");
+    })();
+  </script>
+  <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/quick-links-panel.js"></script>
+  <script src="../../assets/js/workbench-mega.js"></script>
+  <script src="../../assets/js/shell.js"></script>
+</body>
+</html>

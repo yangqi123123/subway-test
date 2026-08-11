@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>设备领用</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="../../assets/css/theme.css" />
+  <link rel="stylesheet" href="../../assets/css/patrol-table-actions.css" />
+  <style>
+    .disease-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+      align-items: start;
+    }
+    .disease-layout__right {
+      position: sticky;
+      top: 72px;
+      align-self: start;
+      width: 300px;
+      max-height: calc(100dvh - 88px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .disease-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .disease-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      background: linear-gradient(135deg, rgba(8, 15, 35, 0.92), rgba(6, 12, 28, 0.88));
+    }
+    .disease-stat-card__icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .disease-stat-card--blue .disease-stat-card__icon { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .disease-stat-card--cyan .disease-stat-card__icon { background: rgba(34, 211, 238, 0.12); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.35); }
+    .disease-stat-card--amber .disease-stat-card__icon { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.35); }
+    .disease-stat-card--green .disease-stat-card__icon { background: rgba(74, 222, 128, 0.12); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.35); }
+    .disease-stat-card__value { font-size: 22px; font-weight: 700; color: #f0f9ff; line-height: 1.2; }
+    .disease-stat-card__unit { font-size: 12px; font-weight: 400; margin-left: 2px; color: #94a3b8; }
+    .disease-stat-card__label { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .disease-stat-card__trend { font-size: 10px; margin-top: 4px; color: #94a3b8; }
+    .disease-filter-panel,
+    .disease-quick-panel {
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(8, 15, 35, 0.78);
+    }
+    .disease-panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2f5ff;
+      margin: 0;
+      padding: 8px 10px 7px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+      background: rgba(8, 15, 35, 0.92);
+    }
+    .disease-panel-body { padding: 8px 10px 10px; }
+    .disease-filter-panel .disease-panel-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .disease-filter-panel label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 0;
+      font-size: 10px;
+    }
+    .disease-filter-panel label > span:first-child { color: #94a3b8; }
+    .disease-filter-panel .wh-input {
+      height: 26px !important;
+      min-height: 26px;
+      font-size: 11px;
+      padding: 0 6px;
+    }
+    .disease-filter-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .disease-filter-actions button {
+      flex: 1;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      font-size: 11px;
+    }
+    .disease-list-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .disease-quick-panel .disease-panel-body { padding: 6px 10px 8px; }
+    .disease-quick-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.14);
+      background: rgba(15, 23, 42, 0.45);
+      color: #e2f5ff;
+      font-size: 11px;
+      text-decoration: none;
+    }
+    .disease-quick-link:last-child { margin-bottom: 0; }
+    .disease-quick-link:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.08);
+      color: #fff;
+    }
+    .disease-quick-link.is-active {
+      border-color: rgba(34, 211, 238, 0.55);
+      background: rgba(34, 211, 238, 0.12);
+      color: #a5f3fc;
+    }
+    .disease-quick-link i {
+      width: 16px;
+      text-align: center;
+      color: #67e8f9;
+      font-size: 12px;
+    }
+    @media (max-width: 1400px) {
+      .disease-layout { grid-template-columns: 1fr; }
+      .disease-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .disease-layout__right {
+        position: static;
+        width: 100%;
+        max-height: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+    }
+    @media (max-width: 768px) {
+      .disease-stats { grid-template-columns: 1fr; }
+      .disease-layout__right { grid-template-columns: 1fr; }
+    }
+    .bind-table th,
+    .bind-table td {
+      height: 52px;
+      border-right: 1px solid rgba(34,211,238,.08);
+      border-bottom: 1px solid rgba(34,211,238,.08);
+      vertical-align: middle;
+    }
+    .bind-table th:last-child,
+    .bind-table td:last-child { border-right: 0; }
+    .bind-table thead th {
+      color: rgba(240,249,255,.96);
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(2,8,23,.66);
+      white-space: nowrap;
+    }
+    .bind-table tbody td {
+      color: rgba(226,245,255,.88);
+      font-size: 12px;
+    }
+    .bind-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+    .bind-status {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid transparent;
+    }
+    .bind-status--bound {
+      color: #86efac;
+      border-color: rgba(74, 222, 128, 0.4);
+      background: rgba(74, 222, 128, 0.1);
+    }
+    .bind-status--unbound {
+      color: #94a3b8;
+      border-color: rgba(148, 163, 184, 0.35);
+      background: rgba(148, 163, 184, 0.08);
+    }
+    .bind-modal-mask,
+    .bind-import-mask,
+    .confirm-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15,23,42,.56);
+      padding: 24px;
+    }
+    .bind-modal-mask.show,
+    .bind-import-mask.show,
+    .confirm-mask.show { display: flex; }
+    .bind-modal {
+      width: min(860px, 92vw);
+      border-radius: 8px;
+      border: 1px solid rgba(34,211,238,.16);
+      background: #071426;
+      box-shadow: 0 24px 80px rgba(0,0,0,.48);
+      overflow: hidden;
+    }
+    .bind-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 28px;
+    }
+    .bind-form-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .bind-form-label {
+      width: 96px;
+      flex: 0 0 96px;
+      text-align: right;
+      color: rgba(226,245,255,.78);
+      font-size: 12px;
+    }
+    .bind-form-label.is-required::before {
+      content: "*";
+      color: #fb7185;
+      margin-right: 4px;
+    }
+    .bind-form-item .wh-input:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+    .bind-import {
+      width: min(560px, 92vw);
+      border-radius: 8px;
+      border: 1px solid rgba(34,211,238,.16);
+      background: #071426;
+      box-shadow: 0 24px 80px rgba(0,0,0,.48);
+      overflow: hidden;
+    }
+    .bind-import__drop {
+      margin: 20px 24px 0;
+      border: 1px dashed rgba(34, 211, 238, 0.3);
+      border-radius: 8px;
+      background: rgba(8, 15, 35, 0.45);
+      padding: 28px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: rgba(156, 198, 223, 0.85);
+      font-size: 12px;
+    }
+    .bind-import__drop:hover { border-color: rgba(34, 211, 238, 0.55); }
+    .bind-import__drop.is-dragover {
+      border-color: rgba(34, 211, 238, 0.75);
+      background: rgba(34, 211, 238, 0.08);
+    }
+    .bind-import__drop i { font-size: 26px; color: #67e8f9; }
+    .bind-import__meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px 0;
+      font-size: 11px;
+      color: #64748b;
+    }
+    .bind-import__meta a {
+      color: #67e8f9;
+      text-decoration: none;
+    }
+    .bind-import__meta a:hover { color: #a5f3fc; }
+    .bind-import__file {
+      padding: 8px 24px 0;
+      font-size: 11px;
+      color: #86efac;
+      min-height: 22px;
+    }
+    .confirm-card {
+      width: 320px;
+      border-radius: 8px;
+      border: 1px solid rgba(34,211,238,.14);
+      background: #071426;
+      box-shadow: 0 24px 80px rgba(0,0,0,.48);
+      overflow: hidden;
+    }
+    .batch-bind-wrap {
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      border-radius: 8px;
+      background: rgba(8, 15, 35, 0.45);
+      overflow: hidden;
+    }
+    .batch-bind-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .batch-bind-table th {
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #9cc6df;
+      background: rgba(34, 211, 238, 0.08);
+      border-bottom: 1px solid rgba(34, 211, 238, 0.18);
+    }
+    .batch-bind-table td {
+      padding: 8px 12px;
+      color: rgba(226, 245, 255, 0.88);
+      border-bottom: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .batch-bind-table tbody tr:last-child td { border-bottom: none; }
+    .batch-bind-op { width: 64px; text-align: center; }
+    .batch-bind-del {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 12px;
+      color: #fb7185;
+      cursor: pointer;
+    }
+    .batch-bind-del:hover { color: #f43f5e; }
+    .am-detail-mask {
+      position: fixed;
+      inset: 0;
+      z-index: 115;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(2, 8, 23, 0.72);
+    }
+    .am-detail-mask.show { display: flex; }
+    .am-detail-dialog {
+      width: min(860px, 96vw);
+      max-height: min(86vh, 900px);
+      border-radius: 8px;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      background: linear-gradient(180deg, #071525, #020617);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .am-detail-dialog__head {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.12);
+    }
+    .am-detail-dialog__body {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 20px 24px 16px;
+    }
+    .am-detail-dialog__foot {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 14px 24px 18px;
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+    }
+    .detail-value {
+      flex: 1;
+      min-width: 0;
+      min-height: 32px;
+      line-height: 32px;
+      color: rgba(226, 245, 255, 0.92);
+      font-size: 12px;
+      word-break: break-word;
+    }
+    .detail-value--empty { color: #64748b; }
+  </style>
+</head>
+<body data-shell="default" data-top="wb" data-sidebar-key="in-device-bind" data-wb-view="page">
+  <div id="page-root" class="max-w-[1920px] mx-auto min-h-full">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+      <h1 class="text-base md:text-lg font-semibold text-white tracking-tight" style="text-shadow:0 0 20px rgba(34,211,238,0.25)">设备领用</h1>
+      <span class="text-[10px] px-2 py-1 rounded-md border border-cyan-400/25 text-cyan-100/80 bg-cyan-500/5">设备领用面板</span>
+    </div>
+
+    <section id="bind-list-view">
+      <div class="disease-layout">
+        <div class="disease-layout__left">
+          <div class="disease-stats" aria-label="领用统计">
+            <div class="disease-stat-card disease-stat-card--blue">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-microchip"></i></div>
+              <div>
+                <div id="stat-total" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">台</span></div>
+                <div class="disease-stat-card__label">设备总数</div>
+                <div class="disease-stat-card__trend">领用台账</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--green">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-link"></i></div>
+              <div>
+                <div id="stat-bound" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">台</span></div>
+                <div class="disease-stat-card__label">已绑定</div>
+                <div class="disease-stat-card__trend">绑定中的设备</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--amber">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-link-slash"></i></div>
+              <div>
+                <div id="stat-unbound" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">台</span></div>
+                <div class="disease-stat-card__label">未绑定</div>
+                <div class="disease-stat-card__trend">待领用设备</div>
+              </div>
+            </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-signal"></i></div>
+              <div>
+                <div id="stat-online" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">台</span></div>
+                <div class="disease-stat-card__label">在线设备</div>
+                <div class="disease-stat-card__trend">最近有在线记录</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="disease-list-area">
+            <div class="disease-list-toolbar">
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="batch-bind">
+                <i class="fa-solid fa-link mr-1"></i>批量绑定
+              </button>
+              <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost" data-action="batch-unbind">
+                <i class="fa-solid fa-link-slash mr-1"></i>批量解绑
+              </button>
+              <button id="btn-import" type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">
+                <i class="fa-solid fa-file-import mr-1"></i>导入
+              </button>
+              <button id="btn-export" type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost">
+                <i class="fa-solid fa-file-export mr-1"></i>导出
+              </button>
+            </div>
+            <div class="wh-table-shell bg-slate-950/35">
+              <div class="am-table-wrap overflow-x-auto">
+                <table class="bind-table min-w-[1900px] w-full text-left">
+                  <thead>
+                    <tr>
+                      <th class="px-4" style="width:44px"><input type="checkbox" id="check-all" /></th>
+                      <th class="px-4">用户名称</th>
+                      <th class="px-4">所属线路</th>
+                      <th class="px-4">所属区间</th>
+                      <th class="px-4">设备IMEI</th>
+                      <th class="px-4">设备型号</th>
+                      <th class="px-4">设备名称</th>
+                      <th class="px-4">状态</th>
+                      <th class="px-4">最后在线时间</th>
+                      <th class="px-4 disease-col-actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bind-table-body"></tbody>
+                </table>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-cyan-400/15 bg-slate-950/55 text-[11px] text-slate-400">
+                <span>共 <b id="table-total" class="text-cyan-200">0</b> 条</span>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <button type="button" class="min-w-[32px] h-8 rounded text-xs wh-btn-primary">1</button>
+                  <select class="wh-input px-2 py-1 text-[11px]"><option>10 条/页</option></select>
+                  <span>跳至</span>
+                  <input class="wh-input w-12 px-1 py-1 text-center text-[11px]" value="1" />
+                  <span>页</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="disease-layout__right" aria-label="筛选与快捷操作">
+          <div class="disease-filter-panel">
+            <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
+            <div class="disease-panel-body">
+              <label>
+                <span>设备IMEI</span>
+                <input id="filter-imei" class="wh-input w-full" placeholder="请输入设备IMEI" />
+              </label>
+              <label>
+                <span>设备型号</span>
+                <input id="filter-model" class="wh-input w-full" placeholder="请输入设备型号" />
+              </label>
+              <label>
+                <span>用户名称</span>
+                <input id="filter-user" class="wh-input w-full" placeholder="请输入用户名称" />
+              </label>
+              <label>
+                <span>所属线路</span>
+                <select id="filter-line" class="wh-input w-full px-2">
+                  <option value="">全部</option>
+                </select>
+              </label>
+              <label>
+                <span>起始区间</span>
+                <input id="filter-start" class="wh-input w-full" placeholder="请输入起始区间" />
+              </label>
+              <label>
+                <span>终点区间</span>
+                <input id="filter-end" class="wh-input w-full" placeholder="请输入终点区间" />
+              </label>
+              <div class="disease-filter-actions">
+                <button id="btn-search" type="button" class="wh-btn-primary">搜索</button>
+                <button id="btn-reset" type="button" class="wh-btn-ghost">重置</button>
+              </div>
+            </div>
+          </div>
+
+          <div data-quick-links-group="巡查质量"></div>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <div id="bind-detail-mask" class="am-detail-mask" aria-hidden="true">
+    <div class="am-detail-dialog" role="dialog" aria-labelledby="bind-detail-title">
+      <div class="am-detail-dialog__head">
+        <div>
+          <h3 id="bind-detail-title" class="text-white font-semibold text-sm m-0">领用详情</h3>
+          <div id="bind-detail-subtitle" class="text-[11px] text-slate-400 mt-0.5">设备领用</div>
+        </div>
+        <button type="button" class="wh-modal-close text-slate-400 hover:text-white text-xl leading-none" data-action="close-bind-detail" aria-label="关闭">×</button>
+      </div>
+      <div id="bind-detail-body" class="am-detail-dialog__body"></div>
+      <div class="am-detail-dialog__foot">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-bind-detail">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="bind-modal-mask" class="bind-modal-mask">
+    <div class="bind-modal">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
+        <h3 id="bind-modal-title" class="text-white text-[16px] font-semibold">绑定人员</h3>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-bind-modal">×</button>
+      </div>
+      <div class="p-6">
+        <div class="bind-form-grid">
+          <label class="bind-form-item"><span class="bind-form-label">设备IMEI：</span><input id="bind-imei" class="wh-input h-8 flex-1 px-3" disabled /></label>
+          <label class="bind-form-item"><span class="bind-form-label">设备型号：</span><input id="bind-model" class="wh-input h-8 flex-1 px-3" disabled /></label>
+          <label class="bind-form-item"><span class="bind-form-label is-required">所属线路：</span><select id="bind-line" class="wh-input h-8 flex-1 px-2"></select></label>
+          <label class="bind-form-item"><span class="bind-form-label is-required">起始区间：</span><select id="bind-start" class="wh-input h-8 flex-1 px-2"></select></label>
+          <label class="bind-form-item"><span class="bind-form-label is-required">终点区间：</span><select id="bind-end" class="wh-input h-8 flex-1 px-2"></select></label>
+          <div class="bind-form-item"><span class="bind-form-label is-required">绑定人员：</span><div id="bind-person-select" class="flex-1" data-input-id="bind-person-value"></div></div>
+          <label class="bind-form-item"><span class="bind-form-label">手机号码：</span><input id="bind-phone" class="wh-input h-8 flex-1 px-3" disabled /></label>
+          <label class="bind-form-item"><span class="bind-form-label">所属部门：</span><input id="bind-dept" class="wh-input h-8 flex-1 px-3" disabled /></label>
+          <label class="bind-form-item"><span class="bind-form-label">领用开始时间：</span><input id="bind-use-start" type="datetime-local" class="wh-input h-8 flex-1 px-3" /></label>
+          <label class="bind-form-item"><span class="bind-form-label">领用结束时间：</span><input id="bind-use-end" type="datetime-local" class="wh-input h-8 flex-1 px-3" /></label>
+        </div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-bind-modal">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="save-bind">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="batch-modal-mask" class="bind-modal-mask">
+    <div class="bind-modal">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
+        <h3 class="text-white text-[16px] font-semibold">批量绑定人员</h3>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-batch-modal">×</button>
+      </div>
+      <div class="p-6">
+        <div class="batch-bind-wrap">
+          <table class="batch-bind-table">
+            <thead>
+              <tr><th>设备IMEI</th><th>绑定人员</th><th class="batch-bind-op">操作</th></tr>
+            </thead>
+            <tbody id="batch-bind-rows"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-batch-modal">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="save-batch-bind">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="bind-import-mask" class="bind-import-mask">
+    <div class="bind-import">
+      <div class="h-14 px-6 flex items-center justify-between gap-3 border-b border-cyan-400/15">
+        <h3 class="text-white text-[16px] font-semibold">导入设备领用</h3>
+        <button type="button" class="wh-modal-close" aria-label="关闭" data-action="close-bind-import">×</button>
+      </div>
+      <label class="bind-import__drop" id="bind-import-drop">
+        <i class="fa-solid fa-inbox"></i>
+        <span>点击或者拖拽到此处上传文件</span>
+        <input type="file" id="bind-import-file" accept=".xlsx,.xls" class="hidden" />
+      </label>
+      <div class="bind-import__file" id="bind-import-file-name"></div>
+      <div class="bind-import__meta">
+        <span>允许导入 xlsx、xls 文件</span>
+        <a href="#" id="bind-import-template"><i class="fa-regular fa-file-excel"></i> 下载模板</a>
+      </div>
+      <div class="px-6 py-4 mt-3 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="close-bind-import">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="confirm-bind-import">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirm-mask" class="confirm-mask">
+    <div class="confirm-card">
+      <div class="px-6 py-5 border-b border-cyan-400/15 text-white text-[16px] font-semibold" id="confirm-title">操作确认</div>
+      <div class="px-6 py-6 text-sm text-cyan-100/80" id="confirm-message"></div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t border-cyan-400/15">
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-ghost" data-action="cancel-confirm">取消</button>
+        <button type="button" class="px-6 h-8 rounded text-xs wh-btn-primary" data-action="ok-confirm">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/search-select.js"></script>
+  <script>
+    (function () {
+      var LINE_STATIONS = {
+        "2号线": ["常青花园", "长港路", "汉口火车站"],
+        "5号线": ["白沙六路", "青菱"],
+        "7号线": ["光谷广场", "杨家湾"],
+        "8号线": ["洪山路", "小洪山", "徐家棚", "徐东"],
+        "11号线": ["光谷五路", "左岭"]
+      };
+      var LINE_OPTIONS = Object.keys(LINE_STATIONS);
+
+      var PERSONS = [
+        { name: "张强", line: "8号线", start: "洪山路", end: "小洪山", phone: "13800001111", dept: "巡检业务部 / 人工巡检组" },
+        { name: "李磊", line: "8号线", start: "徐家棚", end: "徐东", phone: "13800002222", dept: "巡检业务部 / 无人机巡检组" },
+        { name: "王芳", line: "2号线", start: "常青花园", end: "长港路", phone: "13800003333", dept: "数据中心 / 资料管理组" },
+        { name: "赵敏", line: "7号线", start: "光谷广场", end: "杨家湾", phone: "13800004444", dept: "巡检业务部 / 人工巡检组" },
+        { name: "陈杰", line: "11号线", start: "光谷五路", end: "左岭", phone: "13800005555", dept: "数据中心 / 分析研判组" }
+      ];
+
+      var rows = [
+        { user: "张强", phone: "13800001111", dept: "巡检业务部 / 人工巡检组", line: "8号线", section: "洪山路-小洪山", imei: "864502070112345", model: "WH-TRK01", devName: "定位手环-01", bound: true, lastOnline: "2026-07-23 18:42", bindTime: "2026-06-01 09:30" },
+        { user: "李磊", phone: "13800002222", dept: "巡检业务部 / 无人机巡检组", line: "8号线", section: "徐家棚-徐东", imei: "864502070112346", model: "WH-TRK01", devName: "定位手环-02", bound: true, lastOnline: "2026-07-23 17:05", bindTime: "2026-06-01 09:35" },
+        { user: "", phone: "", dept: "", line: "", section: "", imei: "869523054478812", model: "BD-900", devName: "安全帽定位器-01", bound: false, lastOnline: "2026-07-22 08:30", bindTime: "" },
+        { user: "赵敏", phone: "13800004444", dept: "巡检业务部 / 人工巡检组", line: "7号线", section: "光谷广场-杨家湾", imei: "869523054478813", model: "BD-900", devName: "安全帽定位器-02", bound: true, lastOnline: "2026-07-23 19:11", bindTime: "2026-06-02 14:10" },
+        { user: "", phone: "", dept: "", line: "", section: "", imei: "862104059977331", model: "GT-06N", devName: "车载定位器-01", bound: false, lastOnline: "2026-07-20 11:56", bindTime: "" }
+      ];
+
+      var displayRows = rows.slice();
+      var bindTargets = [];
+      var confirmAction = null;
+      var tableBody = document.getElementById("bind-table-body");
+      var tableTotal = document.getElementById("table-total");
+      var checkAll = document.getElementById("check-all");
+      var bindMask = document.getElementById("bind-modal-mask");
+      var importMask = document.getElementById("bind-import-mask");
+      var confirmMask = document.getElementById("confirm-mask");
+      var detailMask = document.getElementById("bind-detail-mask");
+      var detailBody = document.getElementById("bind-detail-body");
+      var detailSubtitle = document.getElementById("bind-detail-subtitle");
+      var importInput = document.getElementById("bind-import-file");
+      var importDrop = document.getElementById("bind-import-drop");
+      var importFileName = document.getElementById("bind-import-file-name");
+
+      function escHtml(value) {
+        return String(value || "").replace(/[&<>"']/g, function (char) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+        });
+      }
+      function detailValue(value) {
+        var text = value === undefined || value === null || value === "" ? "—" : String(value);
+        return '<div class="detail-value' + (text === "—" ? " detail-value--empty" : "") + '">' + escHtml(text) + "</div>";
+      }
+      function detailRow(label, value) {
+        return '<label class="bind-form-item"><span class="bind-form-label">' + escHtml(label) + "：</span>" + detailValue(value) + "</label>";
+      }
+      function buildDetailHtml(row) {
+        return (
+          '<div class="bind-form-grid">' +
+          detailRow("用户名称", row.user) +
+          detailRow("手机号码", row.phone) +
+          detailRow("所属部门", row.dept) +
+          detailRow("所属线路", row.line) +
+          detailRow("所属区间", row.section) +
+          detailRow("设备IMEI", row.imei) +
+          detailRow("设备型号", row.model) +
+          detailRow("设备名称", row.devName) +
+          detailRow("状态", row.bound ? "已绑定" : "未绑定") +
+          detailRow("最后在线时间", row.lastOnline) +
+          detailRow("绑定时间", row.bindTime) +
+          detailRow("领用开始时间", row.useStart) +
+          detailRow("领用结束时间", row.useEnd) +
+          "</div>"
+        );
+      }
+      function openDetail(displayIndex) {
+        var row = displayRows[displayIndex];
+        if (!row || !detailMask || !detailBody) return;
+        if (detailSubtitle) detailSubtitle.textContent = row.devName || row.imei || "领用详情";
+        detailBody.innerHTML = buildDetailHtml(row);
+        detailMask.classList.add("show");
+        detailMask.setAttribute("aria-hidden", "false");
+      }
+      function closeDetail() {
+        if (!detailMask) return;
+        detailMask.classList.remove("show");
+        detailMask.setAttribute("aria-hidden", "true");
+      }
+
+      function findRowIndex(imei) {
+        return rows.findIndex(function (row) { return row.imei === imei; });
+      }
+
+      function setStatNum(id, val) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var numEl = el.querySelector(".disease-stat-card__num");
+        if (numEl) {
+          numEl.textContent = String(val);
+          return;
+        }
+        el.textContent = String(val);
+      }
+
+      function updateBindStats(data) {
+        var list = data || [];
+        var bound = 0;
+        var latest = "";
+        list.forEach(function (row) {
+          var day = String(row.lastOnline || "").slice(0, 10);
+          if (day > latest) latest = day;
+        });
+        var online = 0;
+        list.forEach(function (row) {
+          if (row.bound) bound += 1;
+          if (latest && String(row.lastOnline || "").indexOf(latest) === 0) online += 1;
+        });
+        setStatNum("stat-total", list.length);
+        setStatNum("stat-bound", bound);
+        setStatNum("stat-unbound", list.length - bound);
+        setStatNum("stat-online", online);
+        if (tableTotal) tableTotal.textContent = String(list.length);
+      }
+
+      function renderRows() {
+        tableBody.innerHTML = displayRows.map(function (row, index) {
+          var status = row.bound
+            ? '<span class="bind-status bind-status--bound">已绑定</span>'
+            : '<span class="bind-status bind-status--unbound">未绑定</span>';
+          var toggle = row.bound
+            ? '<span class="bind-action text-rose-300" data-action="unbind-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-solid fa-link-slash"></i>解绑</span>'
+            : '<span class="bind-action text-emerald-300" data-action="bind-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-solid fa-link"></i>绑定</span>';
+          return '<tr class="' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '" data-row-index="' + index + '">' +
+            '<td class="px-4"><input type="checkbox" class="row-check" data-device-imei="' + escHtml(row.imei) + '" /></td>' +
+            '<td class="px-4">' + escHtml(row.user || "-") + '</td>' +
+            '<td class="px-4">' + escHtml(row.line || "-") + '</td>' +
+            '<td class="px-4">' + escHtml(row.section || "-") + '</td>' +
+            '<td class="px-4">' + escHtml(row.imei) + '</td>' +
+            '<td class="px-4">' + escHtml(row.model) + '</td>' +
+            '<td class="px-4">' + escHtml(row.devName) + '</td>' +
+            '<td class="px-4">' + status + '</td>' +
+            '<td class="px-4">' + escHtml(row.lastOnline) + '</td>' +
+            '<td class="px-4 disease-col-actions"><div class="disease-op-actions">' +
+              '<span class="bind-action text-cyan-300" data-action="detail-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-regular fa-file-lines"></i>详情</span>' +
+              toggle +
+              '<span class="bind-action text-rose-300" data-action="delete-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
+            '</div></td>' +
+          '</tr>';
+        }).join("");
+        checkAll.checked = false;
+        updateBindStats(displayRows);
+      }
+
+      function checkedRows() {
+        var imeis = Array.from(document.querySelectorAll(".row-check:checked")).map(function (el) {
+          return el.getAttribute("data-device-imei");
+        });
+        return rows.filter(function (row) { return imeis.indexOf(row.imei) > -1; });
+      }
+
+      function applyFilter() {
+        var imei = document.getElementById("filter-imei").value.trim();
+        var model = document.getElementById("filter-model").value.trim();
+        var user = document.getElementById("filter-user").value.trim();
+        var line = document.getElementById("filter-line").value;
+        var start = document.getElementById("filter-start").value.trim();
+        var end = document.getElementById("filter-end").value.trim();
+        displayRows = rows.filter(function (row) {
+          if (imei && row.imei.indexOf(imei) === -1) return false;
+          if (model && row.model.indexOf(model) === -1) return false;
+          if (user && (row.user || "").indexOf(user) === -1) return false;
+          if (line && row.line !== line) return false;
+          if (start && (row.section || "").split("-")[0].indexOf(start) === -1) return false;
+          if (end) {
+            var endPart = (row.section || "").split("-")[1] || "";
+            if (endPart.indexOf(end) === -1) return false;
+          }
+          return true;
+        });
+        renderRows();
+      }
+
+      function resetFilters() {
+        ["filter-imei", "filter-model", "filter-user", "filter-start", "filter-end"].forEach(function (id) {
+          document.getElementById(id).value = "";
+        });
+        document.getElementById("filter-line").value = "";
+        displayRows = rows.slice();
+        renderRows();
+      }
+
+      function fillSelect(select, options, placeholder) {
+        select.innerHTML = '<option value="">' + escHtml(placeholder) + "</option>" + options.map(function (opt) {
+          return '<option value="' + escHtml(opt) + '">' + escHtml(opt) + "</option>";
+        }).join("");
+      }
+
+      var personSelect = null;
+
+      function refreshBindPersons() {
+        var line = document.getElementById("bind-line").value;
+        var start = document.getElementById("bind-start").value;
+        var end = document.getElementById("bind-end").value;
+        var matched = PERSONS.filter(function (p) {
+          if (line && p.line !== line) return false;
+          if (start && p.start !== start) return false;
+          if (end && p.end !== end) return false;
+          return true;
+        });
+        personSelect = WHSearchSelect.create(
+          document.getElementById("bind-person-select"),
+          matched.map(function (p) { return p.name; }),
+          matched.length ? "请搜索或选择绑定人员" : "暂无匹配人员"
+        );
+        document.getElementById("bind-phone").value = "";
+        document.getElementById("bind-dept").value = "";
+      }
+
+      function openBindModal(targets) {
+        WHSearchSelect.closeAll(null);
+        bindTargets = targets;
+        var imeis = targets.map(function (row) { return row.imei; });
+        var models = [];
+        targets.forEach(function (row) {
+          if (models.indexOf(row.model) === -1) models.push(row.model);
+        });
+        document.getElementById("bind-imei").value = imeis.join("、");
+        document.getElementById("bind-model").value = models.length > 1 ? models.join("、") : models[0] || "";
+        fillSelect(document.getElementById("bind-line"), LINE_OPTIONS, "请选择线路");
+        fillSelect(document.getElementById("bind-start"), [], "请先选择线路");
+        fillSelect(document.getElementById("bind-end"), [], "请先选择线路");
+        var now = new Date();
+        var local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        document.getElementById("bind-use-start").value = local;
+        document.getElementById("bind-use-end").value = "";
+        refreshBindPersons();
+        bindMask.classList.add("show");
+      }
+
+      function closeBindModal() {
+        WHSearchSelect.closeAll(null);
+        bindMask.classList.remove("show");
+        bindTargets = [];
+      }
+
+      function saveBind() {
+        var line = document.getElementById("bind-line").value;
+        var start = document.getElementById("bind-start").value;
+        var end = document.getElementById("bind-end").value;
+        var personName = personSelect ? personSelect.getValue() : "";
+        var useStart = document.getElementById("bind-use-start").value;
+        var useEnd = document.getElementById("bind-use-end").value;
+        if (!line || !start || !end) {
+          alert("请完善必填项：所属线路、起始区间、终点区间");
+          return;
+        }
+        if (start === end) {
+          alert("起始区间与终点区间不能相同");
+          return;
+        }
+        if (!personName) {
+          alert("请选择绑定人员");
+          return;
+        }
+        if (useStart && useEnd && useEnd < useStart) {
+          alert("领用结束时间不能早于领用开始时间");
+          return;
+        }
+        var person = PERSONS.filter(function (p) { return p.name === personName; })[0];
+        bindTargets.forEach(function (row) {
+          row.user = person.name;
+          row.phone = person.phone;
+          row.dept = person.dept;
+          row.line = line;
+          row.section = start + "-" + end;
+          row.bound = true;
+          row.bindTime = "2026-07-23 20:00";
+          row.useStart = useStart ? useStart.replace("T", " ") : "";
+          row.useEnd = useEnd ? useEnd.replace("T", " ") : "";
+        });
+        closeBindModal();
+        applyFilter();
+        alert("绑定成功");
+      }
+
+      var batchMask = document.getElementById("batch-modal-mask");
+      var batchBody = document.getElementById("batch-bind-rows");
+
+      function openBatchBindModal(targets) {
+        WHSearchSelect.closeAll(null);
+        batchBody.innerHTML = "";
+        targets.forEach(function (row) {
+          var tr = document.createElement("tr");
+          tr.setAttribute("data-device-imei", row.imei);
+          tr.innerHTML =
+            "<td>" + escHtml(row.imei) + "</td>" +
+            '<td><div class="batch-person-cell"></div></td>' +
+            '<td class="batch-bind-op"><button type="button" class="batch-bind-del">删除</button></td>';
+          batchBody.appendChild(tr);
+          WHSearchSelect.create(
+            tr.querySelector(".batch-person-cell"),
+            PERSONS.map(function (p) { return p.name; }),
+            "请搜索或选择绑定人员"
+          );
+        });
+        batchMask.classList.add("show");
+      }
+
+      function closeBatchBindModal() {
+        WHSearchSelect.closeAll(null);
+        batchMask.classList.remove("show");
+      }
+
+      function saveBatchBind() {
+        var trs = Array.from(batchBody.querySelectorAll("tr"));
+        if (!trs.length) {
+          alert("没有需要绑定的设备");
+          return;
+        }
+        var assignments = [];
+        for (var i = 0; i < trs.length; i++) {
+          var tr = trs[i];
+          var imei = tr.getAttribute("data-device-imei");
+          var hidden = tr.querySelector('input[type="hidden"]');
+          var personName = hidden ? hidden.value : "";
+          if (!personName) {
+            alert("请为设备（" + imei + "）选择绑定人员");
+            return;
+          }
+          assignments.push({ imei: imei, personName: personName });
+        }
+        assignments.forEach(function (item) {
+          var row = rows[findRowIndex(item.imei)];
+          var person = PERSONS.filter(function (p) { return p.name === item.personName; })[0];
+          if (!row || !person) return;
+          row.user = person.name;
+          row.phone = person.phone;
+          row.dept = person.dept;
+          row.line = person.line;
+          row.section = person.start + "-" + person.end;
+          row.bound = true;
+          row.bindTime = "2026-07-23 20:00";
+        });
+        closeBatchBindModal();
+        applyFilter();
+        alert("绑定成功");
+      }
+
+      function openConfirm(title, message, action) {
+        document.getElementById("confirm-title").textContent = title;
+        document.getElementById("confirm-message").textContent = message;
+        confirmAction = action;
+        confirmMask.classList.add("show");
+      }
+      function closeConfirm() {
+        confirmMask.classList.remove("show");
+        confirmAction = null;
+      }
+
+      function unbindRows(targets) {
+        targets.forEach(function (row) {
+          row.user = "";
+          row.phone = "";
+          row.dept = "";
+          row.line = "";
+          row.section = "";
+          row.bound = false;
+          row.bindTime = "";
+          row.useStart = "";
+          row.useEnd = "";
+        });
+        applyFilter();
+      }
+
+      function xmlEscape(value) {
+        return String(value === undefined || value === null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function downloadXls(filename, sheetName, headers, dataRows) {
+        var xml =
+          '<?xml version="1.0" encoding="UTF-8"?>\n' +
+          '<?mso-application progid="Excel.Sheet"?>\n' +
+          '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" ' +
+          'xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' +
+          '<Worksheet ss:Name="' + xmlEscape(sheetName) + '"><Table>';
+        xml += "<Row>" + headers.map(function (h) {
+          return '<Cell><Data ss:Type="String">' + xmlEscape(h) + "</Data></Cell>";
+        }).join("") + "</Row>";
+        (dataRows || []).forEach(function (row) {
+          xml += "<Row>" + row.map(function (cell) {
+            return '<Cell><Data ss:Type="String">' + xmlEscape(cell) + "</Data></Cell>";
+          }).join("") + "</Row>";
+        });
+        xml += "</Table></Worksheet></Workbook>";
+        var blob = new Blob(["\ufeff" + xml], { type: "application/vnd.ms-excel" });
+        var link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000);
+      }
+
+      function exportBinds() {
+        var headers = ["用户名称", "所属线路", "所属区间", "设备IMEI", "设备型号", "设备名称", "状态", "最后在线时间"];
+        var dataRows = displayRows.map(function (row) {
+          return [row.user || "-", row.line || "-", row.section || "-", row.imei, row.model, row.devName, row.bound ? "已绑定" : "未绑定", row.lastOnline];
+        });
+        downloadXls("设备领用导出.xls", "设备领用", headers, dataRows);
+      }
+
+      function downloadImportTemplate() {
+        var headers = ["用户名称", "所属线路", "所属区间", "设备IMEI", "设备型号", "设备名称"];
+        downloadXls("设备领用导入模板.xls", "设备领用导入模板", headers, []);
+      }
+
+      function openImport() {
+        importInput.value = "";
+        importFileName.textContent = "";
+        importMask.classList.add("show");
+      }
+      function closeImport() {
+        importMask.classList.remove("show");
+      }
+      function showImportFile(file) {
+        if (!file) return;
+        if (!/\.(xlsx|xls)$/i.test(file.name)) {
+          alert("仅支持上传 .xlsx、.xls 格式文件");
+          importInput.value = "";
+          importFileName.textContent = "";
+          return;
+        }
+        importFileName.textContent = "已选择：" + file.name;
+      }
+
+      fillSelect(document.getElementById("filter-line"), LINE_OPTIONS, "全部");
+
+      document.getElementById("btn-search").addEventListener("click", applyFilter);
+      document.getElementById("btn-reset").addEventListener("click", resetFilters);
+      document.getElementById("btn-export").addEventListener("click", exportBinds);
+      document.getElementById("btn-import").addEventListener("click", openImport);
+      document.getElementById("bind-import-template").addEventListener("click", function (event) {
+        event.preventDefault();
+        downloadImportTemplate();
+      });
+
+      document.getElementById("bind-line").addEventListener("change", function () {
+        var stations = LINE_STATIONS[this.value] || [];
+        fillSelect(document.getElementById("bind-start"), stations, "请选择站点");
+        fillSelect(document.getElementById("bind-end"), stations, "请选择站点");
+        refreshBindPersons();
+      });
+      document.getElementById("bind-start").addEventListener("change", refreshBindPersons);
+      document.getElementById("bind-end").addEventListener("change", refreshBindPersons);
+      document.getElementById("bind-person-select").addEventListener("change", function () {
+        var personName = personSelect ? personSelect.getValue() : "";
+        var person = PERSONS.filter(function (p) { return p.name === personName; })[0];
+        document.getElementById("bind-phone").value = person ? person.phone : "";
+        document.getElementById("bind-dept").value = person ? person.dept : "";
+      });
+
+      checkAll.addEventListener("change", function () {
+        document.querySelectorAll(".row-check").forEach(function (el) {
+          el.checked = checkAll.checked;
+        });
+      });
+
+      document.getElementById("batch-bind-rows").addEventListener("click", function (event) {
+        var del = event.target.closest(".batch-bind-del");
+        if (!del) return;
+        var tr = del.closest("tr");
+        if (tr) tr.remove();
+      });
+
+      importInput.addEventListener("change", function () {
+        showImportFile(importInput.files && importInput.files[0]);
+      });
+      importDrop.addEventListener("dragover", function (e) {
+        e.preventDefault();
+        importDrop.classList.add("is-dragover");
+      });
+      importDrop.addEventListener("dragleave", function () {
+        importDrop.classList.remove("is-dragover");
+      });
+      importDrop.addEventListener("drop", function (e) {
+        e.preventDefault();
+        importDrop.classList.remove("is-dragover");
+        var file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (!file) return;
+        if (!/\.(xlsx|xls)$/i.test(file.name)) {
+          alert("仅支持上传 .xlsx、.xls 格式文件");
+          return;
+        }
+        try {
+          var dt = new DataTransfer();
+          dt.items.add(file);
+          importInput.files = dt.files;
+        } catch (err) {
+          /* 部分环境不支持 DataTransfer 赋值 */
+        }
+        showImportFile(file);
+      });
+
+      displayRows = rows.slice();
+      renderRows();
+
+      document.addEventListener("click", function (event) {
+        var trigger = event.target.closest("[data-action]");
+        if (!trigger) return;
+        var action = trigger.getAttribute("data-action");
+        var imei = trigger.getAttribute("data-device-imei");
+        var index = imei ? findRowIndex(imei) : -1;
+
+        if (action === "bind-device" && index > -1) openBindModal([rows[index]]);
+        if (action === "unbind-device" && index > -1) {
+          openConfirm("解绑确认", "确认将设备（" + rows[index].imei + "）与 " + (rows[index].user || "当前人员") + " 解绑吗？", function () {
+            unbindRows([rows[index]]);
+          });
+        }
+        if (action === "delete-device" && index > -1) {
+          openConfirm("删除确认", "确认删除当前领用记录吗？", function () {
+            rows.splice(index, 1);
+            applyFilter();
+          });
+        }
+        if (action === "detail-device" && index > -1) {
+          var displayIndex = displayRows.indexOf(rows[index]);
+          openDetail(displayIndex > -1 ? displayIndex : index);
+        }
+        if (action === "batch-bind") {
+          var targets = checkedRows();
+          if (!targets.length) {
+            alert("请先勾选需要绑定的设备");
+            return;
+          }
+          if (targets.some(function (row) { return row.bound; })) {
+            alert("所选设备中包含已绑定设备，请仅勾选未绑定设备");
+            return;
+          }
+          openBatchBindModal(targets);
+        }
+        if (action === "batch-unbind") {
+          var unbindTargets = checkedRows();
+          if (!unbindTargets.length) {
+            alert("请先勾选需要解绑的设备");
+            return;
+          }
+          if (unbindTargets.some(function (row) { return !row.bound; })) {
+            alert("所选设备中包含未绑定设备，请仅勾选已绑定设备");
+            return;
+          }
+          openConfirm("解绑确认", "确认解绑选中的 " + unbindTargets.length + " 台设备吗？", function () {
+            unbindRows(unbindTargets);
+          });
+        }
+        if (action === "close-bind-modal") closeBindModal();
+        if (action === "close-batch-modal") closeBatchBindModal();
+        if (action === "save-batch-bind") saveBatchBind();
+        if (action === "close-bind-detail") closeDetail();
+        if (action === "close-bind-import") closeImport();
+        if (action === "save-bind") saveBind();
+        if (action === "confirm-bind-import") {
+          closeImport();
+          alert("设备领用数据导入完成");
+        }
+        if (action === "cancel-confirm") closeConfirm();
+        if (action === "ok-confirm") {
+          var fn = confirmAction;
+          closeConfirm();
+          if (typeof fn === "function") fn();
+        }
+      });
+      if (detailMask) {
+        detailMask.addEventListener("click", function (event) {
+          if (event.target === detailMask) closeDetail();
+        });
+      }
+    })();
+  </script>
+  <script src="../../assets/js/menu-config.js"></script>
+  <script src="../../assets/js/quick-links-panel.js"></script>
+  <script src="../../assets/js/workbench-mega.js"></script>
+  <script src="../../assets/js/shell.js"></script>
+</body>
+</html>

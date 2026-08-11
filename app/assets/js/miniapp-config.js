@@ -28,6 +28,7 @@
           title: "巡查质量",
           items: [
             { label: "人员轨迹", icon: "fa-location-dot", tone: "cyan", href: "pages/track-person.html" },
+            { label: "设备领用", icon: "fa-microchip", tone: "green", href: "pages/device-bind.html" },
             { label: "巡查打分", icon: "fa-star", tone: "amber", href: "pages/score.html" },
             { label: "统计分析", icon: "fa-chart-line", tone: "blue", href: "pages/quality.html" },
           ],
