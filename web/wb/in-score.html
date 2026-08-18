@@ -307,17 +307,17 @@
             <div class="disease-stat-card disease-stat-card--cyan">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-users"></i></div>
               <div>
-                <div id="stat-people" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
-                <div class="disease-stat-card__label">巡查人员</div>
-                <div class="disease-stat-card__trend">去重统计</div>
+                <div id="stat-people" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">条</span></div>
+                <div class="disease-stat-card__label">优秀巡查</div>
+                <div class="disease-stat-card__trend">最低分 ≥ 90</div>
               </div>
             </div>
             <div class="disease-stat-card disease-stat-card--amber">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-chart-line"></i></div>
               <div>
-                <div id="stat-avg" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">分</span></div>
-                <div class="disease-stat-card__label">平均最低分</div>
-                <div class="disease-stat-card__trend">当前列表</div>
+                <div id="stat-avg" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">条</span></div>
+                <div class="disease-stat-card__label">达标巡查</div>
+                <div class="disease-stat-card__trend">最低分 ≥ 80</div>
               </div>
             </div>
             <div class="disease-stat-card disease-stat-card--rose">
@@ -338,10 +338,10 @@
                     <tr>
                       <th class="px-4">账号</th>
                       <th class="px-4">巡查人员</th>
-                      <th class="px-4">负责线路</th>
-                      <th class="px-4">设备号</th>
-                      <th class="px-4">巡查日期</th>
                       <th class="px-4">最低分数</th>
+                      <th class="px-4">负责线路</th>
+                      <th class="px-4">设备IMEI</th>
+                      <th class="px-4">巡查日期</th>
                       <th class="px-4 disease-col-actions">操作</th>
                     </tr>
                   </thead>
@@ -406,7 +406,7 @@
           <table class="score-detail-table min-w-[1520px] w-full text-left">
             <thead>
               <tr>
-                <th class="px-4">设备号</th>
+                <th class="px-4">设备IMEI</th>
                 <th class="px-4">巡查人员</th>
                 <th class="px-4">区间名称</th>
                 <th class="px-4">所属线路</th>
@@ -433,7 +433,6 @@
       var DEFAULT_DATE_END = "2026-04-08 10:44:15";
 
       var allListRows = [
-        { account:"yanghaotian", user:"杨昊天", line:"5号线", device:"Y18807", date:"2026-04-13 00:00:00", minScore:50 },
         { account:"yanghaotian", user:"杨昊天", line:"5号线", device:"Y18807", date:"2026-04-12 00:00:00", minScore:56 },
         { account:"zhangwei", user:"张伟", line:"2号线", device:"Y15502", date:"2026-04-11 00:00:00", minScore:61 },
         { account:"liulei", user:"刘磊", line:"7号线", device:"Y17328", date:"2026-04-10 00:00:00", minScore:58 },
@@ -489,19 +488,23 @@
         el.textContent = String(val);
       }
 
+      function displayScore(value) {
+        return Number(value) < 60 ? "＜60" : String(value);
+      }
+
       function updateScoreStats(rows) {
         var data = rows || [];
-        var people = {};
-        var sum = 0;
+        var excellent = 0;
+        var qualified = 0;
         var low = 0;
         data.forEach(function (row) {
-          people[row.user] = true;
-          sum += row.minScore;
+          if (row.minScore >= 90) excellent += 1;
+          if (row.minScore >= 80) qualified += 1;
           if (row.minScore < 60) low += 1;
         });
         setStatNum("stat-total", data.length);
-        setStatNum("stat-people", Object.keys(people).length);
-        setStatNum("stat-avg", data.length ? (sum / data.length).toFixed(1) : "0");
+        setStatNum("stat-people", excellent);
+        setStatNum("stat-avg", qualified);
         setStatNum("stat-low", low);
         if (tableTotal) tableTotal.textContent = String(data.length);
       }
@@ -520,10 +523,10 @@
           return '<tr class="' + (index % 2 ? "bg-slate-950/10" : "bg-slate-950/22") + '">' +
             '<td class="px-4">' + row.account + '</td>' +
             '<td class="px-4">' + row.user + '</td>' +
+            '<td class="px-4">' + displayScore(row.minScore) + '</td>' +
             '<td class="px-4">' + row.line + '</td>' +
             '<td class="px-4">' + row.device + '</td>' +
             '<td class="px-4">' + row.date + '</td>' +
-            '<td class="px-4">' + row.minScore + '</td>' +
             '<td class="px-4 disease-col-actions"><div class="disease-op-actions"><span class="score-action-link" data-action="open-detail" data-device="' + row.device + '">详情</span></div></td>' +
           '</tr>';
         }).join("");
@@ -564,7 +567,7 @@
             '<td class="px-4">' + row.inside + '</td>' +
             '<td class="px-4">' + row.outside + '</td>' +
             '<td class="px-4">' + row.date + '</td>' +
-            '<td class="px-4">' + row.score + '</td>' +
+            '<td class="px-4">' + displayScore(row.score) + '</td>' +
           '</tr>';
         }).join("");
         modalMask.classList.add("show");

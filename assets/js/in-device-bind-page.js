@@ -159,9 +159,6 @@
       var toggle = row.bound
         ? '<button type="button" class="mp-project-action" data-action="bind-unbind" data-id="' + row.id + '"><i class="fa-solid fa-link-slash"></i>解绑</button>'
         : '<button type="button" class="mp-project-action" data-action="bind-open" data-id="' + row.id + '"><i class="fa-solid fa-link"></i>绑定</button>';
-      var delBtn = row.bound
-        ? ''
-        : '<button type="button" class="mp-project-action" data-action="bind-delete" data-id="' + row.id + '"><i class="fa-regular fa-trash-can"></i>删除</button>';
       return (
         '<article class="mp-project-card" data-row-id="' + row.id + '">' +
         '<div class="mp-project-card__head"><span class="mp-project-card__id">' + esc(row.imei) + "</span>" + statusBadge(row) + "</div>" +
@@ -176,7 +173,6 @@
         '<div class="mp-project-card__actions">' +
         '<button type="button" class="mp-project-action" data-action="bind-detail" data-id="' + row.id + '"><i class="fa-regular fa-eye"></i>详情</button>' +
         toggle +
-        delBtn +
         "</div></article>"
       );
     }
@@ -404,13 +400,6 @@
       showToast("已解绑");
     }
 
-    function doDelete(row) {
-      var idx = rows.indexOf(row);
-      if (idx > -1) rows.splice(idx, 1);
-      applyFilter(true);
-      showToast("已删除领用记录");
-    }
-
     function showList() {
       currentRow = null;
       switchView(listView);
@@ -447,20 +436,6 @@
               okText: "确定解绑",
               danger: true,
               onConfirm: function () { doUnbind(row); },
-            });
-          }
-          return;
-        }
-        if (action === "bind-delete") {
-          var delRow = findRow(id);
-          if (!delRow) return;
-          if (global.WHProjectMobile && global.WHProjectMobile.showConfirm) {
-            global.WHProjectMobile.showConfirm({
-              title: "删除确认",
-              message: "确认删除当前领用记录吗？",
-              okText: "确定删除",
-              danger: true,
-              onConfirm: function () { doDelete(delRow); },
             });
           }
           return;

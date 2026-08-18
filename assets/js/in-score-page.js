@@ -71,23 +71,28 @@
 
     function updateScoreStats(rows) {
       var data = rows || getListSource();
-      var people = {};
-      var sum = 0;
+      var excellent = 0;
+      var qualified = 0;
       var low = 0;
       data.forEach(function (row) {
-        people[row.user] = true;
-        sum += Number(row.minScore) || 0;
-        if (Number(row.minScore) < 60) low += 1;
+        var score = Number(row.minScore);
+        if (score >= 90) excellent += 1;
+        if (score >= 80) qualified += 1;
+        if (score < 60) low += 1;
       });
       setStatText("stat-total", data.length);
-      setStatText("stat-people", Object.keys(people).length);
-      setStatText("stat-avg", data.length ? (sum / data.length).toFixed(1) : "0");
+      setStatText("stat-people", excellent);
+      setStatText("stat-avg", qualified);
       setStatText("stat-low", low);
       setStatText("table-total", data.length);
     }
 
     function scoreBadgeClass(minScore) {
       return Number(minScore) < 60 ? "mp-score-badge mp-score-badge--low" : "mp-score-badge mp-score-badge--ok";
+    }
+
+    function displayScore(value) {
+      return Number(value) < 60 ? "＜60" : String(value);
     }
 
     function readFiltersFromForm() {
@@ -178,7 +183,7 @@
         '<span class="' +
         scoreBadgeClass(row.minScore) +
         '">最低 ' +
-        esc(row.minScore) +
+        esc(displayScore(row.minScore)) +
         " 分</span></div>" +
         '<h3 class="mp-project-card__title">' +
         esc(row.user) +
@@ -233,7 +238,7 @@
             "</td><td class=\"px-4\">" +
             esc(row.date) +
             "</td><td class=\"px-4\">" +
-            esc(row.minScore) +
+            esc(displayScore(row.minScore)) +
             '</td><td class="px-4 disease-col-actions"><div class="disease-op-actions"><span class="score-action-link" data-action="open-detail" data-id="' +
             row.id +
             '">详情</span></div></td></tr>'
@@ -280,10 +285,10 @@
             '<span class="' +
             scoreBadgeClass(item.score) +
             '">' +
-            esc(item.score) +
+            esc(displayScore(item.score)) +
             " 分</span></div>" +
             '<dl class="mp-score-detail-card__meta">' +
-            "<div><dt>设备号</dt><dd>" +
+            "<div><dt>设备IMEI</dt><dd>" +
             esc(item.device) +
             "</dd></div>" +
             "<div><dt>巡查人员</dt><dd>" +
@@ -320,7 +325,7 @@
         "<div><dt>负责线路</dt><dd>" +
         esc(row.line) +
         "</dd></div>" +
-        "<div><dt>设备号</dt><dd>" +
+        "<div><dt>设备IMEI</dt><dd>" +
         esc(row.device) +
         "</dd></div>" +
         "<div><dt>巡查日期</dt><dd>" +
@@ -329,7 +334,7 @@
         "<div><dt>最低分数</dt><dd><span class=\"" +
         scoreBadgeClass(row.minScore) +
         "\">" +
-        esc(row.minScore) +
+        esc(displayScore(row.minScore)) +
         " 分</span></dd></div>" +
         "</dl>";
     }
@@ -357,7 +362,7 @@
             "</td><td class=\"px-4\">" +
             esc(row.date) +
             "</td><td class=\"px-4\">" +
-            esc(row.score) +
+            esc(displayScore(row.score)) +
             "</td></tr>"
           );
         })

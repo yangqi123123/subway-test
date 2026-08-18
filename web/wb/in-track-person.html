@@ -378,7 +378,7 @@
                     <tr class="bg-slate-950/75 text-cyan-50/95">
                       <th>序号</th>
                       <th>人员姓名</th>
-                      <th>设备编号</th>
+                      <th>设备IMEI</th>
                       <th>所属部门</th>
                       <th>所属线路</th>
                       <th>最新定位时间</th>
@@ -401,7 +401,7 @@
             <div class="disease-panel-title"><i class="fa-solid fa-filter mr-2 text-cyan-400"></i>快捷筛选</div>
             <div class="disease-panel-body">
               <label><span>人员姓名</span><input id="filter-name" class="wh-input w-full" placeholder="请输入人员姓名" /></label>
-              <label><span>设备编号</span><input id="filter-device" class="wh-input w-full" placeholder="请输入设备编号" /></label>
+              <label><span>设备IMEI</span><input id="filter-device" class="wh-input w-full" placeholder="请输入设备IMEI" /></label>
               <label><span>所属线路</span>
                 <select id="filter-line" class="wh-input w-full">
                   <option value="">全部</option>
@@ -597,12 +597,16 @@
     }
 
     function buildBaseInfo(row) {
+      const points = row.points || [];
+      const timeRange = points.length > 1
+        ? `${points[0].time} - ${points[points.length - 1].time}`
+        : (points[0] ? points[0].time : row.latestTime);
       const fields = [
         { label: "人员姓名", value: row.personName },
-        { label: "设备编号", value: row.deviceCode },
+        { label: "设备IMEI", value: row.deviceCode },
         { label: "所属部门", value: row.dept },
         { label: "所属线路", value: row.line },
-        { label: "最新定位时间", value: row.latestTime },
+        { label: "时间范围", value: timeRange },
         { label: "当前状态", value: row.status }
       ];
       detailBaseGrid.innerHTML = fields.map((field) => `
@@ -618,7 +622,7 @@
     function renderRecords(row) {
       recordList.innerHTML = row.points.map((point, index) => `
         <div class="track-record-item ${index === currentPointIndex ? "is-active" : ""}" data-point-index="${index}">
-          <div class="track-record-code">${point.id}</div>
+          <div class="track-record-code">X: ${point.lng.toFixed(4)} / Y: ${point.lat.toFixed(4)}</div>
           <div class="track-record-time">${point.time}</div>
         </div>
       `).join("");

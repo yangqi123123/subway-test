@@ -651,6 +651,8 @@
         code: cfg.deviceCode + "-" + slot.suffix,
         time: formatTrackDisplayTime(d),
         ts: d.getTime(),
+        lat: cfg.ll ? Number(cfg.ll[0]) : null,
+        lng: cfg.ll ? Number(cfg.ll[1]) : null,
       };
     });
     return {
@@ -670,7 +672,7 @@
       recordsJson +
       '">' +
       '<div class="gis-track-head">' +
-      '<div class="gis-detail-field"><div class="gis-detail-label">设备编号</div><div class="gis-detail-value">' +
+      '<div class="gis-detail-field"><div class="gis-detail-label">设备IMEI</div><div class="gis-detail-value">' +
       (data.deviceCode || "-") +
       "</div></div>" +
       '<div class="gis-detail-field gis-track-range-field">' +
@@ -698,10 +700,15 @@
     }
     return records
       .map(function (item) {
+        var lat = Number(item.lat);
+        var lng = Number(item.lng);
+        var coordinate = isFinite(lat) && isFinite(lng)
+          ? lng.toFixed(6) + ", " + lat.toFixed(6)
+          : item.code;
         return (
           '<div class="gis-detail-list-row">' +
           '<div class="gis-track-row-title">' +
-          item.code +
+          coordinate +
           "</div>" +
           '<div class="gis-track-row-time">' +
           item.time +

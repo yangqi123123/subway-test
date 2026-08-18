@@ -6,7 +6,6 @@
   global.WH_SCORE_DEFAULT_DATE_END = "2026-04-08T10:44";
 
   global.WH_SCORE_LIST_ROWS = [
-    { id: 1, account: "yanghaotian", user: "杨昊天", line: "5号线", device: "Y18807", date: "2026-04-13 00:00:00", minScore: 50 },
     { id: 2, account: "yanghaotian", user: "杨昊天", line: "5号线", device: "Y18807", date: "2026-04-12 00:00:00", minScore: 56 },
     { id: 3, account: "zhangwei", user: "张伟", line: "2号线", device: "Y15502", date: "2026-04-11 00:00:00", minScore: 61 },
     { id: 4, account: "liulei", user: "刘磊", line: "7号线", device: "Y17328", date: "2026-04-10 00:00:00", minScore: 58 },

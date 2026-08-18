@@ -89,6 +89,18 @@
       return String(value || "").slice(0, 10);
     }
 
+    function getTimeRange(row) {
+      var points = row && row.points ? row.points : [];
+      if (points.length > 1) {
+        return String(points[0].time || "") + " - " + String(points[points.length - 1].time || "");
+      }
+      return points.length ? String(points[0].time || "") : String(row && row.latestTime || "--");
+    }
+
+    function getPointCoordinate(point) {
+      return "X: " + Number(point.lng).toFixed(4) + " / Y: " + Number(point.lat).toFixed(4);
+    }
+
     function readFiltersFromForm() {
       return {
         line: fieldVal("filter-line"),
@@ -260,10 +272,10 @@
       if (!detailBaseGrid) return;
       var fields = [
         { label: "人员姓名", value: row.personName },
-        { label: "设备编号", value: row.deviceCode },
+        { label: "设备IMEI", value: row.deviceCode },
         { label: "所属部门", value: row.dept },
         { label: "所属线路", value: row.line },
-        { label: "最新定位时间", value: row.latestTime },
+        { label: "时间范围", value: getTimeRange(row) },
         { label: "当前状态", value: row.status },
       ];
       if (isMobile) {
@@ -309,7 +321,7 @@
             index +
             '">' +
             '<span class="mp-track-record-item__code">' +
-            esc(point.id) +
+            esc(getPointCoordinate(point)) +
             "</span>" +
             '<span class="mp-track-record-item__time">' +
             esc(point.time) +

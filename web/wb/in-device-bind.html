@@ -337,16 +337,6 @@
       border-bottom: 1px solid rgba(34, 211, 238, 0.1);
     }
     .batch-bind-table tbody tr:last-child td { border-bottom: none; }
-    .batch-bind-op { width: 64px; text-align: center; }
-    .batch-bind-del {
-      background: none;
-      border: none;
-      padding: 0;
-      font-size: 12px;
-      color: #fb7185;
-      cursor: pointer;
-    }
-    .batch-bind-del:hover { color: #f43f5e; }
     .am-detail-mask {
       position: fixed;
       inset: 0;
@@ -594,7 +584,7 @@
         <div class="batch-bind-wrap">
           <table class="batch-bind-table">
             <thead>
-              <tr><th>设备IMEI</th><th>绑定人员</th><th class="batch-bind-op">操作</th></tr>
+              <tr><th>设备IMEI</th><th>绑定人员</th></tr>
             </thead>
             <tbody id="batch-bind-rows"></tbody>
           </table>
@@ -787,9 +777,6 @@
           var toggle = row.bound
             ? '<span class="bind-action text-rose-300" data-action="unbind-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-solid fa-link-slash"></i>解绑</span>'
             : '<span class="bind-action text-emerald-300" data-action="bind-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-solid fa-link"></i>绑定</span>';
-          var delBtn = row.bound
-            ? ''
-            : '<span class="bind-action text-rose-300" data-action="delete-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-regular fa-trash-can"></i>删除</span>';
           return '<tr class="' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '" data-row-index="' + index + '">' +
             '<td class="px-4"><input type="checkbox" class="row-check" data-device-imei="' + escHtml(row.imei) + '" /></td>' +
             '<td class="px-4">' + escHtml(row.imei) + '</td>' +
@@ -803,7 +790,6 @@
             '<td class="px-4 disease-col-actions"><div class="disease-op-actions">' +
               '<span class="bind-action text-cyan-300" data-action="detail-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-regular fa-file-lines"></i>详情</span>' +
               toggle +
-              delBtn +
             '</div></td>' +
           '</tr>';
         }).join("");
@@ -951,8 +937,7 @@
           tr.setAttribute("data-device-imei", row.imei);
           tr.innerHTML =
             "<td>" + escHtml(row.imei) + "</td>" +
-            '<td><div class="batch-person-cell"></div></td>' +
-            '<td class="batch-bind-op"><button type="button" class="batch-bind-del">删除</button></td>';
+            '<td><div class="batch-person-cell"></div></td>';
           batchBody.appendChild(tr);
           WHSearchSelect.create(
             tr.querySelector(".batch-person-cell"),
@@ -1124,13 +1109,6 @@
         });
       });
 
-      document.getElementById("batch-bind-rows").addEventListener("click", function (event) {
-        var del = event.target.closest(".batch-bind-del");
-        if (!del) return;
-        var tr = del.closest("tr");
-        if (tr) tr.remove();
-      });
-
       importInput.addEventListener("change", function () {
         showImportFile(importInput.files && importInput.files[0]);
       });
@@ -1175,12 +1153,6 @@
         if (action === "unbind-device" && index > -1) {
           openConfirm("解绑确认", "确认将设备（" + rows[index].imei + "）与 " + (rows[index].user || "当前人员") + " 解绑吗？", function () {
             unbindRows([rows[index]]);
-          });
-        }
-        if (action === "delete-device" && index > -1) {
-          openConfirm("删除确认", "确认删除当前领用记录吗？", function () {
-            rows.splice(index, 1);
-            applyFilter();
           });
         }
         if (action === "detail-device" && index > -1) {
