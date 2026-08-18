@@ -63,6 +63,7 @@
       color: #94a3b8; cursor: pointer; user-select: none; font-size: 12px;
     }
     .tf-check.on { color: #67e8f9; border-color: rgba(34, 211, 238, 0.5); background: rgba(34, 211, 238, 0.1); }
+    .tf-check.is-disabled { cursor: not-allowed; opacity: 0.62; }
     .tf-check input { display: none; }
     .tf-check .dot { width: 13px; height: 13px; border-radius: 50%; border: 1px solid currentColor; display: inline-flex; align-items: center; justify-content: center; }
     .tf-check .box { width: 13px; height: 13px; border-radius: 3px; border: 1px solid currentColor; display: inline-flex; align-items: center; justify-content: center; }
@@ -95,7 +96,7 @@
 
       <div class="disease-layout disease-layout--fixed-sidebar">
         <div class="disease-layout__left">
-          <div class="disease-stats" aria-label="频率规则统计">
+          <div class="disease-stats" aria-label="频率规则统计" style="display:none">
             <div class="disease-stat-card disease-stat-card--blue">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-calendar-week"></i></div>
               <div>
@@ -138,20 +139,19 @@
                   <span data-action="switch-tab" data-tab="shallow">浅埋段范围设置</span>
                 </div>
                 <div class="disease-list-toolbar mb-3">
-                  <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new-rule">
-                    <i class="fa-solid fa-plus mr-1"></i>新增规则
+                  <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary" data-action="new-rule" style="display:none">
+                    <i class="fa-solid fa-plus mr-1"></i>新增
                   </button>
                 </div>
               </div>
               <div class="project-table-wrap overflow-x-auto">
-                <table class="project-table min-w-[1180px] w-full text-left text-[11px]">
+                <table class="project-table min-w-[980px] w-full text-left text-[11px]">
                   <thead>
                     <tr class="bg-slate-950/75">
                       <th class="px-3 text-cyan-50/95">规则编号</th>
                       <th class="px-3 text-cyan-50/95">应用范围</th>
                       <th class="px-3 text-cyan-50/95">项目类型</th>
                       <th class="px-3 text-cyan-50/95">生成周期</th>
-                      <th class="px-3 text-cyan-50/95">状态</th>
                       <th class="px-3 text-cyan-50/95">最近生成时间</th>
                       <th class="px-3 text-cyan-50/95">操作</th>
                     </tr>
@@ -179,8 +179,7 @@
                     <tr class="bg-slate-950/75">
                       <th class="px-3 text-cyan-50/95">编号</th>
                       <th class="px-3 text-cyan-50/95">所属线路</th>
-                      <th class="px-3 text-cyan-50/95">起始站点</th>
-                      <th class="px-3 text-cyan-50/95">终点站点</th>
+                      <th class="px-3 text-cyan-50/95">所属站点</th>
                       <th class="px-3 text-cyan-50/95">说明</th>
                       <th class="px-3 text-cyan-50/95">操作</th>
                     </tr>
@@ -199,7 +198,6 @@
               <label class="disease-filter-span-2"><span>规则编号</span><input id="filter-id" class="wh-input w-full px-2" placeholder="请输入规则编号" /></label>
               <label><span>应用范围</span><select id="filter-scope" class="wh-input w-full px-2"><option value="">全部</option><option value="all">全线范围</option><option value="shallow">浅埋段范围</option></select></label>
               <label><span>项目类型</span><select id="filter-type" class="wh-input w-full px-2"><option value="">全部</option><option>重点项目</option><option>一般项目</option><option>临时项目</option></select></label>
-              <label><span>状态</span><select id="filter-status" class="wh-input w-full px-2"><option value="">全部</option><option value="enabled">启用</option><option value="disabled">停用</option></select></label>
               <div class="disease-filter-actions">
                 <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-primary flex-1" data-action="filter-search">搜索</button>
                 <button type="button" class="px-4 py-1.5 rounded text-xs wh-btn-ghost flex-1" data-action="filter-reset">重置</button>
@@ -221,15 +219,15 @@
         <button type="button" class="tf-modal__x" data-action="rule-cancel" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="tf-modal__body">
-        <div class="tf-frow">
-          <label><span class="req">*</span> 应用范围</label>
+        <div class="tf-frow" id="rule-scope-row">
+          <label><span class="req" data-rule-required>*</span> 应用范围</label>
           <div class="tf-checks">
             <label class="tf-check on"><input type="radio" name="rule-scope" value="all" checked /><span class="dot"></span>全线范围</label>
             <label class="tf-check"><input type="radio" name="rule-scope" value="shallow" /><span class="dot"></span>浅埋段范围</label>
           </div>
         </div>
-        <div class="tf-frow">
-          <label><span class="req">*</span> 项目类型</label>
+        <div class="tf-frow" id="rule-type-row">
+          <label><span class="req" data-rule-required>*</span> 项目类型</label>
           <div class="tf-checks">
             <label class="tf-check"><input type="checkbox" data-type="重点项目" /><span class="box"></span>重点项目</label>
             <label class="tf-check"><input type="checkbox" data-type="一般项目" /><span class="box"></span>一般项目</label>
@@ -276,12 +274,23 @@
           <div class="tf-fw"><select id="shallow-line" class="wh-input w-full h-8 px-2"></select></div>
         </div>
         <div class="tf-frow">
-          <label><span class="req">*</span> 起始站点</label>
-          <div class="tf-fw"><select id="shallow-from" class="wh-input w-full h-8 px-2"></select></div>
-        </div>
-        <div class="tf-frow">
-          <label><span class="req">*</span> 终点站点</label>
-          <div class="tf-fw"><select id="shallow-to" class="wh-input w-full h-8 px-2"></select></div>
+          <label><span class="req">*</span> 所属站点</label>
+          <div class="tf-fw">
+            <div class="wh-search-select wh-search-select--multi" id="shallow-station-picker">
+              <button type="button" class="wh-search-select__trigger" data-action="station-picker-open">
+                <span class="wh-search-select__tags" id="shallow-station-tags"></span>
+                <span class="wh-search-select__value is-placeholder" id="shallow-station-placeholder">请搜索或选择所属站点</span>
+                <i class="fa-solid fa-chevron-down wh-search-select__arrow"></i>
+              </button>
+              <div class="wh-search-select__dropdown">
+                <input id="shallow-station-search" class="wh-search-select__search wh-input" placeholder="输入关键词搜索" autocomplete="off" />
+                <ul class="wh-search-select__list" id="shallow-station-options"></ul>
+                <div class="wh-search-select__foot">
+                  <button type="button" class="wh-search-select__done" data-action="station-picker-done">确定</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="tf-frow">
           <label>说明</label>

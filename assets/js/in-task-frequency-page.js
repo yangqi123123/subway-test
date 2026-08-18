@@ -14,6 +14,7 @@
   var pendingConfirm = null;
   var filteredRules = null;
   var ruleDraft = { scope: "all", types: [], weekdays: [] };
+  var selectedStations = [];
 
   function $(id) {
     return document.getElementById(id);
@@ -80,7 +81,6 @@
       id: ($("filter-id") ? $("filter-id").value : "").trim(),
       scope: $("filter-scope") ? $("filter-scope").value : "",
       type: $("filter-type") ? $("filter-type").value : "",
-      status: $("filter-status") ? $("filter-status").value : "",
     };
   }
 
@@ -88,15 +88,13 @@
     if (f.id && String(rule.id).toLowerCase().indexOf(f.id.toLowerCase()) < 0) return false;
     if (f.scope && rule.scope !== f.scope) return false;
     if (f.type && rule.types.indexOf(f.type) < 0) return false;
-    if (f.status === "enabled" && !rule.enabled) return false;
-    if (f.status === "disabled" && rule.enabled) return false;
     return true;
   }
 
   function applyFilters(silent) {
     var f = readFilters();
     filteredRules =
-      f.id || f.scope || f.type || f.status
+      f.id || f.scope || f.type
         ? rules.filter(function (r) {
             return ruleMatchesFilters(r, f);
           })
@@ -106,7 +104,7 @@
   }
 
   function resetFilters() {
-    ["filter-id", "filter-scope", "filter-type", "filter-status"].forEach(function (id) {
+    ["filter-id", "filter-scope", "filter-type"].forEach(function (id) {
       var el = $(id);
       if (!el) return;
       if (el.tagName === "SELECT") el.selectedIndex = 0;
@@ -121,7 +119,7 @@
     if (!tbody) return;
     var list = sortRules(filteredRules !== null ? filteredRules : rules);
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="tf-empty">暂无频率规则，请点击「新增规则」创建</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="tf-empty">暂无频率规则，请点击「新增」创建</td></tr>';
       return;
     }
     tbody.innerHTML = list
@@ -138,19 +136,15 @@
             return tag("tf-tag--cyan", d);
           })
           .join("");
-        var statusTag = rule.enabled ? tag("tf-tag--green", "启用") : tag("tf-tag--red", "停用");
         return (
           "<tr>" +
           "<td>" + esc(rule.id) + "</td>" +
           "<td>" + scopeTag + "</td>" +
           "<td>" + typeTags + "</td>" +
           "<td>" + dayTags + "</td>" +
-          "<td>" + statusTag + "</td>" +
           "<td>" + esc(rule.lastGen || "—") + "</td>" +
           '<td class="tf-ops">' +
           '<a data-action="edit-rule" data-id="' + esc(rule.id) + '">编辑</a>' +
-          '<a class="warn" data-action="toggle-rule" data-id="' + esc(rule.id) + '">' + (rule.enabled ? "停用" : "启用") + "</a>" +
-          '<a class="danger" data-action="del-rule" data-id="' + esc(rule.id) + '">删除</a>' +
           "</td></tr>"
         );
       })
@@ -163,7 +157,7 @@
     var tbody = $("shallow-table-body");
     if (!tbody) return;
     if (!shallowSections.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="tf-empty">暂无浅埋段设置，请点击「新增浅埋段」创建</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="tf-empty">暂无浅埋段设置，请点击「新增浅埋段」创建</td></tr>';
       return;
     }
     tbody.innerHTML = shallowSections
@@ -172,8 +166,7 @@
           "<tr>" +
           "<td>" + esc(s.id) + "</td>" +
           "<td>" + tag("tf-tag--cyan", s.line) + "</td>" +
-          "<td>" + esc(s.from) + "</td>" +
-          "<td>" + esc(s.to) + "</td>" +
+          "<td>" + esc((s.stations && s.stations.length ? s.stations : [s.from, s.to]).filter(Boolean).join("、")) + "</td>" +
           "<td>" + esc(s.remark || "—") + "</td>" +
           '<td class="tf-ops">' +
           '<a data-action="edit-section" data-id="' + esc(s.id) + '">编辑</a>' +
@@ -209,6 +202,17 @@
     });
   }
 
+  function setRuleEditMode(editing) {
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="rule-scope"], [data-type]'), function (el) {
+      el.disabled = editing;
+      var chip = el.closest(".tf-check");
+      if (chip) chip.classList.toggle("is-disabled", editing);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-rule-required]"), function (el) {
+      el.style.display = editing ? "none" : "";
+    });
+  }
+
   function readRuleForm() {
     var scopeEl = document.querySelector('input[name="rule-scope"]:checked');
     return {
@@ -234,6 +238,11 @@
   function refreshConflict() {
     var box = $("rule-conflict");
     if (!box) return;
+    if (editingRuleId) {
+      box.hidden = true;
+      box.innerHTML = "";
+      return;
+    }
     var form = readRuleForm();
     var conflicts = findConflicts(form);
     if (!conflicts.length || !form.types.length) {
@@ -269,6 +278,7 @@
     syncScopeRadios(ruleDraft.scope);
     syncCheckGroup("data-type", ruleDraft.types);
     syncCheckGroup("data-weekday", ruleDraft.weekdays);
+    setRuleEditMode(Boolean(rule));
     $("rule-remark").value = rule ? rule.remark || "" : D.DEFAULT_RULE_REMARK;
     refreshConflict();
     $("rule-modal").classList.add("show");
@@ -286,8 +296,6 @@
     if (editingRuleId) {
       var rule = rules.filter(function (r) { return r.id === editingRuleId; })[0];
       if (rule) {
-        rule.scope = form.scope;
-        rule.types = form.types;
         rule.weekdays = form.weekdays;
         rule.remark = form.remark;
       }
@@ -316,18 +324,51 @@
 
   /* ---------- 浅埋段弹窗 ---------- */
 
-  function fillStationSelects(line, from, to) {
-    var stations = D.LINE_STATIONS[line] || [];
-    function fill(el, selected) {
-      if (!el) return;
-      el.innerHTML = stations
-        .map(function (s) {
-          return '<option value="' + esc(s) + '"' + (s === selected ? " selected" : "") + ">" + esc(s) + "</option>";
+  function renderStationPicker() {
+    var line = $("shallow-line") ? $("shallow-line").value : "";
+    var keyword = ($("shallow-station-search") ? $("shallow-station-search").value : "").trim().toLowerCase();
+    var stations = (D.LINE_STATIONS[line] || []).filter(function (station) {
+      return !keyword || station.toLowerCase().indexOf(keyword) >= 0;
+    });
+    var tags = $("shallow-station-tags");
+    var options = $("shallow-station-options");
+    var placeholder = $("shallow-station-placeholder");
+    if (tags) {
+      tags.innerHTML = selectedStations
+        .map(function (station) {
+          return '<span class="wh-search-select__tag"><span class="wh-search-select__tag-text">' + esc(station) + '</span><button type="button" class="wh-search-select__tag-remove" data-action="station-remove" data-station="' + esc(station) + '" aria-label="移除' + esc(station) + '">×</button></span>';
         })
         .join("");
     }
-    fill($("shallow-from"), from);
-    fill($("shallow-to"), to);
+    if (placeholder) {
+      placeholder.classList.toggle("is-hidden", selectedStations.length > 0);
+      placeholder.classList.toggle("is-placeholder", selectedStations.length === 0);
+    }
+    if (options) {
+      options.innerHTML = stations.length
+        ? stations
+            .map(function (station) {
+              var selected = selectedStations.indexOf(station) >= 0;
+              return '<li class="wh-search-select__option' + (selected ? " is-selected" : "") + '" data-action="station-toggle" data-station="' + esc(station) + '"><i class="fa-solid fa-check wh-search-select__check"></i><span>' + esc(station) + '</span></li>';
+            })
+            .join("")
+        : '<li class="wh-search-select__empty">无匹配项</li>';
+    }
+  }
+
+  function setSelectedStations(stations) {
+    selectedStations = stations.filter(function (station, index, list) {
+      return station && list.indexOf(station) === index;
+    });
+    if ($("shallow-station-search")) $("shallow-station-search").value = "";
+    renderStationPicker();
+  }
+
+  function toggleStation(station) {
+    var index = selectedStations.indexOf(station);
+    if (index >= 0) selectedStations.splice(index, 1);
+    else selectedStations.push(station);
+    renderStationPicker();
   }
 
   function openShallowModal(section) {
@@ -340,29 +381,36 @@
       })
       .join("");
     var line = section ? section.line : lineSel.value;
-    fillStationSelects(line, section ? section.from : null, section ? section.to : null);
+    var stations = section
+      ? section.stations && section.stations.length
+        ? section.stations.slice()
+        : [section.from, section.to]
+      : [];
+    setSelectedStations(stations);
     $("shallow-remark").value = section ? section.remark || "" : "";
     $("shallow-modal").classList.add("show");
   }
 
   function closeShallowModal() {
     $("shallow-modal").classList.remove("show");
+    $("shallow-station-picker").classList.remove("is-open");
+    selectedStations = [];
     editingSectionId = null;
   }
 
   function saveShallow() {
     var line = $("shallow-line").value;
-    var from = $("shallow-from").value;
-    var to = $("shallow-to").value;
     var remark = $("shallow-remark").value.trim();
-    if (!from || !to) return showToast("请选择起始站点和终点站点");
-    if (from === to) return showToast("起始站点与终点站点不能相同");
+    if (selectedStations.length < 2) return showToast("请至少选择两个所属站点");
+    var from = selectedStations[0];
+    var to = selectedStations[selectedStations.length - 1];
     if (editingSectionId) {
       var section = shallowSections.filter(function (s) { return s.id === editingSectionId; })[0];
       if (section) {
         section.line = line;
         section.from = from;
         section.to = to;
+        section.stations = selectedStations.slice();
         section.remark = remark;
       }
       showToast("浅埋段已保存");
@@ -372,7 +420,7 @@
         var m = /^S-(\d+)$/.exec(s.id);
         if (m) seq = Math.max(seq, Number(m[1]) + 1);
       });
-      shallowSections.push({ id: "S-" + ("00" + seq).slice(-3), line: line, from: from, to: to, remark: remark });
+      shallowSections.push({ id: "S-" + ("00" + seq).slice(-3), line: line, from: from, to: to, stations: selectedStations.slice(), remark: remark });
       showToast("浅埋段已新增");
     }
     closeShallowModal();
@@ -447,19 +495,6 @@
         var rule = rules.filter(function (r) { return r.id === id; })[0];
         return openRuleModal(rule || null);
       }
-      if (action === "toggle-rule") {
-        var t = rules.filter(function (r) { return r.id === id; })[0];
-        if (t) {
-          openConfirm(
-            "toggle-rule",
-            id,
-            t.enabled ? "确认停用" : "确认启用",
-            t.enabled ? "确定停用该规则吗？停用后周期到达时将不再生成巡线任务。" : "确定启用该规则吗？启用后将按生成周期自动纳入巡线任务。"
-          );
-        }
-        return;
-      }
-      if (action === "del-rule") return openConfirm("rule", id, "确认删除", "确定删除该频率规则吗？删除后不可恢复。");
       if (action === "edit-section") {
         var section = shallowSections.filter(function (s) { return s.id === id; })[0];
         return openShallowModal(section || null);
@@ -476,6 +511,26 @@
       }
       if (action === "shallow-cancel") return closeShallowModal();
       if (action === "shallow-save") return saveShallow();
+      if (action === "station-picker-open") {
+        $("shallow-station-picker").classList.toggle("is-open");
+        $("shallow-station-search").focus();
+        return;
+      }
+      if (action === "station-toggle") {
+        toggleStation(trigger.getAttribute("data-station"));
+        $("shallow-station-picker").classList.add("is-open");
+        return;
+      }
+      if (action === "station-remove") {
+        var station = trigger.getAttribute("data-station");
+        selectedStations = selectedStations.filter(function (item) { return item !== station; });
+        renderStationPicker();
+        return;
+      }
+      if (action === "station-picker-done") {
+        $("shallow-station-picker").classList.remove("is-open");
+        return;
+      }
       if (action === "confirm-cancel") return closeConfirm();
       if (action === "confirm-ok") return submitConfirm();
       if (action === "switch-tab") return switchTab(trigger.getAttribute("data-tab"));
@@ -505,8 +560,21 @@
         return;
       }
       if (el.id === "shallow-line") {
-        fillStationSelects(el.value, null, null);
+        setSelectedStations([]);
       }
+    });
+
+    document.addEventListener("input", function (event) {
+      if (event.target.id === "shallow-station-search") {
+        $("shallow-station-picker").classList.add("is-open");
+        renderStationPicker();
+      }
+    });
+
+    document.addEventListener("click", function (event) {
+      var picker = $("shallow-station-picker");
+      var path = event.composedPath ? event.composedPath() : [];
+      if (picker && path.indexOf(picker) < 0 && !picker.contains(event.target)) picker.classList.remove("is-open");
     });
   }
 
