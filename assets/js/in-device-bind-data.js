@@ -18,6 +18,9 @@
     { name: "陈杰", line: "11号线", start: "光谷五路", end: "左岭", phone: "13800005555", dept: "数据中心 / 分析研判组" },
   ];
 
+  /** 当前登录用户（原型 mock），绑定表单默认回显其线路、区间与姓名 */
+  global.WH_DEVICE_BIND_CURRENT_USER = { name: "张强", line: "8号线", start: "洪山路", end: "小洪山" };
+
   global.WH_DEVICE_BIND_ROWS = [
     { id: 1, user: "张强", phone: "13800001111", dept: "巡检业务部 / 人工巡检组", line: "8号线", section: "洪山路-小洪山", imei: "864502070112345", model: "WH-TRK01", devName: "定位手环-01", bound: true, lastOnline: "2026-07-23 18:42", bindTime: "2026-06-01 09:30", useStart: "2026-06-01 10:00", useEnd: "2026-06-10 18:00" },
     { id: 2, user: "李磊", phone: "13800002222", dept: "巡检业务部 / 无人机巡检组", line: "8号线", section: "徐家棚-徐东", imei: "864502070112346", model: "WH-TRK01", devName: "定位手环-02", bound: true, lastOnline: "2026-07-23 17:05", bindTime: "2026-06-01 09:35", useStart: "2026-06-01 10:05", useEnd: "" },

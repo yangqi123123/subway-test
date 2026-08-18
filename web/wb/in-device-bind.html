@@ -470,13 +470,13 @@
                   <thead>
                     <tr>
                       <th class="px-4" style="width:44px"><input type="checkbox" id="check-all" /></th>
+                      <th class="px-4">设备IMEI</th>
+                      <th class="px-4">设备名称</th>
+                      <th class="px-4">状态</th>
                       <th class="px-4">用户名称</th>
                       <th class="px-4">所属线路</th>
                       <th class="px-4">所属区间</th>
-                      <th class="px-4">设备IMEI</th>
                       <th class="px-4">设备型号</th>
-                      <th class="px-4">设备名称</th>
-                      <th class="px-4">状态</th>
                       <th class="px-4">最后在线时间</th>
                       <th class="px-4 disease-col-actions">操作</th>
                     </tr>
@@ -661,6 +661,20 @@
         { name: "陈杰", line: "11号线", start: "光谷五路", end: "左岭", phone: "13800005555", dept: "数据中心 / 分析研判组" }
       ];
 
+      /** 当前登录用户（原型 mock），绑定弹窗默认回显其线路、区间与姓名 */
+      var CURRENT_USER = PERSONS[0];
+
+      /** 列表排序：未绑定在前、已绑定在后；同状态按最后在线时间升序（越早越靠前） */
+      function compareBindRows(a, b) {
+        if (!!a.bound !== !!b.bound) return a.bound ? 1 : -1;
+        var ta = String(a.lastOnline || "");
+        var tb = String(b.lastOnline || "");
+        return ta < tb ? -1 : ta > tb ? 1 : 0;
+      }
+      function sortBindRows() {
+        rows.sort(compareBindRows);
+      }
+
       var rows = [
         { user: "张强", phone: "13800001111", dept: "巡检业务部 / 人工巡检组", line: "8号线", section: "洪山路-小洪山", imei: "864502070112345", model: "WH-TRK01", devName: "定位手环-01", bound: true, lastOnline: "2026-07-23 18:42", bindTime: "2026-06-01 09:30" },
         { user: "李磊", phone: "13800002222", dept: "巡检业务部 / 无人机巡检组", line: "8号线", section: "徐家棚-徐东", imei: "864502070112346", model: "WH-TRK01", devName: "定位手环-02", bound: true, lastOnline: "2026-07-23 17:05", bindTime: "2026-06-01 09:35" },
@@ -773,20 +787,23 @@
           var toggle = row.bound
             ? '<span class="bind-action text-rose-300" data-action="unbind-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-solid fa-link-slash"></i>解绑</span>'
             : '<span class="bind-action text-emerald-300" data-action="bind-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-solid fa-link"></i>绑定</span>';
+          var delBtn = row.bound
+            ? ''
+            : '<span class="bind-action text-rose-300" data-action="delete-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-regular fa-trash-can"></i>删除</span>';
           return '<tr class="' + (index % 2 ? 'bg-slate-950/10' : 'bg-slate-950/22') + '" data-row-index="' + index + '">' +
             '<td class="px-4"><input type="checkbox" class="row-check" data-device-imei="' + escHtml(row.imei) + '" /></td>' +
+            '<td class="px-4">' + escHtml(row.imei) + '</td>' +
+            '<td class="px-4">' + escHtml(row.devName) + '</td>' +
+            '<td class="px-4">' + status + '</td>' +
             '<td class="px-4">' + escHtml(row.user || "-") + '</td>' +
             '<td class="px-4">' + escHtml(row.line || "-") + '</td>' +
             '<td class="px-4">' + escHtml(row.section || "-") + '</td>' +
-            '<td class="px-4">' + escHtml(row.imei) + '</td>' +
             '<td class="px-4">' + escHtml(row.model) + '</td>' +
-            '<td class="px-4">' + escHtml(row.devName) + '</td>' +
-            '<td class="px-4">' + status + '</td>' +
             '<td class="px-4">' + escHtml(row.lastOnline) + '</td>' +
             '<td class="px-4 disease-col-actions"><div class="disease-op-actions">' +
               '<span class="bind-action text-cyan-300" data-action="detail-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-regular fa-file-lines"></i>详情</span>' +
               toggle +
-              '<span class="bind-action text-rose-300" data-action="delete-device" data-device-imei="' + escHtml(row.imei) + '"><i class="fa-regular fa-trash-can"></i>删除</span>' +
+              delBtn +
             '</div></td>' +
           '</tr>';
         }).join("");
@@ -802,6 +819,7 @@
       }
 
       function applyFilter() {
+        sortBindRows();
         var imei = document.getElementById("filter-imei").value.trim();
         var model = document.getElementById("filter-model").value.trim();
         var user = document.getElementById("filter-user").value.trim();
@@ -828,6 +846,7 @@
           document.getElementById(id).value = "";
         });
         document.getElementById("filter-line").value = "";
+        sortBindRows();
         displayRows = rows.slice();
         renderRows();
       }
@@ -840,23 +859,13 @@
 
       var personSelect = null;
 
-      function refreshBindPersons() {
-        var line = document.getElementById("bind-line").value;
-        var start = document.getElementById("bind-start").value;
-        var end = document.getElementById("bind-end").value;
-        var matched = PERSONS.filter(function (p) {
-          if (line && p.line !== line) return false;
-          if (start && p.start !== start) return false;
-          if (end && p.end !== end) return false;
-          return true;
-        });
+      function buildPersonSelect(defaultName) {
         personSelect = WHSearchSelect.create(
           document.getElementById("bind-person-select"),
-          matched.map(function (p) { return p.name; }),
-          matched.length ? "请搜索或选择绑定人员" : "暂无匹配人员"
+          PERSONS.map(function (p) { return p.name; }),
+          "请搜索或选择绑定人员"
         );
-        document.getElementById("bind-phone").value = "";
-        document.getElementById("bind-dept").value = "";
+        if (defaultName) personSelect.setValue(defaultName);
       }
 
       function openBindModal(targets) {
@@ -870,13 +879,18 @@
         document.getElementById("bind-imei").value = imeis.join("、");
         document.getElementById("bind-model").value = models.length > 1 ? models.join("、") : models[0] || "";
         fillSelect(document.getElementById("bind-line"), LINE_OPTIONS, "请选择线路");
-        fillSelect(document.getElementById("bind-start"), [], "请先选择线路");
-        fillSelect(document.getElementById("bind-end"), [], "请先选择线路");
+        var defaultStations = LINE_STATIONS[CURRENT_USER.line] || [];
+        fillSelect(document.getElementById("bind-start"), defaultStations, "请选择站点");
+        fillSelect(document.getElementById("bind-end"), defaultStations, "请选择站点");
+        // 默认回显当前用户的线路、区间，可改选其他
+        document.getElementById("bind-line").value = CURRENT_USER.line;
+        document.getElementById("bind-start").value = CURRENT_USER.start;
+        document.getElementById("bind-end").value = CURRENT_USER.end;
         var now = new Date();
         var local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
         document.getElementById("bind-use-start").value = local;
         document.getElementById("bind-use-end").value = "";
-        refreshBindPersons();
+        buildPersonSelect(CURRENT_USER.name);
         bindMask.classList.add("show");
       }
 
@@ -1050,9 +1064,9 @@
       }
 
       function exportBinds() {
-        var headers = ["用户名称", "所属线路", "所属区间", "设备IMEI", "设备型号", "设备名称", "状态", "最后在线时间"];
+        var headers = ["设备IMEI", "设备名称", "状态", "用户名称", "所属线路", "所属区间", "设备型号", "最后在线时间"];
         var dataRows = displayRows.map(function (row) {
-          return [row.user || "-", row.line || "-", row.section || "-", row.imei, row.model, row.devName, row.bound ? "已绑定" : "未绑定", row.lastOnline];
+          return [row.imei, row.devName, row.bound ? "已绑定" : "未绑定", row.user || "-", row.line || "-", row.section || "-", row.model, row.lastOnline];
         });
         downloadXls("设备领用导出.xls", "设备领用", headers, dataRows);
       }
@@ -1096,10 +1110,7 @@
         var stations = LINE_STATIONS[this.value] || [];
         fillSelect(document.getElementById("bind-start"), stations, "请选择站点");
         fillSelect(document.getElementById("bind-end"), stations, "请选择站点");
-        refreshBindPersons();
       });
-      document.getElementById("bind-start").addEventListener("change", refreshBindPersons);
-      document.getElementById("bind-end").addEventListener("change", refreshBindPersons);
       document.getElementById("bind-person-select").addEventListener("change", function () {
         var personName = personSelect ? personSelect.getValue() : "";
         var person = PERSONS.filter(function (p) { return p.name === personName; })[0];
@@ -1149,6 +1160,7 @@
         showImportFile(file);
       });
 
+      sortBindRows();
       displayRows = rows.slice();
       renderRows();
 

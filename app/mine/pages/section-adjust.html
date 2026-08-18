@@ -270,7 +270,7 @@
     <form id="section-adjust-form" class="mp-adjust-form">
       <div class="mp-adjust-hint">人员调休缺岗时，可调配同线路其他区间人员临时支援至目标区间；</div>
 
-      <div class="mp-adjust-field is-readonly" data-field="assignedLine">
+      <div class="mp-adjust-field" data-field="assignedLine" data-placeholder="请选择线路">
         <span class="mp-adjust-field__label">调配线路</span>
         <div class="mp-adjust-field__value" id="assigned-line-display">2号线</div>
         <input type="hidden" name="assignedLine" value="2号线" />
@@ -354,7 +354,10 @@
         { id: "p-005", name: "周洋" }
       ];
 
+      var LINE_OPTIONS = ["1号线", "2号线", "3号线", "4号线", "7号线", "8号线", "11号线", "19号线"];
+
       var FIELD_CONFIG = {
+        assignedLine: { title: "调配线路", options: LINE_OPTIONS.map(function (s) { return { value: s, label: s }; }) },
         assignedStartSection: { title: "调配目标起始区间", options: STATION_OPTIONS.map(function (s) { return { value: s, label: s }; }) },
         assignedEndSection: { title: "调配目标终点区间", options: STATION_OPTIONS.map(function (s) { return { value: s, label: s }; }) },
         assignedPerson: { title: "选择调配人员", options: PERSON_OPTIONS.map(function (p) { return { value: p.id, label: p.name }; }) }

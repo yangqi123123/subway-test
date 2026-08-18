@@ -9,9 +9,22 @@
     var LINES = global.WH_DEVICE_BIND_LINES || {};
     var LINE_OPTIONS = Object.keys(LINES);
     var PERSONS = global.WH_DEVICE_BIND_PERSONS || [];
+    /** 当前登录用户（原型 mock），绑定表单默认回显其线路、区间与姓名 */
+    var CURRENT_USER = global.WH_DEVICE_BIND_CURRENT_USER || PERSONS[0] || null;
     var rows = (global.WH_DEVICE_BIND_ROWS || []).map(function (row) {
       return Object.assign({}, row);
     });
+
+    /** 列表排序：未绑定在前、已绑定在后；同状态按最后在线时间升序（越早越靠前） */
+    function compareBindRows(a, b) {
+      if (!!a.bound !== !!b.bound) return a.bound ? 1 : -1;
+      var ta = String(a.lastOnline || "");
+      var tb = String(b.lastOnline || "");
+      return ta < tb ? -1 : ta > tb ? 1 : 0;
+    }
+    function sortBindRows() {
+      rows.sort(compareBindRows);
+    }
 
     var filteredRows = null;
     var currentRow = null;
@@ -91,6 +104,7 @@
     }
 
     function applyFilter(silent) {
+      sortBindRows();
       var q = fieldVal("bind-search-trigger");
       var f = {
         imei: fieldVal("filter-imei"),
@@ -145,20 +159,24 @@
       var toggle = row.bound
         ? '<button type="button" class="mp-project-action" data-action="bind-unbind" data-id="' + row.id + '"><i class="fa-solid fa-link-slash"></i>解绑</button>'
         : '<button type="button" class="mp-project-action" data-action="bind-open" data-id="' + row.id + '"><i class="fa-solid fa-link"></i>绑定</button>';
+      var delBtn = row.bound
+        ? ''
+        : '<button type="button" class="mp-project-action" data-action="bind-delete" data-id="' + row.id + '"><i class="fa-regular fa-trash-can"></i>删除</button>';
       return (
         '<article class="mp-project-card" data-row-id="' + row.id + '">' +
         '<div class="mp-project-card__head"><span class="mp-project-card__id">' + esc(row.imei) + "</span>" + statusBadge(row) + "</div>" +
-        '<h3 class="mp-project-card__title">' + esc(row.user || row.devName) + "</h3>" +
+        '<h3 class="mp-project-card__title">' + esc(row.devName) + "</h3>" +
         '<dl class="mp-project-card__meta">' +
-        "<div><dt>设备名称</dt><dd>" + esc(row.devName) + "（" + esc(row.model) + "）</dd></div>" +
+        "<div><dt>用户名称</dt><dd>" + esc(row.user || "-") + "</dd></div>" +
         "<div><dt>所属线路</dt><dd>" + esc(row.line || "-") + "</dd></div>" +
         "<div><dt>所属区间</dt><dd>" + esc(row.section || "-") + "</dd></div>" +
+        "<div><dt>设备型号</dt><dd>" + esc(row.model) + "</dd></div>" +
         "<div><dt>最后在线时间</dt><dd>" + esc(row.lastOnline) + "</dd></div>" +
         "</dl>" +
         '<div class="mp-project-card__actions">' +
         '<button type="button" class="mp-project-action" data-action="bind-detail" data-id="' + row.id + '"><i class="fa-regular fa-eye"></i>详情</button>' +
         toggle +
-        '<button type="button" class="mp-project-action" data-action="bind-delete" data-id="' + row.id + '"><i class="fa-regular fa-trash-can"></i>删除</button>' +
+        delBtn +
         "</div></article>"
       );
     }
@@ -231,29 +249,78 @@
     }
 
     function syncBindPickers() {
+      if (global.WHProjectMobile && global.WHProjectMobile.enhanceSelectFields) {
+        // enhanceSelect 对已增强的 select 会同步刷新对应选择按钮的文案
+        global.WHProjectMobile.enhanceSelectFields(bindView);
+      }
       if (global.WHProjectMobile && global.WHProjectMobile.syncPickersFromForm) {
         global.WHProjectMobile.syncPickersFromForm(bindView);
       }
     }
 
-    function refreshBindPersons() {
-      var line = fieldVal("bind-line");
-      var start = fieldVal("bind-start");
-      var end = fieldVal("bind-end");
+    /* ---- 绑定人员选择弹层（支持模糊搜索，对齐“选择调配人员”交互） ---- */
+    var personSheet = document.getElementById("person-sheet");
+    var personSheetSearch = document.getElementById("person-sheet-search");
+    var personSheetOptions = document.getElementById("person-sheet-options");
+    var personTempValue = "";
+
+    function setPersonValue(name) {
+      var hidden = document.getElementById("bind-person");
+      var display = document.getElementById("bind-person-display");
+      if (hidden) hidden.value = name || "";
+      if (display) {
+        display.textContent = name || "请选择绑定人员";
+        display.classList.toggle("is-placeholder", !name);
+      }
+      var person = PERSONS.filter(function (p) { return p.name === name; })[0];
+      document.getElementById("bind-phone").value = person ? person.phone : "";
+      document.getElementById("bind-dept").value = person ? person.dept : "";
+    }
+
+    function renderPersonOptions(keyword) {
+      if (!personSheetOptions) return;
+      var kw = (keyword || "").trim();
       var matched = PERSONS.filter(function (p) {
-        if (line && p.line !== line) return false;
-        if (start && p.start !== start) return false;
-        if (end && p.end !== end) return false;
-        return true;
+        return !kw || p.name.indexOf(kw) >= 0;
       });
-      fillSelect(
-        document.getElementById("bind-person"),
-        matched.map(function (p) { return p.name; }),
-        matched.length ? "请选择绑定人员" : "暂无匹配人员"
-      );
-      document.getElementById("bind-phone").value = "";
-      document.getElementById("bind-dept").value = "";
-      syncBindPickers();
+      if (!matched.length) {
+        personSheetOptions.innerHTML = '<div class="mp-select-empty">未搜索到相关结果</div>';
+        return;
+      }
+      personSheetOptions.innerHTML = matched
+        .map(function (p) {
+          var selected = personTempValue === p.name;
+          return (
+            '<div class="mp-select-option' + (selected ? " is-selected" : "") + '" data-value="' + esc(p.name) + '">' +
+            '<span class="mp-select-option__radio"></span>' +
+            "<span>" + esc(p.name) + "</span>" +
+            "</div>"
+          );
+        })
+        .join("");
+    }
+
+    function openPersonSheet() {
+      if (!personSheet) return;
+      personTempValue = fieldVal("bind-person");
+      if (personSheetSearch) personSheetSearch.value = "";
+      renderPersonOptions("");
+      personSheet.classList.add("is-open");
+      personSheet.setAttribute("aria-hidden", "false");
+      document.body.classList.add("mp-scroll-locked");
+    }
+
+    function closePersonSheet() {
+      if (!personSheet) return;
+      personSheet.classList.remove("is-open");
+      personSheet.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("mp-scroll-locked");
+      personTempValue = "";
+    }
+
+    function confirmPersonSheet() {
+      setPersonValue(personTempValue);
+      closePersonSheet();
     }
 
     function openBindForm(id) {
@@ -263,13 +330,24 @@
       document.getElementById("bind-imei").value = row.imei;
       document.getElementById("bind-model").value = row.model;
       fillSelect(document.getElementById("bind-line"), LINE_OPTIONS, "请选择线路");
-      fillSelect(document.getElementById("bind-start"), [], "请先选择线路");
-      fillSelect(document.getElementById("bind-end"), [], "请先选择线路");
+      var defaultLine = CURRENT_USER ? CURRENT_USER.line : "";
+      var defaultStations = LINES[defaultLine] || [];
+      fillSelect(document.getElementById("bind-start"), defaultStations, "请选择站点");
+      fillSelect(document.getElementById("bind-end"), defaultStations, "请选择站点");
+      // 默认回显当前用户的线路、区间与姓名，可改选其他
+      if (CURRENT_USER) {
+        document.getElementById("bind-line").value = defaultLine;
+        document.getElementById("bind-start").value = CURRENT_USER.start;
+        document.getElementById("bind-end").value = CURRENT_USER.end;
+        setPersonValue(CURRENT_USER.name);
+      } else {
+        setPersonValue("");
+      }
       var now = new Date();
       var local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
       document.getElementById("bind-use-start").value = local;
       document.getElementById("bind-use-end").value = "";
-      refreshBindPersons();
+      syncBindPickers();
       switchView(bindView);
     }
 
@@ -395,6 +473,18 @@
           showList();
           return;
         }
+        if (action === "open-person-sheet") {
+          openPersonSheet();
+          return;
+        }
+        if (action === "close-person-sheet") {
+          closePersonSheet();
+          return;
+        }
+        if (action === "confirm-person-sheet") {
+          confirmPersonSheet();
+          return;
+        }
         if (action === "open-bind-filter") {
           var sheet = document.getElementById("bind-filter-sheet");
           if (sheet) sheet.classList.add("is-open");
@@ -440,19 +530,21 @@
           var stations = LINES[this.value] || [];
           fillSelect(document.getElementById("bind-start"), stations, "请选择站点");
           fillSelect(document.getElementById("bind-end"), stations, "请选择站点");
-          refreshBindPersons();
+          syncBindPickers();
         });
       }
-      ["bind-start", "bind-end"].forEach(function (id) {
-        var el = document.getElementById(id);
-        if (el) el.addEventListener("change", refreshBindPersons);
-      });
-      var personSelect = document.getElementById("bind-person");
-      if (personSelect) {
-        personSelect.addEventListener("change", function () {
-          var person = PERSONS.filter(function (p) { return p.name === this.value; }, this)[0];
-          document.getElementById("bind-phone").value = person ? person.phone : "";
-          document.getElementById("bind-dept").value = person ? person.dept : "";
+
+      if (personSheetSearch) {
+        personSheetSearch.addEventListener("input", function () {
+          renderPersonOptions(this.value);
+        });
+      }
+      if (personSheetOptions) {
+        personSheetOptions.addEventListener("click", function (event) {
+          var option = event.target.closest(".mp-select-option");
+          if (!option) return;
+          personTempValue = option.getAttribute("data-value");
+          renderPersonOptions(personSheetSearch ? personSheetSearch.value : "");
         });
       }
     }
@@ -476,6 +568,7 @@
       global.WHProjectMobile.enhanceSelectFields(bindView);
     }
 
+    sortBindRows();
     renderList();
     bindEvents();
 

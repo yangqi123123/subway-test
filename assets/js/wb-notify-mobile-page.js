@@ -424,7 +424,10 @@
       state.filtered = allRows().filter(function (row) {
         return rowMatches(row, filters);
       }).sort(function (a, b) {
-        return (a.read === "未读" ? 0 : 1) - (b.read === "未读" ? 0 : 1);
+        var readDiff = (a.read === "未读" ? 0 : 1) - (b.read === "未读" ? 0 : 1);
+        if (readDiff) return readDiff;
+        // 同已读状态按发布时间倒序，保证最新通知（如设备领用）排在最前
+        return String(b.time || "").localeCompare(String(a.time || ""));
       });
       renderList();
       updateStats();

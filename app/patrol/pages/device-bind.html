@@ -26,6 +26,143 @@
       border-color: rgba(148, 163, 184, 0.35);
       background: rgba(148, 163, 184, 0.08);
     }
+    /* 绑定人员选择字段 */
+    .mp-person-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .mp-person-field__text {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .mp-person-field__text.is-placeholder { color: var(--mp-text-caption); }
+    .mp-person-field > i { color: var(--mp-text-muted); font-size: 12px; }
+    /* 底部人员选择弹窗（支持模糊搜索） */
+    .mp-select-sheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .mp-select-sheet.is-open { display: flex; }
+    .mp-select-sheet__mask {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.45);
+    }
+    .mp-select-sheet__panel {
+      position: relative;
+      background: #fff;
+      border-radius: 18px 18px 0 0;
+      max-height: 72vh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.25s ease-out;
+    }
+    .mp-select-sheet.is-open .mp-select-sheet__panel { transform: translateY(0); }
+    .mp-select-sheet__head {
+      display: grid;
+      grid-template-columns: 60px 1fr 60px;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--mp-border);
+    }
+    .mp-select-sheet__head button {
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      color: var(--mp-text-secondary);
+      cursor: pointer;
+      padding: 0;
+    }
+    .mp-select-sheet__head button.is-primary {
+      color: var(--mp-primary);
+      font-weight: 600;
+      text-align: right;
+    }
+    .mp-select-sheet__head span {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--mp-text);
+    }
+    .mp-select-sheet__search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--mp-border);
+    }
+    .mp-select-sheet__search i { color: var(--mp-text-muted); font-size: 14px; }
+    .mp-select-sheet__search input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      color: var(--mp-text);
+      outline: none;
+    }
+    .mp-select-sheet__body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 4px 0 16px;
+    }
+    .mp-select-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      font-size: 15px;
+      color: var(--mp-text);
+      cursor: pointer;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .mp-select-option:last-child { border-bottom: none; }
+    .mp-select-option__radio {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 2px solid var(--mp-border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mp-select-option.is-selected .mp-select-option__radio {
+      border-color: var(--mp-primary);
+      background: var(--mp-primary);
+    }
+    .mp-select-option.is-selected .mp-select-option__radio::after {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #fff;
+    }
+    .mp-select-empty {
+      padding: 24px 16px;
+      text-align: center;
+      color: var(--mp-text-muted);
+      font-size: 14px;
+    }
   </style>
 </head>
 <body class="mp-project-page miniapp-page" data-miniapp="page" data-module="patrol" data-title="设备领用" data-base="../">
@@ -125,7 +262,11 @@
               </div>
               <div class="mp-form-row">
                 <label class="project-form-label project-required">绑定人员</label>
-                <select id="bind-person" class="wh-input mp-field"></select>
+                <button type="button" id="bind-person-field" class="wh-input mp-field mp-person-field" data-action="open-person-sheet">
+                  <span id="bind-person-display" class="mp-person-field__text is-placeholder">请选择绑定人员</span>
+                  <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                </button>
+                <input type="hidden" id="bind-person" />
               </div>
               <div class="mp-form-row">
                 <label class="project-form-label">手机号码</label>
@@ -204,6 +345,22 @@
         <button type="button" class="mp-picker-sheet__btn mp-picker-sheet__btn--ok" data-action="mp-picker-confirm">确定</button>
       </div>
       <div id="mp-picker-body" class="mp-picker-sheet__body"></div>
+    </div>
+  </div>
+
+  <div id="person-sheet" class="mp-select-sheet" aria-hidden="true">
+    <div class="mp-select-sheet__mask" data-action="close-person-sheet"></div>
+    <div class="mp-select-sheet__panel" role="dialog" aria-label="选择绑定人员">
+      <div class="mp-select-sheet__head">
+        <button type="button" data-action="close-person-sheet">取消</button>
+        <span>选择绑定人员</span>
+        <button type="button" class="is-primary" data-action="confirm-person-sheet">确定</button>
+      </div>
+      <div class="mp-select-sheet__search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input type="text" id="person-sheet-search" placeholder="搜索" />
+      </div>
+      <div class="mp-select-sheet__body" id="person-sheet-options"></div>
     </div>
   </div>
 

@@ -54,12 +54,52 @@
       badge: "审批结果与到期提醒",
       filters: [
         { id: "title", label: "标题", type: "text", placeholder: "请输入标题关键词" },
-        { id: "type", label: "通知类型", options: ["全部", "项目巡查", "审批消息", "空域许可提醒", "区间调配"] },
+        { id: "type", label: "通知类型", options: ["全部", "项目巡查", "审批消息", "空域许可提醒", "区间调配", "设备领用"] },
         { id: "start", label: "发布开始", type: "date" },
         { id: "end", label: "发布结束", type: "date" }
       ],
       columns: ["标题", "通知类型", "发布时间", "是否已读", "操作"],
       rows: [
+        {
+          id: "n12",
+          type: "设备领用",
+          title: "【864502070112346 定位手环-02】已被【李磊】绑定，领用时间2026-07-23 17:05至2026-07-24 17:05",
+          time: "2026-07-23 17:05",
+          read: "未读",
+          userName: "李磊",
+          phone: "13800002222",
+          dept: "巡检业务部 / 无人机巡检组",
+          line: "8号线",
+          section: "徐家棚-徐东",
+          imei: "864502070112346",
+          model: "WH-TRK01",
+          devName: "定位手环-02",
+          bindStatus: "已绑定",
+          lastOnline: "2026-07-23 17:05",
+          bindTime: "2026-07-23 17:05",
+          useStart: "2026-07-23 17:05",
+          useEnd: "2026-07-24 17:05",
+        },
+        {
+          id: "n13",
+          type: "设备领用",
+          title: "【869523054478812 安全帽定位器-01】已被【张强】解绑，解绑时间2026-07-23 16:40",
+          time: "2026-07-23 16:40",
+          read: "未读",
+          userName: "张强",
+          phone: "13800001111",
+          dept: "巡检业务部 / 人工巡检组",
+          line: "8号线",
+          section: "洪山路-小洪山",
+          imei: "869523054478812",
+          model: "BD-900",
+          devName: "安全帽定位器-01",
+          bindStatus: "未绑定",
+          lastOnline: "2026-07-22 08:30",
+          bindTime: "",
+          useStart: "",
+          useEnd: "",
+        },
         {
           id: "n1",
           title: "飞行计划 FP-20260514011 已审批通过",
@@ -1941,6 +1981,25 @@
       }
       fields.push(notifyDetailField("操作人", row.operator));
       html = fields.join("");
+    } else if (row.type === "设备领用") {
+      html = [
+        notifyDetailField("标题", row.title, { full: true }),
+        notifyDetailField("通知类型", "设备领用"),
+        notifyDetailField("发布时间", row.time),
+        notifyDetailField("用户名称", row.userName),
+        notifyDetailField("手机号码", row.phone),
+        notifyDetailField("所属部门", row.dept),
+        notifyDetailField("所属线路", row.line),
+        notifyDetailField("所属区间", row.section),
+        notifyDetailField("设备IMEI", row.imei),
+        notifyDetailField("设备型号", row.model),
+        notifyDetailField("设备名称", row.devName),
+        notifyDetailField("状态", row.bindStatus),
+        notifyDetailField("最后在线时间", row.lastOnline),
+        notifyDetailField("绑定时间", row.bindTime),
+        notifyDetailField("领用开始时间", row.useStart),
+        notifyDetailField("领用结束时间", row.useEnd),
+      ].join("");
     } else {
       html = notifyDetailField("标题", row.title, { full: true }) + notifyDetailField("发布时间", row.time);
     }
@@ -2328,6 +2387,26 @@
         ["备注", row.remark],
         ["通知类型", "空域许可提醒"],
         ["发布时间", row.time],
+      ];
+    }
+    if (row.type === "设备领用") {
+      return [
+        ["标题", row.title],
+        ["通知类型", "设备领用"],
+        ["发布时间", row.time],
+        ["用户名称", row.userName],
+        ["手机号码", row.phone],
+        ["所属部门", row.dept],
+        ["所属线路", row.line],
+        ["所属区间", row.section],
+        ["设备IMEI", row.imei],
+        ["设备型号", row.model],
+        ["设备名称", row.devName],
+        ["状态", row.bindStatus],
+        ["最后在线时间", row.lastOnline],
+        ["绑定时间", row.bindTime || "—"],
+        ["领用开始时间", row.useStart || "—"],
+        ["领用结束时间", row.useEnd || "—"],
       ];
     }
     return [

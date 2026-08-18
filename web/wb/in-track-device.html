@@ -364,6 +364,10 @@
       flex-direction: column;
       overflow: hidden;
     }
+    /* 领用记录面板加宽，保证筛选区与按钮一行不换行 */
+    .am-detail-dialog--usage {
+      width: min(1560px, 97vw);
+    }
     .am-detail-dialog__head {
       flex-shrink: 0;
       display: flex;
@@ -538,7 +542,6 @@
                       <th class="px-4">设备型号</th>
                       <th class="px-4">设备名称</th>
                       <th class="px-4">颜色</th>
-                      <th class="px-4">产地</th>
                       <th class="px-4">厂家</th>
                       <th class="px-4">最后在线时间</th>
                       <th class="px-4">备注</th>
@@ -624,9 +627,8 @@
           <label class="device-form-item"><span class="device-form-label is-required">设备型号：</span><input id="device-model" class="wh-input h-8 flex-1 px-3" placeholder="请输入设备型号" /></label>
           <label class="device-form-item"><span class="device-form-label">设备名称：</span><input id="device-name" class="wh-input h-8 flex-1 px-3" placeholder="请输入设备名称" /></label>
           <label class="device-form-item"><span class="device-form-label">颜色：</span><input id="device-color" class="wh-input h-8 flex-1 px-3" placeholder="请输入颜色" /></label>
-          <label class="device-form-item"><span class="device-form-label">产地：</span><input id="device-origin" class="wh-input h-8 flex-1 px-3" placeholder="请输入产地" /></label>
           <label class="device-form-item"><span class="device-form-label">厂家：</span><input id="device-maker" class="wh-input h-8 flex-1 px-3" placeholder="请输入厂家" /></label>
-          <label class="device-form-item device-form-item--full device-form-item--top"><span class="device-form-label">备注：</span><textarea id="device-remark" class="wh-input flex-1 px-3 py-2" rows="2" placeholder="请输入备注"></textarea></label>
+          <label class="device-form-item"><span class="device-form-label">备注：</span><input id="device-remark" class="wh-input h-8 flex-1 px-3" placeholder="请输入备注" /></label>
           <div class="device-form-item device-form-item--full device-form-item--top">
             <span class="device-form-label">上传照片：</span>
             <label class="device-upload" id="device-photo-drop">
@@ -736,7 +738,6 @@
           detailRow("设备型号", row.model) +
           detailRow("设备名称", row.name) +
           detailRow("颜色", row.color) +
-          detailRow("产地", row.origin) +
           detailRow("厂家", row.maker) +
           detailRow("最后在线时间", row.lastOnline) +
           detailRow("创建时间", row.createdAt) +
@@ -792,6 +793,7 @@
           '<label><span>领用结束时间</span><input id="usage-f-end" type="date" class="wh-input" value="' + escHtml(usageFilter.useEnd) + '" /></label>' +
           '<button type="button" class="wh-btn-primary" data-action="usage-search">搜索</button>' +
           '<button type="button" class="wh-btn-ghost" data-action="usage-reset">重置</button>' +
+          '<button type="button" class="wh-btn-ghost" data-action="usage-export"><i class="fa-solid fa-file-export"></i> 导出</button>' +
           "</div>";
         var records = filteredUsageRecords(row);
         if (!records.length) {
@@ -814,6 +816,8 @@
       function renderDetailBody() {
         if (!detailRow_ || !detailBody) return;
         var titleEl = document.getElementById("device-detail-title");
+        var dialogEl = detailMask ? detailMask.querySelector(".am-detail-dialog") : null;
+        if (dialogEl) dialogEl.classList.toggle("am-detail-dialog--usage", detailViewMode === "usage");
         if (detailViewMode === "usage") {
           detailBody.innerHTML = buildUsageHtml(detailRow_);
           if (titleEl) titleEl.textContent = "领用记录";
@@ -884,7 +888,6 @@
             '<td class="px-4">' + escHtml(row.model) + '</td>' +
             '<td class="px-4">' + escHtml(row.name) + '</td>' +
             '<td class="px-4">' + escHtml(row.color) + '</td>' +
-            '<td class="px-4">' + escHtml(row.origin) + '</td>' +
             '<td class="px-4">' + escHtml(row.maker) + '</td>' +
             '<td class="px-4">' + escHtml(row.lastOnline) + '</td>' +
             '<td class="px-4">' + escHtml(row.remark || "-") + '</td>' +
@@ -950,7 +953,6 @@
         document.getElementById("device-model").value = row ? row.model : "";
         document.getElementById("device-name").value = row ? row.name : "";
         document.getElementById("device-color").value = row ? row.color : "";
-        document.getElementById("device-origin").value = row ? row.origin : "";
         document.getElementById("device-maker").value = row ? row.maker : "";
         document.getElementById("device-remark").value = row ? row.remark : "";
         photoUrl = row ? row.photo || "" : "";
@@ -975,7 +977,7 @@
           model: model,
           name: document.getElementById("device-name").value.trim() || "-",
           color: document.getElementById("device-color").value.trim() || "-",
-          origin: document.getElementById("device-origin").value.trim() || "-",
+          origin: editIndex > -1 ? rows[editIndex].origin : "-",
           maker: document.getElementById("device-maker").value.trim() || "-",
           remark: document.getElementById("device-remark").value.trim(),
           photo: photoUrl,
@@ -1163,6 +1165,21 @@
         if (action === "usage-reset") {
           resetUsageFilter();
           renderDetailBody();
+        }
+        if (action === "usage-export") {
+          var exportRecs = detailRow_ ? filteredUsageRecords(detailRow_) : [];
+          if (!exportRecs.length) {
+            alert("当前筛选条件下暂无领用记录可导出");
+            return;
+          }
+          downloadXls(
+            "设备领用记录导出.xls",
+            "领用记录",
+            USAGE_HEADERS,
+            exportRecs.map(function (rec) {
+              return USAGE_KEYS.map(function (key) { return rec[key] || "-"; });
+            })
+          );
         }
         if (action === "close-device-import") closeImport();
         if (action === "save-device") saveDevice();
