@@ -50,10 +50,10 @@
     {
       id: "R-003",
       scope: "all",
-      types: ["一般项目"],
+      types: ["临时项目"],
       weekdays: ["周一", "周三", "周五"],
       enabled: true,
-      remark: "全线一般项目补充巡查规则",
+      remark: "全线临时项目补充巡查规则",
       lastGen: "",
     },
     {
@@ -77,10 +77,10 @@
     {
       id: "R-006",
       scope: "shallow",
-      types: ["一般项目"],
+      types: ["临时项目"],
       weekdays: ["周一", "周三", "周五"],
       enabled: true,
-      remark: "浅埋段一般项目补充巡查规则",
+      remark: "浅埋段临时项目补充巡查规则",
       lastGen: "",
     },
   ];

@@ -9,6 +9,8 @@
     var isMobile = !!options.mobile;
     var trackRows = (global.WH_TRACK_PERSON_ROWS || []).map(function (row) {
       return Object.assign({}, row, { points: (row.points || []).slice() });
+    }).sort(function (a, b) {
+      return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
     });
 
     var filteredRows = null;
@@ -63,16 +65,16 @@
       var list = rows || getListSource();
       var online = 0;
       var offline = 0;
-      var points = 0;
+      var devices = {};
       list.forEach(function (r) {
         if (r.status === "在线") online += 1;
         if (r.status === "离线") offline += 1;
-        points += r.points ? r.points.length : 0;
+        if (r.deviceCode) devices[r.deviceCode] = true;
       });
       setStatText("stat-total", list.length);
+      setStatText("stat-devices", Object.keys(devices).length);
       setStatText("stat-online", online);
       setStatText("stat-offline", offline);
-      setStatText("stat-points", points);
       setStatText("table-total", list.length);
     }
 
@@ -85,16 +87,12 @@
       return el ? String(el.value || "").trim() : "";
     }
 
-    function trackDatePart(value) {
-      return String(value || "").slice(0, 10);
+    function normalizeFilterTime(value) {
+      return String(value || "").replace("T", " ");
     }
 
     function getTimeRange(row) {
-      var points = row && row.points ? row.points : [];
-      if (points.length > 1) {
-        return String(points[0].time || "") + " - " + String(points[points.length - 1].time || "");
-      }
-      return points.length ? String(points[0].time || "") : String(row && row.latestTime || "--");
+      return String(row && row.usageStart || "--") + " 至 " + String(row && row.usageEnd || "--");
     }
 
     function getPointCoordinate(point) {
@@ -155,9 +153,8 @@
             if (q && !rowMatchesSearch(row, q)) return false;
             if (f.line && row.line !== f.line) return false;
             if (f.dept && row.dept !== f.dept) return false;
-            var rowDate = trackDatePart(row.latestTime);
-            if (f.dateStart && rowDate && rowDate < f.dateStart) return false;
-            if (f.dateEnd && rowDate && rowDate > f.dateEnd) return false;
+            if (f.dateStart && row.usageStart < normalizeFilterTime(f.dateStart)) return false;
+            if (f.dateEnd && row.usageEnd > normalizeFilterTime(f.dateEnd)) return false;
             return true;
           })
         : null;
@@ -206,8 +203,11 @@
         "<div><dt>所属线路</dt><dd>" +
         esc(row.line) +
         "</dd></div>" +
-        "<div><dt>最新定位时间</dt><dd>" +
-        esc(row.latestTime) +
+        "<div><dt>领用时间</dt><dd>" +
+        esc(getTimeRange(row)) +
+        "</dd></div>" +
+        "<div><dt>创建时间</dt><dd>" +
+        esc(row.createdAt) +
         "</dd></div>" +
         "</dl>" +
         '<div class="mp-project-card__actions">' +
@@ -248,7 +248,9 @@
             "</td><td>" +
             esc(row.line) +
             "</td><td>" +
-            esc(row.latestTime) +
+            esc(getTimeRange(row)) +
+            "</td><td>" +
+            esc(row.createdAt) +
             '</td><td><span class="wh-status ' +
             (row.status === "在线" ? "wh-status--done" : "wh-status--pending") +
             '">' +
@@ -275,7 +277,8 @@
         { label: "设备IMEI", value: row.deviceCode },
         { label: "所属部门", value: row.dept },
         { label: "所属线路", value: row.line },
-        { label: "时间范围", value: getTimeRange(row) },
+        { label: "领用时间", value: getTimeRange(row) },
+        { label: "创建时间", value: row.createdAt },
         { label: "当前状态", value: row.status },
       ];
       if (isMobile) {

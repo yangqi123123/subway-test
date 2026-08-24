@@ -339,6 +339,14 @@
                 <div class="disease-stat-card__trend">轨迹台账</div>
               </div>
             </div>
+            <div class="disease-stat-card disease-stat-card--cyan">
+              <div class="disease-stat-card__icon"><i class="fa-solid fa-microchip"></i></div>
+              <div>
+                <div id="stat-devices" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">台</span></div>
+                <div class="disease-stat-card__label">设备总数</div>
+                <div class="disease-stat-card__trend">领用设备</div>
+              </div>
+            </div>
             <div class="disease-stat-card disease-stat-card--green">
               <div class="disease-stat-card__icon"><i class="fa-solid fa-signal"></i></div>
               <div>
@@ -355,14 +363,6 @@
                 <div class="disease-stat-card__trend">暂无定位</div>
               </div>
             </div>
-            <div class="disease-stat-card disease-stat-card--cyan">
-              <div class="disease-stat-card__icon"><i class="fa-solid fa-route"></i></div>
-              <div>
-                <div id="stat-points" class="disease-stat-card__value"><span class="disease-stat-card__num">0</span><span class="disease-stat-card__unit">个</span></div>
-                <div class="disease-stat-card__label">轨迹点位</div>
-                <div class="disease-stat-card__trend">累计定位点</div>
-              </div>
-            </div>
           </div>
 
           <div class="disease-list-area">
@@ -373,7 +373,7 @@
             </div>
             <div class="wh-table-shell bg-slate-950/35 track-table-shell overflow-hidden">
               <div class="overflow-x-auto">
-                <table class="min-w-full w-full text-left">
+                <table class="min-w-[1240px] w-full text-left">
                   <thead>
                     <tr class="bg-slate-950/75 text-cyan-50/95">
                       <th>序号</th>
@@ -381,7 +381,8 @@
                       <th>设备IMEI</th>
                       <th>所属部门</th>
                       <th>所属线路</th>
-                      <th>最新定位时间</th>
+                      <th>领用时间</th>
+                      <th>创建时间</th>
                       <th>当前状态</th>
                       <th>操作</th>
                     </tr>
@@ -418,7 +419,8 @@
                   <option value="应急中心">应急中心</option>
                 </select>
               </label>
-              <label><span>轨迹日期</span><input id="filter-date" type="date" class="wh-input w-full" /></label>
+              <label><span>领用开始时间</span><input id="filter-date-start" type="datetime-local" class="wh-input w-full" /></label>
+              <label><span>领用结束时间</span><input id="filter-date-end" type="datetime-local" class="wh-input w-full" /></label>
               <div class="disease-filter-actions">
                 <button id="btn-search" type="button" class="wh-btn-primary rounded text-xs">搜索</button>
                 <button id="btn-reset" type="button" class="wh-btn-ghost rounded text-xs">重置</button>
@@ -486,6 +488,9 @@
         dept: "巡检一部",
         line: "2号线",
         latestTime: "2026-05-14 09:26:18",
+        usageStart: "2026-05-14 08:38:15",
+        usageEnd: "2026-05-14 09:26:18",
+        createdAt: "2026-05-14 08:30:10",
         status: "在线",
         points: [
           { id: "LOC-248447", time: "2026-05-14 08:38:15", lat: 30.5828, lng: 114.2982, name: "积玉桥站北侧" },
@@ -501,6 +506,9 @@
         dept: "巡检二部",
         line: "5号线",
         latestTime: "2026-05-14 10:42:09",
+        usageStart: "2026-05-14 09:52:07",
+        usageEnd: "2026-05-14 10:42:09",
+        createdAt: "2026-05-14 09:45:20",
         status: "在线",
         points: [
           { id: "LOC-248602", time: "2026-05-14 09:52:07", lat: 30.5685, lng: 114.3293, name: "复兴路站巡查口" },
@@ -516,6 +524,9 @@
         dept: "应急中心",
         line: "8号线",
         latestTime: "2026-05-14 14:08:52",
+        usageStart: "2026-05-14 13:12:22",
+        usageEnd: "2026-05-14 14:08:52",
+        createdAt: "2026-05-14 13:05:33",
         status: "离线",
         points: [
           { id: "LOC-248741", time: "2026-05-14 13:12:22", lat: 30.6062, lng: 114.3348, name: "徐东大街西口" },
@@ -525,6 +536,7 @@
         ]
       }
     ];
+    trackRows.sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
 
     const listView = document.getElementById("track-list-view");
     const detailView = document.getElementById("track-detail-view");
@@ -549,7 +561,7 @@
       const list = rows || trackRows;
       const online = list.filter((r) => r.status === "在线").length;
       const offline = list.filter((r) => r.status === "离线").length;
-      const points = list.reduce((sum, r) => sum + (r.points ? r.points.length : 0), 0);
+      const devices = new Set(list.map((r) => r.deviceCode).filter(Boolean)).size;
       const set = (id, val) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -561,9 +573,9 @@
         el.textContent = String(val) + "个";
       };
       set("stat-total", list.length);
+      set("stat-devices", devices);
       set("stat-online", online);
       set("stat-offline", offline);
-      set("stat-points", points);
       set("table-total", list.length);
     }
 
@@ -584,7 +596,8 @@
           <td>${row.deviceCode}</td>
           <td>${row.dept}</td>
           <td>${row.line}</td>
-          <td>${row.latestTime}</td>
+          <td>${row.usageStart} 至 ${row.usageEnd}</td>
+          <td>${row.createdAt}</td>
           <td><span class="wh-status ${row.status === "在线" ? "wh-status--done" : "wh-status--pending"}">${row.status}</span></td>
           <td><button type="button" class="wh-link" data-detail-id="${row.id}">详情</button></td>
         </tr>
@@ -597,16 +610,14 @@
     }
 
     function buildBaseInfo(row) {
-      const points = row.points || [];
-      const timeRange = points.length > 1
-        ? `${points[0].time} - ${points[points.length - 1].time}`
-        : (points[0] ? points[0].time : row.latestTime);
+      const timeRange = `${row.usageStart} 至 ${row.usageEnd}`;
       const fields = [
         { label: "人员姓名", value: row.personName },
         { label: "设备IMEI", value: row.deviceCode },
         { label: "所属部门", value: row.dept },
         { label: "所属线路", value: row.line },
-        { label: "时间范围", value: timeRange },
+        { label: "领用时间", value: timeRange },
+        { label: "创建时间", value: row.createdAt },
         { label: "当前状态", value: row.status }
       ];
       detailBaseGrid.innerHTML = fields.map((field) => `
@@ -761,7 +772,8 @@
       document.getElementById("filter-device").value = "";
       document.getElementById("filter-line").value = "";
       document.getElementById("filter-dept").value = "";
-      document.getElementById("filter-date").value = "";
+      document.getElementById("filter-date-start").value = "";
+      document.getElementById("filter-date-end").value = "";
       renderTable(trackRows);
     }
 
@@ -770,13 +782,15 @@
       const device = document.getElementById("filter-device").value.trim();
       const line = document.getElementById("filter-line").value;
       const dept = document.getElementById("filter-dept").value;
-      const date = document.getElementById("filter-date").value;
+      const dateStart = document.getElementById("filter-date-start").value.replace("T", " ");
+      const dateEnd = document.getElementById("filter-date-end").value.replace("T", " ");
       const rows = trackRows.filter((row) => {
         if (name && !row.personName.includes(name)) return false;
         if (device && !row.deviceCode.includes(device)) return false;
         if (line && row.line !== line) return false;
         if (dept && row.dept !== dept) return false;
-        if (date && !row.latestTime.startsWith(date)) return false;
+        if (dateStart && row.usageStart < dateStart) return false;
+        if (dateEnd && row.usageEnd > dateEnd) return false;
         return true;
       });
       renderTable(rows);

@@ -205,7 +205,8 @@ body.mp-track-page .mp-track-info-item dd {
 }
 
 body.mp-track-page .mp-track-info-item:nth-child(5),
-body.mp-track-page .mp-track-info-item:nth-child(6) {
+body.mp-track-page .mp-track-info-item:nth-child(6),
+body.mp-track-page .mp-track-info-item:nth-child(7) {
   grid-column: 1 / -1;
 }
 

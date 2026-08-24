@@ -63,12 +63,36 @@
               <input id="profile-pilot-input" type="file" accept="image/*" hidden />
             </div>
           </div>
+          <div class="mp-form-row mp-form-row--full">
+            <label class="project-form-label">微信绑定</label>
+            <div id="profile-wechat-binding" class="mp-wechat-binding">
+              <div class="mp-wechat-binding__info">
+                <span class="mp-wechat-binding__icon"><i class="fa-brands fa-weixin"></i></span>
+                <div>
+                  <strong id="profile-wechat-status">未绑定</strong>
+                  <p id="profile-wechat-desc">完成微信授权，并关注指定服务号可接收服务号通知</p>
+                </div>
+              </div>
+              <button type="button" class="mp-wechat-binding__btn" data-action="toggle-wechat-binding">绑定当前微信</button>
+            </div>
+          </div>
         </div>
       </form>
       <footer class="mp-detail-footer">
         <button type="submit" form="profile-form" class="mp-detail-footer__btn mp-detail-footer__btn--primary">保存</button>
       </footer>
     </section>
+  </div>
+
+  <div id="profile-wechat-confirm" class="miniapp-modal-mask miniapp-modal-mask--center" aria-hidden="true">
+    <div class="miniapp-modal miniapp-modal--confirm" role="alertdialog" aria-labelledby="profile-wechat-confirm-title" aria-describedby="profile-wechat-confirm-message">
+      <h3 id="profile-wechat-confirm-title">绑定微信</h3>
+      <p id="profile-wechat-confirm-message">确认绑定当前微信账号？一个微信只能绑定一个系统账号。</p>
+      <div class="miniapp-modal__actions">
+        <button type="button" class="miniapp-btn miniapp-btn--ghost" data-action="cancel-wechat-binding">取消</button>
+        <button id="profile-wechat-confirm-ok" type="button" class="miniapp-btn miniapp-btn--primary" data-action="confirm-wechat-binding">确认绑定</button>
+      </div>
+    </div>
   </div>
 
   <div id="profile-toast" aria-live="polite"></div>

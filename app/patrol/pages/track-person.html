@@ -31,6 +31,13 @@
               <div class="mp-stat-card__label">人员总数</div>
             </div>
           </div>
+          <div class="mp-stat-card mp-stat-card--month">
+            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-microchip"></i></div>
+            <div class="mp-stat-card__body">
+              <div class="mp-stat-card__value" id="stat-devices"><span class="mp-stat-card__num">0</span><span class="mp-stat-card__unit">台</span></div>
+              <div class="mp-stat-card__label">设备总数</div>
+            </div>
+          </div>
           <div class="mp-stat-card mp-stat-card--key">
             <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-signal"></i></div>
             <div class="mp-stat-card__body">
@@ -43,13 +50,6 @@
             <div class="mp-stat-card__body">
               <div class="mp-stat-card__value" id="stat-offline"><span class="mp-stat-card__num">0</span><span class="mp-stat-card__unit">个</span></div>
               <div class="mp-stat-card__label">离线</div>
-            </div>
-          </div>
-          <div class="mp-stat-card mp-stat-card--month">
-            <div class="mp-stat-card__icon" aria-hidden="true"><i class="fa-solid fa-route"></i></div>
-            <div class="mp-stat-card__body">
-              <div class="mp-stat-card__value" id="stat-points"><span class="mp-stat-card__num">0</span><span class="mp-stat-card__unit">个</span></div>
-              <div class="mp-stat-card__label">轨迹点位</div>
             </div>
           </div>
         </div>
@@ -139,11 +139,11 @@
             <option value="应急中心">应急中心</option>
           </select>
         </label>
-        <label class="mp-filter-field mp-filter-field--full"><span>开始日期</span>
-          <input id="filter-date-start" type="date" class="wh-input w-full px-2" />
+        <label class="mp-filter-field mp-filter-field--full"><span>领用开始时间</span>
+          <input id="filter-date-start" type="datetime-local" class="wh-input w-full px-2" />
         </label>
-        <label class="mp-filter-field mp-filter-field--full"><span>结束日期</span>
-          <input id="filter-date-end" type="date" class="wh-input w-full px-2" />
+        <label class="mp-filter-field mp-filter-field--full"><span>领用结束时间</span>
+          <input id="filter-date-end" type="datetime-local" class="wh-input w-full px-2" />
         </label>
       </div>
       <div class="mp-filter-sheet__foot">
