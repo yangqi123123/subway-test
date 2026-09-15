@@ -108,6 +108,40 @@
       .plan-detail-field__label { font-size: 12px; color: #9cc6df; margin-bottom: 4px; }
       .plan-detail-field__value { font-size: 13px; color: #e2f5ff; line-height: 1.45; word-break: break-word; }
       .plan-detail-field--full { grid-column: 1 / -1; }
+      .flight-task-modal { width: min(1180px, 96vw); }
+      .flight-task-summary {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 1px;
+        overflow: hidden;
+        border: 1px solid rgba(34, 211, 238, 0.18);
+        border-radius: 8px;
+        background: rgba(34, 211, 238, 0.12);
+      }
+      .flight-task-summary__item { min-width: 0; padding: 11px 12px; background: rgba(6, 25, 48, 0.96); }
+      .flight-task-summary__label { display: block; margin-bottom: 5px; color: #7daac7; font-size: 11px; }
+      .flight-task-summary__value { display: block; overflow: hidden; color: #e2f5ff; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+      .flight-task-filter {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+        gap: 12px;
+        align-items: end;
+        margin-top: 14px;
+        padding: 12px;
+        border: 1px solid rgba(34, 211, 238, 0.16);
+        border-radius: 8px;
+        background: rgba(15, 23, 42, 0.42);
+      }
+      .flight-task-filter__actions { display: flex; gap: 8px; }
+      .flight-task-table-wrap { margin-top: 14px; overflow: auto; }
+      .flight-task-table-wrap table { min-width: 1050px; }
+      .flight-task-table-wrap tbody tr:nth-child(odd) { background: #071b33; }
+      .flight-task-table-wrap tbody tr:nth-child(even) { background: #08213d; }
+      .flight-task-empty { padding: 34px 16px !important; color: #64748b; text-align: center; }
+      @media (max-width: 900px) {
+        .flight-task-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .flight-task-filter { grid-template-columns: 1fr 1fr; }
+      }
       @media (max-width: 720px) { .plan-detail-layout { grid-template-columns: 1fr !important; } }
       .plan-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
       .plan-form-name-row { margin-bottom: 2px; }
@@ -354,9 +388,9 @@
               </div>
               <div class="wh-table-shell bg-[#071b33]/80 flex flex-col flex-1 min-h-0">
                 <div class="flight-plan-table-wrap">
-                  <table class="min-w-[2080px] w-full text-left">
+                  <table class="min-w-[1680px] w-full text-left">
                     <thead><tr>
-                      <th class="w-10"><input id="check-all" type="checkbox" /></th><th>计划名称</th><th>航线名称</th><th>起降机场</th><th>无人机设备</th><th>计划类型</th><th>飞行策略</th><th>所属线路</th><th>申请人</th><th>提交时间</th><th>审核状态</th><th>执行状态</th><th>计划执行时间</th><th>实际执行时间</th><th>实际结束时间</th><th class="flight-plan-col-actions">操作</th>
+                      <th class="w-10"><input id="check-all" type="checkbox" /></th><th>计划名称</th><th>航线名称</th><th>起降机场</th><th>无人机设备</th><th>计划类型</th><th>飞行策略</th><th>所属线路</th><th>申请人</th><th>提交时间</th><th>审核状态</th><th>计划执行时间</th><th class="flight-plan-col-actions">操作</th>
                     </tr></thead>
                     <tbody id="plan-body"></tbody>
                   </table>
@@ -386,7 +420,6 @@
                 <label><span>所属线路</span><select id="f-line" class="wh-input w-full px-2"><option value="">全部</option><option>8号线</option><option>2号线</option><option>5号线</option></select></label>
                 <label><span>飞行策略</span><select id="f-strategy" class="wh-input w-full px-2"><option value="">全部</option><option>立即起飞</option><option>单次定时</option><option>周期定时</option></select></label>
                 <label><span>起降机场</span><select id="f-airport" class="wh-input w-full px-2"><option value="">全部</option><option>车辆段机场</option><option>梨园机场</option><option>青山机场</option></select></label>
-                <label><span>执行状态</span><select id="f-exec" class="wh-input w-full px-2"><option value="">全部</option><option>未执行</option><option>执行中</option><option>数据处理</option><option>已执行</option><option>执行终止</option></select></label>
                 <label><span>申请人</span><input id="f-applicant" class="wh-input w-full" placeholder="请输入" /></label>
                 <label><span>审核状态</span><select id="f-audit" class="wh-input w-full px-2"><option value="">全部</option><option>审核通过</option><option>审核中</option><option>已驳回</option></select></label>
                 <label><span>执行开始时间</span><input id="f-start" type="datetime-local" class="wh-input w-full" /></label>
@@ -504,6 +537,28 @@
 
     <div id="detail-modal" class="modal-mask"><div class="modal-card modal-card--detail"><div class="flex items-center justify-between px-5 py-4 border-b border-white/10"><h3 class="text-base font-semibold">查看详情</h3><button type="button" class="wh-modal-close" data-close="detail-modal" aria-label="关闭">×</button></div><div id="detail-box" class="p-5"></div></div></div>
     <div id="approval-modal" class="modal-mask"><div class="modal-card"><div class="flex items-center justify-between px-5 py-4 border-b border-white/10"><h3 class="text-base font-semibold">飞行计划审批</h3><button type="button" class="wh-modal-close" data-close="approval-modal" aria-label="关闭">×</button></div><div id="approval-box" class="p-5"></div></div></div>
+    <div id="flight-task-modal" class="modal-mask">
+      <div class="modal-card flight-task-modal">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-white/10"><h3 class="text-base font-semibold">飞行任务</h3><button type="button" class="wh-modal-close" data-close="flight-task-modal" aria-label="关闭">×</button></div>
+        <div class="p-5">
+          <div id="flight-task-plan-summary" class="flight-task-summary"></div>
+          <div class="flight-task-filter" aria-label="飞行任务快捷筛选">
+            <label><span class="field-label">飞行任务ID</span><input id="task-filter-id" class="wh-input w-full px-3 py-2" placeholder="请输入飞行任务ID" /></label>
+            <label><span class="field-label">无人机设备</span><input id="task-filter-drone" class="wh-input w-full px-3 py-2" placeholder="请输入无人机设备" /></label>
+            <label><span class="field-label">操作员</span><input id="task-filter-operator" class="wh-input w-full px-3 py-2" placeholder="请输入操作员姓名" /></label>
+            <div class="flight-task-filter__actions"><button id="task-search-btn" type="button" class="wh-btn-primary px-4 py-2">搜索</button><button id="task-reset-btn" type="button" class="wh-btn-ghost px-4 py-2">重置</button></div>
+          </div>
+          <div class="flight-task-table-wrap wh-table-shell">
+            <table class="w-full text-left">
+              <thead><tr><th>飞行任务ID</th><th>无人机设备</th><th>任务类型</th><th>执行状态</th><th>实际执行时间</th><th>实际结束时间</th><th>操作员姓名</th><th>操作</th></tr></thead>
+              <tbody id="flight-task-body"></tbody>
+            </table>
+          </div>
+          <div class="mt-3 text-[11px] text-slate-400">共 <b id="flight-task-total" class="text-cyan-200">0</b> 条任务</div>
+        </div>
+      </div>
+    </div>
+    <div id="flight-task-detail-modal" class="modal-mask"><div class="modal-card modal-card--detail"><div class="flex items-center justify-between px-5 py-4 border-b border-white/10"><h3 class="text-base font-semibold">飞行任务详情</h3><button type="button" class="wh-modal-close" data-close="flight-task-detail-modal" aria-label="关闭">×</button></div><div id="flight-task-detail-box" class="p-5"></div></div></div>
     <div id="cockpit-airspace-modal" class="modal-mask"><div class="modal-card" style="width:min(440px,92vw)"><div class="flex items-center justify-between px-5 py-4 border-b border-white/10"><h3 class="text-base font-semibold">虚拟座舱</h3><button type="button" class="wh-modal-close" data-close="cockpit-airspace-modal" aria-label="关闭">×</button></div><p id="cockpit-airspace-msg" class="px-5 py-6 text-sm text-cyan-50 leading-7"></p><div id="cockpit-airspace-actions-blocked" class="hidden px-5 py-4 border-t border-white/10 flex justify-end"><button type="button" class="wh-btn-primary px-4 py-2" data-close="cockpit-airspace-modal">关闭</button></div><div id="cockpit-airspace-actions-confirm" class="hidden px-5 py-4 border-t border-white/10 flex justify-end gap-2"><button type="button" class="wh-btn-ghost px-4 py-2" data-close="cockpit-airspace-modal">取消</button><button type="button" id="cockpit-launch-btn" class="wh-btn-primary px-4 py-2">立即起飞</button></div></div></div>
     <div id="toast" class="fixed right-5 bottom-5 z-[100] hidden rounded bg-cyan-500 text-slate-950 px-4 py-2 text-sm font-semibold shadow-lg"></div>
 
@@ -522,15 +577,28 @@
       };
       let plans = [
         {id:2,name:"梨园站告警复核",route:"梨园-中南医院演示航线",airport:"梨园机场",drone:"梨园巡检无人机 M30T",type:"告警复核",strategy:"立即起飞",line:"2号线",applicant:"李四",submit:"2026-05-13 10:15",audit:"审核中",airspaceValid:true,exec:"未执行",planTime:"2026-05-13 16:00（即时起飞）",actualStart:"-",actualEnd:"-",execMeta:{immediateAt:"2026-05-13T16:00"}},
+        {id:7,name:"梨园站告警即时复核",route:"梨园-中南医院演示航线",airport:"梨园机场",drone:"梨园巡检无人机 M30T",type:"告警复核",strategy:"立即起飞",line:"2号线",applicant:"李四",submit:"2026-05-13 14:20",audit:"-",airspaceValid:true,exec:"未执行",planTime:"2026-05-13 14:35（即时起飞）",actualStart:"-",actualEnd:"-",execMeta:{immediateAt:"2026-05-13T14:35"}},
         {id:6,name:"2号线保护区例行巡检",route:"梨园-中南医院演示航线",airport:"梨园机场",drone:"梨园巡检无人机 M30T",type:"常规巡检",strategy:"单次定时",line:"2号线",applicant:"陈八",submit:"2026-05-13 08:50",audit:"审核通过",airspaceValid:true,exec:"未执行",planTime:"2026-05-13 18:00",actualStart:"-",actualEnd:"-",execMeta:{singleAt:"2026-05-13T18:00"}},
         {id:1,name:"8号线车辆段常规巡检",route:"车辆段日常巡查航线",airport:"车辆段机场",drone:"车辆段无人机 M350",type:"常规巡检",strategy:"单次定时",line:"8号线",applicant:"张三",submit:"2026-05-13 09:20",audit:"审核通过",airspaceValid:true,exec:"执行中",planTime:"2026-05-13 15:30",actualStart:"2026-05-13 15:32",actualEnd:"-",execMeta:{singleAt:"2026-05-13T15:30"}},
         {id:3,name:"长江新区临时巡检",route:"涉铁施工复核航线",airport:"车辆段机场",drone:"长江新区无人机 M300",type:"临时任务",strategy:"立即起飞",line:"8号线",applicant:"王五",submit:"2026-05-12 18:40",audit:"已驳回",exec:"执行终止",planTime:"2026-05-13 08:30（即时起飞）",actualStart:"2026-05-13 08:32",actualEnd:"2026-05-13 08:45",execMeta:{immediateAt:"2026-05-13T08:30"}},
         {id:4,name:"青山站周期巡检",route:"青山站周期巡检航线",airport:"青山机场",drone:"青山巡检无人机 M350",type:"常规巡检",strategy:"周期定时",line:"5号线",applicant:"赵六",submit:"2026-05-11 14:05",audit:"审核通过",airspaceValid:false,exec:"已执行",planTime:"每日 09:00",actualStart:"2026-05-12 09:02",actualEnd:"2026-05-12 09:38",execMeta:{cycleType:"日",cycleDailyTime:"09:00"}},
         {id:5,name:"涉铁施工夜间复核",route:"涉铁施工复核航线",airport:"车辆段机场",drone:"长江新区无人机 M300",type:"告警复核",strategy:"单次定时",line:"8号线",applicant:"周七",submit:"2026-05-13 11:00",audit:"审核通过",airspaceValid:true,exec:"数据处理",planTime:"2026-05-14 02:00",actualStart:"2026-05-14 02:01",actualEnd:"2026-05-14 02:28",execMeta:{singleAt:"2026-05-14T02:00"}}
       ];
+      const flightTasks = [
+        {id:"FT-20260513001",planId:6,drone:"梨园巡检无人机 M30T",type:"常规巡检",status:"未执行",actualStart:"-",actualEnd:"-",operator:"陈八"},
+        {id:"FT-20260513002",planId:1,drone:"车辆段无人机 M350",type:"常规巡检",status:"执行中",actualStart:"2026-05-13 15:32",actualEnd:"-",operator:"张三"},
+        {id:"FT-20260512001",planId:4,drone:"青山巡检无人机 M350",type:"常规巡检",status:"已执行",actualStart:"2026-05-12 09:02",actualEnd:"2026-05-12 09:38",operator:"赵六"},
+        {id:"FT-20260513004",planId:4,drone:"青山巡检无人机 M350",type:"常规巡检",status:"数据处理",actualStart:"2026-05-13 09:01",actualEnd:"2026-05-13 09:36",operator:"赵六"},
+        {id:"FT-20260514003",planId:4,drone:"青山巡检无人机 M350",type:"常规巡检",status:"执行中止",actualStart:"2026-05-14 09:03",actualEnd:"2026-05-14 09:12",operator:"钱九"},
+        {id:"FT-20260515002",planId:4,drone:"青山巡检无人机 M350",type:"常规巡检",status:"未执行",actualStart:"-",actualEnd:"-",operator:"赵六"},
+        {id:"FT-20260514001",planId:5,drone:"长江新区无人机 M300",type:"告警复核",status:"数据处理",actualStart:"2026-05-14 02:01",actualEnd:"2026-05-14 02:28",operator:"周七"},
+        {id:"FT-20260513005",planId:7,drone:"梨园巡检无人机 M30T",type:"告警复核",status:"未执行",actualStart:"-",actualEnd:"-",operator:"李四"},
+        {id:"FT-20260513006",planId:7,drone:"梨园巡检无人机 M30T",type:"告警复核",status:"已执行",actualStart:"2026-05-13 14:36",actualEnd:"2026-05-13 15:02",operator:"李四"}
+      ];
       let editingId = null;
       let approvalId = null;
       let approvalBatchIds = null;
+      let activeTaskPlanId = null;
       const $ = id => document.getElementById(id);
       const WEEKDAY_LABELS = ["","周一","周二","周三","周四","周五","周六","周日"];
       function pad2(n){ return String(n).padStart(2,"0"); }
@@ -737,17 +805,10 @@
         if (s === "-" || s === "—") return '<span class="text-slate-400">-</span>';
         return badge(s, s === "审核通过" ? "wh-status--done" : s === "审核中" ? "wh-status--progress" : "wh-status--pending");
       };
-      const execBadge = s => {
-        const type =
-          s === "已执行" ? "wh-status--done"
-          : s === "执行终止" ? "wh-status--pending"
-          : "wh-status--progress";
-        return badge(s, type);
-      };
       function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),1800); }
       function rows(){
-        const name=$("f-name").value.trim(), type=$("f-type").value, line=$("f-line").value, strategy=$("f-strategy").value, airport=$("f-airport").value, exec=$("f-exec").value, applicant=$("f-applicant").value.trim(), audit=$("f-audit").value;
-        return plans.filter(p=>(!name||p.name.includes(name))&&(!type||p.type===type)&&(!line||p.line===line)&&(!strategy||p.strategy===strategy)&&(!airport||p.airport===airport)&&(!exec||p.exec===exec)&&(!applicant||p.applicant.includes(applicant))&&(!audit||p.audit===audit));
+        const name=$("f-name").value.trim(), type=$("f-type").value, line=$("f-line").value, strategy=$("f-strategy").value, airport=$("f-airport").value, applicant=$("f-applicant").value.trim(), audit=$("f-audit").value;
+        return plans.filter(p=>(!name||p.name.includes(name))&&(!type||p.type===type)&&(!line||p.line===line)&&(!strategy||p.strategy===strategy)&&(!airport||p.airport===airport)&&(!applicant||p.applicant.includes(applicant))&&(!audit||p.audit===audit));
       }
       function updateFlightPlanStats(list) {
         const set = (id, val) => { const el = $(id); if (el) el.textContent = String(val); };
@@ -765,27 +826,8 @@
       }
       function isPlanOpDisabled(p, action) {
         const audit = p.audit;
-        const exec = p.exec;
-        if (audit === "-" || audit === "—") {
-          if (action === "approve" || action === "report") return true;
-        }
-        if (action === "cockpit") {
-          if (audit === "审核中" && exec === "未执行") return true;
-          if (audit === "审核通过" && (exec === "执行中" || exec === "已执行" || exec === "数据处理")) return true;
-          if (audit === "已驳回" && exec === "执行终止") return true;
-          return false;
-        }
         if (action === "approve") {
-          if (audit === "审核通过" && (exec === "未执行" || exec === "执行中" || exec === "已执行" || exec === "数据处理")) return true;
-          if (audit === "已驳回" && exec === "执行终止") return true;
-          return false;
-        }
-        if (action === "report") {
-          if (audit === "审核中" && exec === "未执行") return true;
-          if (audit === "审核通过" && (exec === "未执行" || exec === "执行中")) return true;
-          if (exec === "数据处理") return true;
-          if (audit === "已驳回" && exec === "执行终止") return true;
-          return false;
+          return audit === "审核通过" || audit === "已驳回" || audit === "-" || audit === "—";
         }
         return false;
       }
@@ -796,19 +838,137 @@
         return '<button type="button" class="' + cls + '"' + extra + ">" + label + "</button>";
       }
       function planRowActions(p) {
-        return [
+        const actions = [
           planOpBtn(p, "detail", "查阅计划", "showDetail"),
-          planOpBtn(p, "cockpit", "虚拟座舱", "openCockpit"),
           planOpBtn(p, "copy", "复制计划", "copyPlan"),
-          planOpBtn(p, "approve", "审批", "showApproval"),
-          planOpBtn(p, "report", "查看报告", "showReport"),
-        ].join("");
+          planOpBtn(p, "approve", "审批", "showApproval")
+        ];
+        if (p.audit === "审核通过" || p.audit === "-" || p.audit === "—") {
+          actions.push('<button type="button" class="op-btn" onclick="showFlightTasks(' + p.id + ')">飞行任务</button>');
+        }
+        return actions.join("");
       }
       function render(){
         const list = rows();
         updateFlightPlanStats(list);
-        $("plan-body").innerHTML = list.map((p,i)=>{ const canSelect=p.audit==="审核中"; return `<tr class="flight-plan-row" data-plan-id="${p.id}" style="background:${i%2?"#08213d":"#071b33"}"><td><input class="row-check" type="checkbox" value="${p.id}"${canSelect?"":" disabled title=\"仅审核中计划可批量审批\""}></td><td class="font-medium text-cyan-100 nowrap-cell">${p.name}</td><td class="nowrap-cell">${p.route}</td><td>${p.airport}</td><td>${p.drone}</td><td>${p.type}</td><td>${p.strategy}</td><td>${p.line}</td><td>${p.applicant}</td><td class="nowrap-cell">${p.submit}</td><td>${auditBadge(p.audit)}</td><td>${execBadge(p.exec)}</td><td class="nowrap-cell">${p.planTime}</td><td class="nowrap-cell">${p.actualStart}</td><td class="nowrap-cell">${p.actualEnd}</td><td class="flight-plan-col-actions"><div class="flight-plan-op-actions">${planRowActions(p)}</div></td></tr>`; }).join("");
+        $("plan-body").innerHTML = list.map((p,i)=>{ const canSelect=p.audit==="审核中"; return `<tr class="flight-plan-row" data-plan-id="${p.id}" style="background:${i%2?"#08213d":"#071b33"}"><td><input class="row-check" type="checkbox" value="${p.id}"${canSelect?"":" disabled title=\"仅审核中计划可批量审批\""}></td><td class="font-medium text-cyan-100 nowrap-cell">${p.name}</td><td class="nowrap-cell">${p.route}</td><td>${p.airport}</td><td>${p.drone}</td><td>${p.type}</td><td>${p.strategy}</td><td>${p.line}</td><td>${p.applicant}</td><td class="nowrap-cell">${p.submit}</td><td>${auditBadge(p.audit)}</td><td class="nowrap-cell">${p.planTime}</td><td class="flight-plan-col-actions"><div class="flight-plan-op-actions">${planRowActions(p)}</div></td></tr>`; }).join("");
         syncCheckAllState();
+      }
+      function flightTaskStatusBadge(status) {
+        const type = status === "已执行" ? "wh-status--done" : status === "执行中止" ? "wh-status--pending" : "wh-status--progress";
+        return badge(status, type);
+      }
+      function genFlightTaskId() {
+        const d = new Date();
+        const prefix = "FT-" + d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate());
+        let max = 0;
+        flightTasks.forEach(task => {
+          if (task.id && task.id.indexOf(prefix) === 0) {
+            const n = Number(task.id.slice(prefix.length));
+            if (!isNaN(n) && n > max) max = n;
+          }
+        });
+        return prefix + pad2(Math.floor((max + 1) / 100)) + String((max + 1) % 100).padStart(2, "0");
+      }
+      function ensureFlightTasks(plan) {
+        const existing = flightTasks.filter(task => task.planId === plan.id);
+        if (existing.length) return existing;
+        const task = {
+          id: genFlightTaskId(),
+          planId: plan.id,
+          drone: plan.drone,
+          type: plan.type,
+          status: "未执行",
+          actualStart: "-",
+          actualEnd: "-",
+          operator: plan.applicant
+        };
+        flightTasks.push(task);
+        return [task];
+      }
+      function flightTaskAction(task) {
+        if (task.status === "未执行") return '<button type="button" class="op-btn" onclick="openTaskCockpit(\'' + task.id + '\')">虚拟座舱</button>';
+        if (task.status === "已执行") return '<button type="button" class="op-btn" onclick="showTaskReport(\'' + task.id + '\')">查看报告</button>';
+        return '<button type="button" class="op-btn" onclick="showFlightTaskDetail(\'' + task.id + '\')">查看</button>';
+      }
+      function renderFlightTasks() {
+        const plan = plans.find(item => item.id === activeTaskPlanId);
+        if (!plan) return;
+        const id = $("task-filter-id").value.trim().toLowerCase();
+        const drone = $("task-filter-drone").value.trim().toLowerCase();
+        const operator = $("task-filter-operator").value.trim().toLowerCase();
+        const list = ensureFlightTasks(plan).filter(task =>
+          (!id || task.id.toLowerCase().includes(id)) &&
+          (!drone || task.drone.toLowerCase().includes(drone)) &&
+          (!operator || task.operator.toLowerCase().includes(operator))
+        );
+        $("flight-task-body").innerHTML = list.length
+          ? list.map(task => `<tr><td class="font-medium text-cyan-100 nowrap-cell">${task.id}</td><td>${task.drone}</td><td>${task.type}</td><td>${flightTaskStatusBadge(task.status)}</td><td class="nowrap-cell">${task.actualStart}</td><td class="nowrap-cell">${task.actualEnd}</td><td>${task.operator}</td><td><div class="flight-plan-op-actions">${flightTaskAction(task)}</div></td></tr>`).join("")
+          : '<tr><td colspan="8" class="flight-task-empty">暂无符合条件的飞行任务</td></tr>';
+        $("flight-task-total").textContent = String(list.length);
+      }
+      function showFlightTasks(planId) {
+        const plan = plans.find(item => item.id === planId);
+        if (!plan) return;
+        activeTaskPlanId = planId;
+        $("flight-task-plan-summary").innerHTML = [
+          ["飞行计划名称", plan.name],
+          ["飞行航线", plan.route],
+          ["计划类型", plan.type],
+          ["飞行策略", plan.strategy],
+          ["计划执行时间", plan.planTime]
+        ].map(item => `<div class="flight-task-summary__item"><span class="flight-task-summary__label">${item[0]}</span><span class="flight-task-summary__value" title="${item[1]}">${item[1]}</span></div>`).join("");
+        $("task-filter-id").value = "";
+        $("task-filter-drone").value = "";
+        $("task-filter-operator").value = "";
+        renderFlightTasks();
+        openModal("flight-task-modal");
+      }
+      function findFlightTask(taskId) {
+        return flightTasks.find(task => task.id === taskId);
+      }
+      function showFlightTaskDetail(taskId) {
+        const task = findFlightTask(taskId);
+        const plan = task && plans.find(item => item.id === task.planId);
+        if (!task || !plan) return;
+        const fields = [
+          detailField("飞行任务ID", task.id),
+          detailField("关联飞行计划", plan.name),
+          detailField("飞行航线", plan.route),
+          detailField("无人机设备", task.drone),
+          detailField("任务类型", task.type),
+          detailField("执行状态", task.status),
+          detailField("计划执行时间", plan.planTime),
+          detailField("实际执行时间", task.actualStart),
+          detailField("实际结束时间", task.actualEnd),
+          detailField("操作员姓名", task.operator)
+        ];
+        $("flight-task-detail-box").innerHTML = `<section class="rounded border border-cyan-400/20 bg-slate-950/25 p-4"><div class="plan-detail-grid">${fields.join("")}</div></section>`;
+        openModal("flight-task-detail-modal");
+      }
+      function openTaskCockpit(taskId) {
+        const task = findFlightTask(taskId);
+        if (!task) return;
+        openCockpit(task.planId);
+      }
+      function showTaskReport(taskId) {
+        const task = findFlightTask(taskId);
+        const plan = task && plans.find(item => item.id === task.planId);
+        if (!task || !plan || !window.WHFlightReportModal) return;
+        WHFlightReportModal.open(Object.assign({}, plan, {
+          taskId: task.id,
+          drone: task.drone,
+          type: task.type,
+          exec: task.status,
+          actualStart: task.actualStart,
+          actualEnd: task.actualEnd,
+          applicant: task.operator
+        }), {
+          renderApprovalRecords: approvalRecords,
+          editable: true,
+          onSave: function(){ toast("飞行报告补充说明已保存"); },
+          onExport: function(){ toast("飞行报告 PDF 已导出"); }
+        });
       }
       function syncCheckAllState(){
         const all=$("check-all");
@@ -1263,18 +1423,6 @@
         const side=`<div class="text-sm font-semibold text-cyan-100 mb-3">待审批计划</div><div class="max-h-[320px] overflow-y-auto pr-1">${renderBatchApprovalList(selected)}</div>`;
         openApprovalModal(header, side);
       }
-      function showReport(id){
-        const p=plans.find(x=>x.id===id);
-        if(!p) return;
-        if(window.WHFlightReportModal){
-          WHFlightReportModal.open(p,{
-            renderApprovalRecords: approvalRecords,
-            editable: true,
-            onSave: function(){ toast("飞行报告补充说明已保存"); },
-            onExport: function(){ toast("飞行报告 PDF 已导出"); }
-          });
-        }
-      }
       function isAirspaceValid(p){ return p.airspaceValid !== false; }
       function showCockpitAirspaceModal(mode){
         const blocked=$("cockpit-airspace-actions-blocked");
@@ -1334,6 +1482,13 @@
       $("save-plan-btn").onclick=savePlan;
       $("search-btn").onclick=render;
       $("reset-btn").onclick=()=>{ document.querySelectorAll("input,select").forEach(el=>{ if(el.id!=="check-all"&&!el.closest("#form-modal")) el.value=""; }); render(); };
+      $("task-search-btn").onclick=renderFlightTasks;
+      $("task-reset-btn").onclick=()=>{
+        $("task-filter-id").value="";
+        $("task-filter-drone").value="";
+        $("task-filter-operator").value="";
+        renderFlightTasks();
+      };
       $("check-all").onchange=e=>document.querySelectorAll(".row-check:not(:disabled)").forEach(c=>c.checked=e.target.checked);
       document.addEventListener("change",e=>{ if(e.target.classList&&e.target.classList.contains("row-check")) syncCheckAllState(); });
       $("batch-approve-btn").onclick=openBatchApproval;
@@ -1347,9 +1502,12 @@
 
       window.showDetail=showDetail;
       window.showApproval=showApproval;
-      window.showReport=showReport;
       window.copyPlan=copyPlan;
       window.openCockpit=openCockpit;
+      window.showFlightTasks=showFlightTasks;
+      window.showFlightTaskDetail=showFlightTaskDetail;
+      window.openTaskCockpit=openTaskCockpit;
+      window.showTaskReport=showTaskReport;
       initQuickLinks();
       if (window.WuhanGIS && window.WuhanGIS.mergeStoredAlertFlightPlans) {
         window.WuhanGIS.mergeStoredAlertFlightPlans(plans);
